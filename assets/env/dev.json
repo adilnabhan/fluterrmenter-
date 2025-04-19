@@ -1,0 +1,4 @@
+{
+  "baseUrl": "https://marketplace.dn.fegno.com/api/v1",
+  "whichEnv": "DEV"
+}

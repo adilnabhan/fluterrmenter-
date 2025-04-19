@@ -1,0 +1,4 @@
+{
+  "baseUrl": "https://rapzome.stg.fegno.com/api/v1",
+  "whichEnv": "STG"
+}
