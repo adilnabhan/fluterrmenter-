@@ -26,7 +26,6 @@ class _GymProfileCompletionStatusCardState
       vsync: this,
       duration: const Duration(seconds: 1), // Animation duration
     );
-
     _animation = Tween<double>(
       begin: 0,
       end: widget.progress.toDouble(),

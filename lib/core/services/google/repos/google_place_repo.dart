@@ -1,21 +1,15 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:mentor_mobile_app/core/api/uris/google_uri.dart';
-import 'package:mentor_mobile_app/core/constants/app_data.dart';
-import 'package:mentor_mobile_app/core/services/google/entities/google_auto_complete_entity.dart';
-import 'package:mentor_mobile_app/core/services/google/entities/google_place_details_entity.dart';
-import 'package:mentor_mobile_app/core/services/google/entities/google_place_response_entity.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 final class GooglePlaceRepo {
   //* This constructor body for creating singleton widget
   /// For handling goodle palce services eg: [Google AutoComplete Api,Google Place Api,Google Image Url Creator]
   factory GooglePlaceRepo() {
-    _instance == null ? {_instance = GooglePlaceRepo._internel()} : null;
-    return _instance!;
+    return _instance ??= const GooglePlaceRepo._internel();
   }
 
   //* This named constructor for create object for this class
-  GooglePlaceRepo._internel();
+  const GooglePlaceRepo._internel();
 
   //* This variable for store this class object globally
   static GooglePlaceRepo? _instance;
@@ -29,7 +23,9 @@ final class GooglePlaceRepo {
         call: Dio().get(GoogleUris.autoComplete, queryParameters: params),
         onSuccess: (res) {
           write('auto complete res : ${res.data}');
-          return GoogleAutoCompleteEntity.fromJson(res.data as Map<String, dynamic>);
+          return GoogleAutoCompleteEntity.fromJson(
+            res.data as Map<String, dynamic>,
+          );
         },
       );
     } catch (e) {
@@ -38,12 +34,19 @@ final class GooglePlaceRepo {
   }
 
   //*Get place details from google place id
-  Future<Either<ApiException, GooglePlaceResponseEntity>> placeDetails(String placeId) async {
+  Future<Either<ApiException, GooglePlaceResponseEntity>> placeDetails(
+    String placeId,
+  ) async {
     return Feggy.async(
-      call: Dio().get<dynamic>(GoogleUris.placeDetails, queryParameters: {'placeid': placeId, 'key': AppData.googleKey}),
+      call: Dio().get<dynamic>(
+        GoogleUris.placeDetails,
+        queryParameters: {'placeid': placeId, 'key': AppData.googleKey},
+      ),
       onSuccess: (res) {
         write('res data map : ${res.data}');
-        final model = GooglePlaceDetailsEntity.fromJson(res.data as Map<String, dynamic>);
+        final model = GooglePlaceDetailsEntity.fromJson(
+          res.data as Map<String, dynamic>,
+        );
         final location = model.result?.geometry?.location;
         final formattedAddress = model.result?.formattedAddress;
 
@@ -62,22 +65,36 @@ final class GooglePlaceRepo {
         String? streetName;
         model.result?.addressComponents?.forEach((e) {
           /// check country
-          if (listEquals(e.types, ['country', 'political']) && country == null) {
+          if (listEquals(e.types, ['country', 'political']) &&
+              country == null) {
             country = e.longName ?? e.shortName;
           }
 
           /// check state
-          if (listEquals(e.types, ['administrative_area_level_1', 'political']) && state == null) {
+          if (listEquals(e.types, [
+                'administrative_area_level_1',
+                'political',
+              ]) &&
+              state == null) {
             state = e.longName ?? e.shortName;
           }
 
           /// check street
-          if (listEquals(e.types, ['political', 'sublocality', 'sublocality_level_2']) && streetName == null) {
+          if (listEquals(e.types, [
+                'political',
+                'sublocality',
+                'sublocality_level_2',
+              ]) &&
+              streetName == null) {
             streetName = e.longName ?? e.shortName;
           }
 
           /// check District
-          if (listEquals(e.types, ['administrative_area_level_3', 'political']) && district == null) {
+          if (listEquals(e.types, [
+                'administrative_area_level_3',
+                'political',
+              ]) &&
+              district == null) {
             district = e.longName ?? e.shortName;
           }
 
@@ -87,11 +104,17 @@ final class GooglePlaceRepo {
           }
 
           /// check address component is place name
-          if (listEquals(e.types, ['political', 'sublocality', 'sublocality_level_2'])) {
+          if (listEquals(e.types, [
+            'political',
+            'sublocality',
+            'sublocality_level_2',
+          ])) {
             placeName = e.longName ?? e.shortName;
-          } else if (listEquals(e.types, ['neighborhood', 'political']) && placeName == null) {
+          } else if (listEquals(e.types, ['neighborhood', 'political']) &&
+              placeName == null) {
             placeName = e.longName ?? e.shortName;
-          } else if (listEquals(e.types, ['locality', 'political']) && placeName == null) {
+          } else if (listEquals(e.types, ['locality', 'political']) &&
+              placeName == null) {
             placeName = e.longName ?? e.shortName;
           }
         });
@@ -120,7 +143,11 @@ final class GooglePlaceRepo {
             ),
           );
         }
-        return left(const ApiException.unknown(msg: 'Currently selected location not acceptable!'));
+        return left(
+          const ApiException.unknown(
+            msg: 'Currently selected location not acceptable!',
+          ),
+        );
       },
     );
   }

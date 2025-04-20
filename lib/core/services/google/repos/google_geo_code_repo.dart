@@ -1,7 +1,4 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:mentor_mobile_app/core/api/uris/google_uri.dart';
-import 'package:mentor_mobile_app/core/services/google/entities/google_geo_code_entity.dart';
-import 'package:mentor_mobile_app/core/services/google/entities/google_place_response_entity.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 @immutable
@@ -9,18 +6,20 @@ class GoogleGeoCodeRepo {
   //* This constructor body for creating singleton widget
   /// For handling goodle services eg: [Google ]
   factory GoogleGeoCodeRepo() {
-    _instance == null ? {_instance = GoogleGeoCodeRepo._internel()} : null;
-    return _instance!;
+    return _instance ??= const GoogleGeoCodeRepo._internel();
   }
 
   //* This named constructor for create object for this class
-  GoogleGeoCodeRepo._internel();
+  const GoogleGeoCodeRepo._internel();
 
   //* This variable for store this class object globally
   static GoogleGeoCodeRepo? _instance;
 
   ///*Get place details from latitude and logitude
-  Future<Either<ApiException, GooglePlaceResponseEntity>> fromLatLong(num latitude, num longitude) {
+  Future<Either<ApiException, GooglePlaceResponseEntity>> fromLatLong(
+    num latitude,
+    num longitude,
+  ) {
     final params = {'latlng': '$latitude,$longitude', 'key': AppData.googleKey};
     return Feggy.async(
       call: Dio().get<dynamic>(GoogleUris.geoCode, queryParameters: params),
@@ -36,17 +35,26 @@ class GoogleGeoCodeRepo {
         String? streetName;
         model.results?.first.addressComponents?.forEach((e) {
           /// check country
-          if (listEquals(e.types, ['country', 'political']) && country == null) {
+          if (listEquals(e.types, ['country', 'political']) &&
+              country == null) {
             country = e.longName ?? e.shortName;
           }
 
           /// check state
-          if (listEquals(e.types, ['administrative_area_level_1', 'political']) && state == null) {
+          if (listEquals(e.types, [
+                'administrative_area_level_1',
+                'political',
+              ]) &&
+              state == null) {
             state = e.longName ?? e.shortName;
           }
 
           /// check District
-          if (listEquals(e.types, ['administrative_area_level_3', 'political']) && district == null) {
+          if (listEquals(e.types, [
+                'administrative_area_level_3',
+                'political',
+              ]) &&
+              district == null) {
             district = e.longName ?? e.shortName;
           }
 
@@ -56,16 +64,27 @@ class GoogleGeoCodeRepo {
           }
 
           /// check street
-          if (listEquals(e.types, ['political', 'sublocality', 'sublocality_level_1']) && streetName == null) {
+          if (listEquals(e.types, [
+                'political',
+                'sublocality',
+                'sublocality_level_1',
+              ]) &&
+              streetName == null) {
             streetName = e.longName ?? e.shortName;
           }
 
           /// check address component is place name
-          if (listEquals(e.types, ['political', 'sublocality', 'sublocality_level_2'])) {
+          if (listEquals(e.types, [
+            'political',
+            'sublocality',
+            'sublocality_level_2',
+          ])) {
             placeName = e.longName ?? e.shortName;
-          } else if (listEquals(e.types, ['neighborhood', 'political']) && placeName == null) {
+          } else if (listEquals(e.types, ['neighborhood', 'political']) &&
+              placeName == null) {
             placeName = e.longName ?? e.shortName;
-          } else if (listEquals(e.types, ['locality', 'political']) && placeName == null) {
+          } else if (listEquals(e.types, ['locality', 'political']) &&
+              placeName == null) {
             placeName = e.longName ?? e.shortName;
           }
         });
@@ -84,7 +103,11 @@ class GoogleGeoCodeRepo {
             ),
           );
         }
-        return left(const ApiException.unknown(msg: 'Currently selected location not acceptable!'));
+        return left(
+          const ApiException.unknown(
+            msg: 'Currently selected location not acceptable!',
+          ),
+        );
       },
     );
   }
