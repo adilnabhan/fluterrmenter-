@@ -60,12 +60,12 @@ class _GymProfileCompletionStatusCardState
         children: [
           Text(
             'Complete Your Profile',
-            style: AppStyles.text16Px.poppins700.light,
+            style: AppStyles.text16Px.poppins.w700.light,
             textAlign: TextAlign.center,
           ),
           Text(
             "You're almost there  complete a few more steps.",
-            style: AppStyles.text12Px.poppins400.light,
+            style: AppStyles.text12Px.poppins.w400.light,
             textAlign: TextAlign.center,
           ),
           AnimatedBuilder(

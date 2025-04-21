@@ -105,7 +105,7 @@ class _BrandLogoPickerState extends State<BrandLogoPicker> {
                 const SizedBox(height: 12),
                 Text(
                   'Upload your brand logo',
-                  style: AppStyles.text14Px.poppins400.textGrey,
+                  style: AppStyles.text14Px.poppins.w400.textGrey,
                 ),
               ],
             ).pad(16),

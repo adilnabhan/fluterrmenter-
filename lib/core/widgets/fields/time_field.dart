@@ -44,6 +44,7 @@ class TimeField extends StatefulWidget {
     this.autovaliTimeMode,
     this.obscureText = false,
     this.borderRadius,
+    this.timeShowFormat,
   });
 
   final Key? fieldKey;
@@ -87,17 +88,28 @@ class TimeField extends StatefulWidget {
   final AutovalidateMode? autovaliTimeMode;
   final bool obscureText;
   final BorderRadius? borderRadius;
+  final DateFormat? timeShowFormat;
 
   @override
   State<TimeField> createState() => _TimeFieldState();
 }
 
 class _TimeFieldState extends State<TimeField> {
+  TimeOfDay? selectedTime;
   late final TextEditingController _ctrl;
 
   @override
   void initState() {
-    _ctrl = widget.controller ?? TextEditingController(text: widget.initialValue);
+    _ctrl =
+        widget.controller ?? TextEditingController(text: widget.initialValue);
+    final initialDateAsString = widget.initialValue ?? _ctrl.text;
+    if (initialDateAsString.trim().isNotEmpty) {
+      selectedTime = TimeOfDay.fromDateTime(
+        widget.timeShowFormat != null
+            ? widget.timeShowFormat!.parse(initialDateAsString)
+            : DateFormat('hh:mm a').parse(initialDateAsString),
+      );
+    }
     super.initState();
   }
 
@@ -116,7 +128,23 @@ class _TimeFieldState extends State<TimeField> {
       child: InkWell(
         overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         onTap: () async {
-          await showTimePicker(context: context, initialTime: TimeOfDay.now());
+          final pickedTime = await showTimePicker(
+            context: context,
+            initialTime: TimeOfDay.now(),
+          );
+          if (pickedTime != null) {
+            selectedTime = pickedTime;
+            _ctrl.value = TextEditingValue(
+              text:
+                  widget.timeShowFormat != null
+                      ? widget.timeShowFormat!.format(
+                        DateTime(0, 0, 0, pickedTime.hour, pickedTime.minute),
+                      )
+                      : DateFormat('hh:mm a').format(
+                        DateTime(0, 0, 0, pickedTime.hour, pickedTime.minute),
+                      ),
+            );
+          }
         },
         child: AbsorbPointer(
           child: WordField(
@@ -134,7 +162,15 @@ class _TimeFieldState extends State<TimeField> {
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.calendar_today, color: Colors.grey.shade600), // UpTimed for demo
+                  SvgPicture.asset(
+                    'assets/images/svg/icons/clock.svg',
+                    height: 20,
+                    width: 20,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.dark,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ],
               ),
             ),

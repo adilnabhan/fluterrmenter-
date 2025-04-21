@@ -68,18 +68,18 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
             const SizedBox(height: 22),
             Text(
               'Verify Phone',
-              style: AppStyles.text22Px.poppins600.dark,
+              style: AppStyles.text22Px.poppins.w600.dark,
               textAlign: TextAlign.center,
             ),
             Text(
               'Enter the verification code sent to',
-              style: AppStyles.text14Px.poppins400.textGrey,
+              style: AppStyles.text14Px.poppins.w400.textGrey,
               textAlign: TextAlign.center,
             ).pxy(y: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(widget.phone, style: AppStyles.text16Px.poppins500.dark),
+                Text(widget.phone, style: AppStyles.text16Px.poppins.w500.dark),
                 IconButton(
                   onPressed: context.pop,
                   icon: SvgPicture.asset(
@@ -110,7 +110,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                       defaultPinTheme: PinTheme(
                         width: 65,
                         height: 65,
-                        textStyle: AppStyles.text16Px.poppins500.dark,
+                        textStyle: AppStyles.text16Px.poppins.w500.dark,
                         decoration: BoxDecoration(
                           color: AppColors.lightGrey,
                           border: Border.all(
@@ -143,7 +143,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                     if (error != null)
                       Text(
                         error.msg,
-                        style: AppStyles.text14Px.poppins400.error,
+                        style: AppStyles.text14Px.poppins.w400.error,
                       ).pOnly(top: 12),
                   ],
                 );
@@ -177,7 +177,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                 }
                 return Text(
                   '00:${state.resentOtpReminigTime < 10 ? '0' : ''}${state.resentOtpReminigTime}',
-                  style: AppStyles.text16Px.poppins500.textGrey,
+                  style: AppStyles.text16Px.poppins.w500.textGrey,
                   textAlign: TextAlign.center,
                 ).pOnly(bottom: 8);
               },
@@ -185,11 +185,11 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
             RichText(
               text: TextSpan(
                 text: "Didn't receive the code? ",
-                style: AppStyles.text14Px.poppins400.textGrey,
+                style: AppStyles.text14Px.poppins.w400.textGrey,
                 children: [
                   TextSpan(
                     text: 'Resend',
-                    style: AppStyles.text14Px.poppins400.textGrey.copyWith(
+                    style: AppStyles.text14Px.poppins.w400.textGrey.copyWith(
                       decoration: TextDecoration.underline,
                     ),
                     recognizer:

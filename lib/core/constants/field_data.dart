@@ -3,7 +3,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 part 'field_data.freezed.dart';
 
 ///*
-enum FieldType { word, checkbox, radio, date, image, search }
+enum FieldType { word, checkbox, radio, date, image, search, time }
 
 @freezed
 class FieldData<T> with _$FieldData<T> {
@@ -77,6 +77,21 @@ extension FieldDataExt<T> on FieldData<T> {
     try {
       final dateFormat = dateTimeShowFormat ?? DateFormat('yyyy/MM/dd');
       return dateFormat.parse(controller!.text);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  TimeOfDay? get selectedTime {
+    if (type != FieldType.time) {
+      return null;
+    }
+    if (controller?.text.isEmpty ?? true) {
+      return null;
+    }
+    try {
+      final dateFormat = dateTimeShowFormat ?? DateFormat('hh:mm a');
+      return TimeOfDay.fromDateTime(dateFormat.parse(controller!.text));
     } catch (e) {
       return null;
     }

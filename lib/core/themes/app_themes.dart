@@ -50,7 +50,7 @@ sealed class AppThemes {
       //   //   fillColor: AppColors.light,
       //   //   filled: true,
       //   //   contentPadding: const EdgeInsets.all(20),
-      errorStyle: AppStyles.text14Px.poppins400.error,
+      errorStyle: AppStyles.text14Px.poppins.w400.error,
       border: const OutlineInputBorder(
         borderSide: BorderSide.none,
         borderRadius: BorderRadius.all(Radius.circular(8)),

@@ -53,7 +53,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           focusNode: FocusNode(),
           decoration: InputDecoration(
             hintText: 'Building/Flat Name & Number',
-            hintStyle: AppStyles.text14Px.poppins400.textGrey,
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               borderSide: BorderSide(color: AppColors.borderGrey),
@@ -80,7 +80,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           focusNode: FocusNode(),
           decoration: InputDecoration(
             hintText: 'Street / Road Name',
-            hintStyle: AppStyles.text14Px.poppins400.textGrey,
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               borderSide: BorderSide(color: AppColors.borderGrey),
@@ -108,7 +108,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           },
           decoration: InputDecoration(
             hintText: 'City',
-            hintStyle: AppStyles.text14Px.poppins400.textGrey,
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               borderSide: BorderSide(color: AppColors.borderGrey),
@@ -136,7 +136,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           },
           decoration: InputDecoration(
             hintText: 'State',
-            hintStyle: AppStyles.text14Px.poppins400.textGrey,
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               borderSide: BorderSide(color: AppColors.borderGrey),
@@ -161,7 +161,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           },
           decoration: InputDecoration(
             hintText: 'PIN / ZIP Code',
-            hintStyle: AppStyles.text14Px.poppins400.textGrey,
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               borderSide: BorderSide(color: AppColors.borderGrey),
@@ -189,7 +189,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           },
           decoration: InputDecoration(
             hintText: 'Enter your contact number',
-            hintStyle: AppStyles.text14Px.poppins400.textGrey,
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               borderSide: BorderSide(color: AppColors.borderGrey),
@@ -225,7 +225,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           },
           decoration: InputDecoration(
             hintText: 'Enter your email address',
-            hintStyle: AppStyles.text14Px.poppins400.textGrey,
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               borderSide: BorderSide(color: AppColors.borderGrey),
@@ -391,7 +391,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                     Flexible(
                       child: Text(
                         'Use your current location',
-                        style: AppStyles.text14Px.poppins600.dark,
+                        style: AppStyles.text14Px.poppins.w600.dark,
                       ),
                     ),
                   ],
@@ -422,12 +422,12 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                         const SizedBox(height: 26),
                         Text(
                           'Location not found',
-                          style: AppStyles.text16Px.poppins800.dark,
+                          style: AppStyles.text16Px.poppins.w800.dark,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Please search for a valid location',
-                          style: AppStyles.text12Px.poppins400.textGrey,
+                          style: AppStyles.text12Px.poppins.w400.textGrey,
                         ),
                       ],
                     );
@@ -510,7 +510,8 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                                             style:
                                                 AppStyles
                                                     .text14Px
-                                                    .poppins600
+                                                    .poppins
+                                                    .w600
                                                     .dark,
                                           ),
                                         if (secondaryText.isNotEmpty &&
@@ -522,7 +523,8 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                                             style:
                                                 AppStyles
                                                     .text12Px
-                                                    .poppins400
+                                                    .poppins
+                                                    .w400
                                                     .textGrey,
                                           ),
                                       ],

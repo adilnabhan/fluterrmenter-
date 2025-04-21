@@ -238,10 +238,12 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
                                                 isSelected
                                                     ? AppStyles
                                                         .text14Px
-                                                        .poppins500
+                                                        .poppins
+                                                        .w500
                                                     : AppStyles
                                                         .text14Px
-                                                        .poppins400,
+                                                        .poppins
+                                                        .w400,
                                           ),
                                         ).pxy(x: 16),
                                       ),

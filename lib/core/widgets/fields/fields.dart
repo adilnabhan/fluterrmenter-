@@ -5,5 +5,4 @@ export 'image_field.dart';
 export 'radio_field.dart';
 export 'search_checkbox_field.dart';
 export 'time_field.dart';
-export 'time_picker_field.dart';
 export 'word_field.dart';

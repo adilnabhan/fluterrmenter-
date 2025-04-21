@@ -23,12 +23,12 @@ class _GymPhotosCollectingScreenState extends State<GymPhotosCollectingScreen> {
           const SizedBox(height: 28),
           Text(
             'Use your current location',
-            style: AppStyles.text16Px.poppins700.dark,
+            style: AppStyles.text16Px.poppins.w700.dark,
           ),
           const SizedBox(height: 4),
           Text(
             'How your gym’s equipment, ambiance, trainers, & more.',
-            style: AppStyles.text12Px.poppins400.textGrey,
+            style: AppStyles.text12Px.poppins.w400.textGrey,
           ),
           const SizedBox(height: 18),
           GridView.builder(

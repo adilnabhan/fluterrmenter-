@@ -32,7 +32,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         focusNode: FocusNode(),
         decoration: InputDecoration(
           hintText: 'Enter your first name',
-          hintStyle: AppStyles.text14Px.poppins400.textGrey,
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
           border: const OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
             borderSide: BorderSide(color: AppColors.borderGrey),
@@ -57,7 +57,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         focusNode: FocusNode(),
         decoration: InputDecoration(
           hintText: 'Enter your last name',
-          hintStyle: AppStyles.text14Px.poppins400.textGrey,
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
           border: const OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
             borderSide: BorderSide(color: AppColors.borderGrey),
@@ -86,7 +86,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         },
         decoration: InputDecoration(
           hintText: 'Enter your email address',
-          hintStyle: AppStyles.text14Px.poppins400.textGrey,
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
           border: const OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
             borderSide: BorderSide(color: AppColors.borderGrey),
@@ -127,7 +127,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             const SizedBox(height: 22),
             Text(
               'Create Account',
-              style: AppStyles.text22Px.poppins600.dark,
+              style: AppStyles.text22Px.poppins.w600.dark,
               textAlign: TextAlign.center,
             ),
             SvgPicture.asset(

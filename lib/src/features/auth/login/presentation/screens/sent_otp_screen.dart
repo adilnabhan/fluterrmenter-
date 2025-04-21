@@ -95,14 +95,14 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
         children: [
           Text(
             'Login',
-            style: AppStyles.text22Px.poppins600.copyWith(
+            style: AppStyles.text22Px.poppins.w600.copyWith(
               color: const Color(0xFF020202),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Enter your mobile number to Log in',
-            style: AppStyles.text14Px.poppins400.copyWith(
+            style: AppStyles.text14Px.poppins.w400.copyWith(
               color: const Color(0xFF666666),
             ),
           ),
@@ -130,7 +130,7 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
                     ),
                     child: Row(
                       children: [
-                        Text('+91', style: AppStyles.text14Px.poppins500),
+                        Text('+91', style: AppStyles.text14Px.poppins.w500),
                         const SizedBox(width: 8),
                         Container(
                           width: 2,
@@ -145,9 +145,8 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               hintText: 'Mobile Number',
-                              hintStyle: AppStyles.text14Px.poppins400.copyWith(
-                                color: const Color(0xFF999999),
-                              ),
+                              hintStyle: AppStyles.text14Px.poppins.w400
+                                  .copyWith(color: const Color(0xFF999999)),
                               filled: false,
                             ),
                             keyboardType: TextInputType.phone,
@@ -163,7 +162,7 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
                   if (error != null)
                     Text(
                       error.msg,
-                      style: AppStyles.text14Px.poppins400.error,
+                      style: AppStyles.text14Px.poppins.w400.error,
                     ).pOnly(top: 8),
                 ],
               );

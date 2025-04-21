@@ -36,7 +36,7 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
       focusNode: FocusNode(),
       decoration: InputDecoration(
         hintText: 'Enter your brand name',
-        hintStyle: AppStyles.text14Px.poppins400.textGrey,
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: AppColors.borderGrey),
@@ -66,7 +66,7 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
       focusNode: FocusNode(),
       decoration: InputDecoration(
         hintText: 'Select your brand category',
-        hintStyle: AppStyles.text14Px.poppins400.textGrey,
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: AppColors.borderGrey),
@@ -92,7 +92,7 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
       maxLines: 4,
       decoration: InputDecoration(
         hintText: 'Highlight key features in a sentence or two',
-        hintStyle: AppStyles.text14Px.poppins400.textGrey,
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: AppColors.borderGrey),
@@ -134,7 +134,7 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
             const SizedBox(height: 16),
             Field<String>(data: _brandCategory),
             const SizedBox(height: 16),
-            Text('Brand Logo', style: AppStyles.text14Px.poppins500.dark),
+            Text('Brand Logo', style: AppStyles.text14Px.poppins.w500.dark),
             const SizedBox(height: 8),
             BrandLogoPicker(
               isEdit: true,

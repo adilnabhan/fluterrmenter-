@@ -125,7 +125,7 @@ class _ProfileImageState extends State<ProfileImage> {
                       16.horizontalSpace,
                       Text(
                         'Click Photo',
-                        style: AppStyles.text10Px.lato400.dark,
+                        style: AppStyles.text10Px.lato.w400.dark,
                       ),
                     ],
                   ).pad(16.r),
@@ -160,7 +160,7 @@ class _ProfileImageState extends State<ProfileImage> {
                       16.horizontalSpace,
                       Text(
                         'Upload image from Gallery',
-                        style: AppStyles.text10Px.lato400.dark,
+                        style: AppStyles.text10Px.lato.w400.dark,
                       ),
                     ],
                   ).pad(16.r),

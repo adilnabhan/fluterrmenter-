@@ -66,7 +66,7 @@ class ImagePickerDialog extends StatelessWidget {
               child: Text(
                 contents[index].label,
                 textAlign: TextAlign.center,
-                style: AppStyles.text16Px.poppins400.dark,
+                style: AppStyles.text16Px.poppins.w400.dark,
               ).pxy(y: 22),
             );
           },

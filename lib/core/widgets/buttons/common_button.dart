@@ -123,7 +123,7 @@ class _ButtonState extends State<Button> {
                                   widget.title,
                                   style:
                                       widget.style ??
-                                      AppStyles.text14Px.poppins600.copyWith(
+                                      AppStyles.text14Px.poppins.w600.copyWith(
                                         color: const Color(0xff444444),
                                       ),
                                 ),
@@ -167,7 +167,7 @@ class _ButtonState extends State<Button> {
                                   widget.title,
                                   style:
                                       widget.style ??
-                                      AppStyles.text14Px.poppins600.light,
+                                      AppStyles.text14Px.poppins.w600.light,
                                 ),
                               ],
                             ),

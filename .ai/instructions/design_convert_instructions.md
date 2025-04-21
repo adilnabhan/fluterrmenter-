@@ -17,7 +17,7 @@
 
 2. **Typography**
 - Use predefined styles from [AppStyles](lib/core/themes/app_styles.dart)
-- Example: `AppStyles.text14Px.poppins400`
+- Example: `AppStyles.text14Px.poppins.w400`
 
 3. **Theming**
 - Follow [AppThemes](lib/core/themes/app_themes.dart) for consistent theming
@@ -43,9 +43,9 @@ widget.visible(isVisible: true)
 2. **Typography Extensions** ([typography_extension.dart](lib/core/extensions/typography_extension.dart))
 ```dart
 // Font weights
-text.poppins400
-text.poppins500
-text.poppins600
+text.poppins.w400
+text.poppins.w500
+text.poppins.w600
 
 // Colors
 text.dark
