@@ -1,5 +1,4 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-import 'package:mentor_mobile_app/src/features/auth/login/presentation/screens/sent_otp_screen.dart';
 
 ///* First widget integrating
 class AppView extends StatefulWidget {
