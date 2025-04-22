@@ -2,6 +2,7 @@ export 'checkbox_field.dart';
 export 'date_field.dart';
 export 'field.dart';
 export 'image_field.dart';
+export 'multi_select_field.dart';
 export 'radio_field.dart';
 export 'search_checkbox_field.dart';
 export 'time_field.dart';

@@ -163,7 +163,6 @@ class _CheckboxFieldState<T> extends State<CheckboxField<T>> with ChangeNotifier
               child: TapRegion(
                 onTapOutside: (v) {
                   final buttonBounds = Rect.fromLTWH(fildPositionInScreen.dx, fildPositionInScreen.dy, fieldSize.width, fieldSize.height);
-
                   if (buttonBounds.contains(v.localPosition)) {
                     return;
                   }

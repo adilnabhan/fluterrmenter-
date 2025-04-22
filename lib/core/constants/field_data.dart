@@ -3,7 +3,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 part 'field_data.freezed.dart';
 
 ///*
-enum FieldType { word, checkbox, radio, date, image, search, time }
+enum FieldType { word, checkbox, radio, date, image, search, time, multValues }
 
 @freezed
 class FieldData<T> with _$FieldData<T> {
@@ -11,6 +11,7 @@ class FieldData<T> with _$FieldData<T> {
     required FieldType type,
     void Function(List<({String label, T value})>)? onValueChanged,
     ValueNotifier<List<({String label, T value})>>? selectedValues,
+    ValueNotifier<List<String>>? selectedMultiValues,
     @Default(48) double tileHeight,
     @Default(4) int tileShowCount,
     @Default(8) double dividerHeight,

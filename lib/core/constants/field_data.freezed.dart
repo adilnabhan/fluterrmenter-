@@ -21,6 +21,8 @@ mixin _$FieldData<T> {
       throw _privateConstructorUsedError;
   ValueNotifier<List<({String label, T value})>>? get selectedValues =>
       throw _privateConstructorUsedError;
+  ValueNotifier<List<String>>? get selectedMultiValues =>
+      throw _privateConstructorUsedError;
   double get tileHeight => throw _privateConstructorUsedError;
   int get tileShowCount => throw _privateConstructorUsedError;
   double get dividerHeight => throw _privateConstructorUsedError;
@@ -98,6 +100,7 @@ abstract class $FieldDataCopyWith<T, $Res> {
       {FieldType type,
       void Function(List<({String label, T value})>)? onValueChanged,
       ValueNotifier<List<({String label, T value})>>? selectedValues,
+      ValueNotifier<List<String>>? selectedMultiValues,
       double tileHeight,
       int tileShowCount,
       double dividerHeight,
@@ -168,6 +171,7 @@ class _$FieldDataCopyWithImpl<T, $Res, $Val extends FieldData<T>>
     Object? type = null,
     Object? onValueChanged = freezed,
     Object? selectedValues = freezed,
+    Object? selectedMultiValues = freezed,
     Object? tileHeight = null,
     Object? tileShowCount = null,
     Object? dividerHeight = null,
@@ -232,6 +236,10 @@ class _$FieldDataCopyWithImpl<T, $Res, $Val extends FieldData<T>>
           ? _value.selectedValues
           : selectedValues // ignore: cast_nullable_to_non_nullable
               as ValueNotifier<List<({String label, T value})>>?,
+      selectedMultiValues: freezed == selectedMultiValues
+          ? _value.selectedMultiValues
+          : selectedMultiValues // ignore: cast_nullable_to_non_nullable
+              as ValueNotifier<List<String>>?,
       tileHeight: null == tileHeight
           ? _value.tileHeight
           : tileHeight // ignore: cast_nullable_to_non_nullable
@@ -448,6 +456,7 @@ abstract class _$$FieldDataImplCopyWith<T, $Res>
       {FieldType type,
       void Function(List<({String label, T value})>)? onValueChanged,
       ValueNotifier<List<({String label, T value})>>? selectedValues,
+      ValueNotifier<List<String>>? selectedMultiValues,
       double tileHeight,
       int tileShowCount,
       double dividerHeight,
@@ -516,6 +525,7 @@ class __$$FieldDataImplCopyWithImpl<T, $Res>
     Object? type = null,
     Object? onValueChanged = freezed,
     Object? selectedValues = freezed,
+    Object? selectedMultiValues = freezed,
     Object? tileHeight = null,
     Object? tileShowCount = null,
     Object? dividerHeight = null,
@@ -580,6 +590,10 @@ class __$$FieldDataImplCopyWithImpl<T, $Res>
           ? _value.selectedValues
           : selectedValues // ignore: cast_nullable_to_non_nullable
               as ValueNotifier<List<({String label, T value})>>?,
+      selectedMultiValues: freezed == selectedMultiValues
+          ? _value.selectedMultiValues
+          : selectedMultiValues // ignore: cast_nullable_to_non_nullable
+              as ValueNotifier<List<String>>?,
       tileHeight: null == tileHeight
           ? _value.tileHeight
           : tileHeight // ignore: cast_nullable_to_non_nullable
@@ -791,6 +805,7 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
       {required this.type,
       this.onValueChanged,
       this.selectedValues,
+      this.selectedMultiValues,
       this.tileHeight = 48,
       this.tileShowCount = 4,
       this.dividerHeight = 8,
@@ -850,6 +865,8 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
   final void Function(List<({String label, T value})>)? onValueChanged;
   @override
   final ValueNotifier<List<({String label, T value})>>? selectedValues;
+  @override
+  final ValueNotifier<List<String>>? selectedMultiValues;
   @override
   @JsonKey()
   final double tileHeight;
@@ -982,7 +999,7 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
 
   @override
   String toString() {
-    return 'FieldData<$T>(type: $type, onValueChanged: $onValueChanged, selectedValues: $selectedValues, tileHeight: $tileHeight, tileShowCount: $tileShowCount, dividerHeight: $dividerHeight, maxLines: $maxLines, textCapitalization: $textCapitalization, textAlign: $textAlign, autofocus: $autofocus, readOnly: $readOnly, onTapAlwaysCalled: $onTapAlwaysCalled, cursorWidth: $cursorWidth, obscureText: $obscureText, items: $items, label: $label, labelStyle: $labelStyle, requiredLabel: $requiredLabel, fieldKey: $fieldKey, controller: $controller, initialValue: $initialValue, focusNode: $focusNode, decoration: $decoration, keyboardType: $keyboardType, textInputAction: $textInputAction, style: $style, strutStyle: $strutStyle, textDirection: $textDirection, textAlignVertical: $textAlignVertical, maxLengthEnforcement: $maxLengthEnforcement, minLines: $minLines, expands: $expands, maxLength: $maxLength, onChanged: $onChanged, onTapOutside: $onTapOutside, onEditingComplete: $onEditingComplete, onSubmitted: $onSubmitted, onSaved: $onSaved, onTap: $onTap, validator: $validator, inputFormatters: $inputFormatters, enabled: $enabled, cursorHeight: $cursorHeight, cursorRadius: $cursorRadius, cursorColor: $cursorColor, cursorErrorColor: $cursorErrorColor, keyboardAppearance: $keyboardAppearance, autovalidateMode: $autovalidateMode, startTime: $startTime, endTime: $endTime, borderRadius: $borderRadius, autofillHints: $autofillHints, dateTimeShowFormat: $dateTimeShowFormat)';
+    return 'FieldData<$T>(type: $type, onValueChanged: $onValueChanged, selectedValues: $selectedValues, selectedMultiValues: $selectedMultiValues, tileHeight: $tileHeight, tileShowCount: $tileShowCount, dividerHeight: $dividerHeight, maxLines: $maxLines, textCapitalization: $textCapitalization, textAlign: $textAlign, autofocus: $autofocus, readOnly: $readOnly, onTapAlwaysCalled: $onTapAlwaysCalled, cursorWidth: $cursorWidth, obscureText: $obscureText, items: $items, label: $label, labelStyle: $labelStyle, requiredLabel: $requiredLabel, fieldKey: $fieldKey, controller: $controller, initialValue: $initialValue, focusNode: $focusNode, decoration: $decoration, keyboardType: $keyboardType, textInputAction: $textInputAction, style: $style, strutStyle: $strutStyle, textDirection: $textDirection, textAlignVertical: $textAlignVertical, maxLengthEnforcement: $maxLengthEnforcement, minLines: $minLines, expands: $expands, maxLength: $maxLength, onChanged: $onChanged, onTapOutside: $onTapOutside, onEditingComplete: $onEditingComplete, onSubmitted: $onSubmitted, onSaved: $onSaved, onTap: $onTap, validator: $validator, inputFormatters: $inputFormatters, enabled: $enabled, cursorHeight: $cursorHeight, cursorRadius: $cursorRadius, cursorColor: $cursorColor, cursorErrorColor: $cursorErrorColor, keyboardAppearance: $keyboardAppearance, autovalidateMode: $autovalidateMode, startTime: $startTime, endTime: $endTime, borderRadius: $borderRadius, autofillHints: $autofillHints, dateTimeShowFormat: $dateTimeShowFormat)';
   }
 
   @override
@@ -995,6 +1012,8 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
                 other.onValueChanged == onValueChanged) &&
             (identical(other.selectedValues, selectedValues) ||
                 other.selectedValues == selectedValues) &&
+            (identical(other.selectedMultiValues, selectedMultiValues) ||
+                other.selectedMultiValues == selectedMultiValues) &&
             (identical(other.tileHeight, tileHeight) ||
                 other.tileHeight == tileHeight) &&
             (identical(other.tileShowCount, tileShowCount) ||
@@ -1083,8 +1102,7 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
             (identical(other.endTime, endTime) || other.endTime == endTime) &&
             (identical(other.borderRadius, borderRadius) ||
                 other.borderRadius == borderRadius) &&
-            const DeepCollectionEquality()
-                .equals(other.autofillHints, autofillHints) &&
+            const DeepCollectionEquality().equals(other.autofillHints, autofillHints) &&
             (identical(other.dateTimeShowFormat, dateTimeShowFormat) || other.dateTimeShowFormat == dateTimeShowFormat));
   }
 
@@ -1094,6 +1112,7 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
         type,
         onValueChanged,
         selectedValues,
+        selectedMultiValues,
         tileHeight,
         tileShowCount,
         dividerHeight,
@@ -1160,6 +1179,7 @@ abstract class _FieldData<T> implements FieldData<T> {
       {required final FieldType type,
       final void Function(List<({String label, T value})>)? onValueChanged,
       final ValueNotifier<List<({String label, T value})>>? selectedValues,
+      final ValueNotifier<List<String>>? selectedMultiValues,
       final double tileHeight,
       final int tileShowCount,
       final double dividerHeight,
@@ -1217,6 +1237,8 @@ abstract class _FieldData<T> implements FieldData<T> {
   void Function(List<({String label, T value})>)? get onValueChanged;
   @override
   ValueNotifier<List<({String label, T value})>>? get selectedValues;
+  @override
+  ValueNotifier<List<String>>? get selectedMultiValues;
   @override
   double get tileHeight;
   @override

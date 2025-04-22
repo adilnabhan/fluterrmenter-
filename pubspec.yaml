@@ -37,7 +37,6 @@ dependencies:
   flutter_rating: ^2.0.2
   another_stepper: ^1.2.2
   easy_stepper: ^0.8.5+1
-  google_maps_flutter: ^2.10.0
   geolocator: ^13.0.3
   widget_to_marker: ^1.0.6
   flutter_spinkit: ^5.2.1
