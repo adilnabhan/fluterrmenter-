@@ -6,10 +6,7 @@ part 'verify_otp_entity.g.dart';
 
 @freezed
 class VerifyOtpEntity with _$VerifyOtpEntity {
-    const factory VerifyOtpEntity({
-        @JsonKey(name: 'message')
-        String? message,
-    }) = _VerifyOtpEntity;
+  const factory VerifyOtpEntity({@JsonKey(name: 'message') String? message}) = _VerifyOtpEntity;
 
-    factory VerifyOtpEntity.fromJson(Map<String, dynamic> json) => _$VerifyOtpEntityFromJson(json);
+  factory VerifyOtpEntity.fromJson(Map<String, dynamic> json) => _$VerifyOtpEntityFromJson(json);
 }

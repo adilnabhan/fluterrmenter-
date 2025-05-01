@@ -4,6 +4,6 @@ export 'services/services.dart';
 export 'themes/themes.dart';
 export 'widgets/widgets.dart';
 export 'api/api.dart';
-export 'api/uris/uris.dart';
+export 'api/uris/api_uris.dart';
 export 'bloc/bloc.dart';
 export 'utils/utils.dart';

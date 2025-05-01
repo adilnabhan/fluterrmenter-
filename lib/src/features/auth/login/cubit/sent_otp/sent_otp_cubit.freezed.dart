@@ -16,7 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$SentOtpState {
-  Option<Either<ApiException, void>>? get sentOtp =>
+  Option<Either<ApiException, SentOtpEntity>>? get sentOtp =>
       throw _privateConstructorUsedError;
   Option<Either<ApiException, void>>? get googleSignIn =>
       throw _privateConstructorUsedError;
@@ -35,7 +35,7 @@ abstract class $SentOtpStateCopyWith<$Res> {
       _$SentOtpStateCopyWithImpl<$Res, SentOtpState>;
   @useResult
   $Res call(
-      {Option<Either<ApiException, void>>? sentOtp,
+      {Option<Either<ApiException, SentOtpEntity>>? sentOtp,
       Option<Either<ApiException, void>>? googleSignIn});
 }
 
@@ -61,7 +61,7 @@ class _$SentOtpStateCopyWithImpl<$Res, $Val extends SentOtpState>
       sentOtp: freezed == sentOtp
           ? _value.sentOtp
           : sentOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, void>>?,
+              as Option<Either<ApiException, SentOtpEntity>>?,
       googleSignIn: freezed == googleSignIn
           ? _value.googleSignIn
           : googleSignIn // ignore: cast_nullable_to_non_nullable
@@ -79,7 +79,7 @@ abstract class _$$SentOtpStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {Option<Either<ApiException, void>>? sentOtp,
+      {Option<Either<ApiException, SentOtpEntity>>? sentOtp,
       Option<Either<ApiException, void>>? googleSignIn});
 }
 
@@ -103,7 +103,7 @@ class __$$SentOtpStateImplCopyWithImpl<$Res>
       sentOtp: freezed == sentOtp
           ? _value.sentOtp
           : sentOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, void>>?,
+              as Option<Either<ApiException, SentOtpEntity>>?,
       googleSignIn: freezed == googleSignIn
           ? _value.googleSignIn
           : googleSignIn // ignore: cast_nullable_to_non_nullable
@@ -118,7 +118,7 @@ class _$SentOtpStateImpl implements _SentOtpState {
   const _$SentOtpStateImpl({this.sentOtp, this.googleSignIn});
 
   @override
-  final Option<Either<ApiException, void>>? sentOtp;
+  final Option<Either<ApiException, SentOtpEntity>>? sentOtp;
   @override
   final Option<Either<ApiException, void>>? googleSignIn;
 
@@ -151,12 +151,12 @@ class _$SentOtpStateImpl implements _SentOtpState {
 
 abstract class _SentOtpState implements SentOtpState {
   const factory _SentOtpState(
-          {final Option<Either<ApiException, void>>? sentOtp,
+          {final Option<Either<ApiException, SentOtpEntity>>? sentOtp,
           final Option<Either<ApiException, void>>? googleSignIn}) =
       _$SentOtpStateImpl;
 
   @override
-  Option<Either<ApiException, void>>? get sentOtp;
+  Option<Either<ApiException, SentOtpEntity>>? get sentOtp;
   @override
   Option<Either<ApiException, void>>? get googleSignIn;
 

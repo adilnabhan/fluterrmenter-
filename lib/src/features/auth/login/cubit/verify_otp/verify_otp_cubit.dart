@@ -4,19 +4,15 @@ part 'verify_otp_state.dart';
 part 'verify_otp_cubit.freezed.dart';
 
 class VerifyOtpCubit extends Cubit<VerifyOtpState> {
-  VerifyOtpCubit() : super(const VerifyOtpState());
+  VerifyOtpCubit({required SentOtpEntity sentOtpEntity}) : super(VerifyOtpState(sentOtpEntity: sentOtpEntity));
 
-  Future<void> resentOtp({required String phone}) async {
-    if ((state.verifyOtp?.isNone() ?? false) ||
-        (state.resentOtp?.isNone() ?? false) ||
-        (state.resentOtpReminigTime > 0)) {
+  Future<void> resentOtp() async {
+    if ((state.verifyOtp?.isNone() ?? false) || (state.resentOtp?.isNone() ?? false) || (state.resentOtpReminigTime > 0)) {
       return;
     }
     emit(state.copyWith(resentOtp: none()));
-    // await Future<void>.delayed(const Duration(seconds: 3));
-    emit(state.copyWith(resentOtp: some(right(null))));
-    // final result = await AuthService().login(email, password);
-    // emit(state.copyWith(action: some(result)));
+    final response = await AuthRepository().sentOtp(body: {'mobile_number': state.sentOtpEntity.mobileNumber, 'process': 'login', 'source': platformSource});
+    emit(state.copyWith(resentOtp: some(response)));
   }
 
   Future<void> verifyOtp({required String otp}) async {
@@ -24,30 +20,18 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
       return;
     }
     if (otp.isEmpty) {
-      emit(
-        state.copyWith(
-          verifyOtp: some(
-            left(const ApiException.notFound(msg: 'Otp pin is required!')),
-          ),
-        ),
-      );
+      emit(state.copyWith(verifyOtp: some(left(const ApiException.notFound(msg: 'Otp pin is required!')))));
       return;
     }
     if (otp.length != 4) {
-      emit(
-        state.copyWith(
-          verifyOtp: some(
-            left(const ApiException.notFound(msg: 'Otp pin is invalid!')),
-          ),
-        ),
-      );
+      emit(state.copyWith(verifyOtp: some(left(const ApiException.notFound(msg: 'Otp pin is invalid!')))));
       return;
     }
     emit(state.copyWith(verifyOtp: none()));
-    await Future<void>.delayed(const Duration(seconds: 3));
-    emit(state.copyWith(verifyOtp: some(right(null))));
-    // final result = await AuthService().login(email, password);
-    // emit(state.copyWith(action: some(result)));
+    final response = await AuthRepository().loginWithOtp(
+      body: {'process': 'registration', 'source': platformSource, 'otp_id': state.sentOtpEntity.id, 'otp': otp, 'mobile_number': state.sentOtpEntity.mobileNumber},
+    );
+    emit(state.copyWith(verifyOtp: some(response)));
   }
 
   void startResentOtpTimer() {
@@ -59,9 +43,7 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
       if (state.resentOtpReminigTime <= 0) {
         timer.cancel();
       } else {
-        emit(
-          state.copyWith(resentOtpReminigTime: state.resentOtpReminigTime - 1),
-        );
+        emit(state.copyWith(resentOtpReminigTime: state.resentOtpReminigTime - 1));
       }
     });
   }

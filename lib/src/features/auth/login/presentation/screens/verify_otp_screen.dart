@@ -2,23 +2,18 @@ import 'package:flutter/gestures.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class VerifyOtpScreen extends StatelessWidget {
-  const VerifyOtpScreen({required this.phone, super.key});
+  const VerifyOtpScreen({required this.sentOtpEntity, super.key});
 
-  final String phone;
+  final SentOtpEntity sentOtpEntity;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => VerifyOtpCubit(),
-      child: _VerifyOtpScreen(phone: phone),
-    );
+    return BlocProvider(create: (context) => VerifyOtpCubit(sentOtpEntity: sentOtpEntity), child: const _VerifyOtpScreen());
   }
 }
 
 class _VerifyOtpScreen extends StatefulWidget {
-  const _VerifyOtpScreen({required this.phone});
-
-  final String phone;
+  const _VerifyOtpScreen();
 
   @override
   State<_VerifyOtpScreen> createState() => _VerifyOtpScreenState();
@@ -49,14 +44,25 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
       listener: (context, state) {
         state.resentOtp?.fold(
           () => null,
-          (t) => t.fold((l) {}, (r) {
-            context.read<VerifyOtpCubit>().startResentOtpTimer();
-          }),
+          (t) => t.fold(
+            (l) {
+              Dialogs.showSnack(msg: l.msg);
+            },
+            (r) {
+              context.read<VerifyOtpCubit>().startResentOtpTimer();
+            },
+          ),
         );
         state.verifyOtp?.fold(
           () => null,
           (t) => t.fold((l) {}, (r) {
-            context.push(const CreateAccountScreen());
+            if (state.sentOtpEntity.process == 'registration') {
+              context.read<AuthCubit>().addLoggedUser(r);
+              context.push(CreateAccountScreen(sentOtpEntity: state.sentOtpEntity));
+            } else if (state.sentOtpEntity.process == 'login') {
+              context.read<AuthCubit>().addLoggedUser(r);
+              context.push(const HomeScreen());
+            }
           }),
         );
       },
@@ -66,27 +72,21 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
             const SizedBox(height: 22),
-            Text(
-              'Verify Phone',
-              style: AppStyles.text22Px.poppins.w600.dark,
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              'Enter the verification code sent to',
-              style: AppStyles.text14Px.poppins.w400.textGrey,
-              textAlign: TextAlign.center,
-            ).pxy(y: 16),
+            Text('Verify Phone', style: AppStyles.text22Px.poppins.w600.dark, textAlign: TextAlign.center),
+            Text('Enter the verification code sent to', style: AppStyles.text14Px.poppins.w400.textGrey, textAlign: TextAlign.center).pxy(y: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(widget.phone, style: AppStyles.text16Px.poppins.w500.dark),
-                IconButton(
-                  onPressed: context.pop,
-                  icon: SvgPicture.asset(
-                    'assets/images/svg/icons/pen.svg',
-                    height: 18,
-                  ),
+                BlocBuilder<VerifyOtpCubit, VerifyOtpState>(
+                  builder: (context, state) {
+                    final mobileNumber = state.sentOtpEntity.mobileNumber ?? '';
+                    if (mobileNumber.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return Text(mobileNumber, style: AppStyles.text16Px.poppins.w500.dark);
+                  },
                 ),
+                IconButton(onPressed: context.pop, icon: SvgPicture.asset('assets/images/svg/icons/pen.svg', height: 18)),
               ],
             ),
             const SizedBox(height: 40),
@@ -95,10 +95,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                 return p.verifyOtp != c.verifyOtp;
               },
               builder: (context, state) {
-                final error = state.verifyOtp?.fold(
-                  () => null,
-                  (t) => t.fold((l) => l, (r) => null),
-                );
+                final error = state.verifyOtp?.fold(() => null, (t) => t.fold((l) => l, (r) => null));
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -113,38 +110,20 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                         textStyle: AppStyles.text16Px.poppins.w500.dark,
                         decoration: BoxDecoration(
                           color: AppColors.lightGrey,
-                          border: Border.all(
-                            color:
-                                error != null
-                                    ? AppColors.error
-                                    : AppColors.borderGrey,
-                          ),
+                          border: Border.all(color: error != null ? AppColors.error : AppColors.borderGrey),
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       focusedPinTheme: PinTheme(
                         width: 65,
                         height: 65,
-                        decoration: BoxDecoration(
-                          color: AppColors.lightGrey,
-                          border: Border.all(
-                            color:
-                                error != null
-                                    ? AppColors.error
-                                    : AppColors.dark,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        decoration: BoxDecoration(color: AppColors.lightGrey, border: Border.all(color: error != null ? AppColors.error : AppColors.dark), borderRadius: BorderRadius.circular(8)),
                       ),
                       onCompleted: (pin) {
                         context.read<VerifyOtpCubit>().verifyOtp(otp: pin);
                       },
                     ),
-                    if (error != null)
-                      Text(
-                        error.msg,
-                        style: AppStyles.text14Px.poppins.w400.error,
-                      ).pOnly(top: 12),
+                    if (error != null) Text(error.msg, style: AppStyles.text14Px.poppins.w400.error).pOnly(top: 12),
                   ],
                 );
               },
@@ -159,9 +138,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                   title: 'Verify',
                   isLoading: state.verifyOtp?.isNone() ?? false,
                   ontap: () {
-                    context.read<VerifyOtpCubit>().verifyOtp(
-                      otp: _pinController.text,
-                    );
+                    context.read<VerifyOtpCubit>().verifyOtp(otp: _pinController.text);
                   },
                 );
               },
@@ -189,15 +166,11 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                 children: [
                   TextSpan(
                     text: 'Resend',
-                    style: AppStyles.text14Px.poppins.w400.textGrey.copyWith(
-                      decoration: TextDecoration.underline,
-                    ),
+                    style: AppStyles.text14Px.poppins.w400.textGrey.copyWith(decoration: TextDecoration.underline),
                     recognizer:
                         TapGestureRecognizer()
                           ..onTap = () {
-                            context.read<VerifyOtpCubit>().resentOtp(
-                              phone: widget.phone,
-                            );
+                            context.read<VerifyOtpCubit>().resentOtp();
                           },
                   ),
                 ],

@@ -68,14 +68,14 @@ final class AuthRepository {
 
    @apiSuccess {LoginWithOtpEntity} response Success response
    */
-  Future<Either<ApiException, LoginWithOtpEntity>> loginWithOtp({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, LoginSuccessEntity>> loginWithOtp({required Map<String, dynamic> body}) async {
     try {
       return await Feggy.async(
         call: Dio().post<dynamic>(ApiUris.loginWithOtp, data: body),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {
-              return right(LoginWithOtpEntity.fromJson(res.data as Map<String, dynamic>));
+              return right(LoginSuccessEntity.fromJson(res.data as Map<String, dynamic>));
             }
           }
           return left(const ApiException.unknown());
@@ -150,14 +150,14 @@ final class AuthRepository {
 
    @apiSuccess {OnboardingEntity} response Success response
    */
-  Future<Either<ApiException, OnboardingEntity>> onboarding({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, LoginSuccessEntity>> onboarding({required Map<String, dynamic> body}) async {
     try {
       return await Feggy.async(
         call: Dio().post<dynamic>(ApiUris.onboarding, data: body),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {
-              return right(OnboardingEntity.fromJson(res.data as Map<String, dynamic>));
+              return right(LoginSuccessEntity.fromJson(res.data as Map<String, dynamic>));
             }
           }
           return left(const ApiException.unknown());

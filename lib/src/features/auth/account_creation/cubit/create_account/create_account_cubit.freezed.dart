@@ -15,13 +15,29 @@ final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
-mixin _$CreateAccountState {}
+mixin _$CreateAccountState {
+  SentOtpEntity get sentOtpEntity => throw _privateConstructorUsedError;
+  Option<Either<ApiException, LoginSuccessEntity>>? get onboardingUser =>
+      throw _privateConstructorUsedError;
+
+  /// Create a copy of CreateAccountState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $CreateAccountStateCopyWith<CreateAccountState> get copyWith =>
+      throw _privateConstructorUsedError;
+}
 
 /// @nodoc
 abstract class $CreateAccountStateCopyWith<$Res> {
   factory $CreateAccountStateCopyWith(
           CreateAccountState value, $Res Function(CreateAccountState) then) =
       _$CreateAccountStateCopyWithImpl<$Res, CreateAccountState>;
+  @useResult
+  $Res call(
+      {SentOtpEntity sentOtpEntity,
+      Option<Either<ApiException, LoginSuccessEntity>>? onboardingUser});
+
+  $SentOtpEntityCopyWith<$Res> get sentOtpEntity;
 }
 
 /// @nodoc
@@ -36,13 +52,49 @@ class _$CreateAccountStateCopyWithImpl<$Res, $Val extends CreateAccountState>
 
   /// Create a copy of CreateAccountState
   /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sentOtpEntity = null,
+    Object? onboardingUser = freezed,
+  }) {
+    return _then(_value.copyWith(
+      sentOtpEntity: null == sentOtpEntity
+          ? _value.sentOtpEntity
+          : sentOtpEntity // ignore: cast_nullable_to_non_nullable
+              as SentOtpEntity,
+      onboardingUser: freezed == onboardingUser
+          ? _value.onboardingUser
+          : onboardingUser // ignore: cast_nullable_to_non_nullable
+              as Option<Either<ApiException, LoginSuccessEntity>>?,
+    ) as $Val);
+  }
+
+  /// Create a copy of CreateAccountState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $SentOtpEntityCopyWith<$Res> get sentOtpEntity {
+    return $SentOtpEntityCopyWith<$Res>(_value.sentOtpEntity, (value) {
+      return _then(_value.copyWith(sentOtpEntity: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
-abstract class _$$CreateAccountStateImplCopyWith<$Res> {
+abstract class _$$CreateAccountStateImplCopyWith<$Res>
+    implements $CreateAccountStateCopyWith<$Res> {
   factory _$$CreateAccountStateImplCopyWith(_$CreateAccountStateImpl value,
           $Res Function(_$CreateAccountStateImpl) then) =
       __$$CreateAccountStateImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {SentOtpEntity sentOtpEntity,
+      Option<Either<ApiException, LoginSuccessEntity>>? onboardingUser});
+
+  @override
+  $SentOtpEntityCopyWith<$Res> get sentOtpEntity;
 }
 
 /// @nodoc
@@ -55,28 +107,80 @@ class __$$CreateAccountStateImplCopyWithImpl<$Res>
 
   /// Create a copy of CreateAccountState
   /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sentOtpEntity = null,
+    Object? onboardingUser = freezed,
+  }) {
+    return _then(_$CreateAccountStateImpl(
+      sentOtpEntity: null == sentOtpEntity
+          ? _value.sentOtpEntity
+          : sentOtpEntity // ignore: cast_nullable_to_non_nullable
+              as SentOtpEntity,
+      onboardingUser: freezed == onboardingUser
+          ? _value.onboardingUser
+          : onboardingUser // ignore: cast_nullable_to_non_nullable
+              as Option<Either<ApiException, LoginSuccessEntity>>?,
+    ));
+  }
 }
 
 /// @nodoc
 
 class _$CreateAccountStateImpl implements _CreateAccountState {
-  const _$CreateAccountStateImpl();
+  const _$CreateAccountStateImpl(
+      {required this.sentOtpEntity, this.onboardingUser});
+
+  @override
+  final SentOtpEntity sentOtpEntity;
+  @override
+  final Option<Either<ApiException, LoginSuccessEntity>>? onboardingUser;
 
   @override
   String toString() {
-    return 'CreateAccountState()';
+    return 'CreateAccountState(sentOtpEntity: $sentOtpEntity, onboardingUser: $onboardingUser)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$CreateAccountStateImpl);
+        (other.runtimeType == runtimeType &&
+            other is _$CreateAccountStateImpl &&
+            (identical(other.sentOtpEntity, sentOtpEntity) ||
+                other.sentOtpEntity == sentOtpEntity) &&
+            (identical(other.onboardingUser, onboardingUser) ||
+                other.onboardingUser == onboardingUser));
   }
 
   @override
-  int get hashCode => runtimeType.hashCode;
+  int get hashCode => Object.hash(runtimeType, sentOtpEntity, onboardingUser);
+
+  /// Create a copy of CreateAccountState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CreateAccountStateImplCopyWith<_$CreateAccountStateImpl> get copyWith =>
+      __$$CreateAccountStateImplCopyWithImpl<_$CreateAccountStateImpl>(
+          this, _$identity);
 }
 
 abstract class _CreateAccountState implements CreateAccountState {
-  const factory _CreateAccountState() = _$CreateAccountStateImpl;
+  const factory _CreateAccountState(
+      {required final SentOtpEntity sentOtpEntity,
+      final Option<Either<ApiException, LoginSuccessEntity>>?
+          onboardingUser}) = _$CreateAccountStateImpl;
+
+  @override
+  SentOtpEntity get sentOtpEntity;
+  @override
+  Option<Either<ApiException, LoginSuccessEntity>>? get onboardingUser;
+
+  /// Create a copy of CreateAccountState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$CreateAccountStateImplCopyWith<_$CreateAccountStateImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
