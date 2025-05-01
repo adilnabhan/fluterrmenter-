@@ -1,0 +1,832 @@
+{
+	"info": {
+		"_postman_id": "fa858b6c-16ec-49ca-a2eb-86204ccb9f22",
+		"name": "authentication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42883510"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "sent_otp",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Set OTP\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('AUTHORIZATION_OTP_ID', jsonData.id);",
+									"    pm.environment.set('AUTHORIZATION_OTP_CODE', jsonData.otp);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-android",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mobile_number\": \"+917510661748\",\n    \"process\": \"login\",\n    \"source\": \"mentor-app-android\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/user/send-otp/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"send-otp",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "sent_otp",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-android",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"mobile_number\": \"+917510661748\",\n    \"process\": \"login\",\n    \"source\": \"mentor-app-android\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/user/send-otp/",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"send-otp",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Thu, 01 May 2025 07:17:14 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "117"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "POST"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "034ccb43-9936-4096"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "938d7f7889bca907-MAA"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"4ead8c0b-fbd6-4a52-97bb-7f5e130432cf\",\n    \"mobile_number\": \"+917510661748\",\n    \"process\": \"registration\",\n    \"source\": \"mentor-app-android\",\n    \"otp\": \"8324\"\n}"
+						}
+					]
+				},
+				{
+					"name": "login_with_otp",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Set Token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('TOKEN', jsonData.access);",
+									"    pm.environment.set('REFRESH_TOKEN', jsonData.refresh);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"process\": \"login\",\n    \"source\": \"mentor-app-ios\",\n    \"otp_id\": \"{{AUTHORIZATION_OTP_ID}}\",\n    \"otp\": \"{{AUTHORIZATION_OTP_CODE}}\",\n    \"mobile_number\": \"+917510661748\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/user/otp/verify/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"otp",
+								"verify",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "login_with_otp",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"process\": \"login\",\n    \"source\": \"mentor-app-ios\",\n    \"otp_id\": \"{{AUTHORIZATION_OTP_ID}}\",\n    \"otp\": \"{{AUTHORIZATION_OTP_CODE}}\",\n    \"mobile_number\": \"+917510661748\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/user/otp/verify/",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"otp",
+										"verify",
+										""
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Thu, 01 May 2025 07:21:32 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "62"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "POST"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "99454311-5da9-4628"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "938d85ca6bf5fce7-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"non_field_errors\": [\n        \"User with this mobile number does not exist!\"\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "verify_otp",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Set Token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('TOKEN', jsonData.access);",
+									"    pm.environment.set('REFRESH_TOKEN', jsonData.refresh);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-android",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"process\": \"registration\",\n    \"source\": \"mentor-app-android\",\n    \"otp_id\": \"{{AUTHORIZATION_OTP_ID}}\",\n    \"otp\": \"{{AUTHORIZATION_OTP_CODE}}\",\n    \"mobile_number\": \"+917510661748\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/user/otp/verification/registration/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"otp",
+								"verification",
+								"registration",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "verify_otp",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-android",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"process\": \"registration\",\n    \"source\": \"mentor-app-android\",\n    \"otp_id\": \"{{AUTHORIZATION_OTP_ID}}\",\n    \"otp\": \"{{AUTHORIZATION_OTP_CODE}}\",\n    \"mobile_number\": \"+917510661748\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/user/otp/verification/registration/",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"otp",
+										"verification",
+										"registration",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Thu, 01 May 2025 07:22:37 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "78"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "POST, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "c6a466f5-3860-47a2"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "938d875dae59fce7-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"message\": \"OTP verified successfully. You can now proceed with registration.\"\n}"
+						}
+					]
+				},
+				{
+					"name": "onboarding",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-android",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"kasyap@gamail.com\",\n    \"first_name\": \"kumari\",\n    \"last_name\": \"k\",\n    \"otp_id\": \"{{AUTHORIZATION_OTP_ID}}\",\n    \"mobile_number\": \"+917510661748\",\n    \"process\": \"registration\",\n    \"source\": \"mentor-app-android\",\n    \"user_role\": \"20\",\n    \"meta\":{\n        \n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/user/onboarding/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"onboarding",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "onboarding",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-android",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"kasyap@gamail.com\",\n    \"first_name\": \"kumari\",\n    \"last_name\": \"k\",\n    \"otp_id\": \"{{AUTHORIZATION_OTP_ID}}\",\n    \"mobile_number\": \"+917510661748\",\n    \"process\": \"registration\",\n    \"source\": \"mentor-app-android\",\n    \"user_role\": \"20\",\n    \"meta\":{\n        \n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/user/onboarding/",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"onboarding",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Thu, 01 May 2025 07:25:16 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "733"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "POST, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "dd4b90e9-f7f4-415d"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "csrftoken=Oyr7u79Te9Ofu0eHrMurpS9lw7iQEzhO; expires=Thu, 30 Apr 2026 07:25:16 GMT; Max-Age=31449600; Path=/; SameSite=Lax"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "sessionid=svuem805u825bc1jn258emwwg0j98bdp; expires=Thu, 15 May 2025 07:25:16 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "938d8b3ee8159149-MAA"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2MTcwNzE2LCJpYXQiOjE3NDYwODQzMTYsImp0aSI6ImI1OWE2OTE2ZmRjMDQ3ODFhMjQzZjBjYzQ0ZGJiMWM5IiwidXNlcl9pZCI6IjIiLCJ1c2VybmFtZSI6IjI5MDFlN2Y2LWYwMzgtNDFjNy05NTY1LTkzMmE3M2FhMjYzNiIsIm1vYmlsZV9udW1iZXIiOiIrOTE3NTEwNjYxNzQ4Iiwicm9sZSI6MjB9.vYIPXf1SSL0KSwegroMJwUFG8Sn6h4vOTIUuLN0AaNQ\",\n    \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0NjY4OTExNiwiaWF0IjoxNzQ2MDg0MzE2LCJqdGkiOiI3NGU0MjBjNDA4ZGY0NWY0OTYyZmFlM2VmZjIxYjI0YyIsInVzZXJfaWQiOiIyIiwidXNlcm5hbWUiOiIyOTAxZTdmNi1mMDM4LTQxYzctOTU2NS05MzJhNzNhYTI2MzYiLCJtb2JpbGVfbnVtYmVyIjoiKzkxNzUxMDY2MTc0OCIsInJvbGUiOjIwfQ.YwBNVjZYpalvI5vEFeZdgYmNQxMUA2JkDaH1XjkmO-Y\",\n    \"id\": 2,\n    \"first_name\": \"kumari\",\n    \"last_name\": \"k\",\n    \"mobile_number\": \"+917510661748\",\n    \"email\": \"kasyap@gamail.com\",\n    \"blood_group\": \"Unknown\",\n    \"last_login\": \"2025-05-01T07:25:16.166941Z\",\n    \"mentor\": {\n        \"id\": 1,\n        \"name\": \"kumari\"\n    },\n    \"customer\": null,\n    \"profile_picture\": null,\n    \"warnings\": []\n}"
+						}
+					]
+				},
+				{
+					"name": "logout",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/user/logout/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"logout",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "logout",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "JWT {{TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/user/logout/",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"logout",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Thu, 01 May 2025 07:35:24 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "42"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "POST"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "885b7d53-3528-482a"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "sessionid=\"\"; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/; SameSite=Lax"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "938d9a1b28f9f92a-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"message\": \"Logged out successfully!\"\n}"
+						}
+					]
+				}
+			]
+		}
+	]
+}

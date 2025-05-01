@@ -1,4 +1,4 @@
 {
-  "baseUrl": "https://marketplace.dn.fegno.com/api/v1",
+  "baseUrl": "https://discipl-backend.onrender.com",
   "whichEnv": "DEV"
 }
