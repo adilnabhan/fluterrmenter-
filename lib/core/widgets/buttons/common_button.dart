@@ -15,6 +15,8 @@ class Button extends StatefulWidget {
     bool isDisabled = false,
     Size? size,
     Widget? icon,
+    Color? buttonColor,
+    Color? disabledButtonColor,
   }) {
     return Button._(
       title: title,
@@ -26,24 +28,15 @@ class Button extends StatefulWidget {
       size: size,
       icon: icon,
       color: switch (isDisabled) {
-        true => AppColors.disabledButton,
-        false => AppColors.button,
+        true => disabledButtonColor ?? AppColors.disabledButton,
+        false => buttonColor ?? AppColors.button,
       },
       side: BorderSide.none,
     );
   }
 
   ///
-  factory Button.outlined({
-    required String title,
-    required void Function() ontap,
-    TextStyle? style,
-    double raduis = 8,
-    bool isLoading = false,
-    bool isDisabled = false,
-    Size? size,
-    Widget? icon,
-  }) {
+  factory Button.outlined({required String title, required void Function() ontap, TextStyle? style, double raduis = 8, bool isLoading = false, bool isDisabled = false, Size? size, Widget? icon}) {
     return Button._(
       title: title,
       ontap: ontap,
@@ -101,74 +94,40 @@ class _ButtonState extends State<Button> {
                 child: Container(
                   height: 48.h,
                   width: context.width,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.disabledButton),
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(widget.raduis),
-                  ),
+                  decoration: BoxDecoration(border: Border.all(color: AppColors.disabledButton), color: Colors.transparent, borderRadius: BorderRadius.circular(widget.raduis)),
                   child: Center(
                     child:
                         widget.isLoading
-                            ? const CupertinoActivityIndicator(
-                              color: AppColors.dark,
-                            )
+                            ? const CupertinoActivityIndicator(color: AppColors.dark)
                             : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                if (widget.icon != null) ...[
-                                  widget.icon!,
-                                  SizedBox(width: 8.w),
-                                ],
-                                Text(
-                                  widget.title,
-                                  style:
-                                      widget.style ??
-                                      AppStyles.text14Px.poppins.w600.copyWith(
-                                        color: const Color(0xff444444),
-                                      ),
-                                ),
+                                if (widget.icon != null) ...[widget.icon!, SizedBox(width: 8.w)],
+                                Text(widget.title, style: widget.style ?? AppStyles.text14Px.poppins.w600.copyWith(color: const Color(0xff444444))),
                               ],
                             ),
                   ),
                 ),
               )
               : GestureDetector(
-                onTap:
-                    (!widget.isLoading && !widget.isDisabled)
-                        ? () => widget.ontap()
-                        : null,
+                onTap: (!widget.isLoading && !widget.isDisabled) ? () => widget.ontap() : null,
                 child: Container(
                   height: 48.h,
                   width: context.width,
                   decoration: BoxDecoration(
-                    border: Border.all(
-                      color:
-                          widget.isDisabled
-                              ? AppColors.disabledButton
-                              : AppColors.button,
-                    ),
+                    border: Border.all(color: widget.isDisabled ? AppColors.disabledButton : AppColors.button),
                     color: widget.color,
                     borderRadius: BorderRadius.circular(widget.raduis),
                   ),
                   child: Center(
                     child:
                         widget.isLoading
-                            ? const CupertinoActivityIndicator(
-                              color: AppColors.light,
-                            )
+                            ? const CupertinoActivityIndicator(color: AppColors.light)
                             : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                if (widget.icon != null) ...[
-                                  widget.icon!,
-                                  SizedBox(width: 8.w),
-                                ],
-                                Text(
-                                  widget.title,
-                                  style:
-                                      widget.style ??
-                                      AppStyles.text14Px.poppins.w600.light,
-                                ),
+                                if (widget.icon != null) ...[widget.icon!, SizedBox(width: 8.w)],
+                                Text(widget.title, style: widget.style ?? AppStyles.text14Px.poppins.w600.light),
                               ],
                             ),
                   ),

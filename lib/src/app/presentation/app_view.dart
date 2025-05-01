@@ -17,10 +17,7 @@ class _AppViewState extends State<AppView> {
       // onTokenError: () => Feggy.read<LoginCubit>()?.logout(isTokenExpire: true),
       child: Sizer.init(
         child: MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => AppCubit()),
-            BlocProvider(create: (_) => AuthCubit()),
-          ],
+          providers: [BlocProvider(create: (_) => AppCubit()), BlocProvider(create: (_) => AuthCubit())],
           child: BlocBuilder<AppCubit, AppState>(
             builder: (context, state) {
               return MaterialApp(
@@ -30,7 +27,7 @@ class _AppViewState extends State<AppView> {
                 theme: AppThemes.light,
                 darkTheme: AppThemes.dark,
                 locale: state.locale,
-                home: const GymWorkingDetailsScreen(),
+                home: const SubscriptionPlanChooseScreen(),
               );
             },
           ),
