@@ -11,7 +11,7 @@ class _GymWorkingDetailsScreenState extends State<GymWorkingDetailsScreen> {
   final _weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   final _selectedWeekDays = ValueNotifier(<String>[]);
   late final List<List<FieldData<dynamic>>> _gymWorkingDetailsFields;
-  late final _socialUrlFields = [TextEditingController(), TextEditingController()];
+  late final _socialUrlFields = [TextEditingController(), TextEditingController(), TextEditingController(), TextEditingController(), TextEditingController()];
 
   @override
   void initState() {
@@ -22,6 +22,36 @@ class _GymWorkingDetailsScreenState extends State<GymWorkingDetailsScreen> {
           type: FieldType.time,
           controller: TextEditingController(),
           focusNode: FocusNode(),
+          label: 'Morning time',
+          requiredLabel: true,
+          decoration: const InputDecoration(hintText: 'Starting time'),
+          validator: (value) {
+            if (value == null) {
+              return 'Please select a time';
+            }
+            return null;
+          },
+        ),
+        FieldData<DateTime>(
+          type: FieldType.time,
+          controller: TextEditingController(),
+          focusNode: FocusNode(),
+          decoration: const InputDecoration(hintText: 'Ending time'),
+          validator: (value) {
+            if (value == null) {
+              return 'Please select a time';
+            }
+            return null;
+          },
+        ),
+      ],
+      [
+        FieldData<DateTime>(
+          type: FieldType.time,
+          controller: TextEditingController(),
+          focusNode: FocusNode(),
+          label: 'Ending time',
+          requiredLabel: true,
           decoration: const InputDecoration(hintText: 'Starting time'),
           validator: (value) {
             if (value == null) {
