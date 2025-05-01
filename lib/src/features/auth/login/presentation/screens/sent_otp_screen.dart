@@ -44,14 +44,9 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
       listener: (context, state) {
         state.sentOtp?.fold(
           () => null,
-          (t) => t.fold(
-            (l) {
-              Dialogs.showSnack(msg: l.msg);
-            },
-            (sentOtpEntity) {
-              context.push(VerifyOtpScreen(sentOtpEntity: sentOtpEntity));
-            },
-          ),
+          (t) => t.fold((l) {}, (sentOtpEntity) {
+            context.push(VerifyOtpScreen(sentOtpEntity: sentOtpEntity));
+          }),
         );
         state.googleSignIn?.fold(
           () => null,

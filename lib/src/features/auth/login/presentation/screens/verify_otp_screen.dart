@@ -57,10 +57,9 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
           () => null,
           (t) => t.fold((l) {}, (r) {
             if (state.sentOtpEntity.process == 'registration') {
-              context.read<AuthCubit>().addLoggedUser(r);
               context.push(CreateAccountScreen(sentOtpEntity: state.sentOtpEntity));
             } else if (state.sentOtpEntity.process == 'login') {
-              context.read<AuthCubit>().addLoggedUser(r);
+              context.read<AuthCubit>().addLoggedUser(r!);
               context.push(const HomeScreen());
             }
           }),

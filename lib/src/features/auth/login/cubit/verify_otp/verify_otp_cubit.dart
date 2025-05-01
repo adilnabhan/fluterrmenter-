@@ -28,10 +28,17 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
       return;
     }
     emit(state.copyWith(verifyOtp: none()));
-    final response = await AuthRepository().loginWithOtp(
-      body: {'process': 'registration', 'source': platformSource, 'otp_id': state.sentOtpEntity.id, 'otp': otp, 'mobile_number': state.sentOtpEntity.mobileNumber},
-    );
-    emit(state.copyWith(verifyOtp: some(response)));
+    if (state.sentOtpEntity.process == 'registration') {
+      final response = await AuthRepository().verifyOtp(
+        body: {'process': 'registration', 'source': platformSource, 'otp_id': state.sentOtpEntity.id, 'otp': otp, 'mobile_number': state.sentOtpEntity.mobileNumber},
+      );
+      response.fold((l) => emit(state.copyWith(verifyOtp: some(left(l)))), (r) => emit(state.copyWith(verifyOtp: some(right(null)))));
+    } else if (state.sentOtpEntity.process == 'login') {
+      final response = await AuthRepository().loginWithOtp(
+        body: {'process': 'registration', 'source': platformSource, 'otp_id': state.sentOtpEntity.id, 'otp': otp, 'mobile_number': state.sentOtpEntity.mobileNumber},
+      );
+      emit(state.copyWith(verifyOtp: some(response)));
+    }
   }
 
   void startResentOtpTimer() {

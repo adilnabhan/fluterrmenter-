@@ -17,7 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$VerifyOtpState {
   SentOtpEntity get sentOtpEntity => throw _privateConstructorUsedError;
-  Option<Either<ApiException, LoginSuccessEntity>>? get verifyOtp =>
+  Option<Either<ApiException, LoginSuccessEntity?>>? get verifyOtp =>
       throw _privateConstructorUsedError;
   Option<Either<ApiException, SentOtpEntity>>? get resentOtp =>
       throw _privateConstructorUsedError;
@@ -38,7 +38,7 @@ abstract class $VerifyOtpStateCopyWith<$Res> {
   @useResult
   $Res call(
       {SentOtpEntity sentOtpEntity,
-      Option<Either<ApiException, LoginSuccessEntity>>? verifyOtp,
+      Option<Either<ApiException, LoginSuccessEntity?>>? verifyOtp,
       Option<Either<ApiException, SentOtpEntity>>? resentOtp,
       int resentOtpReminigTime});
 
@@ -73,7 +73,7 @@ class _$VerifyOtpStateCopyWithImpl<$Res, $Val extends VerifyOtpState>
       verifyOtp: freezed == verifyOtp
           ? _value.verifyOtp
           : verifyOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LoginSuccessEntity>>?,
+              as Option<Either<ApiException, LoginSuccessEntity?>>?,
       resentOtp: freezed == resentOtp
           ? _value.resentOtp
           : resentOtp // ignore: cast_nullable_to_non_nullable
@@ -106,7 +106,7 @@ abstract class _$$VerifyOtpStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {SentOtpEntity sentOtpEntity,
-      Option<Either<ApiException, LoginSuccessEntity>>? verifyOtp,
+      Option<Either<ApiException, LoginSuccessEntity?>>? verifyOtp,
       Option<Either<ApiException, SentOtpEntity>>? resentOtp,
       int resentOtpReminigTime});
 
@@ -140,7 +140,7 @@ class __$$VerifyOtpStateImplCopyWithImpl<$Res>
       verifyOtp: freezed == verifyOtp
           ? _value.verifyOtp
           : verifyOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LoginSuccessEntity>>?,
+              as Option<Either<ApiException, LoginSuccessEntity?>>?,
       resentOtp: freezed == resentOtp
           ? _value.resentOtp
           : resentOtp // ignore: cast_nullable_to_non_nullable
@@ -165,7 +165,7 @@ class _$VerifyOtpStateImpl implements _VerifyOtpState {
   @override
   final SentOtpEntity sentOtpEntity;
   @override
-  final Option<Either<ApiException, LoginSuccessEntity>>? verifyOtp;
+  final Option<Either<ApiException, LoginSuccessEntity?>>? verifyOtp;
   @override
   final Option<Either<ApiException, SentOtpEntity>>? resentOtp;
   @override
@@ -209,14 +209,14 @@ class _$VerifyOtpStateImpl implements _VerifyOtpState {
 abstract class _VerifyOtpState implements VerifyOtpState {
   const factory _VerifyOtpState(
       {required final SentOtpEntity sentOtpEntity,
-      final Option<Either<ApiException, LoginSuccessEntity>>? verifyOtp,
+      final Option<Either<ApiException, LoginSuccessEntity?>>? verifyOtp,
       final Option<Either<ApiException, SentOtpEntity>>? resentOtp,
       final int resentOtpReminigTime}) = _$VerifyOtpStateImpl;
 
   @override
   SentOtpEntity get sentOtpEntity;
   @override
-  Option<Either<ApiException, LoginSuccessEntity>>? get verifyOtp;
+  Option<Either<ApiException, LoginSuccessEntity?>>? get verifyOtp;
   @override
   Option<Either<ApiException, SentOtpEntity>>? get resentOtp;
   @override
