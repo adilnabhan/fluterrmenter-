@@ -44,6 +44,7 @@ dependencies:
   flutter_svg_provider: ^1.0.7
   syncfusion_flutter_sliders: ^29.1.38
   syncfusion_flutter_core: ^29.1.38
+  syncfusion_flutter_calendar: ^29.1.38
 
   #* SMS Auto Fill
   smart_auth: ^3.2.0

@@ -4,8 +4,7 @@ class GymProfileCreationScreen extends StatefulWidget {
   const GymProfileCreationScreen({super.key});
 
   @override
-  State<GymProfileCreationScreen> createState() =>
-      GymProfileCreationScreenState();
+  State<GymProfileCreationScreen> createState() => GymProfileCreationScreenState();
 }
 
 class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
@@ -37,19 +36,12 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
       decoration: InputDecoration(
         hintText: 'Enter your brand name',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.borderGrey),
-        ),
+        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
       ),
     );
     _brandCategory = FieldData<String>(
       type: FieldType.radio,
-      items: [
-        (label: 'Gym', value: 'Gym'),
-        (label: 'Coaching', value: 'Coaching'),
-        (label: 'Salons', value: 'Salons'),
-      ],
+      items: [(label: 'Gym', value: 'Gym'), (label: 'Coaching', value: 'Coaching'), (label: 'Salons', value: 'Salons')],
       textInputAction: TextInputAction.next,
       label: 'Brand Category ',
       requiredLabel: true,
@@ -67,10 +59,7 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
       decoration: InputDecoration(
         hintText: 'Select your brand category',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.borderGrey),
-        ),
+        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
       ),
     );
     _brandDescription = FieldData(
@@ -93,10 +82,7 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
       decoration: InputDecoration(
         hintText: 'Highlight key features in a sentence or two',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.borderGrey),
-        ),
+        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
       ),
     );
     super.initState();
@@ -112,8 +98,7 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
   }
 
   void _onContinue() {
-    if ((_formKey.currentState?.validate() ?? false) &&
-        _selectedBrandLogo != null) {
+    if ((_formKey.currentState?.validate() ?? false) && _selectedBrandLogo != null) {
       context.push(const GymLocationDetailsScreen());
     }
   }

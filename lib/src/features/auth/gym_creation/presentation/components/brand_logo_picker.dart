@@ -1,14 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class BrandLogoPicker extends StatefulWidget {
-  const BrandLogoPicker({
-    required this.isEdit,
-    this.fit = BoxFit.cover,
-    this.url,
-    this.onChanged,
-    this.radius,
-    super.key,
-  });
+  const BrandLogoPicker({required this.isEdit, this.fit = BoxFit.cover, this.url, this.onChanged, this.radius, super.key});
 
   final String? url;
   final double? radius;
@@ -58,55 +51,25 @@ class _BrandLogoPickerState extends State<BrandLogoPicker> {
                       ///*
                       if (_localImage?.path.isNotEmpty ?? false)
                         DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10000),
-                            color: AppColors.primary,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10000),
-                            child: Image.file(
-                              File(_localImage!.path),
-                              fit: widget.fit,
-                              height: radius,
-                              width: radius,
-                            ),
-                          ).pad(1.5),
+                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10000), color: AppColors.primary),
+                          child: ClipRRect(borderRadius: BorderRadius.circular(10000), child: Image.file(File(_localImage!.path), fit: widget.fit, height: radius, width: radius)).pad(1.5),
                         )
-                      else if ((widget.url?.isNotEmpty ?? true) &&
-                          widget.url != '')
+                      else if ((widget.url?.isNotEmpty ?? true) && widget.url != '')
                         DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10000),
-                            color: AppColors.primary,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10000),
-                            child: ImageNetwork(
-                              widget.url,
-                              fit: widget.fit,
-                              errorWidget: isEmpty(radius),
-                            ).pad(1.5),
-                          ),
+                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10000), color: AppColors.primary),
+                          child: ClipRRect(borderRadius: BorderRadius.circular(10000), child: ImageNetwork(widget.url, fit: widget.fit, errorWidget: isEmpty(radius)).pad(1.5)),
                         )
                       else
                         isEmpty(radius),
 
                       ///*
-                      if (widget.onChanged != null &&
-                          widget.isEdit &&
-                          (_localImage != null || widget.url != null))
-                        SvgPicture.asset(
-                          'assets/images/svg/icons/photo_update.svg',
-                          height: 20,
-                        ).pad(1).align(Alignment.bottomRight),
+                      if (widget.onChanged != null && widget.isEdit && (_localImage != null || widget.url != null))
+                        SvgPicture.asset('assets/images/svg/icons/photo_update.svg', height: 20).pad(1).align(Alignment.bottomRight),
                     ],
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  'Upload your brand logo',
-                  style: AppStyles.text14Px.poppins.w400.textGrey,
-                ),
+                Text('Upload your brand logo', style: AppStyles.text14Px.poppins.w400.textGrey),
               ],
             ).pad(16),
           ),
@@ -116,12 +79,6 @@ class _BrandLogoPickerState extends State<BrandLogoPicker> {
   }
 
   Widget isEmpty(double radius) {
-    return CircleAvatar(
-      backgroundColor: AppColors.lightPrimary,
-      child: SvgPicture.asset(
-        'assets/images/svg/icons/camera_plus.svg',
-        height: 24,
-      ),
-    );
+    return CircleAvatar(backgroundColor: AppColors.lightPrimary, child: SvgPicture.asset('assets/images/svg/icons/camera_plus.svg', height: 24));
   }
 }
