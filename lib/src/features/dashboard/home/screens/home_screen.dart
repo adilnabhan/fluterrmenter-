@@ -13,10 +13,38 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final cards = [
-      (title: 'Active Members', color: const Color(0xff486CC2), count: 54),
-      (title: 'Total Leads & Members', color: const Color(0xff9C51BF), count: 72),
-      (title: 'Expired Members', color: const Color(0xff527F50), count: 33),
-      (title: 'Upcoming Members', color: const Color(0xffC85074), count: 42),
+      (
+        title: 'Active Members',
+        color: const Color(0xff486CC2),
+        count: 54,
+        onTap: () {
+          context.push(const ActiveMembersListingScreen());
+        },
+      ),
+      (
+        title: 'Total Leads & Members',
+        color: const Color(0xff9C51BF),
+        count: 72,
+        onTap: () {
+          context.push(const MembersAndLeadsListingScreen());
+        },
+      ),
+      (
+        title: 'Expired Members',
+        color: const Color(0xff527F50),
+        count: 33,
+        onTap: () {
+          context.push(const ExpiredMembersListingScreen());
+        },
+      ),
+      (
+        title: 'Upcoming Members',
+        color: const Color(0xffC85074),
+        count: 42,
+        onTap: () {
+          context.push(const UpcomingRenewalsListingScreen());
+        },
+      ),
     ];
     return Scaffold(
       appBar: AppBar(
@@ -35,24 +63,27 @@ class _HomeScreenState extends State<HomeScreen> {
             itemCount: cards.length,
             itemBuilder: (BuildContext context, int index) {
               final card = cards[index];
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: ColoredBox(
-                  color: card.color.withAlpha(25),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(card.count.toString(), style: AppStyles.text20Px.poppins.w800.copyWith(color: card.color)),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Flexible(child: Text(card.title, style: AppStyles.text14Px.poppins.w600.copyWith(color: card.color))),
-                          CircleAvatar(backgroundColor: card.color, radius: 18, child: const Icon(Icons.keyboard_arrow_right_outlined, color: AppColors.light)),
-                        ],
-                      ),
-                    ],
-                  ).pad(16),
+              return InkWell(
+                onTap: card.onTap,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: ColoredBox(
+                    color: card.color.withAlpha(25),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(card.count.toString(), style: AppStyles.text20Px.poppins.w800.copyWith(color: card.color)),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            Flexible(child: Text(card.title, style: AppStyles.text14Px.poppins.w600.copyWith(color: card.color))),
+                            CircleAvatar(backgroundColor: card.color, radius: 18, child: const Icon(Icons.keyboard_arrow_right_outlined, color: AppColors.light)),
+                          ],
+                        ),
+                      ],
+                    ).pad(16),
+                  ),
                 ),
               );
             },
