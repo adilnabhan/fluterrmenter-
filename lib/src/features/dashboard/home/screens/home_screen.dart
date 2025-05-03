@@ -48,7 +48,12 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: OutlinedButton.icon(onPressed: () {}, label: const Icon(Icons.keyboard_arrow_down_sharp), icon: const Text('Discpl')),
+        title: OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), side: const BorderSide(color: Color(0xffDDDDDD))),
+          onPressed: () {},
+          label: const Icon(Icons.keyboard_arrow_down_sharp, color: Color(0xff222222), size: 20),
+          icon: Text('Discpl', style: AppStyles.text14Px.poppins.copyWith(color: const Color(0xff222222))),
+        ),
         centerTitle: false,
         actions: [SvgPicture.asset('assets/images/svg/vectors/logo.svg', height: 24, width: 24).pOnly(right: 16)],
       ),
