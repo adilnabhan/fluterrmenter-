@@ -18,40 +18,19 @@ class GymLocationDetailsCubit extends Cubit<GymLocationDetailsState> {
     } on ApiException catch (e) {
       emit(state.copyWith(placeAutoCompletes: some(left(e))));
     } catch (e) {
-      emit(
-        state.copyWith(
-          placeAutoCompletes: some(left(const ApiException.unknown())),
-        ),
-      );
+      emit(state.copyWith(placeAutoCompletes: some(left(const ApiException.unknown()))));
     }
   }
 
   Future<void> getPlaceDetails({required String placeId}) async {
     try {
-      emit(
-        state.copyWith(selectedPlaceDetails: (data: none(), placeID: placeId)),
-      );
+      emit(state.copyWith(selectedPlaceDetails: (data: none(), placeID: placeId)));
       final res = await GooglePlaceRepo().placeDetails(placeId);
-      emit(
-        state.copyWith(
-          selectedPlaceDetails: (data: some(res), placeID: placeId),
-        ),
-      );
+      emit(state.copyWith(selectedPlaceDetails: (data: some(res), placeID: placeId)));
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          selectedPlaceDetails: (data: some(left(e)), placeID: placeId),
-        ),
-      );
+      emit(state.copyWith(selectedPlaceDetails: (data: some(left(e)), placeID: placeId)));
     } catch (e) {
-      emit(
-        state.copyWith(
-          selectedPlaceDetails: (
-            data: some(left(const ApiException.unknown())),
-            placeID: placeId,
-          ),
-        ),
-      );
+      emit(state.copyWith(selectedPlaceDetails: (data: some(left(const ApiException.unknown())), placeID: placeId)));
     }
   }
 
@@ -59,19 +38,12 @@ class GymLocationDetailsCubit extends Cubit<GymLocationDetailsState> {
     try {
       emit(state.copyWith(currentPlaceDetails: none()));
       final currentPosition = await LocationService().getPostion();
-      final res = await GoogleGeoCodeRepo().fromLatLong(
-        currentPosition.latitude,
-        currentPosition.longitude,
-      );
+      final res = await GoogleGeoCodeRepo().fromLatLong(currentPosition.latitude, currentPosition.longitude);
       emit(state.copyWith(currentPlaceDetails: some(res)));
     } on ApiException catch (e) {
       emit(state.copyWith(currentPlaceDetails: some(left(e))));
     } catch (e) {
-      emit(
-        state.copyWith(
-          currentPlaceDetails: some(left(const ApiException.unknown())),
-        ),
-      );
+      emit(state.copyWith(currentPlaceDetails: some(left(const ApiException.unknown()))));
     }
   }
 }

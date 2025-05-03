@@ -7,10 +7,17 @@ final class ApiUris {
   static const _baseUrl = String.fromEnvironment('baseUrl');
   static const _v1 = '$_baseUrl/api/v1/';
 
-  ///============================= AUTH MODULE =============================\\\
+  ///============================= AUTH =============================\\\
   static const sentOtp = '${_v1}user/send-otp/';
   static const loginWithOtp = '${_v1}user/otp/verify/';
   static const verifyOtp = '${_v1}user/otp/verification/registration/';
   static const onboarding = '${_v1}user/onboarding/';
   static const logout = '${_v1}user/logout/';
+
+  ///============================= Common =============================\\\
+  static const categories = '${_v1}fitnesscenter/categories/';
+  static const amenities = '${_v1}fitnesscenter/amenities/';
+
+  ///============================= Organization =============================\\\
+  static const createOrg = '${_v1}fitnesscenter/organization/create/';
 }

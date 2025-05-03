@@ -8,7 +8,14 @@ class GymPhotosCollectingScreen extends StatefulWidget {
 }
 
 class _GymPhotosCollectingScreenState extends State<GymPhotosCollectingScreen> {
+  late final GymCreationCubit _gymCreationCubit;
   final List<XFile> _images = [];
+
+  @override
+  void initState() {
+    _gymCreationCubit = context.read<GymCreationCubit>();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +83,15 @@ class _GymPhotosCollectingScreenState extends State<GymPhotosCollectingScreen> {
       floatingActionButton: SizedBox(
         width: 84,
         child: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            final error = _gymCreationCubit.addGymPhotos(gymPhotos: _images.map((e) => e.path).toList());
+            if (error != null) {
+              Dialogs.showSnack(msg: error);
+              return;
+            } else {
+              context.push(BlocProvider.value(value: _gymCreationCubit, child: const GymWorkingDetailsScreen()));
+            }
+          },
           shape: const StadiumBorder(),
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.light,

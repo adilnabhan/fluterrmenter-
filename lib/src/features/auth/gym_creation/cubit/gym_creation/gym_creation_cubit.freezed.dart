@@ -31,21 +31,9 @@ mixin _$GymCreationState {
   ///* Gym Photos
   List<String> get gymPhotos => throw _privateConstructorUsedError;
 
-  ///* Gym Working Details
-  ({
-    List<String> amenities,
-    TimeOfDay eveningEndingTime,
-    TimeOfDay eveningStartingTime,
-    String? facebook,
-    String? instagram,
-    TimeOfDay morningEndingTime,
-    TimeOfDay morningStartingTime,
-    List<String> serivicesOffering,
-    String? website,
-    String? whatsapp,
-    List<String> workingDays,
-    String? youtube
-  })? get gymWorkingDetails => throw _privateConstructorUsedError;
+  ///*
+  Option<Either<ApiException, void>>? get createOrg =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of GymCreationState
   /// with the given fields replaced by the non-null parameter values.
@@ -75,20 +63,7 @@ abstract class $GymCreationStateCopyWith<$Res> {
         String street
       })? gymLocationDetails,
       List<String> gymPhotos,
-      ({
-        List<String> amenities,
-        TimeOfDay eveningEndingTime,
-        TimeOfDay eveningStartingTime,
-        String? facebook,
-        String? instagram,
-        TimeOfDay morningEndingTime,
-        TimeOfDay morningStartingTime,
-        List<String> serivicesOffering,
-        String? website,
-        String? whatsapp,
-        List<String> workingDays,
-        String? youtube
-      })? gymWorkingDetails});
+      Option<Either<ApiException, void>>? createOrg});
 }
 
 /// @nodoc
@@ -109,7 +84,7 @@ class _$GymCreationStateCopyWithImpl<$Res, $Val extends GymCreationState>
     Object? brandDetails = freezed,
     Object? gymLocationDetails = freezed,
     Object? gymPhotos = null,
-    Object? gymWorkingDetails = freezed,
+    Object? createOrg = freezed,
   }) {
     return _then(_value.copyWith(
       brandDetails: freezed == brandDetails
@@ -135,23 +110,10 @@ class _$GymCreationStateCopyWithImpl<$Res, $Val extends GymCreationState>
           ? _value.gymPhotos
           : gymPhotos // ignore: cast_nullable_to_non_nullable
               as List<String>,
-      gymWorkingDetails: freezed == gymWorkingDetails
-          ? _value.gymWorkingDetails
-          : gymWorkingDetails // ignore: cast_nullable_to_non_nullable
-              as ({
-              List<String> amenities,
-              TimeOfDay eveningEndingTime,
-              TimeOfDay eveningStartingTime,
-              String? facebook,
-              String? instagram,
-              TimeOfDay morningEndingTime,
-              TimeOfDay morningStartingTime,
-              List<String> serivicesOffering,
-              String? website,
-              String? whatsapp,
-              List<String> workingDays,
-              String? youtube
-            })?,
+      createOrg: freezed == createOrg
+          ? _value.createOrg
+          : createOrg // ignore: cast_nullable_to_non_nullable
+              as Option<Either<ApiException, void>>?,
     ) as $Val);
   }
 }
@@ -179,20 +141,7 @@ abstract class _$$GymCreationStateImplCopyWith<$Res>
         String street
       })? gymLocationDetails,
       List<String> gymPhotos,
-      ({
-        List<String> amenities,
-        TimeOfDay eveningEndingTime,
-        TimeOfDay eveningStartingTime,
-        String? facebook,
-        String? instagram,
-        TimeOfDay morningEndingTime,
-        TimeOfDay morningStartingTime,
-        List<String> serivicesOffering,
-        String? website,
-        String? whatsapp,
-        List<String> workingDays,
-        String? youtube
-      })? gymWorkingDetails});
+      Option<Either<ApiException, void>>? createOrg});
 }
 
 /// @nodoc
@@ -211,7 +160,7 @@ class __$$GymCreationStateImplCopyWithImpl<$Res>
     Object? brandDetails = freezed,
     Object? gymLocationDetails = freezed,
     Object? gymPhotos = null,
-    Object? gymWorkingDetails = freezed,
+    Object? createOrg = freezed,
   }) {
     return _then(_$GymCreationStateImpl(
       brandDetails: freezed == brandDetails
@@ -237,23 +186,10 @@ class __$$GymCreationStateImplCopyWithImpl<$Res>
           ? _value._gymPhotos
           : gymPhotos // ignore: cast_nullable_to_non_nullable
               as List<String>,
-      gymWorkingDetails: freezed == gymWorkingDetails
-          ? _value.gymWorkingDetails
-          : gymWorkingDetails // ignore: cast_nullable_to_non_nullable
-              as ({
-              List<String> amenities,
-              TimeOfDay eveningEndingTime,
-              TimeOfDay eveningStartingTime,
-              String? facebook,
-              String? instagram,
-              TimeOfDay morningEndingTime,
-              TimeOfDay morningStartingTime,
-              List<String> serivicesOffering,
-              String? website,
-              String? whatsapp,
-              List<String> workingDays,
-              String? youtube
-            })?,
+      createOrg: freezed == createOrg
+          ? _value.createOrg
+          : createOrg // ignore: cast_nullable_to_non_nullable
+              as Option<Either<ApiException, void>>?,
     ));
   }
 }
@@ -265,7 +201,7 @@ class _$GymCreationStateImpl implements _GymCreationState {
       {this.brandDetails,
       this.gymLocationDetails,
       final List<String> gymPhotos = const [],
-      this.gymWorkingDetails})
+      this.createOrg})
       : _gymPhotos = gymPhotos;
 
   ///* Brand Details
@@ -299,26 +235,13 @@ class _$GymCreationStateImpl implements _GymCreationState {
     return EqualUnmodifiableListView(_gymPhotos);
   }
 
-  ///* Gym Working Details
+  ///*
   @override
-  final ({
-    List<String> amenities,
-    TimeOfDay eveningEndingTime,
-    TimeOfDay eveningStartingTime,
-    String? facebook,
-    String? instagram,
-    TimeOfDay morningEndingTime,
-    TimeOfDay morningStartingTime,
-    List<String> serivicesOffering,
-    String? website,
-    String? whatsapp,
-    List<String> workingDays,
-    String? youtube
-  })? gymWorkingDetails;
+  final Option<Either<ApiException, void>>? createOrg;
 
   @override
   String toString() {
-    return 'GymCreationState(brandDetails: $brandDetails, gymLocationDetails: $gymLocationDetails, gymPhotos: $gymPhotos, gymWorkingDetails: $gymWorkingDetails)';
+    return 'GymCreationState(brandDetails: $brandDetails, gymLocationDetails: $gymLocationDetails, gymPhotos: $gymPhotos, createOrg: $createOrg)';
   }
 
   @override
@@ -332,13 +255,13 @@ class _$GymCreationStateImpl implements _GymCreationState {
                 other.gymLocationDetails == gymLocationDetails) &&
             const DeepCollectionEquality()
                 .equals(other._gymPhotos, _gymPhotos) &&
-            (identical(other.gymWorkingDetails, gymWorkingDetails) ||
-                other.gymWorkingDetails == gymWorkingDetails));
+            (identical(other.createOrg, createOrg) ||
+                other.createOrg == createOrg));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, brandDetails, gymLocationDetails,
-      const DeepCollectionEquality().hash(_gymPhotos), gymWorkingDetails);
+      const DeepCollectionEquality().hash(_gymPhotos), createOrg);
 
   /// Create a copy of GymCreationState
   /// with the given fields replaced by the non-null parameter values.
@@ -352,34 +275,22 @@ class _$GymCreationStateImpl implements _GymCreationState {
 
 abstract class _GymCreationState implements GymCreationState {
   const factory _GymCreationState(
-      {final ({
-        String brandCategory,
-        String brandDescription,
-        String brandLogo,
-        String brandName
-      })? brandDetails,
-      final ({
-        String city,
-        String flatName,
-        String picode,
-        String state,
-        String street
-      })? gymLocationDetails,
-      final List<String> gymPhotos,
-      final ({
-        List<String> amenities,
-        TimeOfDay eveningEndingTime,
-        TimeOfDay eveningStartingTime,
-        String? facebook,
-        String? instagram,
-        TimeOfDay morningEndingTime,
-        TimeOfDay morningStartingTime,
-        List<String> serivicesOffering,
-        String? website,
-        String? whatsapp,
-        List<String> workingDays,
-        String? youtube
-      })? gymWorkingDetails}) = _$GymCreationStateImpl;
+          {final ({
+            String brandCategory,
+            String brandDescription,
+            String brandLogo,
+            String brandName
+          })? brandDetails,
+          final ({
+            String city,
+            String flatName,
+            String picode,
+            String state,
+            String street
+          })? gymLocationDetails,
+          final List<String> gymPhotos,
+          final Option<Either<ApiException, void>>? createOrg}) =
+      _$GymCreationStateImpl;
 
   ///* Brand Details
   @override
@@ -399,22 +310,9 @@ abstract class _GymCreationState implements GymCreationState {
   @override
   List<String> get gymPhotos;
 
-  ///* Gym Working Details
+  ///*
   @override
-  ({
-    List<String> amenities,
-    TimeOfDay eveningEndingTime,
-    TimeOfDay eveningStartingTime,
-    String? facebook,
-    String? instagram,
-    TimeOfDay morningEndingTime,
-    TimeOfDay morningStartingTime,
-    List<String> serivicesOffering,
-    String? website,
-    String? whatsapp,
-    List<String> workingDays,
-    String? youtube
-  })? get gymWorkingDetails;
+  Option<Either<ApiException, void>>? get createOrg;
 
   /// Create a copy of GymCreationState
   /// with the given fields replaced by the non-null parameter values.

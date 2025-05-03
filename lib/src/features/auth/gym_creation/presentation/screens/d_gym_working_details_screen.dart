@@ -8,6 +8,7 @@ class GymWorkingDetailsScreen extends StatefulWidget {
 }
 
 class _GymWorkingDetailsScreenState extends State<GymWorkingDetailsScreen> {
+  late final GymCreationCubit _gymCreationCubit;
   final _weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   final _selectedWeekDays = ValueNotifier(<String>[]);
   late final List<List<FieldData<dynamic>>> _gymWorkingDetailsFields;
@@ -16,6 +17,7 @@ class _GymWorkingDetailsScreenState extends State<GymWorkingDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    _gymCreationCubit = context.read<GymCreationCubit>();
     _gymWorkingDetailsFields = [
       [
         FieldData<DateTime>(
@@ -284,13 +286,39 @@ class _GymWorkingDetailsScreenState extends State<GymWorkingDetailsScreen> {
       ),
       floatingActionButton: SizedBox(
         width: 84,
-        child: FloatingActionButton(
-          onPressed: () {},
-          shape: const StadiumBorder(),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.light,
-          elevation: 0,
-          child: const Icon(Icons.keyboard_arrow_right_outlined),
+        child: BlocBuilder<GymCreationCubit, GymCreationState>(
+          bloc: _gymCreationCubit,
+          buildWhen: (previous, current) {
+            return previous.createOrg != current.createOrg;
+          },
+          builder: (context, state) {
+            return FloatingActionButton(
+              onPressed:
+                  (state.createOrg?.isNone() ?? false)
+                      ? null
+                      : () {
+                        _gymCreationCubit.createOrg(
+                          workingDays: _selectedWeekDays.value,
+                          morningStartingTime: _gymWorkingDetailsFields[0][0].selectedTime,
+                          morningEndingTime: _gymWorkingDetailsFields[0][1].selectedTime,
+                          eveningStartingTime: _gymWorkingDetailsFields[1][0].selectedTime,
+                          eveningEndingTime: _gymWorkingDetailsFields[1][1].selectedTime,
+                          serivicesOffering: _gymWorkingDetailsFields[2][0].selectedMultiValues?.value ?? [],
+                          amenities: _gymWorkingDetailsFields[3][0].selectedMultiValues?.value ?? [],
+                          website: _socialUrlFields[0].text,
+                          whatsapp: _socialUrlFields[1].text,
+                          instagram: _socialUrlFields[2].text,
+                          facebook: _socialUrlFields[3].text,
+                          youtube: _socialUrlFields[4].text,
+                        );
+                      },
+              shape: const StadiumBorder(),
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.light,
+              elevation: 0,
+              child: const Icon(Icons.keyboard_arrow_right_outlined),
+            );
+          },
         ),
       ),
     );

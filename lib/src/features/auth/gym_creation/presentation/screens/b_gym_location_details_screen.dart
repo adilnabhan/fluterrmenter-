@@ -18,7 +18,9 @@ class _GymLocationDetailsScreen extends StatefulWidget {
 }
 
 class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
-  late final GymLocationDetailsCubit _cubit;
+  late final GymLocationDetailsCubit _gymLocationCubit;
+  late final GymCreationCubit _gymCreationCubit;
+
   late final List<List<FieldData<dynamic>>> _locationDetails;
   late final FocusNode _searchFocusNode;
   late final TextEditingController _searchField;
@@ -26,7 +28,8 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
 
   @override
   void initState() {
-    _cubit = context.read<GymLocationDetailsCubit>();
+    _gymCreationCubit = context.read<GymCreationCubit>();
+    _gymLocationCubit = context.read<GymLocationDetailsCubit>();
     _searchFocusNode = FocusNode();
     _searchField = TextEditingController();
     _locationDetails = [
@@ -168,8 +171,19 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
   }
 
   void _onContinue() {
-    if (_formKey.currentState?.validate() ?? false) {
-      context.push(const _GymLocationDetailsScreen());
+    _formKey.currentState?.validate();
+    final flatName = _locationDetails[0][0].controller?.text;
+    final street = _locationDetails[1][0].controller?.text;
+    final city = _locationDetails[2][0].controller?.text;
+    final state = _locationDetails[3][0].controller?.text;
+    final picode = _locationDetails[3][1].controller?.text;
+    final error = _gymCreationCubit.addGymLocationDetails(flatName: flatName, street: street, city: city, state: state, picode: picode);
+
+    if (error != null) {
+      Dialogs.showSnack(msg: error);
+      return;
+    } else {
+      context.push(BlocProvider.value(value: _gymCreationCubit, child: const _GymLocationDetailsScreen()));
     }
   }
 
@@ -183,7 +197,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
         });
         state.selectedPlaceDetails?.data.fold(() {}, (t) {
           t.fold((l) {}, (r) {
-            _cubit.searchPlaces(q: '');
+            _gymLocationCubit.searchPlaces(q: '');
             _searchField.value = TextEditingValue(text: r.placeName ?? r.placeName ?? '');
             _searchFocusNode.unfocus();
             _locationDetails[0][0].controller?.value = TextEditingValue(text: r.placeName ?? '');
@@ -215,7 +229,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                       controller: _searchField,
                       onChanged: (value) {
                         EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {
-                          _cubit.searchPlaces(q: value);
+                          _gymLocationCubit.searchPlaces(q: value);
                         });
                       },
                       decoration: InputDecoration(
@@ -231,7 +245,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                             return InkWell(
                               onTap: () {
                                 _searchField.clear();
-                                _cubit.searchPlaces(q: '');
+                                _gymLocationCubit.searchPlaces(q: '');
                                 _searchFocusNode.unfocus();
                               },
                               child: SizedBox.square(dimension: 32, child: SvgPicture.asset('assets/images/svg/icons/close.svg', height: 32, width: 32).center),
@@ -249,7 +263,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
               const SizedBox(height: 16),
               InkWell(
                 onTap: () {
-                  _cubit.getPlaceDetailsFromCurrentLocation();
+                  _gymLocationCubit.getPlaceDetailsFromCurrentLocation();
                 },
                 child: Row(
                   children: [
@@ -300,7 +314,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                                 if (placeId == null) {
                                   return;
                                 }
-                                _cubit.getPlaceDetails(placeId: placeId);
+                                _gymLocationCubit.getPlaceDetails(placeId: placeId);
                               },
                               child: Row(
                                 children: [

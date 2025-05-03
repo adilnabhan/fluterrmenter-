@@ -1,13 +1,23 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class GymProfileCreationScreen extends StatefulWidget {
+class GymProfileCreationScreen extends StatelessWidget {
   const GymProfileCreationScreen({super.key});
 
   @override
-  State<GymProfileCreationScreen> createState() => GymProfileCreationScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(create: (context) => GymCreationCubit(), child: const _GymProfileCreationScreen());
+  }
 }
 
-class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
+class _GymProfileCreationScreen extends StatefulWidget {
+  const _GymProfileCreationScreen();
+
+  @override
+  State<_GymProfileCreationScreen> createState() => _GymProfileCreationScreenState();
+}
+
+class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
+  late final GymCreationCubit _gymCreationCubit;
   final _formKey = GlobalKey<FormState>();
   late final FieldData<dynamic> _brandName;
   late final FieldData<String> _brandCategory;
@@ -17,6 +27,7 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
 
   @override
   void initState() {
+    _gymCreationCubit = context.read<GymCreationCubit>();
     _brandName = FieldData(
       type: FieldType.word,
       textInputAction: TextInputAction.next,
@@ -98,8 +109,19 @@ class GymProfileCreationScreenState extends State<GymProfileCreationScreen> {
   }
 
   void _onContinue() {
-    if ((_formKey.currentState?.validate() ?? false) && _selectedBrandLogo != null) {
-      context.push(const GymLocationDetailsScreen());
+    _formKey.currentState?.validate();
+
+    final brandName = _brandName.controller?.text;
+    final brandCategory = _brandCategory.controller?.text;
+    final brandDescription = _brandDescription.controller?.text;
+
+    final error = _gymCreationCubit.addBrandDetails(brandName: brandName, brandCategory: brandCategory, brandDescription: brandDescription, brandLogo: _selectedBrandLogo?.path);
+
+    if (error != null) {
+      Dialogs.showSnack(msg: error);
+      return;
+    } else {
+      context.push(BlocProvider.value(value: _gymCreationCubit, child: const GymLocationDetailsScreen()));
     }
   }
 

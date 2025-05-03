@@ -12,21 +12,7 @@ class GymCreationState with _$GymCreationState {
     ///* Gym Photos
     @Default([]) List<String> gymPhotos,
 
-    ///* Gym Working Details
-    ({
-      List<String> workingDays,
-      TimeOfDay morningStartingTime,
-      TimeOfDay morningEndingTime,
-      TimeOfDay eveningStartingTime,
-      TimeOfDay eveningEndingTime,
-      List<String> serivicesOffering,
-      List<String> amenities,
-      String? website,
-      String? whatsapp,
-      String? instagram,
-      String? facebook,
-      String? youtube,
-    })?
-    gymWorkingDetails,
+    ///*
+    Option<Either<ApiException, void>>? createOrg,
   }) = _GymCreationState;
 }
