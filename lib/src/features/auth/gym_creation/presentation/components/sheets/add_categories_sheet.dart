@@ -1,7 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class AddAmenitiesSheet extends StatefulWidget {
-  const AddAmenitiesSheet({required this.selectedValues, required this.onSubmit, super.key});
+class AddCategorySheet extends StatefulWidget {
+  const AddCategorySheet({required this.selectedValues, required this.onSubmit, super.key});
 
   final List<({String value, String label})> selectedValues;
   final void Function(List<({String value, String label})> values) onSubmit;
@@ -11,10 +11,10 @@ class AddAmenitiesSheet extends StatefulWidget {
   }
 
   @override
-  State<AddAmenitiesSheet> createState() => _AddAmenitiesSheetState();
+  State<AddCategorySheet> createState() => _AddCategorySheetState();
 }
 
-class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
+class _AddCategorySheetState extends State<AddCategorySheet> {
   bool isLoading = true;
   String errorText = '';
   late final ValueNotifier<List<({String value, String label})>> _selectedValues;
@@ -33,7 +33,7 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
       errorText = '';
       this.isLoading = isLoading;
     });
-    final response = await CommonRepository().getAmenities(params: {if (q != null) 'name': q});
+    final response = await CommonRepository().getCategories(params: {if (q != null) 'name': q});
     response.fold(
       (l) {
         errorText = l.msg;
@@ -55,9 +55,9 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
   @override
   Widget build(BuildContext context) {
     return MultiSelectSheetTemplate(
-      titleText: 'Add amenities',
-      hintText: 'Search for amenities',
-      emptyText: 'No matching amenities found. Try a different search.',
+      titleText: 'Add categories',
+      hintText: 'Search for categories',
+      emptyText: 'No matching category found. Try a different search.',
       errorText: errorText,
       selectedValues: _selectedValues,
       availableValues: _filteredValues,

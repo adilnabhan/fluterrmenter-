@@ -99,7 +99,7 @@ class _GymWorkingDetailsScreenState extends State<GymWorkingDetailsScreen> {
         ),
       ],
       [
-        FieldData(
+        FieldData<String>(
           type: FieldType.multValues,
           textInputAction: TextInputAction.done,
           label: 'Amenities',
@@ -277,6 +277,19 @@ class _GymWorkingDetailsScreenState extends State<GymWorkingDetailsScreen> {
               final fields = _gymWorkingDetailsFields[index];
               if (fields.length > 1) {
                 return Row(children: [Expanded(child: Field(data: fields[0])), const SizedBox(width: 16), Expanded(child: Field(data: fields[1]))]);
+              }
+              if (fields.first.label == 'Amenities') {
+                return InkWell(
+                  onTap: () {
+                    AddCategorySheet(
+                      selectedValues: [...fields.first.selectedValues?.value.map((e) => (label: e.label, value: '${e.value}')) ?? []],
+                      onSubmit: (values) {
+                        fields.first.selectedValues?.value = [...values];
+                      },
+                    ).show(context);
+                  },
+                  child: AbsorbPointer(child: Field<String>(data: fields.first as FieldData<String>)),
+                );
               }
               return Field(data: fields.first);
             },

@@ -144,7 +144,7 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
                 isLoading: state.googleSignIn?.isNone() ?? false,
                 // ontap: context.read<SentOtpCubit>().googleSignIn,
                 ontap: () {
-                  AddServicesSheet(onSubmit: (values) {}, selectedValues: const []).show(context);
+                  AddCategorySheet(onSubmit: (values) {}, selectedValues: const []).show(context);
                 },
                 icon: SvgPicture.asset('assets/images/svg/icons/google.svg', height: 24, width: 24),
               );

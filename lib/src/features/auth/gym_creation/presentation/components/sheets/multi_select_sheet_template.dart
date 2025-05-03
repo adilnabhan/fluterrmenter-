@@ -8,12 +8,12 @@ class MultiSelectSheetTemplate extends StatelessWidget {
     required this.emptyText,
     required this.errorText,
     required this.isLoading,
-    required this.isSearching,
     required this.selectedValues,
     required this.availableValues,
     required this.onChangedField,
     required this.onRetry,
     required this.onSubmit,
+    this.isSearching = false,
     super.key,
   });
 
@@ -52,9 +52,9 @@ class MultiSelectSheetTemplate extends StatelessWidget {
           children: [
             TextField(
               onChanged: (q) {
-                EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {
-                  onChangedField(q);
-                });
+                // EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {
+                onChangedField(q);
+                // });
               },
               decoration: InputDecoration(
                 hintText: hintText,
