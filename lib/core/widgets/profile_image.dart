@@ -19,6 +19,7 @@ class _ProfileImageState extends State<ProfileImage> {
   @override
   Widget build(BuildContext context) {
     final radius = widget.radius ?? 111.r;
+    final iconSize = widget.radius != null ? widget.radius! * .4 : 42.w;
     return InkWell(
       overlayColor: const WidgetStatePropertyAll(Colors.transparent),
       onTap: () => widget.isEdit ? _showBottomSheet(context) : null,
@@ -38,10 +39,10 @@ class _ProfileImageState extends State<ProfileImage> {
             ///*
             if (widget.onChanged != null && widget.isEdit)
               Container(
-                height: 42.w,
-                width: 42.w,
-                decoration: const BoxDecoration(color: AppColors.dark, shape: BoxShape.circle),
-                child: SvgPicture.asset('assets/images/icons/camera_icon.svg').pad(10.r),
+                height: iconSize,
+                width: iconSize,
+                decoration: BoxDecoration(color: AppColors.grey, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: iconSize * 0.05)),
+                child: SvgPicture.asset('assets/images/svg/icons/camera_outlined.svg').pad(iconSize * 0.2),
               ).align(Alignment.bottomRight),
           ],
         ),
@@ -49,8 +50,11 @@ class _ProfileImageState extends State<ProfileImage> {
     ).center;
   }
 
-  SvgPicture isEmpty(double radius) {
-    return SvgPicture.asset('assets/images/svg/profile_place_holder.svg', height: radius, width: radius);
+  Widget isEmpty(double radius) {
+    return Container(
+      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: radius * 0.03)),
+      child: SvgPicture.asset('assets/images/svg/icons/person_filled.svg', height: radius, width: radius),
+    );
   }
 
   void _showBottomSheet(BuildContext context) {

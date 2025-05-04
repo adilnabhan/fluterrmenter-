@@ -73,13 +73,6 @@ final class AuthRepository {
       return await Feggy.async(
         call: Dio().post<dynamic>(ApiUris.loginWithOtp, data: body, options: Options(headers: {'X-Platform': platformSource})),
         customHandler: (error) {
-          if (error.response?.data != null && error.response!.data is List) {
-            if ((error.response!.data as List).isNotEmpty) {
-              if ((error.response!.data as List).first is String) {
-                return ApiException.network(msg: (error.response!.data as List).first as String);
-              }
-            }
-          }
           return null;
         },
         onSuccess: (res) {

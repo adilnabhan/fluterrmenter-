@@ -14,6 +14,7 @@ abstract class AppColors {
   static const Color button = Color(0xff222222);
   static const Color disabledButton = Color(0xffD0D0D0);
   static const Color error = Color(0xffFF3434);
+  static const Color grey = Color(0xffEEEEEE);
 
   // Add new colors
   static const Color textDark = Color(0xFF020202);

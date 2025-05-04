@@ -1,6 +1,4 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-import 'package:mentor_mobile_app/src/features/dashboard/home/components/calendar.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

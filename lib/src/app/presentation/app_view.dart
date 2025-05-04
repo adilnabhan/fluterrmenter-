@@ -27,8 +27,8 @@ class _AppViewState extends State<AppView> {
                 theme: AppThemes.light,
                 darkTheme: AppThemes.dark,
                 locale: state.locale,
-                home: const HomeScreen(),
-                // home: const SentOtpScreen(),
+                // home: const ProfileScreen(),
+                home: const SentOtpScreen(),
               );
             },
           ),
