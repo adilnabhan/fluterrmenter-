@@ -13,11 +13,18 @@ class _AppViewState extends State<AppView> {
   @override
   Widget build(BuildContext context) {
     return FeggyApp(
-      // token: () => 'Bearer ${Feggy.read<LoginCubit>()?.state.loginModel?.accessToken}',
+      commonErrorHandlers: (error) {
+        final nonFieldError = ApiCommonErrors.handleNonFieldError(error: error);
+        if (nonFieldError != null) {
+          return nonFieldError;
+        }
+        return null;
+      },
+      token: () => 'JWT ${Feggy.read<AppCubit>()?.state.currentUser?.access}',
       // onTokenError: () => Feggy.read<LoginCubit>()?.logout(isTokenExpire: true),
       child: Sizer.init(
         child: MultiBlocProvider(
-          providers: [BlocProvider(create: (_) => AppCubit()), BlocProvider(create: (_) => AuthCubit())],
+          providers: [BlocProvider(create: (_) => AppCubit())],
           child: BlocBuilder<AppCubit, AppState>(
             builder: (context, state) {
               return MaterialApp(
@@ -28,7 +35,17 @@ class _AppViewState extends State<AppView> {
                 darkTheme: AppThemes.dark,
                 locale: state.locale,
                 // home: const ProfileScreen(),
-                home: const SentOtpScreen(),
+                home: BlocBuilder<AppCubit, AppState>(
+                  buildWhen: (p, c) => p.currentUser != c.currentUser,
+                  builder: (context, state) {
+                    if (state.currentUser == null) {
+                      return const SentOtpScreen();
+                    } else if (state.currentUser?.isProfileCompleted == false) {
+                      return const GymProfileCreationScreen();
+                    }
+                    return const HomeScreen();
+                  },
+                ),
               );
             },
           ),

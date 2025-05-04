@@ -28,8 +28,8 @@ final class GymCreationRepository {
           return left(const ApiException.unknown());
         },
       );
-    } on ApiException {
-      return left(const ApiException.unknown());
+    } on ApiException catch (e) {
+      return left(e);
     } catch (e) {
       return left(const ApiException.unknown());
     }
