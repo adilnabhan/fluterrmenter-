@@ -17,7 +17,7 @@ final class CommonRepository {
   Future<Either<ApiException, MultiSelectDataEntity>> getCategories({required Map<String, dynamic> params}) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(ApiUris.categories, queryParameters: params, options: Options(headers: {'X-Platform': platformSource})),
+        call: Dio().get<dynamic>(ApiUris.categories, queryParameters: params, options: Options(headers: {'X-Platform': platformSource}).token),
         onSuccess: (res) {
           if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
@@ -37,7 +37,7 @@ final class CommonRepository {
   Future<Either<ApiException, MultiSelectDataEntity>> getAmenities({required Map<String, dynamic> params}) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(ApiUris.amenities, queryParameters: params, options: Options(headers: {'X-Platform': platformSource})),
+        call: Dio().get<dynamic>(ApiUris.amenities, queryParameters: params, options: Options(headers: {'X-Platform': platformSource}).token),
         onSuccess: (res) {
           if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {

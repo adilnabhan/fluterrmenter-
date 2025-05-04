@@ -387,10 +387,10 @@ packages:
     dependency: "direct main"
     description:
       name: feggy_core
-      sha256: "04c2ce774e0670fe7c45d91a4b1d338058f176f13f3e67838cf3d74ffab740b6"
+      sha256: fa3d61a8e593a19f28715b490ece4a30dc24cdcd33817c3c3ae76677ef80cd0a
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.11"
+    version: "1.0.14"
   ffi:
     dependency: transitive
     description:
