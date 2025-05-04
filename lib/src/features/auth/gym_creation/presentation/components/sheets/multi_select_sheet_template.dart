@@ -35,6 +35,7 @@ class MultiSelectSheetTemplate extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: 80,
           leading: const SizedBox.shrink(),
           leadingWidth: 0,
           centerTitle: false,
@@ -52,9 +53,9 @@ class MultiSelectSheetTemplate extends StatelessWidget {
           children: [
             TextField(
               onChanged: (q) {
-                // EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {
-                onChangedField(q);
-                // });
+                EasyDebounce.debounce('search_query', const Duration(milliseconds: 500), () {
+                  onChangedField(q);
+                });
               },
               decoration: InputDecoration(
                 hintText: hintText,

@@ -103,6 +103,7 @@ class Field<T> extends StatelessWidget {
         obscureText: data.obscureText,
         borderRadius: data.borderRadius,
         selectedValues: data.selectedValues,
+        onTap: data.onTap,
       ),
       FieldType.multValues => MultiSelectField<T>(
         key: data.fieldKey,

@@ -66,10 +66,12 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
           _filteredValues
             ..clear()
             ..addAll(_allValues);
+          setState(() {});
         } else {
           _filteredValues
             ..clear()
             ..addAll(_allValues.where((e) => e.label.toLowerCase().contains(q.toLowerCase())));
+          setState(() {});
         }
       },
       isLoading: isLoading,

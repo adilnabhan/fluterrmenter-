@@ -114,11 +114,7 @@ class _ButtonState extends State<Button> {
                 child: Container(
                   height: 48.h,
                   width: context.width,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: widget.isDisabled ? AppColors.disabledButton : AppColors.button),
-                    color: widget.color,
-                    borderRadius: BorderRadius.circular(widget.raduis),
-                  ),
+                  decoration: BoxDecoration(border: Border.all(color: widget.color), color: widget.color, borderRadius: BorderRadius.circular(widget.raduis)),
                   child: Center(
                     child:
                         widget.isLoading

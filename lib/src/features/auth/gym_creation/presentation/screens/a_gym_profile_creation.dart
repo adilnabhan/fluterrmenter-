@@ -51,11 +51,12 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
       ),
     );
     _brandCategory = FieldData<String>(
-      type: FieldType.radio,
+      type: FieldType.checkbox,
       items: [(label: 'Gym', value: 'Gym'), (label: 'Coaching', value: 'Coaching'), (label: 'Salons', value: 'Salons')],
       textInputAction: TextInputAction.next,
       label: 'Brand Category ',
       requiredLabel: true,
+      selectedValues: ValueNotifier([]),
       validator: (value) {
         if (value?.trim().isEmpty ?? true) {
           return 'Brand category is required';
@@ -104,6 +105,7 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
     super.dispose();
     _brandName.controller?.dispose();
     _brandCategory.controller?.dispose();
+    _brandCategory.selectedValues?.dispose();
     _brandName.focusNode?.dispose();
     _brandCategory.focusNode?.dispose();
   }
@@ -139,16 +141,17 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
             const SizedBox(height: 28),
             Field(data: _brandName),
             const SizedBox(height: 16),
-            InkWell(
-              onTap: () {
-                AddCategorySheet(
-                  selectedValues: _brandCategory.selectedValues?.value ?? [],
-                  onSubmit: (values) {
-                    _brandCategory.selectedValues?.value = values;
-                  },
-                ).show(context);
-              },
-              child: AbsorbPointer(child: Field<String>(data: _brandCategory)),
+            Field<String>(
+              data: _brandCategory.copyWith(
+                onTap: () {
+                  AddCategorySheet(
+                    selectedValues: _brandCategory.selectedValues?.value ?? [],
+                    onSubmit: (values) {
+                      _brandCategory.selectedValues?.value = [...values];
+                    },
+                  ).show(context);
+                },
+              ),
             ),
             const SizedBox(height: 16),
             Text('Brand Logo', style: AppStyles.text14Px.poppins.w500.dark),
