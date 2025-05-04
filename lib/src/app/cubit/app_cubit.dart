@@ -22,11 +22,7 @@ class AppCubit extends HydratedCubit<AppState> {
   }
 
   void addLoggedUser(LoginSuccessEntity user) {
-    final loggedUsers = state.loggedUsers;
-    if (loggedUsers.any((element) => element.id == user.id)) {
-      return;
-    }
-    emit(state.copyWith(loggedUsers: [...loggedUsers, user]));
+    emit(state.copyWith(loggedUsers: [...state.loggedUsers.where((e) => e.id != user.id), user], currentUser: user));
   }
 
   void removeLoggedUser(LoginSuccessEntity user) {

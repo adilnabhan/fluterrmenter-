@@ -40,7 +40,7 @@ class _AppViewState extends State<AppView> {
                   builder: (context, state) {
                     if (state.currentUser == null) {
                       return const SentOtpScreen();
-                    } else if (state.currentUser?.isProfileCompleted == false) {
+                    } else if (!(state.currentUser?.isProfileCompleted ?? false)) {
                       return const GymProfileCreationScreen();
                     }
                     return const HomeScreen();

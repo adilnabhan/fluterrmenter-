@@ -62,6 +62,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
             }
             final isLogin = state.sentOtpEntity.process == 'login';
             if (isLogin && !(r?.isProfileCompleted ?? false)) {
+              context.read<AppCubit>().addLoggedUser(r!);
               context.pushAndRemoveUntil(const GymProfileCreationScreen());
               return;
             }

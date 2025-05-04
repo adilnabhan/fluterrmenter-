@@ -46,7 +46,7 @@ mixin _$LoginSuccessEntity {
   dynamic get profilePicture => throw _privateConstructorUsedError;
   @JsonKey(name: 'warnings')
   List<dynamic>? get warnings => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_profile_completed')
+  @JsonKey(name: 'is_profile_complete')
   bool? get isProfileCompleted => throw _privateConstructorUsedError;
 
   /// Serializes this LoginSuccessEntity to a JSON map.
@@ -79,7 +79,7 @@ abstract class $LoginSuccessEntityCopyWith<$Res> {
       @JsonKey(name: 'customer') dynamic customer,
       @JsonKey(name: 'profile_picture') dynamic profilePicture,
       @JsonKey(name: 'warnings') List<dynamic>? warnings,
-      @JsonKey(name: 'is_profile_completed') bool? isProfileCompleted});
+      @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted});
 
   $MentorCopyWith<$Res>? get mentor;
 }
@@ -211,7 +211,7 @@ abstract class _$$LoginWithOtpEntityImplCopyWith<$Res>
       @JsonKey(name: 'customer') dynamic customer,
       @JsonKey(name: 'profile_picture') dynamic profilePicture,
       @JsonKey(name: 'warnings') List<dynamic>? warnings,
-      @JsonKey(name: 'is_profile_completed') bool? isProfileCompleted});
+      @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted});
 
   @override
   $MentorCopyWith<$Res>? get mentor;
@@ -323,7 +323,7 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
       @JsonKey(name: 'customer') this.customer,
       @JsonKey(name: 'profile_picture') this.profilePicture,
       @JsonKey(name: 'warnings') final List<dynamic>? warnings,
-      @JsonKey(name: 'is_profile_completed') this.isProfileCompleted})
+      @JsonKey(name: 'is_profile_complete') this.isProfileCompleted})
       : _warnings = warnings;
 
   factory _$LoginWithOtpEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -377,7 +377,7 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
   }
 
   @override
-  @JsonKey(name: 'is_profile_completed')
+  @JsonKey(name: 'is_profile_complete')
   final bool? isProfileCompleted;
 
   @override
@@ -464,7 +464,7 @@ abstract class _LoginWithOtpEntity implements LoginSuccessEntity {
       @JsonKey(name: 'customer') final dynamic customer,
       @JsonKey(name: 'profile_picture') final dynamic profilePicture,
       @JsonKey(name: 'warnings') final List<dynamic>? warnings,
-      @JsonKey(name: 'is_profile_completed')
+      @JsonKey(name: 'is_profile_complete')
       final bool? isProfileCompleted}) = _$LoginWithOtpEntityImpl;
 
   factory _LoginWithOtpEntity.fromJson(Map<String, dynamic> json) =
@@ -510,7 +510,7 @@ abstract class _LoginWithOtpEntity implements LoginSuccessEntity {
   @JsonKey(name: 'warnings')
   List<dynamic>? get warnings;
   @override
-  @JsonKey(name: 'is_profile_completed')
+  @JsonKey(name: 'is_profile_complete')
   bool? get isProfileCompleted;
 
   /// Create a copy of LoginSuccessEntity

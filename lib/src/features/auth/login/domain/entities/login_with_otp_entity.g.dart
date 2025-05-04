@@ -26,7 +26,7 @@ _$LoginWithOtpEntityImpl _$$LoginWithOtpEntityImplFromJson(
       customer: json['customer'],
       profilePicture: json['profile_picture'],
       warnings: json['warnings'] as List<dynamic>?,
-      isProfileCompleted: json['is_profile_completed'] as bool?,
+      isProfileCompleted: json['is_profile_complete'] as bool?,
     );
 
 Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
@@ -45,7 +45,7 @@ Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
       'customer': instance.customer,
       'profile_picture': instance.profilePicture,
       'warnings': instance.warnings,
-      'is_profile_completed': instance.isProfileCompleted,
+      'is_profile_complete': instance.isProfileCompleted,
     };
 
 _$MentorImpl _$$MentorImplFromJson(Map<String, dynamic> json) => _$MentorImpl(

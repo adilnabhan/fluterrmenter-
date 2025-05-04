@@ -20,7 +20,7 @@ class LoginSuccessEntity with _$LoginSuccessEntity {
     @JsonKey(name: 'customer') dynamic customer,
     @JsonKey(name: 'profile_picture') dynamic profilePicture,
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
-    @JsonKey(name: 'is_profile_completed') bool? isProfileCompleted,
+    @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
   }) = _LoginWithOtpEntity;
 
   factory LoginSuccessEntity.fromJson(Map<String, dynamic> json) => _$LoginSuccessEntityFromJson(json);
