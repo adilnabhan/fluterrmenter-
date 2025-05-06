@@ -219,9 +219,14 @@ class _GymWorkingDetailsScreenState extends State<GymWorkingDetailsScreen> {
       listener: (context, state) {
         state.createOrg?.fold(
           () {},
-          (t) => t.fold((l) {
-            Dialogs.showSnack(msg: l.msg);
-          }, (r) {}),
+          (t) => t.fold(
+            (l) {
+              Dialogs.showSnack(msg: l.msg);
+            },
+            (r) {
+              context.pushAndRemoveUntil(const GymCreationSuccessScreen());
+            },
+          ),
         );
       },
       child: Scaffold(
