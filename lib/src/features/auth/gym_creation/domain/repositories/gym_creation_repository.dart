@@ -14,10 +14,10 @@ final class GymCreationRepository {
   //* This variable for store this class object globally
   static GymCreationRepository? _instance;
 
-  Future<Either<ApiException, void>> create({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, void>> create({required FormData body}) async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(ApiUris.createOrg, data: body, options: Options(headers: {'X-Platform': platformSource})),
+        call: Dio().post<dynamic>(ApiUris.createOrg, data: body, options: Options(headers: {'X-Platform': platformSource}).token),
         onSuccess: (res) {
           if ([200, 201].contains(res.statusCode)) {
             // if (res.data != null && res.data is Map) {

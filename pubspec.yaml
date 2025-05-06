@@ -101,7 +101,7 @@ dependencies:
   fpdart: ^1.1.0
 
   #* Core
-  feggy_core: ^1.0.14
+  feggy_core: ^1.0.15
   dotted_line: ^3.2.3
 
   #* Convertion

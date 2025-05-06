@@ -124,66 +124,30 @@ class _WordFieldState extends State<WordField> {
     if ((widget.label?.isEmpty ?? true) && widget.labelStyle != null) {
       throw Exception('Label != null && Label.isEmpty != true');
     }
-    final labelStyle =
-        widget.labelStyle ?? AppStyles.text14Px.poppins.w500.dark;
-    var border =
-        widget.decoration?.border ?? context.theme.inputDecorationTheme.border;
-    var errorBorder =
-        widget.decoration?.errorBorder ??
-        context.theme.inputDecorationTheme.errorBorder;
-    var focusedBorder =
-        widget.decoration?.focusedBorder ??
-        context.theme.inputDecorationTheme.focusedBorder;
-    var enabledBorder =
-        widget.decoration?.enabledBorder ??
-        context.theme.inputDecorationTheme.enabledBorder;
-    var focusedErrorBorder =
-        widget.decoration?.focusedErrorBorder ??
-        context.theme.inputDecorationTheme.focusedErrorBorder;
-    var disabledBorder =
-        widget.decoration?.disabledBorder ??
-        context.theme.inputDecorationTheme.disabledBorder;
+    final labelStyle = widget.labelStyle ?? AppStyles.text14Px.poppins.w500.dark;
+    var border = widget.decoration?.border ?? context.theme.inputDecorationTheme.border;
+    var errorBorder = widget.decoration?.errorBorder ?? context.theme.inputDecorationTheme.errorBorder;
+    var focusedBorder = widget.decoration?.focusedBorder ?? context.theme.inputDecorationTheme.focusedBorder;
+    var enabledBorder = widget.decoration?.enabledBorder ?? context.theme.inputDecorationTheme.enabledBorder;
+    var focusedErrorBorder = widget.decoration?.focusedErrorBorder ?? context.theme.inputDecorationTheme.focusedErrorBorder;
+    var disabledBorder = widget.decoration?.disabledBorder ?? context.theme.inputDecorationTheme.disabledBorder;
     if (border is OutlineInputBorder) {
-      border = border.copyWith(
-        borderRadius: widget.borderRadius,
-        borderSide: border.borderSide,
-        gapPadding: border.gapPadding,
-      );
+      border = border.copyWith(borderRadius: widget.borderRadius, borderSide: border.borderSide, gapPadding: border.gapPadding);
     }
     if (errorBorder is OutlineInputBorder) {
-      errorBorder = errorBorder.copyWith(
-        borderRadius: widget.borderRadius,
-        borderSide: errorBorder.borderSide,
-        gapPadding: errorBorder.gapPadding,
-      );
+      errorBorder = errorBorder.copyWith(borderRadius: widget.borderRadius, borderSide: errorBorder.borderSide, gapPadding: errorBorder.gapPadding);
     }
     if (focusedBorder is OutlineInputBorder) {
-      focusedBorder = focusedBorder.copyWith(
-        borderRadius: widget.borderRadius,
-        borderSide: focusedBorder.borderSide,
-        gapPadding: focusedBorder.gapPadding,
-      );
+      focusedBorder = focusedBorder.copyWith(borderRadius: widget.borderRadius, borderSide: focusedBorder.borderSide, gapPadding: focusedBorder.gapPadding);
     }
     if (enabledBorder is OutlineInputBorder) {
-      enabledBorder = enabledBorder.copyWith(
-        borderRadius: widget.borderRadius,
-        borderSide: enabledBorder.borderSide,
-        gapPadding: enabledBorder.gapPadding,
-      );
+      enabledBorder = enabledBorder.copyWith(borderRadius: widget.borderRadius, borderSide: enabledBorder.borderSide, gapPadding: enabledBorder.gapPadding);
     }
     if (focusedErrorBorder is OutlineInputBorder) {
-      focusedErrorBorder = focusedErrorBorder.copyWith(
-        borderRadius: widget.borderRadius,
-        borderSide: focusedErrorBorder.borderSide,
-        gapPadding: focusedErrorBorder.gapPadding,
-      );
+      focusedErrorBorder = focusedErrorBorder.copyWith(borderRadius: widget.borderRadius, borderSide: focusedErrorBorder.borderSide, gapPadding: focusedErrorBorder.gapPadding);
     }
     if (disabledBorder is OutlineInputBorder) {
-      disabledBorder = disabledBorder.copyWith(
-        borderRadius: widget.borderRadius,
-        borderSide: disabledBorder.borderSide,
-        gapPadding: disabledBorder.gapPadding,
-      );
+      disabledBorder = disabledBorder.copyWith(borderRadius: widget.borderRadius, borderSide: disabledBorder.borderSide, gapPadding: disabledBorder.gapPadding);
     }
 
     return TapRegion(
@@ -202,19 +166,7 @@ class _WordFieldState extends State<WordField> {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (widget.label?.isNotEmpty ?? false) ...[
-              RichText(
-                text: TextSpan(
-                  text: widget.label ?? '',
-                  style: labelStyle,
-                  children: [
-                    if (widget.requiredLabel ?? false)
-                      TextSpan(
-                        text: '*',
-                        style: labelStyle.kcolor(AppColors.primary),
-                      ),
-                  ],
-                ),
-              ),
+              RichText(text: TextSpan(text: widget.label ?? '', style: labelStyle, children: [if (widget.requiredLabel ?? false) TextSpan(text: '*', style: labelStyle.kcolor(AppColors.primary))])),
               const SizedBox(height: 8),
             ],
             TextFormField(
@@ -222,32 +174,22 @@ class _WordFieldState extends State<WordField> {
               controller: widget.controller,
               initialValue: widget.initialValue,
               focusNode: widget.focusNode,
-              decoration: (widget.decoration ?? const InputDecoration())
-                  .copyWith(
-                    errorMaxLines: 1,
-                    border: border,
-                    errorBorder: errorBorder,
-                    focusedBorder: focusedBorder,
-                    enabledBorder: enabledBorder,
-                    focusedErrorBorder: focusedErrorBorder,
-                    disabledBorder: disabledBorder,
+              decoration: (widget.decoration ?? const InputDecoration()).copyWith(
+                errorMaxLines: 1,
+                border: border,
+                errorBorder: errorBorder,
+                focusedBorder: focusedBorder,
+                enabledBorder: enabledBorder,
+                focusedErrorBorder: focusedErrorBorder,
+                disabledBorder: disabledBorder,
 
-                    errorStyle: const TextStyle(
-                      color: Colors.transparent,
-                      fontSize: 0,
-                      height: 0,
-                    ),
-                  ),
+                errorStyle: const TextStyle(color: Colors.transparent, fontSize: 0, height: 0),
+              ),
               validator: widget.validator,
               keyboardType: widget.keyboardType,
               textCapitalization: widget.textCapitalization,
               textInputAction: widget.textInputAction,
-              style: (widget.style ?? AppStyles.text14Px.poppins.w500).copyWith(
-                color:
-                    widget.enabled ?? true
-                        ? AppColors.dark
-                        : const Color(0xff9D9A9F),
-              ),
+              style: (widget.style ?? AppStyles.text14Px.poppins.w500).copyWith(color: widget.enabled ?? true ? AppColors.dark : const Color(0xff9D9A9F)),
               strutStyle: widget.strutStyle,
               textDirection: widget.textDirection,
               textAlign: widget.textAlign,
@@ -280,14 +222,9 @@ class _WordFieldState extends State<WordField> {
 
             //*
             if (widget.controller != null && widget.validator != null)
-              switch ((errorText?.isEmpty ?? true) ||
-                  !_stateController.value.contains(WidgetState.error)) {
+              switch ((errorText?.isEmpty ?? true) || !_stateController.value.contains(WidgetState.error)) {
                 true => const SizedBox.shrink(),
-                false => Text(
-                  errorText ?? '',
-                  textAlign: TextAlign.start,
-                  style: Theme.of(context).inputDecorationTheme.errorStyle,
-                ).pxy(y: 8.r),
+                false => Text(errorText ?? '', textAlign: TextAlign.start, style: Theme.of(context).inputDecorationTheme.errorStyle).pxy(y: 8.r),
               },
           ],
         ),

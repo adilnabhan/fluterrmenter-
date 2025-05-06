@@ -18,7 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$GymCreationState {
   ///* Brand Details
   ({
-    String brandCategory,
+    List<String> brandCategory,
     String brandDescription,
     String brandLogo,
     String brandName
@@ -50,7 +50,7 @@ abstract class $GymCreationStateCopyWith<$Res> {
   @useResult
   $Res call(
       {({
-        String brandCategory,
+        List<String> brandCategory,
         String brandDescription,
         String brandLogo,
         String brandName
@@ -91,7 +91,7 @@ class _$GymCreationStateCopyWithImpl<$Res, $Val extends GymCreationState>
           ? _value.brandDetails
           : brandDetails // ignore: cast_nullable_to_non_nullable
               as ({
-              String brandCategory,
+              List<String> brandCategory,
               String brandDescription,
               String brandLogo,
               String brandName
@@ -128,7 +128,7 @@ abstract class _$$GymCreationStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {({
-        String brandCategory,
+        List<String> brandCategory,
         String brandDescription,
         String brandLogo,
         String brandName
@@ -167,7 +167,7 @@ class __$$GymCreationStateImplCopyWithImpl<$Res>
           ? _value.brandDetails
           : brandDetails // ignore: cast_nullable_to_non_nullable
               as ({
-              String brandCategory,
+              List<String> brandCategory,
               String brandDescription,
               String brandLogo,
               String brandName
@@ -207,7 +207,7 @@ class _$GymCreationStateImpl implements _GymCreationState {
   ///* Brand Details
   @override
   final ({
-    String brandCategory,
+    List<String> brandCategory,
     String brandDescription,
     String brandLogo,
     String brandName
@@ -276,7 +276,7 @@ class _$GymCreationStateImpl implements _GymCreationState {
 abstract class _GymCreationState implements GymCreationState {
   const factory _GymCreationState(
           {final ({
-            String brandCategory,
+            List<String> brandCategory,
             String brandDescription,
             String brandLogo,
             String brandName
@@ -295,7 +295,7 @@ abstract class _GymCreationState implements GymCreationState {
   ///* Brand Details
   @override
   ({
-    String brandCategory,
+    List<String> brandCategory,
     String brandDescription,
     String brandLogo,
     String brandName

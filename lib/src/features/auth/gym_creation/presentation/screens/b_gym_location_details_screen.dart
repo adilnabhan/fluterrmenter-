@@ -178,12 +178,11 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
     final state = _locationDetails[3][0].controller?.text;
     final picode = _locationDetails[3][1].controller?.text;
     final error = _gymCreationCubit.addGymLocationDetails(flatName: flatName, street: street, city: city, state: state, picode: picode);
-
     if (error != null) {
       Dialogs.showSnack(msg: error);
       return;
     } else {
-      context.push(BlocProvider.value(value: _gymCreationCubit, child: const _GymLocationDetailsScreen()));
+      context.push(BlocProvider.value(value: _gymCreationCubit, child: const GymPhotosCollectingScreen()));
     }
   }
 

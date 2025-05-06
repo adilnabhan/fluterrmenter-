@@ -20,7 +20,7 @@ class _AppViewState extends State<AppView> {
         }
         return null;
       },
-      fixedHeaders: {'X-Platform': platformSource},
+      fixedHeaders: {'X-Platform': platformSource, 'user_role': 20},
       token: () => 'JWT ${Feggy.read<AppCubit>()?.state.currentUser?.access}',
       // onTokenError: () => Feggy.read<LoginCubit>()?.logout(isTokenExpire: true),
       child: Sizer.init(

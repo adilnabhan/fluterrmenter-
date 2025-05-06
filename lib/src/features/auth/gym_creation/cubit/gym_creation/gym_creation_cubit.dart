@@ -1,12 +1,12 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-
+import 'package:dio/dio.dart' as dio;
 part 'gym_creation_state.dart';
 part 'gym_creation_cubit.freezed.dart';
 
 class GymCreationCubit extends Cubit<GymCreationState> {
   GymCreationCubit() : super(const GymCreationState());
 
-  String? addBrandDetails({String? brandName, String? brandCategory, String? brandDescription, String? brandLogo}) {
+  String? addBrandDetails({String? brandName, List<String>? brandCategory, String? brandDescription, String? brandLogo}) {
     if (brandName?.isEmpty ?? false) {
       return 'Brand name is required';
     } else if (brandCategory?.isEmpty ?? false) {
@@ -61,6 +61,7 @@ class GymCreationCubit extends Cubit<GymCreationState> {
     if (state.createOrg?.isNone() ?? false) {
       return;
     }
+    emit(state.copyWith(createOrg: none()));
     if (workingDays.isEmpty) {
       emit(state.copyWith(createOrg: some(left(const ApiException.notFound(msg: 'Working days are required')))));
       return;
@@ -84,52 +85,79 @@ class GymCreationCubit extends Cubit<GymCreationState> {
       return;
     }
     final workingDaysInLowercase = workingDays.map((day) => day.toLowerCase()).toList();
-    final response = await GymCreationRepository().create(
-      body: {
-        //* Brand Details
-        'name': state.brandDetails?.brandName,
-        'categories': [state.brandDetails?.brandCategory],
-        'description': state.brandDetails?.brandDescription,
-        'logo': state.brandDetails?.brandLogo,
-        // 'email': state.brandDetails?.brandName,
-        // 'phone_number': state.brandDetails?.brandName,
-        //* Location Details
-        'location': {
-          'building_name': state.gymLocationDetails?.flatName,
-          'street': state.gymLocationDetails?.street,
-          'city': state.gymLocationDetails?.city,
-          'state': state.gymLocationDetails?.state,
-          'pin_code': state.gymLocationDetails?.picode,
-          'latitude': '',
-          'longitude': '',
-        },
-        //* Gym Photos
-        'photos': state.gymPhotos,
+    final appState = Feggy.read<AppCubit>()?.state;
+    final formData = FormData.fromMap({
+      //* Brand Details
+      'name': state.brandDetails?.brandName,
+      'description': state.brandDetails?.brandDescription,
+      if (state.brandDetails?.brandLogo != null) 'logo': await MultipartFile.fromFile(state.brandDetails!.brandLogo),
+      if (appState?.currentUser?.email != null) 'email': appState?.currentUser?.email,
+      if (appState?.currentUser?.mobileNumber != null) 'phone_number': appState?.currentUser?.mobileNumber,
 
-        ///* Working Details
-        ///{day: tue is_open: true morning_opening_time: 06:00 morning_closing_time: 12:00 evening_opening_time: 17:00 evening_closing_time: 21:00}
-        'working_days':
-            ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) {
-              return {
-                'day': day,
-                'is_open': workingDaysInLowercase.contains(day),
-                'morning_opening_time': morningStartingTime,
-                'morning_closing_time': morningEndingTime,
-                'evening_opening_time': eveningStartingTime,
-                'evening_closing_time': eveningEndingTime,
-              };
-            }).toList(),
-        'services': serivicesOffering,
-        'amenities': amenities,
-        'social_media': [
-          if (website != null) {'platform': 'website', 'url': website},
-          if (whatsapp != null) {'platform': 'whatsapp', 'url': whatsapp},
-          if (instagram != null) {'platform': 'instagram', 'url': instagram},
-          if (facebook != null) {'platform': 'facebook', 'url': facebook},
-          if (youtube != null) {'platform': 'youtube', 'url': youtube},
-        ],
-      },
-    );
+      //* Gym Photos
+      if (state.gymPhotos.isNotEmpty) 'photos': await Future.wait(state.gymPhotos.map(MultipartFile.fromFile)),
+
+      //* Working Details
+      'working_days':
+          ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) {
+            return {
+              'day': day,
+              'is_open': workingDaysInLowercase.contains(day),
+              'morning_opening_time': '${morningStartingTime.hour.toString().padLeft(2, '0')}:${morningStartingTime.minute.toString().padLeft(2, '0')}',
+              'morning_closing_time': '${morningEndingTime.hour.toString().padLeft(2, '0')}:${morningEndingTime.minute.toString().padLeft(2, '0')}',
+              'evening_opening_time': '${eveningStartingTime.hour.toString().padLeft(2, '0')}:${eveningStartingTime.minute.toString().padLeft(2, '0')}',
+              'evening_closing_time': '${eveningEndingTime.hour.toString().padLeft(2, '0')}:${eveningEndingTime.minute.toString().padLeft(2, '0')}',
+            };
+          }).toList(),
+
+      'social_media': [
+        if (website?.isNotEmpty ?? false) {'platform': 'website', 'url': website},
+        if (whatsapp?.isNotEmpty ?? false) {'platform': 'whatsapp', 'url': whatsapp},
+        if (instagram?.isNotEmpty ?? false) {'platform': 'instagram', 'url': instagram},
+        if (facebook?.isNotEmpty ?? false) {'platform': 'facebook', 'url': facebook},
+        if (youtube?.isNotEmpty ?? false) {'platform': 'youtube', 'url': youtube},
+      ],
+    });
+    //* Brand Details
+    if (state.brandDetails?.brandCategory.isNotEmpty ?? false) {
+      for (final category in state.brandDetails!.brandCategory.asMap().entries) {
+        formData.fields.add(MapEntry('categories[${category.key}]', category.value));
+      }
+    }
+    if (serivicesOffering.isNotEmpty) {
+      for (final category in state.brandDetails!.brandCategory.asMap().entries) {
+        formData.fields.add(MapEntry('categories[${category.key}]', category.value));
+      }
+    }
+    if (amenities.isNotEmpty) {
+      for (final amenitie in amenities.asMap().entries) {
+        formData.fields.add(MapEntry('amenities[${amenitie.key}]', amenitie.value));
+      }
+    }
+    if (serivicesOffering.isNotEmpty) {
+      for (final serivice in serivicesOffering.asMap().entries) {
+        formData.fields.add(MapEntry('services[${serivice.key}]', serivice.value));
+      }
+    }
+
+    ///* Location Details
+    if (state.gymLocationDetails?.flatName.isNotEmpty ?? false) {
+      formData.fields.add(MapEntry('location.building_name', state.gymLocationDetails!.flatName));
+    }
+    if (state.gymLocationDetails?.street.isNotEmpty ?? false) {
+      formData.fields.add(MapEntry('location.street', state.gymLocationDetails!.street));
+    }
+    if (state.gymLocationDetails?.city.isNotEmpty ?? false) {
+      formData.fields.add(MapEntry('location.city', state.gymLocationDetails!.city));
+    }
+    if (state.gymLocationDetails?.state.isNotEmpty ?? false) {
+      formData.fields.add(MapEntry('location.state', state.gymLocationDetails!.state));
+    }
+    if (state.gymLocationDetails?.picode.isNotEmpty ?? false) {
+      formData.fields.add(MapEntry('location.pin_code', state.gymLocationDetails!.picode));
+    }
+
+    final response = await GymCreationRepository().create(body: formData);
     emit(state.copyWith(createOrg: some(response)));
   }
 }

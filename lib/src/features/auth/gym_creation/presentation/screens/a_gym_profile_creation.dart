@@ -52,7 +52,7 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
     );
     _brandCategory = FieldData<String>(
       type: FieldType.checkbox,
-      items: [(label: 'Gym', value: 'Gym'), (label: 'Coaching', value: 'Coaching'), (label: 'Salons', value: 'Salons')],
+      items: [],
       textInputAction: TextInputAction.next,
       label: 'Brand Category ',
       requiredLabel: true,
@@ -112,13 +112,10 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
 
   void _onContinue() {
     _formKey.currentState?.validate();
-
     final brandName = _brandName.controller?.text;
-    final brandCategory = _brandCategory.controller?.text;
+    final brandCategory = _brandCategory.selectedValues?.value.map((e) => e.value).toList() ?? <String>[];
     final brandDescription = _brandDescription.controller?.text;
-
     final error = _gymCreationCubit.addBrandDetails(brandName: brandName, brandCategory: brandCategory, brandDescription: brandDescription, brandLogo: _selectedBrandLogo?.path);
-
     if (error != null) {
       Dialogs.showSnack(msg: error);
       return;
