@@ -32,7 +32,7 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
         'mobile_number': state.sentOtpEntity.mobileNumber,
         'process': 'registration',
         'source': platformSource,
-        'user_role': 20,
+        'user_role': '20',
         'meta': <String, dynamic>{},
       },
     );

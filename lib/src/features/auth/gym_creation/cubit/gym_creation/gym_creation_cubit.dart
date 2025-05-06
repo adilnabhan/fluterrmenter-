@@ -1,5 +1,4 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-import 'package:dio/dio.dart' as dio;
 part 'gym_creation_state.dart';
 part 'gym_creation_cubit.freezed.dart';
 
