@@ -18,9 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$AppState {
   ThemeMode get themeMode => throw _privateConstructorUsedError;
   Locale get locale => throw _privateConstructorUsedError;
-  List<LoginSuccessEntity> get loggedUsers =>
-      throw _privateConstructorUsedError;
-  LoginSuccessEntity? get currentUser => throw _privateConstructorUsedError;
+  LoginSuccessModel? get currentUser => throw _privateConstructorUsedError;
 
   /// Create a copy of AppState
   /// with the given fields replaced by the non-null parameter values.
@@ -35,12 +33,9 @@ abstract class $AppStateCopyWith<$Res> {
       _$AppStateCopyWithImpl<$Res, AppState>;
   @useResult
   $Res call(
-      {ThemeMode themeMode,
-      Locale locale,
-      List<LoginSuccessEntity> loggedUsers,
-      LoginSuccessEntity? currentUser});
+      {ThemeMode themeMode, Locale locale, LoginSuccessModel? currentUser});
 
-  $LoginSuccessEntityCopyWith<$Res>? get currentUser;
+  $LoginSuccessModelCopyWith<$Res>? get currentUser;
 }
 
 /// @nodoc
@@ -60,7 +55,6 @@ class _$AppStateCopyWithImpl<$Res, $Val extends AppState>
   $Res call({
     Object? themeMode = null,
     Object? locale = null,
-    Object? loggedUsers = null,
     Object? currentUser = freezed,
   }) {
     return _then(_value.copyWith(
@@ -72,14 +66,10 @@ class _$AppStateCopyWithImpl<$Res, $Val extends AppState>
           ? _value.locale
           : locale // ignore: cast_nullable_to_non_nullable
               as Locale,
-      loggedUsers: null == loggedUsers
-          ? _value.loggedUsers
-          : loggedUsers // ignore: cast_nullable_to_non_nullable
-              as List<LoginSuccessEntity>,
       currentUser: freezed == currentUser
           ? _value.currentUser
           : currentUser // ignore: cast_nullable_to_non_nullable
-              as LoginSuccessEntity?,
+              as LoginSuccessModel?,
     ) as $Val);
   }
 
@@ -87,12 +77,12 @@ class _$AppStateCopyWithImpl<$Res, $Val extends AppState>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $LoginSuccessEntityCopyWith<$Res>? get currentUser {
+  $LoginSuccessModelCopyWith<$Res>? get currentUser {
     if (_value.currentUser == null) {
       return null;
     }
 
-    return $LoginSuccessEntityCopyWith<$Res>(_value.currentUser!, (value) {
+    return $LoginSuccessModelCopyWith<$Res>(_value.currentUser!, (value) {
       return _then(_value.copyWith(currentUser: value) as $Val);
     });
   }
@@ -107,13 +97,10 @@ abstract class _$$AppStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {ThemeMode themeMode,
-      Locale locale,
-      List<LoginSuccessEntity> loggedUsers,
-      LoginSuccessEntity? currentUser});
+      {ThemeMode themeMode, Locale locale, LoginSuccessModel? currentUser});
 
   @override
-  $LoginSuccessEntityCopyWith<$Res>? get currentUser;
+  $LoginSuccessModelCopyWith<$Res>? get currentUser;
 }
 
 /// @nodoc
@@ -131,7 +118,6 @@ class __$$AppStateImplCopyWithImpl<$Res>
   $Res call({
     Object? themeMode = null,
     Object? locale = null,
-    Object? loggedUsers = null,
     Object? currentUser = freezed,
   }) {
     return _then(_$AppStateImpl(
@@ -143,14 +129,10 @@ class __$$AppStateImplCopyWithImpl<$Res>
           ? _value.locale
           : locale // ignore: cast_nullable_to_non_nullable
               as Locale,
-      loggedUsers: null == loggedUsers
-          ? _value._loggedUsers
-          : loggedUsers // ignore: cast_nullable_to_non_nullable
-              as List<LoginSuccessEntity>,
       currentUser: freezed == currentUser
           ? _value.currentUser
           : currentUser // ignore: cast_nullable_to_non_nullable
-              as LoginSuccessEntity?,
+              as LoginSuccessModel?,
     ));
   }
 }
@@ -161,9 +143,7 @@ class _$AppStateImpl implements _AppState {
   const _$AppStateImpl(
       {this.themeMode = ThemeMode.light,
       this.locale = const Locale('en'),
-      final List<LoginSuccessEntity> loggedUsers = const [],
-      this.currentUser})
-      : _loggedUsers = loggedUsers;
+      this.currentUser});
 
   @override
   @JsonKey()
@@ -171,21 +151,12 @@ class _$AppStateImpl implements _AppState {
   @override
   @JsonKey()
   final Locale locale;
-  final List<LoginSuccessEntity> _loggedUsers;
   @override
-  @JsonKey()
-  List<LoginSuccessEntity> get loggedUsers {
-    if (_loggedUsers is EqualUnmodifiableListView) return _loggedUsers;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_loggedUsers);
-  }
-
-  @override
-  final LoginSuccessEntity? currentUser;
+  final LoginSuccessModel? currentUser;
 
   @override
   String toString() {
-    return 'AppState(themeMode: $themeMode, locale: $locale, loggedUsers: $loggedUsers, currentUser: $currentUser)';
+    return 'AppState(themeMode: $themeMode, locale: $locale, currentUser: $currentUser)';
   }
 
   @override
@@ -196,15 +167,12 @@ class _$AppStateImpl implements _AppState {
             (identical(other.themeMode, themeMode) ||
                 other.themeMode == themeMode) &&
             (identical(other.locale, locale) || other.locale == locale) &&
-            const DeepCollectionEquality()
-                .equals(other._loggedUsers, _loggedUsers) &&
             (identical(other.currentUser, currentUser) ||
                 other.currentUser == currentUser));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, themeMode, locale,
-      const DeepCollectionEquality().hash(_loggedUsers), currentUser);
+  int get hashCode => Object.hash(runtimeType, themeMode, locale, currentUser);
 
   /// Create a copy of AppState
   /// with the given fields replaced by the non-null parameter values.
@@ -219,17 +187,14 @@ abstract class _AppState implements AppState {
   const factory _AppState(
       {final ThemeMode themeMode,
       final Locale locale,
-      final List<LoginSuccessEntity> loggedUsers,
-      final LoginSuccessEntity? currentUser}) = _$AppStateImpl;
+      final LoginSuccessModel? currentUser}) = _$AppStateImpl;
 
   @override
   ThemeMode get themeMode;
   @override
   Locale get locale;
   @override
-  List<LoginSuccessEntity> get loggedUsers;
-  @override
-  LoginSuccessEntity? get currentUser;
+  LoginSuccessModel? get currentUser;
 
   /// Create a copy of AppState
   /// with the given fields replaced by the non-null parameter values.

@@ -21,40 +21,25 @@ class AppCubit extends HydratedCubit<AppState> {
     emit(state.copyWith(locale: locale));
   }
 
-  void addLoggedUser(LoginSuccessEntity user) {
-    emit(state.copyWith(loggedUsers: [...state.loggedUsers.where((e) => e.id != user.id), user], currentUser: user));
-  }
-
-  void removeLoggedUser(LoginSuccessEntity user) {
-    final loggedUsers = state.loggedUsers;
-    if (loggedUsers.isEmpty) {
-      return;
-    }
-    emit(state.copyWith(loggedUsers: loggedUsers.where((element) => element.id != user.id).toList()));
+  void addUser(LoginSuccessModel user) {
+    emit(state.copyWith(currentUser: user));
   }
 
   @override
   AppState? fromJson(Map<String, dynamic> json) {
-    final loggedUsers = (json['loggedUsers'] as List<dynamic>).map((e) => LoginSuccessEntity.fromJson(e as Map<String, dynamic>)).toList();
-    final currentUser = json['currentUser'] != null ? LoginSuccessEntity.fromJson(json['currentUser'] as Map<String, dynamic>) : null;
+    final currentUser = json['currentUser'] != null ? LoginSuccessModel.fromJson(json['currentUser'] as Map<String, dynamic>) : null;
     return AppState(
       themeMode: switch (json['theme_mode']) {
         'dark' => ThemeMode.dark,
         _ => ThemeMode.light,
       },
       locale: Locale(json['language_code'] as String),
-      loggedUsers: loggedUsers,
       currentUser: currentUser,
     );
   }
 
   @override
   Map<String, dynamic>? toJson(AppState state) {
-    return {
-      'theme_mode': state.themeMode.name,
-      'language_code': state.locale.languageCode,
-      'loggedUsers': state.loggedUsers.map((e) => e.toJson()).toList(),
-      'currentUser': state.currentUser?.toJson(),
-    };
+    return {'theme_mode': state.themeMode.name, 'language_code': state.locale.languageCode, 'currentUser': state.currentUser?.toJson()};
   }
 }

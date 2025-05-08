@@ -17,7 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$CreateAccountState {
   SentOtpEntity get sentOtpEntity => throw _privateConstructorUsedError;
-  Option<Either<ApiException, LoginSuccessEntity>>? get onboardingUser =>
+  Option<Either<ApiException, LoginSuccessModel>>? get onboardingUser =>
       throw _privateConstructorUsedError;
 
   /// Create a copy of CreateAccountState
@@ -35,7 +35,7 @@ abstract class $CreateAccountStateCopyWith<$Res> {
   @useResult
   $Res call(
       {SentOtpEntity sentOtpEntity,
-      Option<Either<ApiException, LoginSuccessEntity>>? onboardingUser});
+      Option<Either<ApiException, LoginSuccessModel>>? onboardingUser});
 
   $SentOtpEntityCopyWith<$Res> get sentOtpEntity;
 }
@@ -66,7 +66,7 @@ class _$CreateAccountStateCopyWithImpl<$Res, $Val extends CreateAccountState>
       onboardingUser: freezed == onboardingUser
           ? _value.onboardingUser
           : onboardingUser // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LoginSuccessEntity>>?,
+              as Option<Either<ApiException, LoginSuccessModel>>?,
     ) as $Val);
   }
 
@@ -91,7 +91,7 @@ abstract class _$$CreateAccountStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {SentOtpEntity sentOtpEntity,
-      Option<Either<ApiException, LoginSuccessEntity>>? onboardingUser});
+      Option<Either<ApiException, LoginSuccessModel>>? onboardingUser});
 
   @override
   $SentOtpEntityCopyWith<$Res> get sentOtpEntity;
@@ -121,7 +121,7 @@ class __$$CreateAccountStateImplCopyWithImpl<$Res>
       onboardingUser: freezed == onboardingUser
           ? _value.onboardingUser
           : onboardingUser // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LoginSuccessEntity>>?,
+              as Option<Either<ApiException, LoginSuccessModel>>?,
     ));
   }
 }
@@ -135,7 +135,7 @@ class _$CreateAccountStateImpl implements _CreateAccountState {
   @override
   final SentOtpEntity sentOtpEntity;
   @override
-  final Option<Either<ApiException, LoginSuccessEntity>>? onboardingUser;
+  final Option<Either<ApiException, LoginSuccessModel>>? onboardingUser;
 
   @override
   String toString() {
@@ -169,13 +169,13 @@ class _$CreateAccountStateImpl implements _CreateAccountState {
 abstract class _CreateAccountState implements CreateAccountState {
   const factory _CreateAccountState(
       {required final SentOtpEntity sentOtpEntity,
-      final Option<Either<ApiException, LoginSuccessEntity>>?
+      final Option<Either<ApiException, LoginSuccessModel>>?
           onboardingUser}) = _$CreateAccountStateImpl;
 
   @override
   SentOtpEntity get sentOtpEntity;
   @override
-  Option<Either<ApiException, LoginSuccessEntity>>? get onboardingUser;
+  Option<Either<ApiException, LoginSuccessModel>>? get onboardingUser;
 
   /// Create a copy of CreateAccountState
   /// with the given fields replaced by the non-null parameter values.
