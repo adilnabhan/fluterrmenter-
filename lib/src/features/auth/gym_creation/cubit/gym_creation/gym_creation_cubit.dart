@@ -155,7 +155,7 @@ class GymCreationCubit extends Cubit<GymCreationState> {
     if (state.gymLocationDetails?.picode.isNotEmpty ?? false) {
       formData.fields.add(MapEntry('location.pin_code', state.gymLocationDetails!.picode));
     }
-
+    final sh = Feggy.read<AppCubit>()?.state;
     final response = await GymCreationRepository().create(body: formData);
     emit(state.copyWith(createOrg: some(response)));
   }

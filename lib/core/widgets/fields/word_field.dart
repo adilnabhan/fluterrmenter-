@@ -219,7 +219,6 @@ class _WordFieldState extends State<WordField> {
               obscureText: widget.obscureText,
               statesController: _stateController,
             ),
-
             //*
             if (widget.controller != null && widget.validator != null)
               switch ((errorText?.isEmpty ?? true) || !_stateController.value.contains(WidgetState.error)) {

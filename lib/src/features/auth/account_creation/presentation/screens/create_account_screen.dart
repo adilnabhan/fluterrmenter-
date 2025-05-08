@@ -131,6 +131,7 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
               Dialogs.showSnack(msg: l.msg);
             },
             (r) {
+              context.read<AppCubit>().addLoggedUser(r);
               context.push(const GymProfileCreationScreen());
             },
           ),
