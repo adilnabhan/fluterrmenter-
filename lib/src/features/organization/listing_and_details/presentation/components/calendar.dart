@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class CustomCalendar extends StatefulWidget {
+  const CustomCalendar({super.key});
+
   @override
-  _CustomCalendarState createState() => _CustomCalendarState();
+  CustomCalendarState createState() => CustomCalendarState();
 }
 
-class _CustomCalendarState extends State<CustomCalendar> {
+class CustomCalendarState extends State<CustomCalendar> {
   DateTime _currentDate = DateTime.now(); // Start with the current date
   int _selectedDay = DateTime.now().day; // Default to today's day
 

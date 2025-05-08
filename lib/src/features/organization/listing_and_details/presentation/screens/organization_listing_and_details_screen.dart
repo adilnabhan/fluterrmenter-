@@ -1,13 +1,22 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class OrganizationListingAndDetailsScreen extends StatelessWidget {
+  const OrganizationListingAndDetailsScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(create: (context) => OrganizationListingAndDetailsCubit(), child: const _OrganizationListingAndDetailsScreen());
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _OrganizationListingAndDetailsScreen extends StatefulWidget {
+  const _OrganizationListingAndDetailsScreen();
+
+  @override
+  State<_OrganizationListingAndDetailsScreen> createState() => _OrganizationListingAndDetailsScreenState();
+}
+
+class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListingAndDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final cards = [

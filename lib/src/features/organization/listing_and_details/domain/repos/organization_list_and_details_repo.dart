@@ -1,5 +1,4 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-import 'package:mentor_mobile_app/src/features/organization/details/details.dart';
 
 @immutable
 final class OrganizationListRepository {
