@@ -1,11 +1,19 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class OrganizationListingAndDetailsScreen extends StatelessWidget {
-  const OrganizationListingAndDetailsScreen({super.key});
+class OrganizationListingScreen extends StatelessWidget {
+  const OrganizationListingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => OrganizationListingAndDetailsCubit(), child: const _OrganizationListingAndDetailsScreen());
+    return BlocProvider(
+      create: (context) => OrganizationListingAndDetailsCubit(),
+      child: FlowBuilder(
+        state: true,
+        onGeneratePages: (state, pages) {
+          return [const MaterialPage<void>(child: _OrganizationListingAndDetailsScreen())];
+        },
+      ),
+    );
   }
 }
 
@@ -28,45 +36,11 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
 
   @override
   Widget build(BuildContext context) {
-    final cards = [
-      (
-        title: 'Active Members',
-        color: const Color(0xff486CC2),
-        count: 54,
-        onTap: () {
-          context.push(const ActiveMembersListingScreen());
-        },
-      ),
-      (
-        title: 'Total Leads & Members',
-        color: const Color(0xff9C51BF),
-        count: 72,
-        onTap: () {
-          context.push(const MembersAndLeadsListingScreen());
-        },
-      ),
-      (
-        title: 'Expired Members',
-        color: const Color(0xff527F50),
-        count: 33,
-        onTap: () {
-          context.push(const ExpiredMembersListingScreen());
-        },
-      ),
-      (
-        title: 'Upcoming Members',
-        color: const Color(0xffC85074),
-        count: 42,
-        onTap: () {
-          context.push(const UpcomingRenewalsListingScreen());
-        },
-      ),
-    ];
     return BlocListener<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
       listenWhen: (p, c) => p.selectedOrganization != c.selectedOrganization,
       listener: (context, state) {
         if (state.selectedOrganization?.id != null) {
-          _cubit.fetchDetails(orgId: state.selectedOrganization!.id!);
+          _cubit.fetchOrg(orgId: state.selectedOrganization!.id!);
         }
       },
       child: Scaffold(
@@ -82,7 +56,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                 style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), side: const BorderSide(color: Color(0xffDDDDDD))),
                 onPressed: () {},
                 label: const Icon(Icons.keyboard_arrow_down_sharp, color: Color(0xff222222), size: 20),
-                icon: Text('Discpl', style: AppStyles.text14Px.poppins.copyWith(color: const Color(0xff222222))),
+                icon: Text(state.selectedOrganization?.name ?? '', style: AppStyles.text14Px.poppins.copyWith(color: const Color(0xff222222))),
               );
             },
           ),
@@ -95,17 +69,60 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                 if (!hasData) {
                   return const SizedBox.shrink();
                 }
-                return SvgPicture.asset('assets/images/svg/vectors/logo.svg', height: 24, width: 24);
+                return InkWell(
+                  onTap: () {
+                    if (state.selectedOrganization?.id != null) {
+                      context.push(OrganizationDetailsScreen(orgId: state.selectedOrganization!.id!));
+                    } else {
+                      Dialogs.showSnack(msg: 'Organization not found');
+                    }
+                  },
+                  child: AbsorbPointer(child: ProfileImage(isEdit: false, radius: 48, url: state.selectedOrganization?.logo ?? '')),
+                );
               },
             ).pOnly(right: 16),
           ],
         ),
         body: BlocBuilder<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
-          buildWhen: (p, c) => p.details != c.details || p.list != c.list,
+          buildWhen: (p, c) => p.homeData != c.homeData,
           builder: (context, state) {
-            return state.list.fold(
+            return state.homeData.fold(
               () => const Center(child: CircularProgressIndicator()),
-              (either) => either.fold((l) => const Center(child: Text('Error')), (r) {
+              (either) => either.fold((error) => const Center(child: Text('Error')), (orgDetails) {
+                final cards = [
+                  (
+                    title: 'Active Members',
+                    color: const Color(0xff486CC2),
+                    count: orgDetails.activeCustomersCount ?? 0,
+                    onTap: () {
+                      context.push(const ActiveMembersListingScreen());
+                    },
+                  ),
+                  (
+                    title: 'Total Leads & Members',
+                    color: const Color(0xff9C51BF),
+                    count: (orgDetails.trainerCount ?? 0) + (orgDetails.expiredCustomersCount ?? 0) + (orgDetails.activeCustomersCount ?? 0),
+                    onTap: () {
+                      context.push(const MembersAndLeadsListingScreen());
+                    },
+                  ),
+                  (
+                    title: 'Expired Members',
+                    color: const Color(0xff527F50),
+                    count: orgDetails.expiredCustomersCount ?? 0,
+                    onTap: () {
+                      context.push(const ExpiredMembersListingScreen());
+                    },
+                  ),
+                  (
+                    title: 'Upcoming Members',
+                    color: const Color(0xffC85074),
+                    count: orgDetails.upcomingRenewalsCount ?? 0,
+                    onTap: () {
+                      context.push(const UpcomingRenewalsListingScreen());
+                    },
+                  ),
+                ];
                 return ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
@@ -154,10 +171,10 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
-                    Text('Attendance Calendar', style: AppStyles.text18Px.poppins.w600.dark),
-                    const SizedBox(height: 16),
-                    const CustomCalendar(),
+                    // const SizedBox(height: 40),
+                    // Text('Attendance Calendar', style: AppStyles.text18Px.poppins.w600.dark),
+                    // const SizedBox(height: 16),
+                    // const CustomCalendar(),
                     const SizedBox(height: 40),
                     Text('Member Insights', style: AppStyles.text18Px.poppins.w600.dark),
                     const SizedBox(height: 16),

@@ -13,10 +13,11 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
       return 'Brand category is required';
     } else if (brandDescription?.isEmpty ?? false) {
       return 'Brand description is required';
-    } else if (brandLogo?.isEmpty ?? false) {
-      return 'Brand logo is required';
     }
-    emit(state.copyWith(brandDetails: (brandName: brandName!, brandCategory: brandCategory!, brandDescription: brandDescription!, brandLogo: brandLogo!)));
+    //  else if (brandLogo?.isEmpty ?? false) {
+    //   return 'Brand logo is required';
+    // }
+    emit(state.copyWith(brandDetails: (brandName: brandName!, brandCategory: brandCategory!, brandDescription: brandDescription!, brandLogo: brandLogo)));
     return null;
   }
 
@@ -90,7 +91,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
       //* Brand Details
       'name': state.brandDetails?.brandName,
       'description': state.brandDetails?.brandDescription,
-      if (state.brandDetails?.brandLogo != null) 'logo': await MultipartFile.fromFile(state.brandDetails!.brandLogo),
+      if (state.brandDetails?.brandLogo?.isNotEmpty ?? false) 'logo': await MultipartFile.fromFile(state.brandDetails!.brandLogo!),
       if (appState?.currentUser?.email != null) 'email': appState?.currentUser?.email,
       if (appState?.currentUser?.mobileNumber != null) 'phone_number': appState?.currentUser?.mobileNumber,
 

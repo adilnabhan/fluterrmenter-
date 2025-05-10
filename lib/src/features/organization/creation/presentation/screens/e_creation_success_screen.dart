@@ -32,7 +32,7 @@ class _OrganizationCreationSuccessScreenState extends State<OrganizationCreation
                 SvgPicture.asset('assets/images/svg/vectors/onboarding_success.svg', height: 140)
                     .animate(
                       onComplete: (controller) {
-                        context.pushAndRemoveUntil(const OrganizationListingAndDetailsScreen());
+                        context.pushAndRemoveUntil(const OrganizationListingScreen());
                       },
                     )
                     .scale(duration: const Duration(seconds: 2), curve: Curves.elasticOut, begin: Offset.zero, end: const Offset(1, 1)),

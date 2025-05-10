@@ -237,7 +237,7 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
             const SizedBox(height: 22),
             const OrganizationCreationCompletionStatusCard(progress: 4),
             const SizedBox(height: 32),
-            Text('Set your working days & hours', style: AppStyles.text14Px.poppins.w500.dark),
+            Row(children: [Text('Set your working days & hours', style: AppStyles.text14Px.poppins.w500.dark), Text('*', style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.primary))]),
             const SizedBox(height: 16),
             ValueListenableBuilder(
               valueListenable: _selectedWeekDays,

@@ -1,3 +1,4 @@
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 enum SnackType { success, error, warning }
@@ -7,6 +8,18 @@ enum SnackType { success, error, warning }
 abstract class Dialogs {
   ///Show snackbar withoud context
   static Future<void> showSnack({String? msg, Widget? action, Duration? duration, SnackType type = SnackType.success, bool showIcon = false}) async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      await Fluttertoast.showToast(
+        msg: msg ?? 'Something went wrong! Please try again later.',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: AppColors.primary,
+        textColor: Colors.white,
+        fontSize: 16,
+        fontAsset: 'assets/fonts/Poppins-Regular.ttf',
+      );
+      return;
+    }
     ScaffoldMessenger.of(Feggy.context!).showSnackBar(
       SnackBar(
         content:

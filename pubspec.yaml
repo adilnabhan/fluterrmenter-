@@ -12,6 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  #* Routing
+  flow_builder: ^0.1.0
+
   #* State Management
   bloc: ^9.0.0
   flutter_bloc: ^9.0.0
@@ -114,7 +117,6 @@ dependencies:
   in_app_update: ^4.2.2
   # firebase_crashlytics: ^3.4.19
   # firebase_analytics: ^10.8.10
-  flow_builder: ^0.1.0
 
   #* Utils
   uuid: ^4.5.1

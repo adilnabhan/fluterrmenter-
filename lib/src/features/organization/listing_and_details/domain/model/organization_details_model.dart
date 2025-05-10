@@ -14,6 +14,7 @@ class OrganizationDetailsModel with _$OrganizationDetailsModel {
     @JsonKey(name: 'name') String? name,
     @JsonKey(name: 'description') String? description,
     @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'logo') String? logo,
     @JsonKey(name: 'phone_number') String? phoneNumber,
     @JsonKey(name: 'is_public') bool? isPublic,
     @JsonKey(name: 'active') bool? active,

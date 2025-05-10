@@ -28,6 +28,9 @@ export 'package:hydrated_bloc/hydrated_bloc.dart';
 ///* Utils
 export 'package:intl/intl.dart' show DateFormat, NumberFormat;
 
+///* Routing
+export 'package:flow_builder/flow_builder.dart';
+
 //* User Interface
 export 'package:cached_network_image/cached_network_image.dart';
 export 'package:dio/dio.dart' show Dio, DioException, FormData, MultipartFile, Options;
@@ -67,19 +70,13 @@ export 'package:dotted_line/dotted_line.dart';
 
 export 'package:flutter_dotenv/flutter_dotenv.dart';
 
+// Payment
+export 'package:razorpay_flutter/razorpay_flutter.dart';
 
 //*================[ Methods ]=====================================//
 
 //!----------------[ This method for console log ]------------
 /// For console log
-void write(
-  String text, {
-  DateTime? time,
-  int? sequenceNumber,
-  int level = 0,
-  String name = '',
-  Object? error,
-  StackTrace? stackTrace,
-}) =>
+void write(String text, {DateTime? time, int? sequenceNumber, int level = 0, String name = '', Object? error, StackTrace? stackTrace}) =>
     dev.log(text, error: error, level: level, name: name, sequenceNumber: sequenceNumber, stackTrace: stackTrace, time: time);
 //!-----------------------------------------------------------

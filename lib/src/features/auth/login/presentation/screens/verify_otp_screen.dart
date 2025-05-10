@@ -68,7 +68,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
             }
             if (isLogin) {
               context.read<AppCubit>().addUser(r!);
-              context.pushAndRemoveUntil(const OrganizationListingAndDetailsScreen());
+              context.pushAndRemoveUntil(const OrganizationListingScreen());
               return;
             }
           }),

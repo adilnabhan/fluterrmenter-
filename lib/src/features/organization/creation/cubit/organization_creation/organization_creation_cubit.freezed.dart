@@ -20,7 +20,7 @@ mixin _$OrganizationCreationState {
   ({
     List<String> brandCategory,
     String brandDescription,
-    String brandLogo,
+    String? brandLogo,
     String brandName
   })? get brandDetails => throw _privateConstructorUsedError;
 
@@ -52,7 +52,7 @@ abstract class $OrganizationCreationStateCopyWith<$Res> {
       {({
         List<String> brandCategory,
         String brandDescription,
-        String brandLogo,
+        String? brandLogo,
         String brandName
       })? brandDetails,
       ({
@@ -94,7 +94,7 @@ class _$OrganizationCreationStateCopyWithImpl<$Res,
               as ({
               List<String> brandCategory,
               String brandDescription,
-              String brandLogo,
+              String? brandLogo,
               String brandName
             })?,
       gymLocationDetails: freezed == gymLocationDetails
@@ -132,7 +132,7 @@ abstract class _$$OrganizationCreationStateImplCopyWith<$Res>
       {({
         List<String> brandCategory,
         String brandDescription,
-        String brandLogo,
+        String? brandLogo,
         String brandName
       })? brandDetails,
       ({
@@ -173,7 +173,7 @@ class __$$OrganizationCreationStateImplCopyWithImpl<$Res>
               as ({
               List<String> brandCategory,
               String brandDescription,
-              String brandLogo,
+              String? brandLogo,
               String brandName
             })?,
       gymLocationDetails: freezed == gymLocationDetails
@@ -213,7 +213,7 @@ class _$OrganizationCreationStateImpl implements _OrganizationCreationState {
   final ({
     List<String> brandCategory,
     String brandDescription,
-    String brandLogo,
+    String? brandLogo,
     String brandName
   })? brandDetails;
 
@@ -282,7 +282,7 @@ abstract class _OrganizationCreationState implements OrganizationCreationState {
           {final ({
             List<String> brandCategory,
             String brandDescription,
-            String brandLogo,
+            String? brandLogo,
             String brandName
           })? brandDetails,
           final ({
@@ -301,7 +301,7 @@ abstract class _OrganizationCreationState implements OrganizationCreationState {
   ({
     List<String> brandCategory,
     String brandDescription,
-    String brandLogo,
+    String? brandLogo,
     String brandName
   })? get brandDetails;
 

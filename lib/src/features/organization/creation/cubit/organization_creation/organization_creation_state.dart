@@ -4,7 +4,7 @@ part of 'organization_creation_cubit.dart';
 class OrganizationCreationState with _$OrganizationCreationState {
   const factory OrganizationCreationState({
     ///* Brand Details
-    ({String brandName, List<String> brandCategory, String brandDescription, String brandLogo})? brandDetails,
+    ({String brandName, List<String> brandCategory, String brandDescription, String? brandLogo})? brandDetails,
 
     ///* Gym Location Details
     ({String flatName, String street, String city, String state, String picode})? gymLocationDetails,

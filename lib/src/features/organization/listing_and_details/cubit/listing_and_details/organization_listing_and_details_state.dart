@@ -6,5 +6,6 @@ class OrganizationListingAndDetailsState with _$OrganizationListingAndDetailsSta
     SingleOrganizationModel? selectedOrganization,
     @Default(None()) Option<Either<ApiException, OrganizationsListModel>> list,
     @Default(None()) Option<Either<ApiException, OrganizationDetailsModel>> details,
+    @Default(None()) Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
   }) = _OrganizationListingAndDetailsState;
 }

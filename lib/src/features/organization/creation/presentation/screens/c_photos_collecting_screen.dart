@@ -80,25 +80,45 @@ class _CreateOrganizationPhotosCollectingScreenState extends State<CreateOrganiz
           ),
         ],
       ),
-      floatingActionButton: SizedBox(
-        width: 84,
-        child: FloatingActionButton(
-          onPressed: () {
-            final error = _gymCreationCubit.addGymPhotos(gymPhotos: _images.map((e) => e.path).toList());
-            if (error != null) {
-              Dialogs.showSnack(msg: error);
-              return;
-            } else {
+      bottomNavigationBar: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextButton(
+            onPressed: () {
               context.push(BlocProvider.value(value: _gymCreationCubit, child: const CreateOrganizationWorkingDetailsScreen()));
-            }
-          },
-          shape: const StadiumBorder(),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.light,
-          elevation: 0,
-          child: const Icon(Icons.keyboard_arrow_right_outlined),
-        ),
-      ),
+            },
+            child: const Text(
+              'Skip',
+              style: TextStyle(
+                color: AppColors.primary,
+                // decoration: TextDecoration.underline,
+                // decorationColor: AppColors.primary,
+                // decorationThickness: 2, // Increased space between text and underline
+              ),
+            ),
+          ),
+
+          SizedBox(
+            width: 84,
+            child: FloatingActionButton(
+              onPressed: () {
+                final error = _gymCreationCubit.addGymPhotos(gymPhotos: _images.map((e) => e.path).toList());
+                if (error != null) {
+                  Dialogs.showSnack(msg: error);
+                  return;
+                } else {
+                  context.push(BlocProvider.value(value: _gymCreationCubit, child: const CreateOrganizationWorkingDetailsScreen()));
+                }
+              },
+              shape: const StadiumBorder(),
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.light,
+              elevation: 0,
+              child: const Icon(Icons.keyboard_arrow_right_outlined),
+            ),
+          ),
+        ],
+      ).pad(16),
     );
   }
 }
