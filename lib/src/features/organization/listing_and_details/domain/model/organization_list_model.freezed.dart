@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'organization_list_entity.dart';
+part of 'organization_list_model.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -14,48 +14,48 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-OrganizationsListEntity _$OrganizationsListEntityFromJson(
+OrganizationsListModel _$OrganizationsListModelFromJson(
     Map<String, dynamic> json) {
-  return _OrganizationsListEntity.fromJson(json);
+  return _OrganizationsListModel.fromJson(json);
 }
 
 /// @nodoc
-mixin _$OrganizationsListEntity {
+mixin _$OrganizationsListModel {
   bool? get success => throw _privateConstructorUsedError;
-  List<SingleOrganizationEntity>? get result =>
+  List<SingleOrganizationModel>? get result =>
       throw _privateConstructorUsedError;
 
-  /// Serializes this OrganizationsListEntity to a JSON map.
+  /// Serializes this OrganizationsListModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of OrganizationsListEntity
+  /// Create a copy of OrganizationsListModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $OrganizationsListEntityCopyWith<OrganizationsListEntity> get copyWith =>
+  $OrganizationsListModelCopyWith<OrganizationsListModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $OrganizationsListEntityCopyWith<$Res> {
-  factory $OrganizationsListEntityCopyWith(OrganizationsListEntity value,
-          $Res Function(OrganizationsListEntity) then) =
-      _$OrganizationsListEntityCopyWithImpl<$Res, OrganizationsListEntity>;
+abstract class $OrganizationsListModelCopyWith<$Res> {
+  factory $OrganizationsListModelCopyWith(OrganizationsListModel value,
+          $Res Function(OrganizationsListModel) then) =
+      _$OrganizationsListModelCopyWithImpl<$Res, OrganizationsListModel>;
   @useResult
-  $Res call({bool? success, List<SingleOrganizationEntity>? result});
+  $Res call({bool? success, List<SingleOrganizationModel>? result});
 }
 
 /// @nodoc
-class _$OrganizationsListEntityCopyWithImpl<$Res,
-        $Val extends OrganizationsListEntity>
-    implements $OrganizationsListEntityCopyWith<$Res> {
-  _$OrganizationsListEntityCopyWithImpl(this._value, this._then);
+class _$OrganizationsListModelCopyWithImpl<$Res,
+        $Val extends OrganizationsListModel>
+    implements $OrganizationsListModelCopyWith<$Res> {
+  _$OrganizationsListModelCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of OrganizationsListEntity
+  /// Create a copy of OrganizationsListModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -71,34 +71,34 @@ class _$OrganizationsListEntityCopyWithImpl<$Res,
       result: freezed == result
           ? _value.result
           : result // ignore: cast_nullable_to_non_nullable
-              as List<SingleOrganizationEntity>?,
+              as List<SingleOrganizationModel>?,
     ) as $Val);
   }
 }
 
 /// @nodoc
-abstract class _$$OrganizationsListEntityImplCopyWith<$Res>
-    implements $OrganizationsListEntityCopyWith<$Res> {
-  factory _$$OrganizationsListEntityImplCopyWith(
-          _$OrganizationsListEntityImpl value,
-          $Res Function(_$OrganizationsListEntityImpl) then) =
-      __$$OrganizationsListEntityImplCopyWithImpl<$Res>;
+abstract class _$$OrganizationsListModelImplCopyWith<$Res>
+    implements $OrganizationsListModelCopyWith<$Res> {
+  factory _$$OrganizationsListModelImplCopyWith(
+          _$OrganizationsListModelImpl value,
+          $Res Function(_$OrganizationsListModelImpl) then) =
+      __$$OrganizationsListModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({bool? success, List<SingleOrganizationEntity>? result});
+  $Res call({bool? success, List<SingleOrganizationModel>? result});
 }
 
 /// @nodoc
-class __$$OrganizationsListEntityImplCopyWithImpl<$Res>
-    extends _$OrganizationsListEntityCopyWithImpl<$Res,
-        _$OrganizationsListEntityImpl>
-    implements _$$OrganizationsListEntityImplCopyWith<$Res> {
-  __$$OrganizationsListEntityImplCopyWithImpl(
-      _$OrganizationsListEntityImpl _value,
-      $Res Function(_$OrganizationsListEntityImpl) _then)
+class __$$OrganizationsListModelImplCopyWithImpl<$Res>
+    extends _$OrganizationsListModelCopyWithImpl<$Res,
+        _$OrganizationsListModelImpl>
+    implements _$$OrganizationsListModelImplCopyWith<$Res> {
+  __$$OrganizationsListModelImplCopyWithImpl(
+      _$OrganizationsListModelImpl _value,
+      $Res Function(_$OrganizationsListModelImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of OrganizationsListEntity
+  /// Create a copy of OrganizationsListModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -106,7 +106,7 @@ class __$$OrganizationsListEntityImplCopyWithImpl<$Res>
     Object? success = freezed,
     Object? result = freezed,
   }) {
-    return _then(_$OrganizationsListEntityImpl(
+    return _then(_$OrganizationsListModelImpl(
       success: freezed == success
           ? _value.success
           : success // ignore: cast_nullable_to_non_nullable
@@ -114,26 +114,26 @@ class __$$OrganizationsListEntityImplCopyWithImpl<$Res>
       result: freezed == result
           ? _value._result
           : result // ignore: cast_nullable_to_non_nullable
-              as List<SingleOrganizationEntity>?,
+              as List<SingleOrganizationModel>?,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$OrganizationsListEntityImpl implements _OrganizationsListEntity {
-  const _$OrganizationsListEntityImpl(
-      {this.success, final List<SingleOrganizationEntity>? result})
+class _$OrganizationsListModelImpl implements _OrganizationsListModel {
+  const _$OrganizationsListModelImpl(
+      {this.success, final List<SingleOrganizationModel>? result})
       : _result = result;
 
-  factory _$OrganizationsListEntityImpl.fromJson(Map<String, dynamic> json) =>
-      _$$OrganizationsListEntityImplFromJson(json);
+  factory _$OrganizationsListModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$OrganizationsListModelImplFromJson(json);
 
   @override
   final bool? success;
-  final List<SingleOrganizationEntity>? _result;
+  final List<SingleOrganizationModel>? _result;
   @override
-  List<SingleOrganizationEntity>? get result {
+  List<SingleOrganizationModel>? get result {
     final value = _result;
     if (value == null) return null;
     if (_result is EqualUnmodifiableListView) return _result;
@@ -143,14 +143,14 @@ class _$OrganizationsListEntityImpl implements _OrganizationsListEntity {
 
   @override
   String toString() {
-    return 'OrganizationsListEntity(success: $success, result: $result)';
+    return 'OrganizationsListModel(success: $success, result: $result)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$OrganizationsListEntityImpl &&
+            other is _$OrganizationsListModelImpl &&
             (identical(other.success, success) || other.success == success) &&
             const DeepCollectionEquality().equals(other._result, _result));
   }
@@ -160,51 +160,51 @@ class _$OrganizationsListEntityImpl implements _OrganizationsListEntity {
   int get hashCode => Object.hash(
       runtimeType, success, const DeepCollectionEquality().hash(_result));
 
-  /// Create a copy of OrganizationsListEntity
+  /// Create a copy of OrganizationsListModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$OrganizationsListEntityImplCopyWith<_$OrganizationsListEntityImpl>
-      get copyWith => __$$OrganizationsListEntityImplCopyWithImpl<
-          _$OrganizationsListEntityImpl>(this, _$identity);
+  _$$OrganizationsListModelImplCopyWith<_$OrganizationsListModelImpl>
+      get copyWith => __$$OrganizationsListModelImplCopyWithImpl<
+          _$OrganizationsListModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$OrganizationsListEntityImplToJson(
+    return _$$OrganizationsListModelImplToJson(
       this,
     );
   }
 }
 
-abstract class _OrganizationsListEntity implements OrganizationsListEntity {
-  const factory _OrganizationsListEntity(
-          {final bool? success, final List<SingleOrganizationEntity>? result}) =
-      _$OrganizationsListEntityImpl;
+abstract class _OrganizationsListModel implements OrganizationsListModel {
+  const factory _OrganizationsListModel(
+          {final bool? success, final List<SingleOrganizationModel>? result}) =
+      _$OrganizationsListModelImpl;
 
-  factory _OrganizationsListEntity.fromJson(Map<String, dynamic> json) =
-      _$OrganizationsListEntityImpl.fromJson;
+  factory _OrganizationsListModel.fromJson(Map<String, dynamic> json) =
+      _$OrganizationsListModelImpl.fromJson;
 
   @override
   bool? get success;
   @override
-  List<SingleOrganizationEntity>? get result;
+  List<SingleOrganizationModel>? get result;
 
-  /// Create a copy of OrganizationsListEntity
+  /// Create a copy of OrganizationsListModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$OrganizationsListEntityImplCopyWith<_$OrganizationsListEntityImpl>
+  _$$OrganizationsListModelImplCopyWith<_$OrganizationsListModelImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SingleOrganizationEntity _$SingleOrganizationEntityFromJson(
+SingleOrganizationModel _$SingleOrganizationModelFromJson(
     Map<String, dynamic> json) {
-  return _SingleOrganizationEntity.fromJson(json);
+  return _SingleOrganizationModel.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SingleOrganizationEntity {
+mixin _$SingleOrganizationModel {
   int? get id => throw _privateConstructorUsedError;
   String? get name => throw _privateConstructorUsedError;
   List<int>? get category => throw _privateConstructorUsedError;
@@ -212,21 +212,21 @@ mixin _$SingleOrganizationEntity {
   String? get phoneNumber => throw _privateConstructorUsedError;
   String? get logo => throw _privateConstructorUsedError;
 
-  /// Serializes this SingleOrganizationEntity to a JSON map.
+  /// Serializes this SingleOrganizationModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SingleOrganizationEntity
+  /// Create a copy of SingleOrganizationModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SingleOrganizationEntityCopyWith<SingleOrganizationEntity> get copyWith =>
+  $SingleOrganizationModelCopyWith<SingleOrganizationModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SingleOrganizationEntityCopyWith<$Res> {
-  factory $SingleOrganizationEntityCopyWith(SingleOrganizationEntity value,
-          $Res Function(SingleOrganizationEntity) then) =
-      _$SingleOrganizationEntityCopyWithImpl<$Res, SingleOrganizationEntity>;
+abstract class $SingleOrganizationModelCopyWith<$Res> {
+  factory $SingleOrganizationModelCopyWith(SingleOrganizationModel value,
+          $Res Function(SingleOrganizationModel) then) =
+      _$SingleOrganizationModelCopyWithImpl<$Res, SingleOrganizationModel>;
   @useResult
   $Res call(
       {int? id,
@@ -238,17 +238,17 @@ abstract class $SingleOrganizationEntityCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$SingleOrganizationEntityCopyWithImpl<$Res,
-        $Val extends SingleOrganizationEntity>
-    implements $SingleOrganizationEntityCopyWith<$Res> {
-  _$SingleOrganizationEntityCopyWithImpl(this._value, this._then);
+class _$SingleOrganizationModelCopyWithImpl<$Res,
+        $Val extends SingleOrganizationModel>
+    implements $SingleOrganizationModelCopyWith<$Res> {
+  _$SingleOrganizationModelCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SingleOrganizationEntity
+  /// Create a copy of SingleOrganizationModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -290,12 +290,12 @@ class _$SingleOrganizationEntityCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$SingleOrganizationEntityImplCopyWith<$Res>
-    implements $SingleOrganizationEntityCopyWith<$Res> {
-  factory _$$SingleOrganizationEntityImplCopyWith(
-          _$SingleOrganizationEntityImpl value,
-          $Res Function(_$SingleOrganizationEntityImpl) then) =
-      __$$SingleOrganizationEntityImplCopyWithImpl<$Res>;
+abstract class _$$SingleOrganizationModelImplCopyWith<$Res>
+    implements $SingleOrganizationModelCopyWith<$Res> {
+  factory _$$SingleOrganizationModelImplCopyWith(
+          _$SingleOrganizationModelImpl value,
+          $Res Function(_$SingleOrganizationModelImpl) then) =
+      __$$SingleOrganizationModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -308,16 +308,16 @@ abstract class _$$SingleOrganizationEntityImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$SingleOrganizationEntityImplCopyWithImpl<$Res>
-    extends _$SingleOrganizationEntityCopyWithImpl<$Res,
-        _$SingleOrganizationEntityImpl>
-    implements _$$SingleOrganizationEntityImplCopyWith<$Res> {
-  __$$SingleOrganizationEntityImplCopyWithImpl(
-      _$SingleOrganizationEntityImpl _value,
-      $Res Function(_$SingleOrganizationEntityImpl) _then)
+class __$$SingleOrganizationModelImplCopyWithImpl<$Res>
+    extends _$SingleOrganizationModelCopyWithImpl<$Res,
+        _$SingleOrganizationModelImpl>
+    implements _$$SingleOrganizationModelImplCopyWith<$Res> {
+  __$$SingleOrganizationModelImplCopyWithImpl(
+      _$SingleOrganizationModelImpl _value,
+      $Res Function(_$SingleOrganizationModelImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SingleOrganizationEntity
+  /// Create a copy of SingleOrganizationModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -329,7 +329,7 @@ class __$$SingleOrganizationEntityImplCopyWithImpl<$Res>
     Object? phoneNumber = freezed,
     Object? logo = freezed,
   }) {
-    return _then(_$SingleOrganizationEntityImpl(
+    return _then(_$SingleOrganizationModelImpl(
       id: freezed == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -360,8 +360,8 @@ class __$$SingleOrganizationEntityImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SingleOrganizationEntityImpl implements _SingleOrganizationEntity {
-  const _$SingleOrganizationEntityImpl(
+class _$SingleOrganizationModelImpl implements _SingleOrganizationModel {
+  const _$SingleOrganizationModelImpl(
       {this.id,
       this.name,
       final List<int>? category,
@@ -370,8 +370,8 @@ class _$SingleOrganizationEntityImpl implements _SingleOrganizationEntity {
       this.logo})
       : _category = category;
 
-  factory _$SingleOrganizationEntityImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SingleOrganizationEntityImplFromJson(json);
+  factory _$SingleOrganizationModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SingleOrganizationModelImplFromJson(json);
 
   @override
   final int? id;
@@ -396,14 +396,14 @@ class _$SingleOrganizationEntityImpl implements _SingleOrganizationEntity {
 
   @override
   String toString() {
-    return 'SingleOrganizationEntity(id: $id, name: $name, category: $category, email: $email, phoneNumber: $phoneNumber, logo: $logo)';
+    return 'SingleOrganizationModel(id: $id, name: $name, category: $category, email: $email, phoneNumber: $phoneNumber, logo: $logo)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SingleOrganizationEntityImpl &&
+            other is _$SingleOrganizationModelImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             const DeepCollectionEquality().equals(other._category, _category) &&
@@ -418,34 +418,34 @@ class _$SingleOrganizationEntityImpl implements _SingleOrganizationEntity {
   int get hashCode => Object.hash(runtimeType, id, name,
       const DeepCollectionEquality().hash(_category), email, phoneNumber, logo);
 
-  /// Create a copy of SingleOrganizationEntity
+  /// Create a copy of SingleOrganizationModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SingleOrganizationEntityImplCopyWith<_$SingleOrganizationEntityImpl>
-      get copyWith => __$$SingleOrganizationEntityImplCopyWithImpl<
-          _$SingleOrganizationEntityImpl>(this, _$identity);
+  _$$SingleOrganizationModelImplCopyWith<_$SingleOrganizationModelImpl>
+      get copyWith => __$$SingleOrganizationModelImplCopyWithImpl<
+          _$SingleOrganizationModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SingleOrganizationEntityImplToJson(
+    return _$$SingleOrganizationModelImplToJson(
       this,
     );
   }
 }
 
-abstract class _SingleOrganizationEntity implements SingleOrganizationEntity {
-  const factory _SingleOrganizationEntity(
+abstract class _SingleOrganizationModel implements SingleOrganizationModel {
+  const factory _SingleOrganizationModel(
       {final int? id,
       final String? name,
       final List<int>? category,
       final String? email,
       final String? phoneNumber,
-      final String? logo}) = _$SingleOrganizationEntityImpl;
+      final String? logo}) = _$SingleOrganizationModelImpl;
 
-  factory _SingleOrganizationEntity.fromJson(Map<String, dynamic> json) =
-      _$SingleOrganizationEntityImpl.fromJson;
+  factory _SingleOrganizationModel.fromJson(Map<String, dynamic> json) =
+      _$SingleOrganizationModelImpl.fromJson;
 
   @override
   int? get id;
@@ -460,10 +460,10 @@ abstract class _SingleOrganizationEntity implements SingleOrganizationEntity {
   @override
   String? get logo;
 
-  /// Create a copy of SingleOrganizationEntity
+  /// Create a copy of SingleOrganizationModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SingleOrganizationEntityImplCopyWith<_$SingleOrganizationEntityImpl>
+  _$$SingleOrganizationModelImplCopyWith<_$SingleOrganizationModelImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

@@ -25,6 +25,10 @@ class AppCubit extends HydratedCubit<AppState> {
     emit(state.copyWith(currentUser: user));
   }
 
+  void removeUser() {
+    emit(state.copyWith(currentUser: null));
+  }
+
   @override
   AppState? fromJson(Map<String, dynamic> json) {
     final currentUser = json['currentUser'] != null ? LoginSuccessModel.fromJson(json['currentUser'] as Map<String, dynamic>) : null;

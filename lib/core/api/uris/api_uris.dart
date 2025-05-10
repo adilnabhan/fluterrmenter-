@@ -20,4 +20,6 @@ final class ApiUris {
 
   ///============================= Organization =============================\\\
   static const createOrg = '${_v1}fitnesscenter/organization/create/';
+  static const listOrganizations = '${_v1}fitnesscenter/organization/list/';
+  static String orgDetails(int id) => '${_v1}fitnesscenter/organization/$id/';
 }

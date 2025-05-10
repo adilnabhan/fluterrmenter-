@@ -10,6 +10,20 @@ class AppView extends StatefulWidget {
 }
 
 class _AppViewState extends State<AppView> {
+  late final AppCubit _cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = AppCubit();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _cubit.close();
+  }
+
   @override
   Widget build(BuildContext context) {
     return FeggyApp(
@@ -21,12 +35,16 @@ class _AppViewState extends State<AppView> {
         return null;
       },
       fixedHeaders: {'X-Platform': platformSource, 'user_role': 20},
-      token: () => 'JWT ${Feggy.read<AppCubit>()?.state.currentUser?.access}',
-      // onTokenError: () => Feggy.read<LoginCubit>()?.logout(isTokenExpire: true),
+      token: () => 'JWT ${_cubit.state.currentUser?.access}',
+      onTokenError: () async {
+        _cubit.removeUser();
+        await Feggy.pushAndRemoveUntil(const SentOtpScreen());
+      },
       child: Sizer.init(
         child: MultiBlocProvider(
-          providers: [BlocProvider(create: (_) => AppCubit())],
+          providers: [BlocProvider.value(value: _cubit)],
           child: BlocBuilder<AppCubit, AppState>(
+            bloc: _cubit,
             builder: (context, state) {
               return MaterialApp(
                 navigatorKey: Feggy.navKey,

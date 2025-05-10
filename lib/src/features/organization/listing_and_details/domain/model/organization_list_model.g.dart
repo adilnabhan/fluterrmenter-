@@ -1,31 +1,31 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'organization_list_entity.dart';
+part of 'organization_list_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$OrganizationsListEntityImpl _$$OrganizationsListEntityImplFromJson(
+_$OrganizationsListModelImpl _$$OrganizationsListModelImplFromJson(
         Map<String, dynamic> json) =>
-    _$OrganizationsListEntityImpl(
+    _$OrganizationsListModelImpl(
       success: json['success'] as bool?,
       result: (json['result'] as List<dynamic>?)
           ?.map((e) =>
-              SingleOrganizationEntity.fromJson(e as Map<String, dynamic>))
+              SingleOrganizationModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
-Map<String, dynamic> _$$OrganizationsListEntityImplToJson(
-        _$OrganizationsListEntityImpl instance) =>
+Map<String, dynamic> _$$OrganizationsListModelImplToJson(
+        _$OrganizationsListModelImpl instance) =>
     <String, dynamic>{
       'success': instance.success,
       'result': instance.result,
     };
 
-_$SingleOrganizationEntityImpl _$$SingleOrganizationEntityImplFromJson(
+_$SingleOrganizationModelImpl _$$SingleOrganizationModelImplFromJson(
         Map<String, dynamic> json) =>
-    _$SingleOrganizationEntityImpl(
+    _$SingleOrganizationModelImpl(
       id: (json['id'] as num?)?.toInt(),
       name: json['name'] as String?,
       category: (json['category'] as List<dynamic>?)
@@ -36,8 +36,8 @@ _$SingleOrganizationEntityImpl _$$SingleOrganizationEntityImplFromJson(
       logo: json['logo'] as String?,
     );
 
-Map<String, dynamic> _$$SingleOrganizationEntityImplToJson(
-        _$SingleOrganizationEntityImpl instance) =>
+Map<String, dynamic> _$$SingleOrganizationModelImplToJson(
+        _$SingleOrganizationModelImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
