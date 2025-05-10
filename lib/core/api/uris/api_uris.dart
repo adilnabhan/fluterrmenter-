@@ -23,4 +23,9 @@ final class ApiUris {
   static const listOrganizations = '${_v1}fitnesscenter/organization/list/';
   static String orgDetails(int orgId) => '${_v1}fitnesscenter/organization/$orgId/';
   static String fetchHomeData(int orgId) => '${_v1}fitnesscenter/home/?organization_id=$orgId';
+
+  ///============================= Subscription =============================\\\
+  static const plans = '${_v1}subscription/discipl-subscription-plans/';
+  static const initiateRazorpayPayment = '${_v1}subscription/create-order/';
+  static const webhook = '${_v1}subscription/webhook/';
 }

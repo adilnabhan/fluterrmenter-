@@ -1,0 +1,507 @@
+{
+	"info": {
+		"_postman_id": "7361d5b9-bacf-47db-9b9b-cc5886fa7f0c",
+		"name": "members_and_leads",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42883510"
+	},
+	"item": [
+		{
+			"name": "members",
+			"item": [
+				{
+					"name": "members_listing",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{v1}}/fitnesscenter/customers/?organization_id=4",
+							"host": [
+								"{{v1}}"
+							],
+							"path": [
+								"fitnesscenter",
+								"customers",
+								""
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "active",
+									"description": "active, expired",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "recent",
+									"description": "recent or oldest",
+									"disabled": true
+								},
+								{
+									"key": "organization_id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_member",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"Ravi\",\n  \"last_name\": \"Sharma\",\n  \"mobile_number\": \"+919812345678\",\n  \"email\": \"ravi.sharma@example.com\",\n  \"date_of_birth\": \"1988-05-15\",\n  \"gender\": \"male\",\n  \"blood_group\": \"B+\",\n  \"user_role\": 45,\n  \"organization_id\": 4,\n  \"emergency_contact_name\": \"Neha Sharma\",\n  \"emergency_contact_number\": \"+919876543210\",\n  \"height\": 180.00,\n  \"weight\": 75.50,\n  \"profession\": \"Doctor\",\n  \"membership_plan_id\": 2,\n  \"profile_picture\": \"\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{v1}}/customer/manage/create/",
+							"host": [
+								"{{v1}}"
+							],
+							"path": [
+								"customer",
+								"manage",
+								"create",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_member",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Sarah\"\n    // \"last_name\": \"Williams\",\n    // \"mobile_number\": \"+10987654321\",\n    // \"email\": \"sarah.williams@example.com\",\n    // \"date_of_birth\": \"1990-03-20\",\n    // \"gender\": \"female\",\n    // \"blood_group\": \"O+\",\n    // \"user_role\": 45,\n    // \"emergency_contact_name\": \"Tom Williams\",\n    // \"emergency_contact_number\": \"+19876543210\",\n    // \"height\": 170.00,\n    // \"weight\": 65.00,\n    // \"profession\": \"Teacher\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{v1}}customer/manage/64/update/",
+							"host": [
+								"{{v1}}customer"
+							],
+							"path": [
+								"manage",
+								"64",
+								"update",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "member_details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{v1}}customer/manage/4/",
+							"host": [
+								"{{v1}}customer"
+							],
+							"path": [
+								"manage",
+								"4",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "leads",
+			"item": [
+				{
+					"name": "leads_listing",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{v1}}/fitnesscenter/trainers/?organization_id=4",
+							"host": [
+								"{{v1}}"
+							],
+							"path": [
+								"fitnesscenter",
+								"trainers",
+								""
+							],
+							"query": [
+								{
+									"key": "organization_id",
+									"value": "4"
+								},
+								{
+									"key": "sort",
+									"value": "recent",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_lead",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "first_name",
+									"value": "syam",
+									"type": "text"
+								},
+								{
+									"key": "last_name",
+									"value": "Doe",
+									"type": "text"
+								},
+								{
+									"key": "mobile_number",
+									"value": "+917510661723",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "john@example.com",
+									"type": "text"
+								},
+								{
+									"key": "date_of_birth",
+									"value": "1990-01-01",
+									"type": "text"
+								},
+								{
+									"key": "gender",
+									"value": "male",
+									"type": "text"
+								},
+								{
+									"key": "blood_group",
+									"value": "A+",
+									"type": "text"
+								},
+								{
+									"key": "user_role",
+									"value": "45",
+									"type": "text"
+								},
+								{
+									"key": "organization_id",
+									"value": "43",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "emergency_contact",
+									"value": "+918086634720",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "designation",
+									"value": "trainer",
+									"type": "text"
+								},
+								{
+									"key": "experience",
+									"value": "4",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "address_proof",
+									"type": "file",
+									"src": "postman-cloud:///1f01f644-7c04-4920-ab18-ccd0dd03022c"
+								},
+								{
+									"key": "trainer_certificates",
+									"type": "file",
+									"src": [
+										"postman-cloud:///1f01f644-7c04-4920-ab18-ccd0dd03022c",
+										"postman-cloud:///1f01f644-f971-4f20-b1ec-4d076b36fcd6"
+									]
+								},
+								{
+									"key": "profile_picture",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "categories[1]",
+									"value": "1",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "categories[2]",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "user_role",
+									"value": "35",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{v1}}/mentor/trainers/",
+							"host": [
+								"{{v1}}"
+							],
+							"path": [
+								"mentor",
+								"trainers",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_lead",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "first_name",
+									"value": "aromal",
+									"type": "text"
+								},
+								{
+									"key": "last_name",
+									"value": "Doe",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "mobile_number",
+									"value": "+917510661756",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "john@example.com",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "date_of_birth",
+									"value": "1990-01-01",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "gender",
+									"value": "male",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "blood_group",
+									"value": "A+",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "user_role",
+									"value": "45",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "organization_id",
+									"value": "13",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "emergency_contact_number",
+									"value": "+918086634711",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "designation",
+									"value": "trainer",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "experience",
+									"value": "5",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "profile_picture",
+									"type": "file",
+									"src": "postman-cloud:///1f01f644-7c04-4920-ab18-ccd0dd03022c",
+									"disabled": true
+								},
+								{
+									"key": "categories[1]",
+									"value": "2",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "categories[]",
+									"value": "2",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{v1}}/mentor/trainers/110/",
+							"host": [
+								"{{v1}}"
+							],
+							"path": [
+								"mentor",
+								"trainers",
+								"110",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "lead_details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Platform",
+								"value": "mentor-app-ios",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{v1}}/mentor/trainers/1/",
+							"host": [
+								"{{v1}}"
+							],
+							"path": [
+								"mentor",
+								"trainers",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
