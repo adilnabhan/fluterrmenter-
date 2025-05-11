@@ -12,7 +12,12 @@ class MultiSelectDataEntity with _$MultiSelectDataEntity {
 
 @freezed
 class MultiSelectSingleDataEntity with _$MultiSelectSingleDataEntity {
-  const factory MultiSelectSingleDataEntity({@JsonKey(name: 'id') int? id, @JsonKey(name: 'name') String? name, @JsonKey(name: 'logo') String? logo}) = _MultiSelectSingleDataEntity;
+  const factory MultiSelectSingleDataEntity({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'logo') String? logo,
+    @JsonKey(name: 'status_string') String? statusString,
+  }) = _MultiSelectSingleDataEntity;
 
   factory MultiSelectSingleDataEntity.fromJson(Map<String, dynamic> json) => _$MultiSelectSingleDataEntityFromJson(json);
 }

@@ -27,6 +27,7 @@ _$MultiSelectSingleDataEntityImpl _$$MultiSelectSingleDataEntityImplFromJson(
       id: (json['id'] as num?)?.toInt(),
       name: json['name'] as String?,
       logo: json['logo'] as String?,
+      statusString: json['status_string'] as String?,
     );
 
 Map<String, dynamic> _$$MultiSelectSingleDataEntityImplToJson(
@@ -35,4 +36,5 @@ Map<String, dynamic> _$$MultiSelectSingleDataEntityImplToJson(
       'id': instance.id,
       'name': instance.name,
       'logo': instance.logo,
+      'status_string': instance.statusString,
     };

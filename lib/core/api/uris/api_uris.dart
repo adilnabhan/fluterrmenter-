@@ -28,4 +28,16 @@ final class ApiUris {
   static const plans = '${_v1}subscription/discipl-subscription-plans/';
   static const initiateRazorpayPayment = '${_v1}subscription/create-order/';
   static const webhook = '${_v1}subscription/webhook/';
+
+  ///============================= Members =============================\\\
+  static const membersListing = '${_v1}fitnesscenter/customers/';
+  static const createMember = '${_v1}customer/manage/create/';
+  static String updateMember(int id) => '${_v1}customer/manage/$id/update/';
+  static String memberDetails(int id) => '${_v1}customer/manage/$id/';
+
+  ///============================= Leads =============================\\\
+  static const leadsListing = '${_v1}fitnesscenter/trainers/';
+  static const createLead = '${_v1}mentor/trainers/';
+  static String updateLead(int id) => '${_v1}mentor/trainers/$id/';
+  static String leadDetails(int id) => '${_v1}mentor/trainers/$id/';
 }
