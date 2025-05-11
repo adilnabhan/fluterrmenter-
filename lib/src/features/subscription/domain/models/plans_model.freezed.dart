@@ -21,7 +21,8 @@ PlansModel _$PlansModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$PlansModel {
   @JsonKey(name: 'results')
-  List<Result>? get results => throw _privateConstructorUsedError;
+  List<SubscriptionPlanModel>? get results =>
+      throw _privateConstructorUsedError;
 
   /// Serializes this PlansModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -39,7 +40,7 @@ abstract class $PlansModelCopyWith<$Res> {
           PlansModel value, $Res Function(PlansModel) then) =
       _$PlansModelCopyWithImpl<$Res, PlansModel>;
   @useResult
-  $Res call({@JsonKey(name: 'results') List<Result>? results});
+  $Res call({@JsonKey(name: 'results') List<SubscriptionPlanModel>? results});
 }
 
 /// @nodoc
@@ -63,7 +64,7 @@ class _$PlansModelCopyWithImpl<$Res, $Val extends PlansModel>
       results: freezed == results
           ? _value.results
           : results // ignore: cast_nullable_to_non_nullable
-              as List<Result>?,
+              as List<SubscriptionPlanModel>?,
     ) as $Val);
   }
 }
@@ -76,7 +77,7 @@ abstract class _$$PlansModelImplCopyWith<$Res>
       __$$PlansModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({@JsonKey(name: 'results') List<Result>? results});
+  $Res call({@JsonKey(name: 'results') List<SubscriptionPlanModel>? results});
 }
 
 /// @nodoc
@@ -98,7 +99,7 @@ class __$$PlansModelImplCopyWithImpl<$Res>
       results: freezed == results
           ? _value._results
           : results // ignore: cast_nullable_to_non_nullable
-              as List<Result>?,
+              as List<SubscriptionPlanModel>?,
     ));
   }
 }
@@ -107,16 +108,16 @@ class __$$PlansModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PlansModelImpl implements _PlansModel {
   const _$PlansModelImpl(
-      {@JsonKey(name: 'results') final List<Result>? results})
+      {@JsonKey(name: 'results') final List<SubscriptionPlanModel>? results})
       : _results = results;
 
   factory _$PlansModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$PlansModelImplFromJson(json);
 
-  final List<Result>? _results;
+  final List<SubscriptionPlanModel>? _results;
   @override
   @JsonKey(name: 'results')
-  List<Result>? get results {
+  List<SubscriptionPlanModel>? get results {
     final value = _results;
     if (value == null) return null;
     if (_results is EqualUnmodifiableListView) return _results;
@@ -160,15 +161,15 @@ class _$PlansModelImpl implements _PlansModel {
 
 abstract class _PlansModel implements PlansModel {
   const factory _PlansModel(
-          {@JsonKey(name: 'results') final List<Result>? results}) =
-      _$PlansModelImpl;
+      {@JsonKey(name: 'results')
+      final List<SubscriptionPlanModel>? results}) = _$PlansModelImpl;
 
   factory _PlansModel.fromJson(Map<String, dynamic> json) =
       _$PlansModelImpl.fromJson;
 
   @override
   @JsonKey(name: 'results')
-  List<Result>? get results;
+  List<SubscriptionPlanModel>? get results;
 
   /// Create a copy of PlansModel
   /// with the given fields replaced by the non-null parameter values.
@@ -178,12 +179,13 @@ abstract class _PlansModel implements PlansModel {
       throw _privateConstructorUsedError;
 }
 
-Result _$ResultFromJson(Map<String, dynamic> json) {
-  return _Result.fromJson(json);
+SubscriptionPlanModel _$SubscriptionPlanModelFromJson(
+    Map<String, dynamic> json) {
+  return _SubscriptionPlanModel.fromJson(json);
 }
 
 /// @nodoc
-mixin _$Result {
+mixin _$SubscriptionPlanModel {
   @JsonKey(name: 'id')
   String? get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'name')
@@ -197,19 +199,21 @@ mixin _$Result {
   @JsonKey(name: 'period')
   int? get period => throw _privateConstructorUsedError;
 
-  /// Serializes this Result to a JSON map.
+  /// Serializes this SubscriptionPlanModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of Result
+  /// Create a copy of SubscriptionPlanModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ResultCopyWith<Result> get copyWith => throw _privateConstructorUsedError;
+  $SubscriptionPlanModelCopyWith<SubscriptionPlanModel> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ResultCopyWith<$Res> {
-  factory $ResultCopyWith(Result value, $Res Function(Result) then) =
-      _$ResultCopyWithImpl<$Res, Result>;
+abstract class $SubscriptionPlanModelCopyWith<$Res> {
+  factory $SubscriptionPlanModelCopyWith(SubscriptionPlanModel value,
+          $Res Function(SubscriptionPlanModel) then) =
+      _$SubscriptionPlanModelCopyWithImpl<$Res, SubscriptionPlanModel>;
   @useResult
   $Res call(
       {@JsonKey(name: 'id') String? id,
@@ -221,16 +225,17 @@ abstract class $ResultCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$ResultCopyWithImpl<$Res, $Val extends Result>
-    implements $ResultCopyWith<$Res> {
-  _$ResultCopyWithImpl(this._value, this._then);
+class _$SubscriptionPlanModelCopyWithImpl<$Res,
+        $Val extends SubscriptionPlanModel>
+    implements $SubscriptionPlanModelCopyWith<$Res> {
+  _$SubscriptionPlanModelCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Result
+  /// Create a copy of SubscriptionPlanModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -272,10 +277,12 @@ class _$ResultCopyWithImpl<$Res, $Val extends Result>
 }
 
 /// @nodoc
-abstract class _$$ResultImplCopyWith<$Res> implements $ResultCopyWith<$Res> {
-  factory _$$ResultImplCopyWith(
-          _$ResultImpl value, $Res Function(_$ResultImpl) then) =
-      __$$ResultImplCopyWithImpl<$Res>;
+abstract class _$$SubscriptionPlanModelImplCopyWith<$Res>
+    implements $SubscriptionPlanModelCopyWith<$Res> {
+  factory _$$SubscriptionPlanModelImplCopyWith(
+          _$SubscriptionPlanModelImpl value,
+          $Res Function(_$SubscriptionPlanModelImpl) then) =
+      __$$SubscriptionPlanModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -288,14 +295,15 @@ abstract class _$$ResultImplCopyWith<$Res> implements $ResultCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$ResultImplCopyWithImpl<$Res>
-    extends _$ResultCopyWithImpl<$Res, _$ResultImpl>
-    implements _$$ResultImplCopyWith<$Res> {
-  __$$ResultImplCopyWithImpl(
-      _$ResultImpl _value, $Res Function(_$ResultImpl) _then)
+class __$$SubscriptionPlanModelImplCopyWithImpl<$Res>
+    extends _$SubscriptionPlanModelCopyWithImpl<$Res,
+        _$SubscriptionPlanModelImpl>
+    implements _$$SubscriptionPlanModelImplCopyWith<$Res> {
+  __$$SubscriptionPlanModelImplCopyWithImpl(_$SubscriptionPlanModelImpl _value,
+      $Res Function(_$SubscriptionPlanModelImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Result
+  /// Create a copy of SubscriptionPlanModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -307,7 +315,7 @@ class __$$ResultImplCopyWithImpl<$Res>
     Object? discountedPrice = freezed,
     Object? period = freezed,
   }) {
-    return _then(_$ResultImpl(
+    return _then(_$SubscriptionPlanModelImpl(
       id: freezed == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -338,8 +346,8 @@ class __$$ResultImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ResultImpl implements _Result {
-  const _$ResultImpl(
+class _$SubscriptionPlanModelImpl implements _SubscriptionPlanModel {
+  const _$SubscriptionPlanModelImpl(
       {@JsonKey(name: 'id') this.id,
       @JsonKey(name: 'name') this.name,
       @JsonKey(name: 'plan_type') this.planType,
@@ -347,8 +355,8 @@ class _$ResultImpl implements _Result {
       @JsonKey(name: 'discounted_price') this.discountedPrice,
       @JsonKey(name: 'period') this.period});
 
-  factory _$ResultImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ResultImplFromJson(json);
+  factory _$SubscriptionPlanModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SubscriptionPlanModelImplFromJson(json);
 
   @override
   @JsonKey(name: 'id')
@@ -371,14 +379,14 @@ class _$ResultImpl implements _Result {
 
   @override
   String toString() {
-    return 'Result(id: $id, name: $name, planType: $planType, regularPrice: $regularPrice, discountedPrice: $discountedPrice, period: $period)';
+    return 'SubscriptionPlanModel(id: $id, name: $name, planType: $planType, regularPrice: $regularPrice, discountedPrice: $discountedPrice, period: $period)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ResultImpl &&
+            other is _$SubscriptionPlanModelImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.planType, planType) ||
@@ -395,32 +403,35 @@ class _$ResultImpl implements _Result {
   int get hashCode => Object.hash(
       runtimeType, id, name, planType, regularPrice, discountedPrice, period);
 
-  /// Create a copy of Result
+  /// Create a copy of SubscriptionPlanModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ResultImplCopyWith<_$ResultImpl> get copyWith =>
-      __$$ResultImplCopyWithImpl<_$ResultImpl>(this, _$identity);
+  _$$SubscriptionPlanModelImplCopyWith<_$SubscriptionPlanModelImpl>
+      get copyWith => __$$SubscriptionPlanModelImplCopyWithImpl<
+          _$SubscriptionPlanModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ResultImplToJson(
+    return _$$SubscriptionPlanModelImplToJson(
       this,
     );
   }
 }
 
-abstract class _Result implements Result {
-  const factory _Result(
-      {@JsonKey(name: 'id') final String? id,
-      @JsonKey(name: 'name') final String? name,
-      @JsonKey(name: 'plan_type') final String? planType,
-      @JsonKey(name: 'regular_price') final String? regularPrice,
-      @JsonKey(name: 'discounted_price') final String? discountedPrice,
-      @JsonKey(name: 'period') final int? period}) = _$ResultImpl;
+abstract class _SubscriptionPlanModel implements SubscriptionPlanModel {
+  const factory _SubscriptionPlanModel(
+          {@JsonKey(name: 'id') final String? id,
+          @JsonKey(name: 'name') final String? name,
+          @JsonKey(name: 'plan_type') final String? planType,
+          @JsonKey(name: 'regular_price') final String? regularPrice,
+          @JsonKey(name: 'discounted_price') final String? discountedPrice,
+          @JsonKey(name: 'period') final int? period}) =
+      _$SubscriptionPlanModelImpl;
 
-  factory _Result.fromJson(Map<String, dynamic> json) = _$ResultImpl.fromJson;
+  factory _SubscriptionPlanModel.fromJson(Map<String, dynamic> json) =
+      _$SubscriptionPlanModelImpl.fromJson;
 
   @override
   @JsonKey(name: 'id')
@@ -441,10 +452,10 @@ abstract class _Result implements Result {
   @JsonKey(name: 'period')
   int? get period;
 
-  /// Create a copy of Result
+  /// Create a copy of SubscriptionPlanModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ResultImplCopyWith<_$ResultImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  _$$SubscriptionPlanModelImplCopyWith<_$SubscriptionPlanModelImpl>
+      get copyWith => throw _privateConstructorUsedError;
 }

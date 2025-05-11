@@ -23,7 +23,7 @@ final class SubscriptionRepository {
   Future<Either<ApiException, PlansModel>> plans() async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(ApiUris.plans),
+        call: Dio().get<dynamic>(ApiUris.plans, options: Options(headers: {'X-Platform': platformSource}).token),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {

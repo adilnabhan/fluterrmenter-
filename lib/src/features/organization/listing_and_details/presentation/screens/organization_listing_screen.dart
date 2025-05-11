@@ -7,11 +7,26 @@ class OrganizationListingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => OrganizationListingAndDetailsCubit(),
-      child: FlowBuilder(
-        state: true,
-        onGeneratePages: (state, pages) {
-          return [const MaterialPage<void>(child: _OrganizationListingAndDetailsScreen())];
+      child: BlocListener<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+        listenWhen: (p, c) => p.details != c.details,
+        listener: (context, state) {
+          state.details.fold(() {}, (either) {
+            either.fold((error) {}, (orgDetails) {
+              if (orgDetails.id == null) {
+                Dialogs.showSnack(msg: 'Organization not found');
+              } else if (!(orgDetails.isOnFreeTrial ?? false) && !(orgDetails.isSubscribed ?? false)) {
+                Dialogs.showSnack(msg: '${orgDetails.name} subscription expired. Please renew to continue.', duration: const Duration(seconds: 5));
+                context.pushAndRemoveUntil(SubscriptionPlanChooseScreen(orgDetails: orgDetails));
+              }
+            });
+          });
         },
+        child: FlowBuilder(
+          state: true,
+          onGeneratePages: (state, pages) {
+            return [const MaterialPage<void>(child: _OrganizationListingAndDetailsScreen())];
+          },
+        ),
       ),
     );
   }

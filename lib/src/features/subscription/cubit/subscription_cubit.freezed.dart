@@ -16,6 +16,10 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$SubscriptionState {
+  Option<Either<ApiException, PlansModel>> get plans =>
+      throw _privateConstructorUsedError;
+  SubscriptionPlanModel? get selectedSubscriptionModel =>
+      throw _privateConstructorUsedError;
   Option<Either<ApiException, PaymentSuccessResponse>>? get payment =>
       throw _privateConstructorUsedError;
 
@@ -32,7 +36,12 @@ abstract class $SubscriptionStateCopyWith<$Res> {
           SubscriptionState value, $Res Function(SubscriptionState) then) =
       _$SubscriptionStateCopyWithImpl<$Res, SubscriptionState>;
   @useResult
-  $Res call({Option<Either<ApiException, PaymentSuccessResponse>>? payment});
+  $Res call(
+      {Option<Either<ApiException, PlansModel>> plans,
+      SubscriptionPlanModel? selectedSubscriptionModel,
+      Option<Either<ApiException, PaymentSuccessResponse>>? payment});
+
+  $SubscriptionPlanModelCopyWith<$Res>? get selectedSubscriptionModel;
 }
 
 /// @nodoc
@@ -50,14 +59,39 @@ class _$SubscriptionStateCopyWithImpl<$Res, $Val extends SubscriptionState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? plans = null,
+    Object? selectedSubscriptionModel = freezed,
     Object? payment = freezed,
   }) {
     return _then(_value.copyWith(
+      plans: null == plans
+          ? _value.plans
+          : plans // ignore: cast_nullable_to_non_nullable
+              as Option<Either<ApiException, PlansModel>>,
+      selectedSubscriptionModel: freezed == selectedSubscriptionModel
+          ? _value.selectedSubscriptionModel
+          : selectedSubscriptionModel // ignore: cast_nullable_to_non_nullable
+              as SubscriptionPlanModel?,
       payment: freezed == payment
           ? _value.payment
           : payment // ignore: cast_nullable_to_non_nullable
               as Option<Either<ApiException, PaymentSuccessResponse>>?,
     ) as $Val);
+  }
+
+  /// Create a copy of SubscriptionState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $SubscriptionPlanModelCopyWith<$Res>? get selectedSubscriptionModel {
+    if (_value.selectedSubscriptionModel == null) {
+      return null;
+    }
+
+    return $SubscriptionPlanModelCopyWith<$Res>(
+        _value.selectedSubscriptionModel!, (value) {
+      return _then(_value.copyWith(selectedSubscriptionModel: value) as $Val);
+    });
   }
 }
 
@@ -69,7 +103,13 @@ abstract class _$$SubscriptionStateImplCopyWith<$Res>
       __$$SubscriptionStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Option<Either<ApiException, PaymentSuccessResponse>>? payment});
+  $Res call(
+      {Option<Either<ApiException, PlansModel>> plans,
+      SubscriptionPlanModel? selectedSubscriptionModel,
+      Option<Either<ApiException, PaymentSuccessResponse>>? payment});
+
+  @override
+  $SubscriptionPlanModelCopyWith<$Res>? get selectedSubscriptionModel;
 }
 
 /// @nodoc
@@ -85,9 +125,19 @@ class __$$SubscriptionStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? plans = null,
+    Object? selectedSubscriptionModel = freezed,
     Object? payment = freezed,
   }) {
     return _then(_$SubscriptionStateImpl(
+      plans: null == plans
+          ? _value.plans
+          : plans // ignore: cast_nullable_to_non_nullable
+              as Option<Either<ApiException, PlansModel>>,
+      selectedSubscriptionModel: freezed == selectedSubscriptionModel
+          ? _value.selectedSubscriptionModel
+          : selectedSubscriptionModel // ignore: cast_nullable_to_non_nullable
+              as SubscriptionPlanModel?,
       payment: freezed == payment
           ? _value.payment
           : payment // ignore: cast_nullable_to_non_nullable
@@ -99,14 +149,22 @@ class __$$SubscriptionStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$SubscriptionStateImpl implements _SubscriptionState {
-  const _$SubscriptionStateImpl({this.payment});
+  const _$SubscriptionStateImpl(
+      {this.plans = const None(),
+      this.selectedSubscriptionModel,
+      this.payment});
 
+  @override
+  @JsonKey()
+  final Option<Either<ApiException, PlansModel>> plans;
+  @override
+  final SubscriptionPlanModel? selectedSubscriptionModel;
   @override
   final Option<Either<ApiException, PaymentSuccessResponse>>? payment;
 
   @override
   String toString() {
-    return 'SubscriptionState(payment: $payment)';
+    return 'SubscriptionState(plans: $plans, selectedSubscriptionModel: $selectedSubscriptionModel, payment: $payment)';
   }
 
   @override
@@ -114,11 +172,16 @@ class _$SubscriptionStateImpl implements _SubscriptionState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SubscriptionStateImpl &&
+            (identical(other.plans, plans) || other.plans == plans) &&
+            (identical(other.selectedSubscriptionModel,
+                    selectedSubscriptionModel) ||
+                other.selectedSubscriptionModel == selectedSubscriptionModel) &&
             (identical(other.payment, payment) || other.payment == payment));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, payment);
+  int get hashCode =>
+      Object.hash(runtimeType, plans, selectedSubscriptionModel, payment);
 
   /// Create a copy of SubscriptionState
   /// with the given fields replaced by the non-null parameter values.
@@ -132,9 +195,15 @@ class _$SubscriptionStateImpl implements _SubscriptionState {
 
 abstract class _SubscriptionState implements SubscriptionState {
   const factory _SubscriptionState(
-      {final Option<Either<ApiException, PaymentSuccessResponse>>?
+      {final Option<Either<ApiException, PlansModel>> plans,
+      final SubscriptionPlanModel? selectedSubscriptionModel,
+      final Option<Either<ApiException, PaymentSuccessResponse>>?
           payment}) = _$SubscriptionStateImpl;
 
+  @override
+  Option<Either<ApiException, PlansModel>> get plans;
+  @override
+  SubscriptionPlanModel? get selectedSubscriptionModel;
   @override
   Option<Either<ApiException, PaymentSuccessResponse>>? get payment;
 

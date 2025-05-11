@@ -9,7 +9,8 @@ part of 'plans_model.dart';
 _$PlansModelImpl _$$PlansModelImplFromJson(Map<String, dynamic> json) =>
     _$PlansModelImpl(
       results: (json['results'] as List<dynamic>?)
-          ?.map((e) => Result.fromJson(e as Map<String, dynamic>))
+          ?.map(
+              (e) => SubscriptionPlanModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
@@ -18,7 +19,9 @@ Map<String, dynamic> _$$PlansModelImplToJson(_$PlansModelImpl instance) =>
       'results': instance.results,
     };
 
-_$ResultImpl _$$ResultImplFromJson(Map<String, dynamic> json) => _$ResultImpl(
+_$SubscriptionPlanModelImpl _$$SubscriptionPlanModelImplFromJson(
+        Map<String, dynamic> json) =>
+    _$SubscriptionPlanModelImpl(
       id: json['id'] as String?,
       name: json['name'] as String?,
       planType: json['plan_type'] as String?,
@@ -27,7 +30,8 @@ _$ResultImpl _$$ResultImplFromJson(Map<String, dynamic> json) => _$ResultImpl(
       period: (json['period'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$$ResultImplToJson(_$ResultImpl instance) =>
+Map<String, dynamic> _$$SubscriptionPlanModelImplToJson(
+        _$SubscriptionPlanModelImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
