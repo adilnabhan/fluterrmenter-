@@ -45,7 +45,7 @@ class _MembersAndLeadsListingScreenState extends State<MembersAndLeadsListingScr
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.primary)),
                 foregroundColor: AppColors.primary,
-                onPressed: () {},
+                onPressed: () => const AddMemberOrLeadSelectionSheet().show(context),
                 child: const Icon(Icons.add, color: AppColors.primary, size: 24),
               ).pOnly(right: 16),
             ],

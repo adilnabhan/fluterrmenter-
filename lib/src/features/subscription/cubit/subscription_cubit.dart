@@ -25,7 +25,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     emit(state.copyWith(selectedSubscriptionModel: model));
   }
 
-  Future<void> payment({required int amount, required String orderId}) async {
+  Future<void> payment() async {
     emit(state.copyWith(payment: none()));
     if (state.selectedSubscriptionModel?.id == null) {
       emit(state.copyWith(payment: some(left(const ApiException.notFound(msg: 'Please select a plan!')))));
@@ -35,10 +35,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       return;
     }
     final res = await SubscriptionRepository().initiateRazorpayPayment(body: {'plan_id': state.selectedSubscriptionModel!.id, 'organization_id': orgDetails.id});
-    // emit(state.copyWith(payment: some(res)));
-    res.fold((l) => emit(state.copyWith(payment: some(left(l)))), (rozarpayOrder) {
-      openRazorpayCheckout(rozarpayOrder: rozarpayOrder);
-    });
+    await res.fold((l) async => emit(state.copyWith(payment: some(left(l)))), (rozarpayOrder) async => openRazorpayCheckout(rozarpayOrder: rozarpayOrder));
   }
 
   Future<void> openRazorpayCheckout({required InitiateRazorpayPaymentModel rozarpayOrder}) async {
@@ -46,11 +43,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     final razorpayApiKey = dotenv.get('RAZORPAY_API_KEY');
     try {
       final discountAmount = rozarpayOrder.disciplPlan?.discountedPrice?.toNum ?? 0;
-      final orderId = rozarpayOrder.id;
+      final rozarpayOrderId = rozarpayOrder.orderId;
       if (discountAmount <= 0) {
         emit(state.copyWith(payment: some(left(const ApiException.notFound(msg: 'Select a valid plan')))));
         return;
-      } else if (orderId == null) {
+      } else if (rozarpayOrderId == null) {
         emit(state.copyWith(payment: some(left(const ApiException.notFound(msg: 'Payment Failed! Please try again')))));
         return;
       }
@@ -58,7 +55,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         'key': razorpayApiKey,
         'amount': discountAmount, //in paise.
         'name': '${rozarpayOrder.user?.firstName ?? ''} ${rozarpayOrder.user?.lastName ?? ''}'.trim(),
-        'order_id': orderId, // Generate order_id using Orders API
+        'order_id': rozarpayOrderId, // Generate order_id using Orders API
         'description': rozarpayOrder.disciplPlan?.name,
         'timeout': 60, // in seconds
         'prefill': {

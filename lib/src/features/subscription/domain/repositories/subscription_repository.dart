@@ -58,9 +58,9 @@ final class SubscriptionRepository {
   Future<Either<ApiException, InitiateRazorpayPaymentModel>> initiateRazorpayPayment({required Map<String, dynamic> body}) async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(ApiUris.initiateRazorpayPayment, data: body),
+        call: Dio().post<dynamic>(ApiUris.initiateRazorpayPayment, data: body, options: Options(headers: {'X-Platform': platformSource}).token),
         onSuccess: (res) {
-          if (res.statusCode == 200) {
+          if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
               return right(InitiateRazorpayPaymentModel.fromJson(res.data as Map<String, dynamic>));
             }

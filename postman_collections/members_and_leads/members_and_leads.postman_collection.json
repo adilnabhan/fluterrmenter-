@@ -21,7 +21,7 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
 								"type": "text"
 							}
 						],
@@ -55,7 +55,134 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "members_listing",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{v1}}/fitnesscenter/customers/?organization_id=4",
+									"host": [
+										"{{v1}}"
+									],
+									"path": [
+										"fitnesscenter",
+										"customers",
+										""
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "active",
+											"description": "active, expired",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "recent",
+											"description": "recent or oldest",
+											"disabled": true
+										},
+										{
+											"key": "organization_id",
+											"value": "4"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 11 May 2025 18:25:33 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "215"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "GET, HEAD, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "d153cdd0-3e3f-4ecb"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "93e3b83a297c4c9b-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"count\": 1,\n    \"next\": null,\n    \"previous\": null,\n    \"results\": [\n        {\n            \"id\": 1,\n            \"name\": \"Ravi Sharma\",\n            \"mobile_number\": \"+919812345678\",\n            \"profile_picture\": null,\n            \"joined_date\": \"2025-05-11\",\n            \"active_plan\": {\n                \"id\": 2,\n                \"plan_name\": \"Basic Quarterly Membership\",\n                \"start_date\": \"2025-05-11T18:25:21.213123Z\",\n                \"end_date\": \"2025-08-24T18:25:21.213123Z\",\n                \"status\": \"Active\"\n            }\n        }\n    ]\n}"
+						}
+					]
 				},
 				{
 					"name": "create_member",
@@ -69,7 +196,7 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
 								"type": "text"
 							}
 						],
@@ -95,7 +222,126 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "create_member",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"first_name\": \"Ravi\",\n  \"last_name\": \"Sharma\",\n  \"mobile_number\": \"+919812345678\",\n  \"email\": \"ravi.sharma@example.com\",\n  \"date_of_birth\": \"1988-05-15\",\n  \"gender\": \"male\",\n  \"blood_group\": \"B+\",\n  \"user_role\": 45,\n  \"organization_id\": 4,\n  \"emergency_contact_name\": \"Neha Sharma\",\n  \"emergency_contact_number\": \"+919876543210\",\n  \"height\": 180.00,\n  \"weight\": 75.50,\n  \"profession\": \"Doctor\",\n  \"membership_plan_id\": 2,\n  \"profile_picture\": \"\"\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{v1}}/customer/manage/create/",
+									"host": [
+										"{{v1}}"
+									],
+									"path": [
+										"customer",
+										"manage",
+										"create",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 11 May 2025 18:25:21 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "488"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "POST, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "13ded305-67c7-4a2b"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "93e3b7eb481a4c9b-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"emergency_contact_name\": \"Neha Sharma\",\n    \"emergency_contact_number\": \"+919876543210\",\n    \"height\": \"180.00\",\n    \"weight\": \"75.50\",\n    \"profession\": \"Doctor\",\n    \"is_active_member\": true,\n    \"memberships\": [\n        {\n            \"id\": 1,\n            \"membership\": 2,\n            \"membership_name\": \"Basic Quarterly Membership\",\n            \"start_date\": \"2025-05-11T18:25:21.213123Z\",\n            \"end_date\": \"2025-08-24T18:25:21.213123Z\",\n            \"status\": \"Active\",\n            \"amount\": \"2199.00\",\n            \"assign_free\": true,\n            \"is_trial\": true,\n            \"payment_status\": \"completed\",\n            \"is_active\": true,\n            \"trial_start_at\": \"2025-05-11T18:25:21.213123Z\",\n            \"trial_end_at\": \"2025-05-26T18:25:21.213123Z\",\n            \"created_at\": \"2025-05-11T18:25:21.213368Z\",\n            \"updated_at\": \"2025-05-11T18:25:21.213374Z\"\n        }\n    ],\n    \"full_name\": \"Ravi Sharma\",\n    \"created\": \"2025-05-11T18:25:21.209034Z\",\n    \"modified\": \"2025-05-11T18:25:21.211304Z\",\n    \"mobile_number\": \"+919812345678\",\n    \"first_name\": \"Ravi\",\n    \"last_name\": \"Sharma\",\n    \"email\": \"ravi.sharma@example.com\",\n    \"date_of_birth\": \"1988-05-15\",\n    \"gender\": \"male\",\n    \"blood_group\": \"B+\",\n    \"user_role\": \"45\",\n    \"hash_of_user_phone_number\": \"a5f2bd9ec98f32171407e05521bebb865c7b3ef6be94fddafec455f7836e3bea\"\n}"
+						}
+					]
 				},
 				{
 					"name": "update_member",
@@ -109,13 +355,13 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"first_name\": \"Sarah\"\n    // \"last_name\": \"Williams\",\n    // \"mobile_number\": \"+10987654321\",\n    // \"email\": \"sarah.williams@example.com\",\n    // \"date_of_birth\": \"1990-03-20\",\n    // \"gender\": \"female\",\n    // \"blood_group\": \"O+\",\n    // \"user_role\": 45,\n    // \"emergency_contact_name\": \"Tom Williams\",\n    // \"emergency_contact_number\": \"+19876543210\",\n    // \"height\": 170.00,\n    // \"weight\": 65.00,\n    // \"profession\": \"Teacher\"\n}",
+							"raw": "{\n  \"first_name\": \"Ravi\",\n  \"last_name\": \"Sharma\",\n  \"mobile_number\": \"+919812345678\",\n  \"email\": \"ravi.sharma@example.com\",\n  \"date_of_birth\": \"1988-05-15\",\n  \"gender\": \"male\",\n  \"blood_group\": \"B+\",\n  \"user_role\": 45,\n  \"organization_id\": 4,\n  \"emergency_contact_name\": \"Neha Sharma\",\n  \"emergency_contact_number\": \"+919876543210\",\n  \"height\": 180.00,\n  \"weight\": 78.0,\n  \"profession\": \"Surgeon\",\n  \"membership_plan_id\": 2,\n  \"profile_picture\": \"\"\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -123,19 +369,140 @@
 							}
 						},
 						"url": {
-							"raw": "{{v1}}customer/manage/64/update/",
+							"raw": "{{v1}}/customer/manage/1/update/",
 							"host": [
-								"{{v1}}customer"
+								"{{v1}}"
 							],
 							"path": [
+								"customer",
 								"manage",
-								"64",
+								"1",
 								"update",
 								""
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "update_member",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"first_name\": \"Ravi\",\n  \"last_name\": \"Sharma\",\n  \"mobile_number\": \"+919812345678\",\n  \"email\": \"ravi.sharma@example.com\",\n  \"date_of_birth\": \"1988-05-15\",\n  \"gender\": \"male\",\n  \"blood_group\": \"B+\",\n  \"user_role\": 45,\n  \"organization_id\": 4,\n  \"emergency_contact_name\": \"Neha Sharma\",\n  \"emergency_contact_number\": \"+919876543210\",\n  \"height\": 180.00,\n  \"weight\": 78.0,\n  \"profession\": \"Surgeon\",\n  \"membership_plan_id\": 2,\n  \"profile_picture\": \"\"\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{v1}}/customer/manage/1/update/",
+									"host": [
+										"{{v1}}"
+									],
+									"path": [
+										"customer",
+										"manage",
+										"1",
+										"update",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 11 May 2025 18:28:24 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "534"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "PUT, PATCH, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "97bd4086-b75f-430b"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "93e3bc65ca9640a2-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"emergency_contact_name\": \"Neha Sharma\",\n    \"emergency_contact_number\": \"+919876543210\",\n    \"height\": \"180.00\",\n    \"weight\": \"78.00\",\n    \"profession\": \"Surgeon\",\n    \"is_active_member\": true,\n    \"memberships\": [\n        {\n            \"id\": 1,\n            \"membership\": 2,\n            \"membership_name\": \"Basic Quarterly Membership\",\n            \"start_date\": \"2025-05-11T18:25:21.213123Z\",\n            \"end_date\": \"2025-08-24T18:25:21.213123Z\",\n            \"status\": \"Active\",\n            \"amount\": \"2199.00\",\n            \"assign_free\": true,\n            \"is_trial\": true,\n            \"payment_status\": \"completed\",\n            \"is_active\": true,\n            \"trial_start_at\": \"2025-05-11T18:25:21.213123Z\",\n            \"trial_end_at\": \"2025-05-26T18:25:21.213123Z\",\n            \"created_at\": \"2025-05-11T18:25:21.213368Z\",\n            \"updated_at\": \"2025-05-11T18:25:21.213374Z\"\n        },\n        {\n            \"id\": 2,\n            \"membership\": 2,\n            \"membership_name\": \"Basic Quarterly Membership\",\n            \"start_date\": \"2025-05-11T18:28:24.728631Z\",\n            \"end_date\": \"2025-08-24T18:28:24.728631Z\",\n            \"status\": \"Active\",\n            \"amount\": \"2199.00\",\n            \"assign_free\": true,\n            \"is_trial\": true,\n            \"payment_status\": \"completed\",\n            \"is_active\": true,\n            \"trial_start_at\": \"2025-05-11T18:28:24.728631Z\",\n            \"trial_end_at\": \"2025-05-26T18:28:24.728631Z\",\n            \"created_at\": \"2025-05-11T18:28:24.728832Z\",\n            \"updated_at\": \"2025-05-11T18:28:24.728836Z\"\n        }\n    ],\n    \"full_name\": \"Ravi Sharma\",\n    \"created\": \"2025-05-11T18:25:21.209034Z\",\n    \"modified\": \"2025-05-11T18:28:24.726300Z\",\n    \"mobile_number\": \"+919812345678\",\n    \"first_name\": \"Ravi\",\n    \"last_name\": \"Sharma\",\n    \"email\": \"ravi.sharma@example.com\",\n    \"date_of_birth\": \"1988-05-15\",\n    \"gender\": \"male\",\n    \"blood_group\": \"B+\",\n    \"user_role\": \"45\",\n    \"hash_of_user_phone_number\": \"a5f2bd9ec98f32171407e05521bebb865c7b3ef6be94fddafec455f7836e3bea\"\n}"
+						}
+					]
 				},
 				{
 					"name": "member_details",
@@ -149,23 +516,134 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{v1}}customer/manage/4/",
+							"raw": "{{v1}}/customer/manage/1/",
 							"host": [
-								"{{v1}}customer"
+								"{{v1}}"
 							],
 							"path": [
+								"customer",
 								"manage",
-								"4",
+								"1",
 								""
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "member_details",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{v1}}/customer/manage/1/",
+									"host": [
+										"{{v1}}"
+									],
+									"path": [
+										"customer",
+										"manage",
+										"1",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 11 May 2025 18:26:09 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "488"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "GET, HEAD, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "21bc2958-5017-45df"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "93e3b917ae734c9b-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"emergency_contact_name\": \"Neha Sharma\",\n    \"emergency_contact_number\": \"+919876543210\",\n    \"height\": \"180.00\",\n    \"weight\": \"75.50\",\n    \"profession\": \"Doctor\",\n    \"is_active_member\": true,\n    \"memberships\": [\n        {\n            \"id\": 1,\n            \"membership\": 2,\n            \"membership_name\": \"Basic Quarterly Membership\",\n            \"start_date\": \"2025-05-11T18:25:21.213123Z\",\n            \"end_date\": \"2025-08-24T18:25:21.213123Z\",\n            \"status\": \"Active\",\n            \"amount\": \"2199.00\",\n            \"assign_free\": true,\n            \"is_trial\": true,\n            \"payment_status\": \"completed\",\n            \"is_active\": true,\n            \"trial_start_at\": \"2025-05-11T18:25:21.213123Z\",\n            \"trial_end_at\": \"2025-05-26T18:25:21.213123Z\",\n            \"created_at\": \"2025-05-11T18:25:21.213368Z\",\n            \"updated_at\": \"2025-05-11T18:25:21.213374Z\"\n        }\n    ],\n    \"full_name\": \"Ravi Sharma\",\n    \"created\": \"2025-05-11T18:25:21.209034Z\",\n    \"modified\": \"2025-05-11T18:25:21.211304Z\",\n    \"mobile_number\": \"+919812345678\",\n    \"first_name\": \"Ravi\",\n    \"last_name\": \"Sharma\",\n    \"email\": \"ravi.sharma@example.com\",\n    \"date_of_birth\": \"1988-05-15\",\n    \"gender\": \"male\",\n    \"blood_group\": \"B+\",\n    \"user_role\": \"45\",\n    \"hash_of_user_phone_number\": \"a5f2bd9ec98f32171407e05521bebb865c7b3ef6be94fddafec455f7836e3bea\"\n}"
+						}
+					]
 				}
 			]
 		},
@@ -184,7 +662,7 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
 								"type": "text"
 							}
 						],
@@ -211,7 +689,127 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "leads_listing",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{v1}}/fitnesscenter/trainers/?organization_id=4",
+									"host": [
+										"{{v1}}"
+									],
+									"path": [
+										"fitnesscenter",
+										"trainers",
+										""
+									],
+									"query": [
+										{
+											"key": "organization_id",
+											"value": "4"
+										},
+										{
+											"key": "sort",
+											"value": "recent",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 11 May 2025 18:30:20 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "183"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "GET, HEAD, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "18aa1423-1808-4679"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "93e3bf36fac740a2-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"count\": 1,\n    \"next\": null,\n    \"previous\": null,\n    \"results\": [\n        {\n            \"id\": 10,\n            \"user_id\": \"12\",\n            \"name\": \"syam Doe\",\n            \"mobile_number\": \"+917510661723\",\n            \"email\": \"john@example.com\",\n            \"designation\": \"trainer\",\n            \"created\": \"2025-05-11\",\n            \"profile_picture\": null,\n            \"categories\": [\n                \"Gym\",\n                \"Zumba\"\n            ]\n        }\n    ]\n}"
+						}
+					]
 				},
 				{
 					"name": "create_lead",
@@ -225,7 +823,7 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
 								"type": "text"
 							}
 						],
@@ -274,7 +872,7 @@
 								},
 								{
 									"key": "organization_id",
-									"value": "43",
+									"value": "4",
 									"contentType": "application/json",
 									"type": "text"
 								},
@@ -343,7 +941,218 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "create_lead",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "first_name",
+											"value": "syam",
+											"type": "text"
+										},
+										{
+											"key": "last_name",
+											"value": "Doe",
+											"type": "text"
+										},
+										{
+											"key": "mobile_number",
+											"value": "+917510661723",
+											"type": "text"
+										},
+										{
+											"key": "email",
+											"value": "john@example.com",
+											"type": "text"
+										},
+										{
+											"key": "date_of_birth",
+											"value": "1990-01-01",
+											"type": "text"
+										},
+										{
+											"key": "gender",
+											"value": "male",
+											"type": "text"
+										},
+										{
+											"key": "blood_group",
+											"value": "A+",
+											"type": "text"
+										},
+										{
+											"key": "user_role",
+											"value": "45",
+											"type": "text"
+										},
+										{
+											"key": "organization_id",
+											"value": "4",
+											"contentType": "application/json",
+											"type": "text"
+										},
+										{
+											"key": "emergency_contact",
+											"value": "+918086634720",
+											"contentType": "application/json",
+											"type": "text"
+										},
+										{
+											"key": "designation",
+											"value": "trainer",
+											"type": "text"
+										},
+										{
+											"key": "experience",
+											"value": "4",
+											"contentType": "application/json",
+											"type": "text"
+										},
+										{
+											"key": "address_proof",
+											"type": "file",
+											"src": "postman-cloud:///1f01f644-7c04-4920-ab18-ccd0dd03022c"
+										},
+										{
+											"key": "trainer_certificates",
+											"type": "file",
+											"src": [
+												"postman-cloud:///1f01f644-7c04-4920-ab18-ccd0dd03022c",
+												"postman-cloud:///1f01f644-f971-4f20-b1ec-4d076b36fcd6"
+											]
+										},
+										{
+											"key": "profile_picture",
+											"type": "file",
+											"src": []
+										},
+										{
+											"key": "categories[1]",
+											"value": "1",
+											"contentType": "application/json",
+											"type": "text"
+										},
+										{
+											"key": "categories[2]",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "user_role",
+											"value": "35",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{v1}}/mentor/trainers/",
+									"host": [
+										"{{v1}}"
+									],
+									"path": [
+										"mentor",
+										"trainers",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 11 May 2025 18:30:03 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "348"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "GET, POST, HEAD, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "79558e16-716a-4419"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "93e3becb8eb140a2-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 12,\n    \"first_name\": \"syam\",\n    \"last_name\": \"Doe\",\n    \"mobile_number\": \"+917510661723\",\n    \"email\": \"john@example.com\",\n    \"experience\": \"4\",\n    \"emergency_contact\": \"+918086634720\",\n    \"gender\": \"male\",\n    \"blood_group\": \"A+\",\n    \"date_of_birth\": \"1990-01-01\",\n    \"address_proof\": null,\n    \"certificates\": [],\n    \"designation\": \"trainer\",\n    \"profile_picture\": null,\n    \"user_role\": 35,\n    \"category_data\": [\n        {\n            \"id\": 1,\n            \"name\": \"Gym\",\n            \"logo\": \"https://discipl-backend.onrender.com/src/category/IMG-20250504-WA0001.jpg\",\n            \"status_string\": \"ACTIVE\"\n        },\n        {\n            \"id\": 2,\n            \"name\": \"Zumba\",\n            \"logo\": \"https://discipl-backend.onrender.com/src/category/IMG-20250504-WA0001_7AJKCfD.jpg\",\n            \"status_string\": \"ACTIVE\"\n        }\n    ]\n}"
+						}
+					]
 				},
 				{
 					"name": "update_lead",
@@ -357,7 +1166,7 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
 								"type": "text"
 							}
 						],
@@ -456,19 +1265,223 @@
 							]
 						},
 						"url": {
-							"raw": "{{v1}}/mentor/trainers/110/",
+							"raw": "{{v1}}/mentor/trainers/12/",
 							"host": [
 								"{{v1}}"
 							],
 							"path": [
 								"mentor",
 								"trainers",
-								"110",
+								"12",
 								""
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "update_lead",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "first_name",
+											"value": "aromal",
+											"type": "text"
+										},
+										{
+											"key": "last_name",
+											"value": "Doe",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "mobile_number",
+											"value": "+917510661756",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "email",
+											"value": "john@example.com",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "date_of_birth",
+											"value": "1990-01-01",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "gender",
+											"value": "male",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "blood_group",
+											"value": "A+",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "user_role",
+											"value": "45",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "organization_id",
+											"value": "13",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "emergency_contact_number",
+											"value": "+918086634711",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "designation",
+											"value": "trainer",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "experience",
+											"value": "5",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "profile_picture",
+											"type": "file",
+											"src": "postman-cloud:///1f01f644-7c04-4920-ab18-ccd0dd03022c",
+											"disabled": true
+										},
+										{
+											"key": "categories[1]",
+											"value": "2",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "categories[]",
+											"value": "2",
+											"type": "text",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "{{v1}}/mentor/trainers/12/",
+									"host": [
+										"{{v1}}"
+									],
+									"path": [
+										"mentor",
+										"trainers",
+										"12",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 11 May 2025 18:31:31 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "349"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "93edaee7-045c-4259"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "93e3c0f43cf740a2-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 12,\n    \"first_name\": \"aromal\",\n    \"last_name\": \"Doe\",\n    \"mobile_number\": \"+917510661723\",\n    \"email\": \"john@example.com\",\n    \"experience\": \"4\",\n    \"emergency_contact\": \"+918086634720\",\n    \"gender\": \"male\",\n    \"blood_group\": \"A+\",\n    \"date_of_birth\": \"1990-01-01\",\n    \"address_proof\": null,\n    \"certificates\": [],\n    \"designation\": \"trainer\",\n    \"profile_picture\": null,\n    \"user_role\": 35,\n    \"category_data\": [\n        {\n            \"id\": 1,\n            \"name\": \"Gym\",\n            \"logo\": \"https://discipl-backend.onrender.com/src/category/IMG-20250504-WA0001.jpg\",\n            \"status_string\": \"ACTIVE\"\n        },\n        {\n            \"id\": 2,\n            \"name\": \"Zumba\",\n            \"logo\": \"https://discipl-backend.onrender.com/src/category/IMG-20250504-WA0001_7AJKCfD.jpg\",\n            \"status_string\": \"ACTIVE\"\n        }\n    ]\n}"
+						}
+					]
 				},
 				{
 					"name": "lead_details",
@@ -482,24 +1495,134 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2OTQ1OTM5LCJpYXQiOjE3NDY4NTk1MzksImp0aSI6IjU0MjQ4NTE1OGU2MjRjYTk5ZjI3NDVmZTFiYzE3N2QzIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwfQ.kSf2_YBfjLDACXgOgQexhO2NT3CaYx8_516MPP2wWQQ",
+								"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{v1}}/mentor/trainers/1/",
+							"raw": "{{v1}}/mentor/trainers/12/",
 							"host": [
 								"{{v1}}"
 							],
 							"path": [
 								"mentor",
 								"trainers",
-								"1",
+								"12",
 								""
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "lead_details",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-Platform",
+										"value": "mentor-app-ios",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDM0MTM4LCJpYXQiOjE3NDY5NDc3MzgsImp0aSI6Ijk2MWE5ZTY3ODY2YjQzZWI5ZTFkNzI2MDFiMDliZTAwIiwidXNlcl9pZCI6IjEwIiwidXNlcm5hbWUiOiIyZWNhYmU1My03ZjcyLTRkNDUtYmQ2MC1iOTNiYjU4YmJiMmMiLCJtb2JpbGVfbnVtYmVyIjoiKzkxODU5MDgxMTU0NiIsInJvbGUiOjIwLCJwbGF0Zm9ybSI6Im1lbnRvci1hcHAtaW9zIn0.IL0nSYp_4H7LjR28RMQpId_YHUzwyTtpLQzAvOGwnE8",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{v1}}/mentor/trainers/12/",
+									"host": [
+										"{{v1}}"
+									],
+									"path": [
+										"mentor",
+										"trainers",
+										"12",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 11 May 2025 18:31:05 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "406"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "allow",
+									"value": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								},
+								{
+									"key": "cross-origin-opener-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "referrer-policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "rndr-id",
+									"value": "6c9ce671-37e0-4901"
+								},
+								{
+									"key": "vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "x-content-type-options",
+									"value": "nosniff"
+								},
+								{
+									"key": "x-frame-options",
+									"value": "DENY"
+								},
+								{
+									"key": "x-render-origin-server",
+									"value": "gunicorn"
+								},
+								{
+									"key": "cf-cache-status",
+									"value": "DYNAMIC"
+								},
+								{
+									"key": "Server",
+									"value": "cloudflare"
+								},
+								{
+									"key": "CF-RAY",
+									"value": "93e3c04fae6940a2-SIN"
+								},
+								{
+									"key": "alt-svc",
+									"value": "h3=\":443\"; ma=86400"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 12,\n    \"first_name\": \"syam\",\n    \"last_name\": \"Doe\",\n    \"mobile_number\": \"+917510661723\",\n    \"email\": \"john@example.com\",\n    \"gender\": \"male\",\n    \"blood_group\": \"A+\",\n    \"date_of_birth\": \"1990-01-01\",\n    \"mentor_profile\": {\n        \"id\": 10,\n        \"organization\": {\n            \"id\": 4,\n            \"name\": \"Habitoz\",\n            \"category\": [\n                1\n            ],\n            \"email\": \"habitoz@gmail.com\",\n            \"phone_number\": \"+918590811546\",\n            \"logo\": null\n        },\n        \"experience\": \"4\",\n        \"designation\": \"trainer\",\n        \"emergency_contact\": \"+918086634720\",\n        \"address_proof\": null,\n        \"categories\": [\n            {\n                \"id\": 1,\n                \"name\": \"Gym\",\n                \"logo\": \"https://discipl-backend.onrender.com/src/category/IMG-20250504-WA0001.jpg\",\n                \"status_string\": \"ACTIVE\"\n            },\n            {\n                \"id\": 2,\n                \"name\": \"Zumba\",\n                \"logo\": \"https://discipl-backend.onrender.com/src/category/IMG-20250504-WA0001_7AJKCfD.jpg\",\n                \"status_string\": \"ACTIVE\"\n            }\n        ]\n    },\n    \"certificates\": [],\n    \"profile_picture\": null\n}"
+						}
+					]
 				}
 			]
 		}

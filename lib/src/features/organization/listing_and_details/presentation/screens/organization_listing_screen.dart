@@ -130,7 +130,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                     },
                   ),
                   (
-                    title: 'Upcoming Members',
+                    title: 'Upcoming Renewals',
                     color: const Color(0xffC85074),
                     count: orgDetails.upcomingRenewalsCount ?? 0,
                     onTap: () {
