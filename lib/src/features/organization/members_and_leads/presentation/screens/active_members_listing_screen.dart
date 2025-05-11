@@ -1,17 +1,31 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class UpcomingRenewalsListingScreen extends StatefulWidget {
-  const UpcomingRenewalsListingScreen({super.key});
+class ActiveMembersListingScreen extends StatelessWidget {
+  const ActiveMembersListingScreen({required this.orgId, super.key});
+
+  final int orgId;
 
   @override
-  State<UpcomingRenewalsListingScreen> createState() => _UpcomingRenewalsListingScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => MembersAndLeadsCubit(orgId: orgId),
+      child: FlowBuilder(
+        state: true,
+        onGeneratePages: (state, pages) {
+          return [const MaterialPage<void>(child: _ActiveMembersListingScreen())];
+        },
+      ),
+    );
+  }
 }
 
-class _UpcomingRenewalsListingScreenState extends State<UpcomingRenewalsListingScreen> with SingleTickerProviderStateMixin {
+class _ActiveMembersListingScreen extends StatelessWidget {
+  const _ActiveMembersListingScreen();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Upcoming Renewals')),
+      appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Active Members')),
       body: Column(
         children: [
           TextField(
@@ -32,25 +46,21 @@ class _UpcomingRenewalsListingScreenState extends State<UpcomingRenewalsListingS
             child: ColoredBox(
               color: const Color(0xffF7F7F7),
               child: Column(
-                spacing: 16,
                 children: [
-                  SizedBox(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('88 members', style: AppStyles.text14Px.poppins.w400.dark),
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), side: const BorderSide(color: Color(0xffDDDDDD))),
-                          onPressed: () {},
-                          icon: Text('Sort by', style: AppStyles.text12Px.poppins.copyWith(color: const Color(0xff222222))),
-                          label: const Icon(Icons.keyboard_arrow_down_sharp),
-                        ),
-                      ],
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('88 members', style: AppStyles.text14Px.poppins.w400.dark),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), side: const BorderSide(color: Color(0xffDDDDDD))),
+                        onPressed: () {},
+                        child: Text('Sort by Joined Recently', style: AppStyles.text12Px.poppins.copyWith(color: const Color(0xff222222))),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 16),
                   Expanded(
                     child: ListView.separated(
-                      padding: EdgeInsets.zero,
                       itemCount: 10,
                       separatorBuilder: (BuildContext context, int index) {
                         return const SizedBox(height: 16);

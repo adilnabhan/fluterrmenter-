@@ -1,55 +1,52 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class MembersAndLeadsListingScreen extends StatefulWidget {
-  const MembersAndLeadsListingScreen({super.key});
+class UpcomingRenewalsListingScreen extends StatelessWidget {
+  const UpcomingRenewalsListingScreen({required this.orgId, super.key});
 
-  @override
-  State<MembersAndLeadsListingScreen> createState() => _MembersAndLeadsListingScreenState();
-}
-
-class _MembersAndLeadsListingScreenState extends State<MembersAndLeadsListingScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
+  final int orgId;
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => MembersAndLeadsCubit(orgId: orgId),
+      child: FlowBuilder(
+        state: true,
+        onGeneratePages: (state, pages) {
+          return [const MaterialPage<void>(child: _UpcomingRenewalsListingScreen())];
+        },
+      ),
+    );
+  }
+}
+
+class _UpcomingRenewalsListingScreen extends StatefulWidget {
+  const _UpcomingRenewalsListingScreen();
+
+  @override
+  State<_UpcomingRenewalsListingScreen> createState() => __UpcomingRenewalsListingScreenState();
+}
+
+class __UpcomingRenewalsListingScreenState extends State<_UpcomingRenewalsListingScreen> with SingleTickerProviderStateMixin {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Members & Leads')),
+      appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Upcoming Renewals')),
       body: Column(
         children: [
-          Row(
-            children: [
-              Flexible(
-                child: TextField(
-                  onChanged: (q) {
-                    EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {});
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search for name or phone number',
-                    hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-                    filled: false,
-                    prefixIcon: SizedBox.square(dimension: 32, child: SvgPicture.asset('assets/images/svg/icons/search.svg', height: 32, width: 32, color: AppColors.textGrey).center),
-                    border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
-                    focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
-                    enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
-                  ),
-                ).pad(16),
-              ),
-              FloatingActionButton(
-                backgroundColor: const Color(0xffFFF5F6),
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.primary)),
-                foregroundColor: AppColors.primary,
-                onPressed: () => const AddMemberOrLeadSelectionSheet().show(context),
-                child: const Icon(Icons.add, color: AppColors.primary, size: 24),
-              ).pOnly(right: 16),
-            ],
-          ),
+          TextField(
+            onChanged: (q) {
+              EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {});
+            },
+            decoration: InputDecoration(
+              hintText: 'Search for name or phone number',
+              hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+              filled: false,
+              prefixIcon: SizedBox.square(dimension: 32, child: SvgPicture.asset('assets/images/svg/icons/search.svg', height: 32, width: 32, color: AppColors.textGrey).center),
+              border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
+              focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
+              enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
+            ),
+          ).pad(16),
           Expanded(
             child: ColoredBox(
               color: const Color(0xffF7F7F7),
@@ -60,25 +57,7 @@ class _MembersAndLeadsListingScreenState extends State<MembersAndLeadsListingScr
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: 140,
-
-                          child: TabBar(
-                            controller: _tabController,
-                            tabs: const [Tab(text: 'Members'), Tab(text: 'Leads')],
-                            indicator: const UnderlineTabIndicator(
-                              borderSide: BorderSide(width: 2, color: Colors.red), // Red underline for the active tab
-                            ),
-                            padding: EdgeInsets.zero,
-                            labelPadding: EdgeInsets.zero,
-                            indicatorSize: TabBarIndicatorSize.label,
-                            indicatorColor: Colors.red, // Red color for the active tab underline
-                            unselectedLabelColor: Colors.grey, // Grey color for the inactive tab underline
-                            labelColor: Colors.red, // Red color for the active tab text
-                            labelStyle: AppStyles.text14Px.poppins.w500, // Style for the active tab text
-                            unselectedLabelStyle: AppStyles.text14Px.poppins.w400, // Style for the inactive tab text
-                          ),
-                        ),
+                        Text('88 members', style: AppStyles.text14Px.poppins.w400.dark),
                         OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), side: const BorderSide(color: Color(0xffDDDDDD))),
                           onPressed: () {},

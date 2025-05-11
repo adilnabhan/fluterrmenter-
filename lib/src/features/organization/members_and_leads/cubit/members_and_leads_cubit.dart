@@ -4,7 +4,9 @@ part 'members_and_leads_state.dart';
 part 'members_and_leads_cubit.freezed.dart';
 
 class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
-  MembersAndLeadsCubit() : super(const MembersAndLeadsState());
+  MembersAndLeadsCubit({required this.orgId}) : super(const MembersAndLeadsState());
+
+  final int orgId;
 
   ///============================= Members =============================\\\
 
@@ -14,7 +16,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       return;
     }
     emit(state.copyWith(members: (data: isPagination ? state.members.data : none(), isPagination: isPagination)));
-    final res = await MembersRepository().membersListing(queryParameters: {'status': 'active', 'sort': 'recent', 'organization_id': 4}, nextUrl: isPagination ? members?.next : null);
+    final res = await MembersRepository().membersListing(queryParameters: {'status': 'active', 'sort': 'recent', 'organization_id': orgId}, nextUrl: isPagination ? members?.next : null);
     if (isPagination) {
       await res.fold(
         (l) {

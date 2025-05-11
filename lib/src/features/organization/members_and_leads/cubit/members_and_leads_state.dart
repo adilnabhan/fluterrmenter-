@@ -14,3 +14,5 @@ class MembersAndLeadsState with _$MembersAndLeadsState {
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
   }) = _MembersAndLeadsState;
 }
+
+enum MemberStatus { active, inactive, all }

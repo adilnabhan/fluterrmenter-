@@ -1,13 +1,32 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class ExpiredMembersListingScreen extends StatefulWidget {
-  const ExpiredMembersListingScreen({super.key});
+class ExpiredMembersListingScreen extends StatelessWidget {
+  const ExpiredMembersListingScreen({required this.orgId, super.key});
+
+  final int orgId;
 
   @override
-  State<ExpiredMembersListingScreen> createState() => _ExpiredMembersListingScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => MembersAndLeadsCubit(orgId: orgId),
+      child: FlowBuilder(
+        state: true,
+        onGeneratePages: (state, pages) {
+          return [const MaterialPage<void>(child: _ExpiredMembersListingScreen())];
+        },
+      ),
+    );
+  }
 }
 
-class _ExpiredMembersListingScreenState extends State<ExpiredMembersListingScreen> with SingleTickerProviderStateMixin {
+class _ExpiredMembersListingScreen extends StatefulWidget {
+  const _ExpiredMembersListingScreen();
+
+  @override
+  State<_ExpiredMembersListingScreen> createState() => __ExpiredMembersListingScreenState();
+}
+
+class __ExpiredMembersListingScreenState extends State<_ExpiredMembersListingScreen> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

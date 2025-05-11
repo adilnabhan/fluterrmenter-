@@ -99,7 +99,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
           ],
         ),
         body: BlocBuilder<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
-          buildWhen: (p, c) => p.homeData != c.homeData,
+          buildWhen: (p, c) => p.homeData != c.homeData || p.selectedOrganization != c.selectedOrganization,
           builder: (context, state) {
             return state.homeData.fold(
               () => const Center(child: CircularProgressIndicator()),
@@ -110,7 +110,11 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                     color: const Color(0xff486CC2),
                     count: orgDetails.activeCustomersCount ?? 0,
                     onTap: () {
-                      context.push(const ActiveMembersListingScreen());
+                      if (state.selectedOrganization?.id != null) {
+                        context.push(ActiveMembersListingScreen(orgId: state.selectedOrganization!.id!));
+                      } else {
+                        Dialogs.showSnack(msg: 'Organization not found');
+                      }
                     },
                   ),
                   (
@@ -118,7 +122,11 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                     color: const Color(0xff9C51BF),
                     count: (orgDetails.trainerCount ?? 0) + (orgDetails.expiredCustomersCount ?? 0) + (orgDetails.activeCustomersCount ?? 0),
                     onTap: () {
-                      context.push(const MembersAndLeadsListingScreen());
+                      if (state.selectedOrganization?.id != null) {
+                        context.push(ActiveMembersListingScreen(orgId: state.selectedOrganization!.id!));
+                      } else {
+                        Dialogs.showSnack(msg: 'Organization not found');
+                      }
                     },
                   ),
                   (
@@ -126,7 +134,11 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                     color: const Color(0xff527F50),
                     count: orgDetails.expiredCustomersCount ?? 0,
                     onTap: () {
-                      context.push(const ExpiredMembersListingScreen());
+                      if (state.selectedOrganization?.id != null) {
+                        context.push(ActiveMembersListingScreen(orgId: state.selectedOrganization!.id!));
+                      } else {
+                        Dialogs.showSnack(msg: 'Organization not found');
+                      }
                     },
                   ),
                   (
@@ -134,7 +146,11 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                     color: const Color(0xffC85074),
                     count: orgDetails.upcomingRenewalsCount ?? 0,
                     onTap: () {
-                      context.push(const UpcomingRenewalsListingScreen());
+                      if (state.selectedOrganization?.id != null) {
+                        context.push(ActiveMembersListingScreen(orgId: state.selectedOrganization!.id!));
+                      } else {
+                        Dialogs.showSnack(msg: 'Organization not found');
+                      }
                     },
                   ),
                 ];
