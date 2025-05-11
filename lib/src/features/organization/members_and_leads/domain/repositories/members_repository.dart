@@ -28,7 +28,7 @@ final class MembersRepository {
   Future<Either<ApiException, MembersListingModel>> membersListing({required Map<String, dynamic> queryParameters, String? nextUrl}) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(nextUrl ?? ApiUris.membersListing, queryParameters: queryParameters),
+        call: Dio().get<dynamic>(nextUrl ?? ApiUris.membersListing, queryParameters: queryParameters, options: Options(headers: {'X-Platform': platformSource}).token),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {
@@ -83,8 +83,7 @@ final class MembersRepository {
             false => ApiUris.updateMember(memberId!),
           },
           data: body,
-
-          ///
+          options: Options(headers: {'X-Platform': platformSource}).token,
         ),
         onSuccess: (res) {
           if (res.statusCode == 200) {
@@ -134,7 +133,7 @@ final class MembersRepository {
   Future<Either<ApiException, MemberDetailsModel>> memberDetails({required int id}) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(ApiUris.memberDetails(id)),
+        call: Dio().get<dynamic>(ApiUris.memberDetails(id), options: Options(headers: {'X-Platform': platformSource}).token),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {
