@@ -28,10 +28,13 @@ class _MembersAndLeadsListingScreen extends StatefulWidget {
 
 class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late final MembersAndLeadsCubit _cubit;
 
   @override
   void initState() {
     super.initState();
+    _cubit = context.read<MembersAndLeadsCubit>();
+
     _tabController = TabController(length: 2, vsync: this);
   }
 
