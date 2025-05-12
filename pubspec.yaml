@@ -48,6 +48,7 @@ dependencies:
   syncfusion_flutter_sliders: ^29.1.38
   syncfusion_flutter_core: ^29.1.38
   syncfusion_flutter_calendar: ^29.1.38
+  flutter_pdfview: ^1.4.0+1
 
   #* SMS Auto Fill
   smart_auth: ^3.2.0
@@ -77,7 +78,7 @@ dependencies:
   #fc_native_video_thumbnail: ^0.17.2
 
   #* Pick files
-  #file_picker: ^9.0.0
+  file_picker: ^10.1.7
   image_picker: ^1.0.7
 
   #* Medias

@@ -110,8 +110,10 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
 
   @override
   void initState() {
-    _ctrl =
-        widget.controller ?? TextEditingController(text: widget.initialValue);
+    _ctrl = widget.controller ?? TextEditingController(text: widget.initialValue);
+    widget.focusNode?.addListener(() {
+      showOverlay(context);
+    });
     super.initState();
   }
 
@@ -141,13 +143,8 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
 
     // Calculate available space below the button
     final screenHeight = MediaQuery.of(context).size.height;
-    final availableSpaceBelow =
-        screenHeight - fildPositionInScreen.dy - fieldSize.height;
-    final sheetHeight =
-        (widget.items.length < widget.tileShowCount
-            ? widget.items.length
-            : widget.tileShowCount) *
-        widget.tileHeight;
+    final availableSpaceBelow = screenHeight - fildPositionInScreen.dy - fieldSize.height;
+    final sheetHeight = (widget.items.length < widget.tileShowCount ? widget.items.length : widget.tileShowCount) * widget.tileHeight;
     // Determine if there is enough space below, otherwise show above
     final showBelow = availableSpaceBelow >= sheetHeight;
 
@@ -155,34 +152,16 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
       builder: (context) {
         return Positioned(
           left: fildPositionInScreen.dx,
-          top:
-              showBelow
-                  ? fildPositionInScreen.dy +
-                      fieldSize.height +
-                      widget.dividerHeight
-                  : fildPositionInScreen.dy -
-                      sheetHeight -
-                      widget.dividerHeight,
+          top: showBelow ? fildPositionInScreen.dy + fieldSize.height + widget.dividerHeight : fildPositionInScreen.dy - sheetHeight - widget.dividerHeight,
           child: CompositedTransformFollower(
             link: this._layerLink,
             showWhenUnlinked: false,
-            offset: Offset(
-              0,
-              showBelow
-                  ? fieldSize.height + widget.dividerHeight
-                  : -sheetHeight - widget.dividerHeight,
-            ),
+            offset: Offset(0, showBelow ? fieldSize.height + widget.dividerHeight : -sheetHeight - widget.dividerHeight),
             child: Material(
               color: Colors.transparent,
               child: TapRegion(
                 onTapOutside: (v) {
-                  final buttonBounds = Rect.fromLTWH(
-                    fildPositionInScreen.dx,
-                    fildPositionInScreen.dy,
-                    fieldSize.width,
-                    fieldSize.height,
-                  );
-
+                  final buttonBounds = Rect.fromLTWH(fildPositionInScreen.dx, fildPositionInScreen.dy, fieldSize.width, fieldSize.height);
                   if (buttonBounds.contains(v.localPosition)) {
                     return;
                   }
@@ -195,11 +174,7 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
                 child: Container(
                   height: sheetHeight,
                   width: field.size.width,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: AppColors.light,
-                    border: Border.all(color: const Color(0xffE2E4FF)),
-                  ),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: AppColors.light, border: Border.all(color: const Color(0xffE2E4FF))),
                   child: Scrollbar(
                     radius: const Radius.circular(24),
                     thickness: 4,
@@ -217,9 +192,7 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
                                   widget.onValueChanged?.call(e);
                                   _overlyEntry?.remove();
                                   _overlyEntry = null;
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) {
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
                                     setState(() {});
                                   });
                                 },
@@ -231,28 +204,10 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
                                       Flexible(
                                         child: SizedBox(
                                           width: double.maxFinite,
-                                          child: Text(
-                                            e.label,
-                                            textAlign: TextAlign.start,
-                                            style:
-                                                isSelected
-                                                    ? AppStyles
-                                                        .text14Px
-                                                        .poppins
-                                                        .w500
-                                                    : AppStyles
-                                                        .text14Px
-                                                        .poppins
-                                                        .w400,
-                                          ),
+                                          child: Text(e.label, textAlign: TextAlign.start, style: isSelected ? AppStyles.text14Px.poppins.w500 : AppStyles.text14Px.poppins.w400),
                                         ).pxy(x: 16),
                                       ),
-                                      Icon(
-                                        isSelected
-                                            ? Icons.radio_button_checked
-                                            : Icons.radio_button_off,
-                                        size: 20,
-                                      ).pxy(x: 16),
+                                      Icon(isSelected ? Icons.radio_button_checked : Icons.radio_button_off, size: 20).pxy(x: 16),
                                     ],
                                   ),
                                 ),
@@ -300,35 +255,23 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
               labelStyle: widget.labelStyle,
               requiredLabel: widget.requiredLabel,
               focusNode: widget.focusNode,
-              decoration: (widget.decoration ?? const InputDecoration())
-                  .copyWith(
-                    suffixIcon: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        switch (_overlyEntry == null) {
-                          true => const Icon(
-                            Icons.keyboard_arrow_down_outlined,
-                            size: 24,
-                          ),
-                          false => const Icon(
-                            Icons.keyboard_arrow_up_outlined,
-                            size: 24,
-                          ),
-                        },
-                        20.horizontalSpace,
-                      ],
-                    ),
-                    disabledBorder:
-                        _overlyEntry != null
-                            ? widget.decoration?.focusedBorder ??
-                                context.theme.inputDecorationTheme.focusedBorder
-                            : widget.decoration?.disabledBorder ??
-                                context
-                                    .theme
-                                    .inputDecorationTheme
-                                    .disabledBorder,
-                  ),
+              decoration: (widget.decoration ?? const InputDecoration()).copyWith(
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    switch (_overlyEntry == null) {
+                      true => const Icon(Icons.keyboard_arrow_down_outlined, size: 24),
+                      false => const Icon(Icons.keyboard_arrow_up_outlined, size: 24),
+                    },
+                    20.horizontalSpace,
+                  ],
+                ),
+                disabledBorder:
+                    _overlyEntry != null
+                        ? widget.decoration?.focusedBorder ?? context.theme.inputDecorationTheme.focusedBorder
+                        : widget.decoration?.disabledBorder ?? context.theme.inputDecorationTheme.disabledBorder,
+              ),
               validator: widget.validator,
               keyboardType: widget.keyboardType,
               textCapitalization: widget.textCapitalization,

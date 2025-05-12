@@ -104,14 +104,10 @@ class _DateFieldState extends State<DateField> {
 
   @override
   void initState() {
-    _ctrl =
-        widget.controller ?? TextEditingController(text: widget.initialValue);
+    _ctrl = widget.controller ?? TextEditingController(text: widget.initialValue);
     final initialDateAsString = widget.initialValue ?? _ctrl.text;
     if (initialDateAsString.trim().isNotEmpty) {
-      selectedDate =
-          widget.dateTimeShowFormat != null
-              ? widget.dateTimeShowFormat!.parse(initialDateAsString)
-              : DateFormat('yyyy/MM/dd').parse(initialDateAsString);
+      selectedDate = widget.dateTimeShowFormat != null ? widget.dateTimeShowFormat!.parse(initialDateAsString) : DateFormat('yyyy/MM/dd').parse(initialDateAsString);
     }
     super.initState();
   }
@@ -153,13 +149,9 @@ class _DateFieldState extends State<DateField> {
               setState(() {
                 selectedDate = newDate;
                 if (widget.dateTimeShowFormat != null) {
-                  _ctrl.value = TextEditingValue(
-                    text: widget.dateTimeShowFormat!.format(newDate),
-                  );
+                  _ctrl.value = TextEditingValue(text: widget.dateTimeShowFormat!.format(newDate));
                 } else {
-                  _ctrl.value = TextEditingValue(
-                    text: selectedDate?.yyyyMMDDslash ?? '',
-                  );
+                  _ctrl.value = TextEditingValue(text: selectedDate?.yyyyMMDDslash ?? '');
                 }
               });
             }
@@ -204,10 +196,7 @@ class _DateFieldState extends State<DateField> {
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.calendar_today,
-                    color: Colors.grey.shade600,
-                  ), // Updated for demo
+                  Icon(Icons.calendar_today, color: Colors.grey.shade600), // Updated for demo
                 ],
               ),
             ),
