@@ -77,7 +77,16 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.primary)),
                 foregroundColor: AppColors.primary,
-                onPressed: () => const AddMemberOrLeadSelectionSheet().show(context),
+                onPressed:
+                    () => AddMemberOrLeadSelectionSheet(
+                      onSortSelected: (l, v) {
+                        if (v == 'member') {
+                          context.push(const AddOrEditMemeberScreen());
+                        } else {
+                          context.push(const AddOrEditTrainerScreen());
+                        }
+                      },
+                    ).show(context),
                 child: const Icon(Icons.add, color: AppColors.primary, size: 24),
               ).pOnly(right: 16),
             ],

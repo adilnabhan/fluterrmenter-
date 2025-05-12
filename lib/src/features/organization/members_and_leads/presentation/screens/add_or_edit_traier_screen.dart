@@ -1,15 +1,15 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class AddOrEditMemeberScreen extends StatefulWidget {
-  const AddOrEditMemeberScreen({this.memberDetails, super.key});
+class AddOrEditTrainerScreen extends StatefulWidget {
+  const AddOrEditTrainerScreen({this.leadeDetails, super.key});
 
-  final MemberDetailsModel? memberDetails;
+  final LeadsListingModel? leadeDetails;
 
   @override
-  State<AddOrEditMemeberScreen> createState() => _AddOrEditMemeberScreenState();
+  State<AddOrEditTrainerScreen> createState() => _AddOrEditTrainerScreenState();
 }
 
-class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
+class _AddOrEditTrainerScreenState extends State<AddOrEditTrainerScreen> {
   late final List<FieldData<dynamic>> _basicDetails;
   final _formKey = GlobalKey<FormState>();
 
@@ -94,13 +94,13 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
       FieldData(
         type: FieldType.word,
         textInputAction: TextInputAction.done,
-        label: 'Gender',
+        label: 'Expirience',
         requiredLabel: true,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         validator: (value) {
           if (value?.isEmpty ?? true) {
-            return 'Geneder must be selected';
+            return 'Expriece must be selected';
           }
           return null;
         },
@@ -109,7 +109,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           _basicDetails[3].focusNode?.unfocus();
         },
         decoration: InputDecoration(
-          hintText: 'Select Gender',
+          hintText: 'Select Expriece',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
         ),
@@ -133,6 +133,29 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         },
         decoration: InputDecoration(
           hintText: 'Select Blood Group',
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+        ),
+      ),
+      FieldData(
+        type: FieldType.word,
+        textInputAction: TextInputAction.done,
+        label: 'Gender',
+        requiredLabel: true,
+        controller: TextEditingController(),
+        focusNode: FocusNode(),
+        validator: (value) {
+          if (value?.isEmpty ?? true) {
+            return 'Geneder must be selected';
+          }
+          return null;
+        },
+        onSubmitted: (value) {
+          _onContinue();
+          _basicDetails[3].focusNode?.unfocus();
+        },
+        decoration: InputDecoration(
+          hintText: 'Select Gender',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
         ),
@@ -186,81 +209,6 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
         ),
       ),
-      FieldData(
-        type: FieldType.word,
-        textInputAction: TextInputAction.done,
-        label: 'Height',
-        requiredLabel: true,
-        controller: TextEditingController(),
-        focusNode: FocusNode(),
-        keyboardType: TextInputType.number,
-        maxLength: 3,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Height is required';
-          }
-          return null;
-        },
-        onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
-        },
-        decoration: InputDecoration(
-          hintText: '0',
-          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-        ),
-      ),
-      FieldData(
-        type: FieldType.word,
-        textInputAction: TextInputAction.done,
-        label: 'Weight',
-        requiredLabel: true,
-        controller: TextEditingController(),
-        focusNode: FocusNode(),
-        keyboardType: TextInputType.number,
-        maxLength: 3,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Weight is required';
-          }
-          return null;
-        },
-        onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
-        },
-        decoration: InputDecoration(
-          hintText: '0',
-          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-        ),
-      ),
-      FieldData(
-        type: FieldType.word,
-        textInputAction: TextInputAction.next,
-        label: 'Profession',
-        requiredLabel: true,
-        validator: (value) {
-          if (value?.trim().isEmpty ?? true) {
-            return 'Profession is required';
-          }
-          return null;
-        },
-        onSubmitted: (value) {
-          _basicDetails[1].focusNode?.requestFocus();
-        },
-        controller: TextEditingController(),
-        focusNode: FocusNode(),
-        keyboardType: TextInputType.name,
-        decoration: InputDecoration(
-          hintText: 'Enter Profession',
-          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-        ),
-      ),
     ];
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_basicDetails[0].focusNode);
@@ -291,7 +239,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Member')),
+      appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Trainer')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -323,7 +271,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: Button.filled(title: 'Continue', buttonColor: AppColors.primary, ontap: _onContinue).pad(16).pxy(y: 16),
+      bottomNavigationBar: Button.filled(title: 'Save', buttonColor: AppColors.primary, ontap: _onContinue).pad(16).pxy(y: 16),
     );
   }
 }

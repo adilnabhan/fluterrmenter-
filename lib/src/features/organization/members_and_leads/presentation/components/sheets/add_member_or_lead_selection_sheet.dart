@@ -5,7 +5,7 @@ class AddMemberOrLeadSelectionSheet extends StatefulWidget {
 
   final ({String label, String value})? selectedSort;
 
-  final void Function({String label, String value})? onSortSelected;
+  final void Function(String label, String value)? onSortSelected;
 
   Future<void> show(BuildContext context) async {
     await showModalBottomSheet<void>(context: context, backgroundColor: Colors.white, builder: (context) => this);
@@ -49,8 +49,8 @@ class _AddMemberOrLeadSelectionSheetState extends State<AddMemberOrLeadSelection
               Dialogs.showSnack(msg: 'Please select a sort option');
               return;
             }
-            widget.onSortSelected?.call(label: _selectedItem!.label, value: _selectedItem!.value);
             context.pop();
+            widget.onSortSelected?.call(_selectedItem!.label, _selectedItem!.value);
           },
         ).pOnly(bottom: 32),
       ],

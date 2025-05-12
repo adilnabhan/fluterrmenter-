@@ -62,7 +62,8 @@ class _AppViewState extends State<AppView> {
                     } else if (!(state.currentUser?.isProfileCompleted ?? false)) {
                       return const CreateOrganizationBasicDetailsScreen();
                     }
-                    return const OrganizationListingScreen();
+                    // return const OrganizationListingScreen();
+                    return AddOrEditTrainerScreen();
                   },
                 ),
               );
