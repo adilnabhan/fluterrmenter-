@@ -21,6 +21,7 @@ class _ActiveMembersListingScreen extends StatefulWidget {
 class _ActiveMembersListingScreenState extends State<_ActiveMembersListingScreen> {
   late final MembersAndLeadsCubit _cubit;
   late final ScrollController _scrollController;
+  ListingSort? _sort;
 
   @override
   void initState() {
@@ -35,7 +36,7 @@ class _ActiveMembersListingScreenState extends State<_ActiveMembersListingScreen
     _fetch();
   }
 
-  Future<void> _fetch({bool isPaginating = false}) => _cubit.fetchMembers(isPagination: isPaginating);
+  Future<void> _fetch({bool isPaginating = false}) => _cubit.fetchMembers(isPagination: isPaginating, sort: _sort, status: MemberStatus.active);
 
   @override
   Widget build(BuildContext context) {
@@ -66,16 +67,27 @@ class _ActiveMembersListingScreenState extends State<_ActiveMembersListingScreen
                   return state.members.data.fold(
                     () => const Center(child: CircularProgressIndicator()),
                     (either) => either.fold((error) => const Center(child: Text('Error')), (memebersDataum) {
+                      if (memebersDataum.results?.isEmpty ?? true) {
+                        return const Center(child: Text('No members found'));
+                      }
                       return Column(
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('${memebersDataum.count ?? 0} members', style: AppStyles.text14Px.poppins.w400.dark),
-                              OutlinedButton(
-                                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), side: const BorderSide(color: Color(0xffDDDDDD))),
-                                onPressed: () {},
-                                child: Text('Sort by Joined Recently', style: AppStyles.text12Px.poppins.copyWith(color: const Color(0xff222222))),
+                              SortButton(
+                                isSelected: _sort != null,
+                                sortLabel: 'Sort by Joined Recently',
+                                onTap: () {
+                                  if (_sort == ListingSort.recent) {
+                                    _sort = null;
+                                  } else {
+                                    _sort = ListingSort.recent;
+                                  }
+                                  _fetch();
+                                  setState(() {});
+                                },
                               ),
                             ],
                           ),
@@ -122,16 +134,20 @@ class _ActiveMembersListingScreenState extends State<_ActiveMembersListingScreen
                                                   ),
                                                 ),
                                                 const SizedBox(width: 8),
-                                                Text('memberId', style: AppStyles.text12Px.poppins.w400.textGrey),
+                                                Text(
+                                                  '# ${memberData?.id}'.length > 3 ? '${'# ${memberData?.id}'.substring(0, 3)}...' : '# ${memberData?.id}',
+                                                  style: AppStyles.text12Px.poppins.w400.textGrey,
+                                                  maxLines: 1,
+                                                ),
                                               ],
                                             ),
-                                            Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
+                                            // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Text(memberData?.activePlan?.planName ?? '', style: AppStyles.text12Px.poppins.w500.dark),
-                                                const SizedBox(height: 4),
-                                                Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
+                                                // const SizedBox(height: 4),
+                                                // Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
                                               ],
                                             ),
                                           ],

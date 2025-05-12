@@ -123,7 +123,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                     count: (orgDetails.trainerCount ?? 0) + (orgDetails.expiredCustomersCount ?? 0) + (orgDetails.activeCustomersCount ?? 0),
                     onTap: () {
                       if (state.selectedOrganization?.id != null) {
-                        context.push(ActiveMembersListingScreen(orgId: state.selectedOrganization!.id!));
+                        context.push(MembersAndLeadsListingScreen(orgId: state.selectedOrganization!.id!));
                       } else {
                         Dialogs.showSnack(msg: 'Organization not found');
                       }
@@ -135,7 +135,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                     count: orgDetails.expiredCustomersCount ?? 0,
                     onTap: () {
                       if (state.selectedOrganization?.id != null) {
-                        context.push(ActiveMembersListingScreen(orgId: state.selectedOrganization!.id!));
+                        context.push(ExpiredMembersListingScreen(orgId: state.selectedOrganization!.id!));
                       } else {
                         Dialogs.showSnack(msg: 'Organization not found');
                       }
@@ -147,7 +147,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                     count: orgDetails.upcomingRenewalsCount ?? 0,
                     onTap: () {
                       if (state.selectedOrganization?.id != null) {
-                        context.push(ActiveMembersListingScreen(orgId: state.selectedOrganization!.id!));
+                        context.push(UpcomingRenewalsListingScreen(orgId: state.selectedOrganization!.id!));
                       } else {
                         Dialogs.showSnack(msg: 'Organization not found');
                       }

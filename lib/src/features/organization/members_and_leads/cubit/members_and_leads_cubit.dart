@@ -10,13 +10,16 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
 
   ///============================= Members =============================\\\
 
-  Future<void> fetchMembers({bool isPagination = false}) async {
+  Future<void> fetchMembers({required MemberStatus? status, required ListingSort? sort, bool isPagination = false}) async {
     final members = state.members.data.fold(() => null, (t) => t.fold((l) => null, (r) => r));
     if (isPagination && (members?.next?.isEmpty ?? true)) {
       return;
     }
     emit(state.copyWith(members: (data: isPagination ? state.members.data : none(), isPagination: isPagination)));
-    final res = await MembersRepository().membersListing(queryParameters: {'status': 'active', 'sort': 'recent', 'organization_id': orgId}, nextUrl: isPagination ? members?.next : null);
+    final res = await MembersRepository().membersListing(
+      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, 'organization_id': orgId},
+      nextUrl: isPagination ? members?.next : null,
+    );
     if (isPagination) {
       await res.fold(
         (l) {
@@ -85,13 +88,16 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
 
   ///============================= Leads =============================\\\
 
-  Future<void> fetchLeads({bool isPagination = false}) async {
+  Future<void> fetchLeads({required MemberStatus? status, required ListingSort? sort, bool isPagination = false}) async {
     final leads = state.leads.data.fold(() => null, (t) => t.fold((l) => null, (r) => r));
     if (isPagination && (leads?.next?.isEmpty ?? true)) {
       return;
     }
     emit(state.copyWith(leads: (data: isPagination ? state.leads.data : none(), isPagination: isPagination)));
-    final res = await LeadsRepository().leadsListing(queryParameters: {'status': 'active', 'sort': 'recent', 'organization_id': 4}, nextUrl: isPagination ? leads?.next : null);
+    final res = await LeadsRepository().leadsListing(
+      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, 'organization_id': 4},
+      nextUrl: isPagination ? leads?.next : null,
+    );
     if (isPagination) {
       await res.fold(
         (l) {

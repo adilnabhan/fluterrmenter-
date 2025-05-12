@@ -7,15 +7,7 @@ class MembersAndLeadsListingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => MembersAndLeadsCubit(orgId: orgId),
-      child: FlowBuilder(
-        state: true,
-        onGeneratePages: (state, pages) {
-          return [const MaterialPage<void>(child: _MembersAndLeadsListingScreen())];
-        },
-      ),
-    );
+    return BlocProvider(create: (context) => MembersAndLeadsCubit(orgId: orgId), child: const _MembersAndLeadsListingScreen());
   }
 }
 
@@ -29,13 +21,31 @@ class _MembersAndLeadsListingScreen extends StatefulWidget {
 class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late final MembersAndLeadsCubit _cubit;
+  List<({String label, String value})>? _selectedMembersSorts;
+  List<({String label, String value})>? _selectedLeadsSorts;
+  final _sortOptions = const [(label: 'Active', value: 'active'), (label: 'New', value: 'new')];
 
   @override
   void initState() {
     super.initState();
     _cubit = context.read<MembersAndLeadsCubit>();
-
     _tabController = TabController(length: 2, vsync: this);
+    _fetchMembers();
+    _fetchLeads();
+  }
+
+  Future<void> _fetchMembers() async {
+    await _cubit.fetchMembers(
+      sort: (_selectedMembersSorts?.contains(_sortOptions[1]) ?? false) ? ListingSort.recent : null,
+      status: (_selectedMembersSorts?.contains(_sortOptions[0]) ?? false) ? MemberStatus.active : null,
+    );
+  }
+
+  Future<void> _fetchLeads() async {
+    await _cubit.fetchLeads(
+      sort: (_selectedMembersSorts?.contains(_sortOptions[1]) ?? false) ? ListingSort.recent : null,
+      status: (_selectedMembersSorts?.contains(_sortOptions[0]) ?? false) ? MemberStatus.active : null,
+    );
   }
 
   @override
@@ -84,7 +94,6 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                       children: [
                         SizedBox(
                           width: 140,
-
                           child: TabBar(
                             controller: _tabController,
                             tabs: const [Tab(text: 'Members'), Tab(text: 'Leads')],
@@ -101,72 +110,200 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                             unselectedLabelStyle: AppStyles.text14Px.poppins.w400, // Style for the inactive tab text
                           ),
                         ),
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), side: const BorderSide(color: Color(0xffDDDDDD))),
-                          onPressed: () {},
-                          icon: Text('Sort by', style: AppStyles.text12Px.poppins.copyWith(color: const Color(0xff222222))),
-                          label: const Icon(Icons.keyboard_arrow_down_sharp),
+                        ValueListenableBuilder(
+                          valueListenable: _tabController.animation!,
+                          builder: (context, value, child) {
+                            final isMember = _tabController.index == 0;
+                            return SortButton(
+                              isSelected: isMember ? (_selectedMembersSorts?.isNotEmpty ?? false) : (_selectedLeadsSorts?.isNotEmpty ?? false),
+                              onTap: () {
+                                SortSelectionSheet(
+                                  selectedSorts: (isMember ? _selectedMembersSorts : _selectedLeadsSorts),
+                                  onSortSelected: (values) {
+                                    if (isMember) {
+                                      _selectedMembersSorts = values;
+                                      _fetchMembers();
+                                    } else {
+                                      _selectedLeadsSorts = values;
+                                      _fetchLeads();
+                                    }
+                                    setState(() {});
+                                  },
+                                  items: _sortOptions,
+                                ).show(context);
+                              },
+                              sortLabel: 'Sort by',
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
                   Expanded(
-                    child: ListView.separated(
-                      padding: EdgeInsets.zero,
-                      itemCount: 10,
-                      separatorBuilder: (BuildContext context, int index) {
-                        return const SizedBox(height: 16);
-                      },
-                      itemBuilder: (BuildContext context, int index) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: ColoredBox(
-                            color: Colors.white,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                spacing: 8,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const ClipRRect(
-                                        borderRadius: BorderRadius.all(Radius.circular(80000)),
-                                        child: ImageNetwork('https://starkfitnesskochi.com/wp-content/uploads/2024/10/Strength-Training-1-1-1-1-1.webp', height: 40, width: 40),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: SizedBox(
-                                          width: double.maxFinite,
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text('Praveen K', style: AppStyles.text14Px.poppins.w500.dark),
-                                              const SizedBox(height: 4),
-                                              Text('+91 9687451236', style: AppStyles.text12Px.poppins.w400.dark),
-                                            ],
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        //* Members Listing
+                        BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+                          buildWhen: (p, c) => p.members != c.members,
+                          bloc: _cubit,
+                          builder: (context, state) {
+                            return state.members.data.fold(
+                              () => const Center(child: CircularProgressIndicator()),
+                              (either) => either.fold((error) => const Center(child: Text('Error')), (memebrsDataum) {
+                                if (memebrsDataum.results?.isEmpty ?? true) {
+                                  return const Center(child: Text('No members found'));
+                                }
+                                return RefreshIndicator.adaptive(
+                                  onRefresh: _fetchMembers,
+                                  child: ListView.separated(
+                                    padding: EdgeInsets.zero,
+                                    itemCount: memebrsDataum.results?.length ?? 0,
+                                    separatorBuilder: (BuildContext context, int index) {
+                                      return const SizedBox(height: 16);
+                                    },
+                                    itemBuilder: (BuildContext context, int index) {
+                                      final memberData = memebrsDataum.results?[index];
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: ColoredBox(
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Column(
+                                              spacing: 8,
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius: const BorderRadius.all(Radius.circular(80000)),
+                                                      child: ProfileImage(isEdit: false, url: '${memberData?.profilePicture ?? ''}', radius: 40),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Flexible(
+                                                      child: SizedBox(
+                                                        width: double.maxFinite,
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(memberData?.name ?? '', style: AppStyles.text14Px.poppins.w500.dark),
+                                                            const SizedBox(height: 4),
+                                                            Text('+91 ${memberData?.mobileNumber ?? ''}', style: AppStyles.text12Px.poppins.w400.dark),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      '# ${memberData?.id}'.length > 3 ? '${'# ${memberData?.id}'.substring(0, 3)}...' : '# ${memberData?.id}',
+                                                      style: AppStyles.text12Px.poppins.w400.textGrey,
+                                                      maxLines: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                                // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Text(memberData?.activePlan?.planName ?? '', style: AppStyles.text12Px.poppins.w500.dark),
+                                                    // const SizedBox(height: 4),
+                                                    // Text('05:$index AM', style: AppStyles.text12Px.poppins.w500.dark),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text('memberId', style: AppStyles.text12Px.poppins.w400.textGrey),
-                                    ],
+                                      );
+                                    },
                                   ),
-                                  Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('6 MONTH PLAN + Admission', style: AppStyles.text12Px.poppins.w500.dark),
-                                      const SizedBox(height: 4),
-                                      Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
-                                    ],
+                                );
+                              }),
+                            );
+                          },
+                        ),
+                        //* Leads Listing
+                        BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+                          buildWhen: (p, c) => p.leads != c.leads,
+                          bloc: _cubit,
+                          builder: (context, state) {
+                            return state.leads.data.fold(
+                              () => const Center(child: CircularProgressIndicator()),
+                              (either) => either.fold((error) => const Center(child: Text('Error')), (leadsDataum) {
+                                if (leadsDataum.results?.isEmpty ?? true) {
+                                  return const Center(child: Text('No Leads Found'));
+                                }
+                                return RefreshIndicator.adaptive(
+                                  onRefresh: _fetchLeads,
+                                  child: ListView.separated(
+                                    padding: EdgeInsets.zero,
+                                    itemCount: leadsDataum.results?.length ?? 0,
+                                    separatorBuilder: (BuildContext context, int index) {
+                                      return const SizedBox(height: 16);
+                                    },
+                                    itemBuilder: (BuildContext context, int index) {
+                                      final leadsData = leadsDataum.results?[index];
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: ColoredBox(
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Column(
+                                              spacing: 8,
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius: const BorderRadius.all(Radius.circular(80000)),
+                                                      child: ProfileImage(isEdit: false, url: '${leadsData?.profilePicture ?? ''}', radius: 40),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Flexible(
+                                                      child: SizedBox(
+                                                        width: double.maxFinite,
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(leadsData?.name ?? '', style: AppStyles.text14Px.poppins.w500.dark),
+                                                            const SizedBox(height: 4),
+                                                            Text('+91 ${leadsData?.mobileNumber ?? ''}', style: AppStyles.text12Px.poppins.w400.dark),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      '# ${leadsData?.id}'.length > 3 ? '${'# ${leadsData?.id}'.substring(0, 3)}...' : '# ${leadsData?.id}',
+                                                      style: AppStyles.text12Px.poppins.w400.textGrey,
+                                                      maxLines: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                                // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Text('6 MONTH PLAN + Admission', style: AppStyles.text12Px.poppins.w500.dark),
+                                                    // const SizedBox(height: 4),
+                                                    // Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                                );
+                              }),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ],

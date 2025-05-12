@@ -15,4 +15,6 @@ class MembersAndLeadsState with _$MembersAndLeadsState {
   }) = _MembersAndLeadsState;
 }
 
-enum MemberStatus { active, inactive, all }
+enum MemberStatus { active, expired }
+
+enum ListingSort { recent, oldest }

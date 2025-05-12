@@ -1,27 +1,27 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class AddMemberOrLeadSelectionSheet extends StatefulWidget {
-  const AddMemberOrLeadSelectionSheet({this.onSortSelected, super.key, this.selectedSort});
+class SortSelectionSheet extends StatefulWidget {
+  const SortSelectionSheet({required this.items, this.onSortSelected, super.key, this.selectedSorts});
 
-  final ({String label, String value})? selectedSort;
-
-  final void Function({String label, String value})? onSortSelected;
+  final List<({String label, String value})>? selectedSorts;
+  final List<({String label, String value})> items;
+  final void Function(List<({String label, String value})>? values)? onSortSelected;
 
   Future<void> show(BuildContext context) async {
     await showModalBottomSheet<void>(context: context, backgroundColor: Colors.white, builder: (context) => this);
   }
 
   @override
-  State<AddMemberOrLeadSelectionSheet> createState() => _AddMemberOrLeadSelectionSheetState();
+  State<SortSelectionSheet> createState() => _SortSelectionSheetState();
 }
 
-class _AddMemberOrLeadSelectionSheetState extends State<AddMemberOrLeadSelectionSheet> with SingleTickerProviderStateMixin {
-  ({String label, String value})? _selectedItem;
+class _SortSelectionSheetState extends State<SortSelectionSheet> with SingleTickerProviderStateMixin {
+  List<({String label, String value})>? _selectedItems;
 
   @override
   void initState() {
     super.initState();
-    _selectedItem = widget.selectedSort;
+    _selectedItems = [...?widget.selectedSorts];
   }
 
   @override
@@ -32,24 +32,19 @@ class _AddMemberOrLeadSelectionSheetState extends State<AddMemberOrLeadSelection
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text('Add', style: AppStyles.text18Px.poppins.w700.dark), IconButton(onPressed: context.pop, icon: const Icon(Icons.close, color: AppColors.textGrey))],
+          children: [Text('Sort', style: AppStyles.text18Px.poppins.w700.dark), IconButton(onPressed: context.pop, icon: const Icon(Icons.close, color: AppColors.textGrey))],
         ),
         const Divider(thickness: 1, color: Color(0xffDDDDDD)),
-        Wrap(
-          spacing: 8,
-          children: [
-            ...[(label: 'Member', value: 'member'), (label: 'Trainer', value: 'trainer')].map(_sortTile),
-          ],
-        ).pOnly(bottom: 32, top: 16),
+        Wrap(spacing: 8, children: [...widget.items.map(_sortTile)]).pOnly(bottom: 32, top: 16),
         Button.filled(
-          title: 'Continue',
+          title: 'Show Result',
           buttonColor: AppColors.primary,
           ontap: () {
-            if (_selectedItem == null) {
+            if (_selectedItems == null) {
               Dialogs.showSnack(msg: 'Please select a sort option');
               return;
             }
-            widget.onSortSelected?.call(label: _selectedItem!.label, value: _selectedItem!.value);
+            widget.onSortSelected?.call(_selectedItems);
             context.pop();
           },
         ).pOnly(bottom: 32),
@@ -58,24 +53,28 @@ class _AddMemberOrLeadSelectionSheetState extends State<AddMemberOrLeadSelection
   }
 
   Widget _sortTile(({String label, String value}) item) {
-    final isSelected = _selectedItem == item;
+    final isSelected = _selectedItems?.contains(item) ?? false;
     if (isSelected) {
       return FilledButton.icon(
         style: FilledButton.styleFrom(backgroundColor: const Color(0xffFBEEEE), shape: const StadiumBorder(), foregroundColor: AppColors.primary),
-        onPressed: () {},
-        label: Text(item.label),
-        icon: const Icon(Icons.radio_button_checked),
+        onPressed: () {
+          setState(() {
+            _selectedItems = _selectedItems?.where((e) => e != item).toList();
+          });
+        },
+        icon: Text(item.label),
+        label: const Icon(Icons.check),
       );
     }
     return OutlinedButton.icon(
       style: OutlinedButton.styleFrom(backgroundColor: Colors.white, side: const BorderSide(color: Color(0xffDDDDDD)), shape: const StadiumBorder(), foregroundColor: const Color(0xff444444)),
       onPressed: () {
         setState(() {
-          _selectedItem = item;
+          _selectedItems = [...?_selectedItems, item];
         });
       },
-      label: Text(item.label.pascalCase),
-      icon: const Icon(Icons.radio_button_off),
+      icon: Text(item.label.pascalCase),
+      label: const Icon(Icons.add),
     );
   }
 }
