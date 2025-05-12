@@ -85,7 +85,7 @@ final class LeadsRepository {
 
   /// @apiSuccess {LeadDetailsModel} response Success response
 
-  Future<Either<ApiException, LeadDetailsModel>> leadDetails({required int id}) async {
+  Future<Either<ApiException, LeadDetailsModel>> leadDetails({required String id}) async {
     try {
       return await Feggy.async(
         call: Dio().get<dynamic>(ApiUris.leadDetails(id), options: Options(headers: {'X-Platform': platformSource}).token),

@@ -39,5 +39,5 @@ final class ApiUris {
   static const leadsListing = '${_v1}fitnesscenter/trainers/';
   static const createLead = '${_v1}mentor/trainers/';
   static String updateLead(int id) => '${_v1}mentor/trainers/$id/';
-  static String leadDetails(int id) => '${_v1}mentor/trainers/$id/';
+  static String leadDetails(String id) => '${_v1}mentor/trainers/$id/';
 }

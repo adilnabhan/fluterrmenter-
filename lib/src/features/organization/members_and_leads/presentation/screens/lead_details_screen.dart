@@ -1,15 +1,15 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class MemberDetialsScreen extends StatefulWidget {
-  const MemberDetialsScreen({required this.memberData, super.key});
+class LeadDetailsScreen extends StatefulWidget {
+  const LeadDetailsScreen({required this.leadData, super.key});
 
-  final MemberDataModel memberData;
+  final Result leadData;
 
   @override
-  State<MemberDetialsScreen> createState() => _MemberDetialsScreenState();
+  State<LeadDetailsScreen> createState() => _LeadDetailsScreenState();
 }
 
-class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
+class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
   late final MembersAndLeadsCubit _cubit;
 
   @override
@@ -20,25 +20,26 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
   }
 
   Future<void> _fetch() async {
-    await _cubit.fetchMemberDetails(memberId: widget.memberData.id ?? 0);
+    await _cubit.fetchLeadDetails(leadId: widget.leadData.userId ?? '0');
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
-      buildWhen: (p, c) => p.memberDetails != c.memberDetails,
+      buildWhen: (p, c) => p.leadDetails != c.leadDetails,
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
             leading: const PopButton().center,
             titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
-            title: Text('#${widget.memberData.id}'),
+            title: Text('#${widget.leadData.userId ?? 0}'),
             actions: [IconButton(onPressed: () {}, icon: SvgPicture.asset('assets/images/svg/icons/call.svg'))],
           ),
           backgroundColor: AppColors.grey,
-          body: state.memberDetails.fold(
+          body: state.leadDetails.fold(
             () => const Center(child: CircularProgressIndicator()),
             (either) => either.fold((error) => Center(child: Text(error.msg)), (data) {
+              final hasCategories = data.mentorProfile?.categories?.isNotEmpty ?? false;
               return RefreshIndicator(
                 onRefresh: _fetch,
                 child: ListView(
@@ -53,7 +54,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                             onTap: () {},
                             child: Row(
                               children: [
-                                AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: '${data}')),
+                                AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: '${data.profilePicture ?? ''}')),
                                 const SizedBox(width: 16),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,21 +89,20 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                           Row(
                             spacing: 8,
                             children: [
-                              if (data.isActiveMember ?? false)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                  decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(backgroundColor: Colors.green.shade700, radius: 3).pOnly(right: 8),
-                                      Text('Active', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.green.shade700)),
-                                    ],
-                                  ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(backgroundColor: Colors.green.shade700, radius: 3).pOnly(right: 8),
+                                    Text('Active', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.green.shade700)),
+                                  ],
                                 ),
+                              ),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                 decoration: BoxDecoration(color: AppColors.grey, borderRadius: BorderRadius.circular(16)),
-                                child: Text(data.gender?.pascalCase ?? 'N/A', style: AppStyles.text14Px.poppins.w400.dark),
+                                child: Text(data.gender ?? 'N/A', style: AppStyles.text14Px.poppins.w400.dark),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -114,15 +114,14 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                         ],
                       ),
                     ).pOnly(bottom: 16),
-                    // Personal Details
                     _card(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ...[
+                            (label: 'Experience', value: '${data.mentorProfile?.experience ?? 0} years', onTap: () {}),
                             (label: 'Date of Birth', value: data.dateOfBirth?.format('dd MMM yyyy') ?? '', onTap: () {}),
-                            (label: 'Height', value: '${data.height ?? ''} CM', onTap: () {}),
-                            (label: 'Weight', value: '${data.weight ?? ''} KG', onTap: () {}),
+                            if (hasCategories) (label: 'Category', value: 'Add', onTap: () {}),
                           ].map((e) {
                             return InkWell(
                               onTap: e.onTap,
@@ -136,59 +135,26 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                               ).pxy(y: 12),
                             );
                           }),
+                          // Categories
+                          if (hasCategories) ...[
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children:
+                                  data.mentorProfile!.categories!
+                                      .map(
+                                        (category) => Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(16)),
+                                          child: Text(category.name ?? '', style: AppStyles.text14Px.poppins.w400.dark),
+                                        ),
+                                      )
+                                      .toList(),
+                            ),
+                          ],
                         ],
                       ),
                     ).pOnly(bottom: 16),
-
-                    Row(
-                      children: [
-                        Flexible(
-                          child: SizedBox(
-                            width: double.maxFinite,
-                            child: _card(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [Text('Fees', style: AppStyles.text14Px.poppins.w400.textGrey), const SizedBox(height: 8), Text('Fully Paid', style: AppStyles.text14Px.poppins.w500.dark)],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Flexible(
-                          child: SizedBox(
-                            width: double.maxFinite,
-                            child: _card(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [Text('Joined', style: AppStyles.text14Px.poppins.w400.textGrey), const SizedBox(height: 8), Text('Fully Paid', style: AppStyles.text14Px.poppins.w500.dark)],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ).pOnly(bottom: 16),
-
-                    // Membership Details
-                    if (data.memberships?.isNotEmpty ?? false) ...[
-                      Text('Memberships', style: AppStyles.text16Px.poppins.w600.dark).pOnly(bottom: 16),
-                      for (final memebership in data.memberships ?? <MembershipDataModel>[])
-                        _card(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(memebership.membershipName ?? '', style: AppStyles.text14Px.poppins.w600.dark),
-                                  const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.dark).pOnly(left: 8),
-                                ],
-                              ),
-                              // const SizedBox(height: 8),
-                              // Text(data.emergencyContactNumber ?? 'N/A', style: AppStyles.text14Px.poppins.w500.dark),
-                            ],
-                          ),
-                        ).pOnly(bottom: 16),
-                    ],
 
                     // Emergency Contact
                     _card(
@@ -200,7 +166,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                             children: [
                               Text('Emergency Contact', style: AppStyles.text14Px.poppins.w400.textGrey),
                               const SizedBox(height: 8),
-                              Text(data.emergencyContactNumber ?? 'N/A', style: AppStyles.text14Px.poppins.w500.dark),
+                              Text(data.mentorProfile?.emergencyContact ?? 'N/A', style: AppStyles.text14Px.poppins.w500.dark),
                             ],
                           ),
                           IconButton(onPressed: () {}, icon: SvgPicture.asset('assets/images/svg/icons/call.svg', colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn))),

@@ -6,5 +6,5 @@ export 'member_detials_screen.dart';
 export 'member_orboard_payment_successfull_screen.dart';
 export 'member_plan_choosing_screen.dart';
 export 'members_and_leads_listing_screen.dart';
-export 'trainer_details_screen.dart';
+export 'lead_details_screen.dart';
 export 'upcoming_renewals_listing_screen.dart';

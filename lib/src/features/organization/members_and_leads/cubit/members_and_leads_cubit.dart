@@ -111,7 +111,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     }
   }
 
-  Future<void> fetchLeadDetails({required int leadId}) async {
+  Future<void> fetchLeadDetails({required String leadId}) async {
     emit(state.copyWith(leadDetails: none()));
     final res = await LeadsRepository().leadDetails(id: leadId);
     emit(state.copyWith(leadDetails: some(res)));
