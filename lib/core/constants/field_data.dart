@@ -7,8 +7,125 @@ enum FieldType { word, checkbox, radio, date, image, search, time, multValues }
 
 @freezed
 class FieldData<T> with _$FieldData<T> {
-  const factory FieldData({
+  factory FieldData({
     required FieldType type,
+    void Function(List<({String label, T value})>)? onValueChanged,
+    ValueNotifier<List<({String label, T value})>>? selectedValues,
+    ValueNotifier<List<String>>? selectedMultiValues,
+    double tileHeight = 48,
+    int tileShowCount = 4,
+    double dividerHeight = 8,
+    int maxLines = 1,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    TextAlign textAlign = TextAlign.start,
+    bool autofocus = false,
+    bool readOnly = false,
+    bool onTapAlwaysCalled = false,
+    double cursorWidth = 2,
+    bool obscureText = false,
+    List<({String label, T value})>? items,
+    String? label,
+    TextStyle? labelStyle,
+    bool? requiredLabel,
+    Key? fieldKey,
+    TextEditingController? controller,
+    String? initialValue,
+    FocusNode? focusNode,
+    InputDecoration? decoration,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    TextStyle? style,
+    StrutStyle? strutStyle,
+    TextDirection? textDirection,
+    TextAlignVertical? textAlignVertical,
+    MaxLengthEnforcement? maxLengthEnforcement,
+    int? minLines,
+    bool? expands,
+    int? maxLength,
+    void Function(String)? onChanged,
+    void Function(PointerDownEvent)? onTapOutside,
+    void Function()? onEditingComplete,
+    void Function(String)? onSubmitted,
+    void Function(String?)? onSaved,
+    void Function()? onTap,
+    String? Function(String? text)? validator,
+    List<TextInputFormatter>? inputFormatters,
+    bool? enabled,
+    double? cursorHeight,
+    Radius? cursorRadius,
+    Color? cursorColor,
+    Color? cursorErrorColor,
+    Brightness? keyboardAppearance,
+    AutovalidateMode? autovalidateMode,
+    DateTime? startTime,
+    DateTime? endTime,
+    BorderRadius? borderRadius,
+    Iterable<String>? autofillHints,
+    DateFormat? dateTimeShowFormat,
+  }) {
+    final key = type == FieldType.date ? GlobalKey<DateFieldState>() : GlobalKey();
+    return FieldData._(
+      type: type,
+      key: key,
+      onValueChanged: onValueChanged,
+      selectedValues: selectedValues,
+      selectedMultiValues: selectedMultiValues,
+      tileHeight: tileHeight,
+      tileShowCount: tileShowCount,
+      dividerHeight: dividerHeight,
+      maxLines: maxLines,
+      textCapitalization: textCapitalization,
+      textAlign: textAlign,
+      autofocus: autofocus,
+      readOnly: readOnly,
+      onTapAlwaysCalled: onTapAlwaysCalled,
+      cursorWidth: cursorWidth,
+      obscureText: obscureText,
+      items: items,
+      label: label,
+      labelStyle: labelStyle,
+      requiredLabel: requiredLabel,
+      fieldKey: fieldKey,
+      controller: controller,
+      initialValue: initialValue,
+      focusNode: focusNode,
+      decoration: decoration,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      style: style,
+      strutStyle: strutStyle,
+      textDirection: textDirection,
+      textAlignVertical: textAlignVertical,
+      maxLengthEnforcement: maxLengthEnforcement,
+      minLines: minLines,
+      expands: expands,
+      maxLength: maxLength,
+      onChanged: onChanged,
+      onTapOutside: onTapOutside,
+      onEditingComplete: onEditingComplete,
+      onSubmitted: onSubmitted,
+      onSaved: onSaved,
+      onTap: onTap,
+      validator: validator,
+      inputFormatters: inputFormatters,
+      enabled: enabled,
+      cursorHeight: cursorHeight,
+      cursorRadius: cursorRadius,
+      cursorColor: cursorColor,
+      cursorErrorColor: cursorErrorColor,
+      keyboardAppearance: keyboardAppearance,
+      autovalidateMode: autovalidateMode,
+      startTime: startTime,
+      endTime: endTime,
+      borderRadius: borderRadius,
+      autofillHints: autofillHints,
+      dateTimeShowFormat: dateTimeShowFormat,
+    );
+  }
+
+  factory FieldData._({
+    required FieldType type,
+    @Default(null) Key? key,
     void Function(List<({String label, T value})>)? onValueChanged,
     ValueNotifier<List<({String label, T value})>>? selectedValues,
     ValueNotifier<List<String>>? selectedMultiValues,
@@ -95,6 +212,15 @@ extension FieldDataExt<T> on FieldData<T> {
       return TimeOfDay.fromDateTime(dateFormat.parse(controller!.text));
     } catch (e) {
       return null;
+    }
+  }
+
+  Future<void> requestToFocus() async {
+    if (key != null && key is GlobalKey<DateFieldState> && type == FieldType.date) {
+      final context = (key! as GlobalKey<DateFieldState>).currentState?.context;
+      if (context != null) {
+        await (key! as GlobalKey<DateFieldState>).currentState?.showPicker(context);
+      }
     }
   }
 }

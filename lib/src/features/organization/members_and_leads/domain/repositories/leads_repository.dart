@@ -59,14 +59,10 @@ final class LeadsRepository {
   Future<Either<ApiException, CreateOrUpdateLeadModel>> createOrupdateLead({required int? leadId, required dynamic body}) async {
     try {
       return await Feggy.async(
-        call: Dio().patch<dynamic>(
-          switch (leadId == null) {
-            true => ApiUris.createLead,
-            false => ApiUris.updateLead(leadId!),
-          },
-          data: body,
-          options: Options(headers: {'X-Platform': platformSource}).token,
-        ),
+        call: switch (leadId == null) {
+          true => Dio().post<dynamic>(ApiUris.createLead, data: body, options: Options(headers: {'X-Platform': platformSource}).token),
+          false => Dio().patch<dynamic>(ApiUris.updateLead(leadId!), data: body, options: Options(headers: {'X-Platform': platformSource}).token),
+        },
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {

@@ -10,12 +10,15 @@ class AddOrEditMemeberScreen extends StatefulWidget {
 }
 
 class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
-  late final List<FieldData<dynamic>> _basicDetails;
+  late final MembersAndLeadsCubit _cubit;
+  late final List<FieldData<dynamic>> _fields;
   final _formKey = GlobalKey<FormState>();
+  XFile? _profilePicture;
 
   @override
   void initState() {
-    _basicDetails = [
+    _cubit = context.read<MembersAndLeadsCubit>();
+    _fields = [
       FieldData(
         type: FieldType.word,
         textInputAction: TextInputAction.next,
@@ -28,7 +31,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _basicDetails[1].focusNode?.requestFocus();
+          _fields[1].focusNode?.requestFocus();
         },
         controller: TextEditingController(),
         focusNode: FocusNode(),
@@ -55,8 +58,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
+          _fields[2].focusNode?.requestFocus();
         },
         keyboardType: TextInputType.emailAddress,
         decoration: InputDecoration(
@@ -82,8 +84,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
+          _fields[3].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: 'Enter Mobile Number',
@@ -92,44 +93,33 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         ),
       ),
       FieldData(
-        type: FieldType.word,
-        textInputAction: TextInputAction.done,
-        label: 'Gender',
-        requiredLabel: true,
-        controller: TextEditingController(),
-        focusNode: FocusNode(),
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Geneder must be selected';
-          }
-          return null;
-        },
-        onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
-        },
-        decoration: InputDecoration(
-          hintText: 'Select Gender',
-          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-        ),
-      ),
-      FieldData(
-        type: FieldType.word,
+        type: FieldType.radio,
         textInputAction: TextInputAction.done,
         label: 'Blood Group',
         requiredLabel: true,
         controller: TextEditingController(),
         focusNode: FocusNode(),
+        items: [
+          (label: 'A+', value: 'A+'),
+          (label: 'A-', value: 'A-'),
+          (label: 'B+', value: 'B+'),
+          (label: 'B-', value: 'B-'),
+          (label: 'AB+', value: 'AB+'),
+          (label: 'AB-', value: 'AB-'),
+          (label: 'O+', value: 'O+'),
+          (label: 'O-', value: 'O-'),
+        ],
         validator: (value) {
           if (value?.isEmpty ?? true) {
             return 'Blood Group must be selected';
           }
           return null;
         },
+        onValueChanged: (p0) {
+          _fields[4].focusNode?.requestFocus();
+        },
         onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
+          _fields[4].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: 'Select Blood Group',
@@ -138,9 +128,37 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         ),
       ),
       FieldData(
-        type: FieldType.word,
+        type: FieldType.radio,
+        textInputAction: TextInputAction.done,
+        label: 'Gender',
+        requiredLabel: true,
+        controller: TextEditingController(),
+        focusNode: FocusNode(),
+        items: [(label: 'Male', value: 'male'), (label: 'Female', value: 'female'), (label: 'Other', value: 'other')],
+        validator: (value) {
+          if (value?.isEmpty ?? true) {
+            return 'Geneder must be selected';
+          }
+          return null;
+        },
+        onValueChanged: (p0) {
+          _fields[5].key;
+          _fields[5].requestToFocus();
+        },
+        onSubmitted: (value) {
+          _fields[5].requestToFocus();
+        },
+        decoration: InputDecoration(
+          hintText: 'Select Gender',
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+        ),
+      ),
+      FieldData(
+        type: FieldType.date,
         textInputAction: TextInputAction.done,
         label: 'Date of Birth',
+        dateTimeShowFormat: DateFormat('dd MMM yyyy'),
         requiredLabel: true,
         controller: TextEditingController(),
         focusNode: FocusNode(),
@@ -150,9 +168,8 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           }
           return null;
         },
-        onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
+        onChanged: (p0) {
+          _fields[6].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: 'Select Date of Birth',
@@ -177,8 +194,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
+          _fields[7].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: 'Enter Mobile Number',
@@ -203,8 +219,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
+          _fields[8].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: '0',
@@ -229,8 +244,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
+          _fields[9].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: '0',
@@ -250,7 +264,8 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _basicDetails[1].focusNode?.requestFocus();
+          _fields[8].focusNode?.unfocus();
+          _onContinue();
         },
         controller: TextEditingController(),
         focusNode: FocusNode(),
@@ -263,7 +278,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
       ),
     ];
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(_basicDetails[0].focusNode);
+      FocusScope.of(context).requestFocus(_fields[0].focusNode);
     });
     super.initState();
   }
@@ -271,7 +286,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
   @override
   void dispose() {
     super.dispose();
-    for (final element in _basicDetails) {
+    for (final element in _fields) {
       element.controller?.dispose();
       element.focusNode?.dispose();
     }
@@ -279,10 +294,17 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
 
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      final firstName = _basicDetails[0].controller?.text;
-      final lastName = _basicDetails[1].controller?.text;
-      final email = _basicDetails[2].controller?.text;
-      context.read<CreateAccountCubit>().onboardUser(firstName: firstName ?? '', lastName: lastName ?? '', email: email ?? '');
+      final fullName = _fields[0].controller?.text;
+      final email = _fields[1].controller?.text;
+      final mobileNumber = _fields[2].controller?.text;
+      final bloodGroup = _fields[3].controller?.text;
+      final gender = _fields[4].controller?.text;
+      final dateOfBirth = _fields[5].controller?.text;
+      final emergencyContactNumber = _fields[6].controller?.text;
+      final height = _fields[7].controller?.text;
+      final weight = _fields[8].controller?.text;
+      final profession = _fields[9].controller?.text;
+      // _cubit.cerateOrUpdateMemberDetails(memberId: widget.memberDetails?.id, fullName: fullName,  mobileNumber: mobileNumber, email: email, dateOfBirth: dateOfBirth, gender: gender, bloodGroup: bloodGroup,   emergencyContactNumber: emergencyContactNumber, height: height?.toNum.toDouble(), weight: weight?.toNum.toDouble(), profession: profession, membershipPlanId: membershipPlanId, profilePicture: profilePicture)
     } else {
       Dialogs.showSnack(msg: 'Please fill all the fields');
     }
@@ -290,40 +312,66 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Member')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80).pOnly(bottom: 16),
-            ListView.separated(
-              itemCount: _basicDetails.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              separatorBuilder: (BuildContext context, int index) {
-                return const SizedBox(height: 22);
-              },
-              itemBuilder: (BuildContext context, int index) {
-                return Field(
-                  data: _basicDetails[index].copyWith(
-                    decoration: _basicDetails[index].decoration?.copyWith(
-                      filled: false,
-                      border: OutlineInputBorder(borderSide: const BorderSide(color: AppColors.borderGrey), borderRadius: BorderRadius.circular(8)),
-                      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                      enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                      errorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.error)),
-                      focusedErrorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+    return BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
+      listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
+      bloc: _cubit,
+      listener: (context, state) {
+        state.createOrUpdateMember?.fold(() => null, (t) {
+          return t.fold(
+            (l) {
+              return Dialogs.showSnack(msg: l.msg);
+            },
+            (r) {
+              if (widget.memberDetails?.id != null) {
+                Dialogs.showSnack(msg: 'Trainer details updated successfully');
+              } else {
+                Dialogs.showSnack(msg: 'Trainer added successfully');
+              }
+              context.pop();
+            },
+          );
+        });
+      },
+      child: Scaffold(
+        appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Member')),
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              ProfileImage(isEdit: true, onChanged: (image) => _profilePicture = image, radius: 80).pOnly(bottom: 16),
+              ListView.separated(
+                itemCount: _fields.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                separatorBuilder: (BuildContext context, int index) {
+                  return const SizedBox(height: 22);
+                },
+                itemBuilder: (BuildContext context, int index) {
+                  return Field(
+                    data: _fields[index].copyWith(
+                      decoration: _fields[index].decoration?.copyWith(
+                        filled: false,
+                        border: OutlineInputBorder(borderSide: const BorderSide(color: AppColors.borderGrey), borderRadius: BorderRadius.circular(8)),
+                        focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+                        enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+                        errorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.error)),
+                        focusedErrorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
+        bottomNavigationBar: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+          buildWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
+          builder: (context, state) {
+            return Button.filled(title: 'Continue', isLoading: state.createOrUpdateMember?.isNone() ?? false, buttonColor: AppColors.primary, ontap: _onContinue);
+          },
+        ).pad(16).pxy(y: 16),
       ),
-      bottomNavigationBar: Button.filled(title: 'Continue', buttonColor: AppColors.primary, ontap: _onContinue).pad(16).pxy(y: 16),
     );
   }
 }

@@ -95,10 +95,10 @@ class DateField extends StatefulWidget {
   final DateFormat? dateTimeShowFormat;
 
   @override
-  State<DateField> createState() => _DateFieldState();
+  State<DateField> createState() => DateFieldState();
 }
 
-class _DateFieldState extends State<DateField> {
+class DateFieldState extends State<DateField> {
   DateTime? selectedDate;
   late final TextEditingController _ctrl;
 
@@ -117,6 +117,7 @@ class _DateFieldState extends State<DateField> {
     if (widget.controller == null) {
       _ctrl.dispose();
     }
+    _ctrl.removeListener(() {});
     super.dispose();
   }
 
@@ -127,59 +128,7 @@ class _DateFieldState extends State<DateField> {
       child: InkWell(
         overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         onTap: () {
-          showDatePicker(
-            context: context,
-            initialDate: selectedDate ?? widget.endTime ?? DateTime.now(),
-            firstDate: widget.startTime ?? DateTime(0000),
-            lastDate: widget.endTime ?? DateTime(2100),
-            builder: (context, child) {
-              return Theme(
-                data: Theme.of(context).copyWith(
-                  colorScheme: const ColorScheme.light(
-                    primary: AppColors.primary,
-                    // onSurface: Colors.yellow,
-                  ),
-                  dialogBackgroundColor: AppColors.primary,
-                ),
-                child: child!,
-              );
-            },
-          ).then((newDate) {
-            if (newDate != null) {
-              setState(() {
-                selectedDate = newDate;
-                if (widget.dateTimeShowFormat != null) {
-                  _ctrl.value = TextEditingValue(text: widget.dateTimeShowFormat!.format(newDate));
-                } else {
-                  _ctrl.value = TextEditingValue(text: selectedDate?.yyyyMMDDslash ?? '');
-                }
-              });
-            }
-          });
-          // showDialog<void>(
-          //   context: context,
-          //   builder: (context) {
-          //     return Dialog(
-          //       backgroundColor: AppColors.light,
-          //       shape: RoundedRectangleBorder(
-          //         borderRadius: BorderRadius.circular(16),
-          //       ),
-          //       child: DatePickerWidget(
-          //         selectedDate: selectedDate ?? widget.endTime ?? DateTime.now(),
-          //         startTime: widget.startTime,
-          //         endTime: widget.endTime,
-          //         onDateSelected: (newDate) {
-          //           selectedDate = newDate;
-          //           if (widget.dateTimeShowFormat != null) {
-          //             _ctrl.value = TextEditingValue(text: widget.dateTimeShowFormat!.format(newDate));
-          //           } else {
-          //             _ctrl.value = TextEditingValue(text: selectedDate?.yyyyMMDDslash ?? '');
-          //           }
-          //         },
-          //       ),
-          //     );
-          //   },
-          // );
+          showPicker(context);
         },
         child: AbsorbPointer(
           child: WordField(
@@ -193,12 +142,7 @@ class _DateFieldState extends State<DateField> {
             labelStyle: widget.labelStyle,
             requiredLabel: widget.requiredLabel,
             decoration: (widget.decoration ?? const InputDecoration()).copyWith(
-              suffixIcon: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.calendar_today, color: Colors.grey.shade600), // Updated for demo
-                ],
-              ),
+              suffixIcon: Row(mainAxisSize: MainAxisSize.min, children: [SvgPicture.asset('assets/images/svg/icons/calendar.svg', height: 24, width: 24)]),
             ),
             validator: widget.validator,
             keyboardType: widget.keyboardType,
@@ -236,5 +180,31 @@ class _DateFieldState extends State<DateField> {
         ),
       ),
     );
+  }
+
+  Future<void> showPicker(BuildContext context) async {
+    await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? widget.endTime ?? DateTime.now(),
+      firstDate: widget.startTime ?? DateTime(0000),
+      lastDate: widget.endTime ?? DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: AppColors.primary), dialogTheme: const DialogTheme(backgroundColor: AppColors.primary)),
+          child: child!,
+        );
+      },
+    ).then((newDate) {
+      if (newDate != null) {
+        setState(() {
+          selectedDate = newDate;
+          if (widget.dateTimeShowFormat != null) {
+            _ctrl.value = TextEditingValue(text: widget.dateTimeShowFormat!.format(newDate));
+          } else {
+            _ctrl.value = TextEditingValue(text: selectedDate?.yyyyMMDDslash ?? '');
+          }
+        });
+      }
+    });
   }
 }

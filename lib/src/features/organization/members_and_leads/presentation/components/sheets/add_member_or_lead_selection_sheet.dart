@@ -1,9 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class AddMemberOrLeadSelectionSheet extends StatefulWidget {
-  const AddMemberOrLeadSelectionSheet({this.onSortSelected, super.key, this.selectedSort});
-
-  final ({String label, String value})? selectedSort;
+  const AddMemberOrLeadSelectionSheet({this.onSortSelected, super.key});
 
   final void Function(String label, String value)? onSortSelected;
 
@@ -16,12 +14,13 @@ class AddMemberOrLeadSelectionSheet extends StatefulWidget {
 }
 
 class _AddMemberOrLeadSelectionSheetState extends State<AddMemberOrLeadSelectionSheet> with SingleTickerProviderStateMixin {
-  ({String label, String value})? _selectedItem;
+  late ({String label, String value}) _selectedItem;
+  final List<({String label, String value})> _sortOptions = [(label: 'Member', value: 'member'), (label: 'Trainer', value: 'trainer')];
 
   @override
   void initState() {
     super.initState();
-    _selectedItem = widget.selectedSort;
+    _selectedItem = _sortOptions.first;
   }
 
   @override
@@ -35,22 +34,13 @@ class _AddMemberOrLeadSelectionSheetState extends State<AddMemberOrLeadSelection
           children: [Text('Add', style: AppStyles.text18Px.poppins.w700.dark), IconButton(onPressed: context.pop, icon: const Icon(Icons.close, color: AppColors.textGrey))],
         ),
         const Divider(thickness: 1, color: Color(0xffDDDDDD)),
-        Wrap(
-          spacing: 8,
-          children: [
-            ...[(label: 'Member', value: 'member'), (label: 'Trainer', value: 'trainer')].map(_sortTile),
-          ],
-        ).pOnly(bottom: 32, top: 16),
+        Wrap(spacing: 8, children: [..._sortOptions.map(_sortTile)]).pOnly(bottom: 32, top: 16),
         Button.filled(
           title: 'Continue',
           buttonColor: AppColors.primary,
           ontap: () {
-            if (_selectedItem == null) {
-              Dialogs.showSnack(msg: 'Please select a sort option');
-              return;
-            }
             context.pop();
-            widget.onSortSelected?.call(_selectedItem!.label, _selectedItem!.value);
+            widget.onSortSelected?.call(_selectedItem.label, _selectedItem.value);
           },
         ).pOnly(bottom: 32),
       ],

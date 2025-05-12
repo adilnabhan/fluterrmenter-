@@ -17,6 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$FieldData<T> {
   FieldType get type => throw _privateConstructorUsedError;
+  Key? get key => throw _privateConstructorUsedError;
   void Function(List<({String label, T value})>)? get onValueChanged =>
       throw _privateConstructorUsedError;
   ValueNotifier<List<({String label, T value})>>? get selectedValues =>
@@ -98,6 +99,7 @@ abstract class $FieldDataCopyWith<T, $Res> {
   @useResult
   $Res call(
       {FieldType type,
+      Key? key,
       void Function(List<({String label, T value})>)? onValueChanged,
       ValueNotifier<List<({String label, T value})>>? selectedValues,
       ValueNotifier<List<String>>? selectedMultiValues,
@@ -169,6 +171,7 @@ class _$FieldDataCopyWithImpl<T, $Res, $Val extends FieldData<T>>
   @override
   $Res call({
     Object? type = null,
+    Object? key = freezed,
     Object? onValueChanged = freezed,
     Object? selectedValues = freezed,
     Object? selectedMultiValues = freezed,
@@ -228,6 +231,10 @@ class _$FieldDataCopyWithImpl<T, $Res, $Val extends FieldData<T>>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as FieldType,
+      key: freezed == key
+          ? _value.key
+          : key // ignore: cast_nullable_to_non_nullable
+              as Key?,
       onValueChanged: freezed == onValueChanged
           ? _value.onValueChanged
           : onValueChanged // ignore: cast_nullable_to_non_nullable
@@ -454,6 +461,7 @@ abstract class _$$FieldDataImplCopyWith<T, $Res>
   @useResult
   $Res call(
       {FieldType type,
+      Key? key,
       void Function(List<({String label, T value})>)? onValueChanged,
       ValueNotifier<List<({String label, T value})>>? selectedValues,
       ValueNotifier<List<String>>? selectedMultiValues,
@@ -523,6 +531,7 @@ class __$$FieldDataImplCopyWithImpl<T, $Res>
   @override
   $Res call({
     Object? type = null,
+    Object? key = freezed,
     Object? onValueChanged = freezed,
     Object? selectedValues = freezed,
     Object? selectedMultiValues = freezed,
@@ -582,6 +591,10 @@ class __$$FieldDataImplCopyWithImpl<T, $Res>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as FieldType,
+      key: freezed == key
+          ? _value.key
+          : key // ignore: cast_nullable_to_non_nullable
+              as Key?,
       onValueChanged: freezed == onValueChanged
           ? _value.onValueChanged
           : onValueChanged // ignore: cast_nullable_to_non_nullable
@@ -801,8 +814,9 @@ class __$$FieldDataImplCopyWithImpl<T, $Res>
 /// @nodoc
 
 class _$FieldDataImpl<T> implements _FieldData<T> {
-  const _$FieldDataImpl(
+  _$FieldDataImpl(
       {required this.type,
+      this.key = null,
       this.onValueChanged,
       this.selectedValues,
       this.selectedMultiValues,
@@ -861,6 +875,9 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
 
   @override
   final FieldType type;
+  @override
+  @JsonKey()
+  final Key? key;
   @override
   final void Function(List<({String label, T value})>)? onValueChanged;
   @override
@@ -999,7 +1016,7 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
 
   @override
   String toString() {
-    return 'FieldData<$T>(type: $type, onValueChanged: $onValueChanged, selectedValues: $selectedValues, selectedMultiValues: $selectedMultiValues, tileHeight: $tileHeight, tileShowCount: $tileShowCount, dividerHeight: $dividerHeight, maxLines: $maxLines, textCapitalization: $textCapitalization, textAlign: $textAlign, autofocus: $autofocus, readOnly: $readOnly, onTapAlwaysCalled: $onTapAlwaysCalled, cursorWidth: $cursorWidth, obscureText: $obscureText, items: $items, label: $label, labelStyle: $labelStyle, requiredLabel: $requiredLabel, fieldKey: $fieldKey, controller: $controller, initialValue: $initialValue, focusNode: $focusNode, decoration: $decoration, keyboardType: $keyboardType, textInputAction: $textInputAction, style: $style, strutStyle: $strutStyle, textDirection: $textDirection, textAlignVertical: $textAlignVertical, maxLengthEnforcement: $maxLengthEnforcement, minLines: $minLines, expands: $expands, maxLength: $maxLength, onChanged: $onChanged, onTapOutside: $onTapOutside, onEditingComplete: $onEditingComplete, onSubmitted: $onSubmitted, onSaved: $onSaved, onTap: $onTap, validator: $validator, inputFormatters: $inputFormatters, enabled: $enabled, cursorHeight: $cursorHeight, cursorRadius: $cursorRadius, cursorColor: $cursorColor, cursorErrorColor: $cursorErrorColor, keyboardAppearance: $keyboardAppearance, autovalidateMode: $autovalidateMode, startTime: $startTime, endTime: $endTime, borderRadius: $borderRadius, autofillHints: $autofillHints, dateTimeShowFormat: $dateTimeShowFormat)';
+    return 'FieldData<$T>._(type: $type, key: $key, onValueChanged: $onValueChanged, selectedValues: $selectedValues, selectedMultiValues: $selectedMultiValues, tileHeight: $tileHeight, tileShowCount: $tileShowCount, dividerHeight: $dividerHeight, maxLines: $maxLines, textCapitalization: $textCapitalization, textAlign: $textAlign, autofocus: $autofocus, readOnly: $readOnly, onTapAlwaysCalled: $onTapAlwaysCalled, cursorWidth: $cursorWidth, obscureText: $obscureText, items: $items, label: $label, labelStyle: $labelStyle, requiredLabel: $requiredLabel, fieldKey: $fieldKey, controller: $controller, initialValue: $initialValue, focusNode: $focusNode, decoration: $decoration, keyboardType: $keyboardType, textInputAction: $textInputAction, style: $style, strutStyle: $strutStyle, textDirection: $textDirection, textAlignVertical: $textAlignVertical, maxLengthEnforcement: $maxLengthEnforcement, minLines: $minLines, expands: $expands, maxLength: $maxLength, onChanged: $onChanged, onTapOutside: $onTapOutside, onEditingComplete: $onEditingComplete, onSubmitted: $onSubmitted, onSaved: $onSaved, onTap: $onTap, validator: $validator, inputFormatters: $inputFormatters, enabled: $enabled, cursorHeight: $cursorHeight, cursorRadius: $cursorRadius, cursorColor: $cursorColor, cursorErrorColor: $cursorErrorColor, keyboardAppearance: $keyboardAppearance, autovalidateMode: $autovalidateMode, startTime: $startTime, endTime: $endTime, borderRadius: $borderRadius, autofillHints: $autofillHints, dateTimeShowFormat: $dateTimeShowFormat)';
   }
 
   @override
@@ -1008,6 +1025,7 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
         (other.runtimeType == runtimeType &&
             other is _$FieldDataImpl<T> &&
             (identical(other.type, type) || other.type == type) &&
+            (identical(other.key, key) || other.key == key) &&
             (identical(other.onValueChanged, onValueChanged) ||
                 other.onValueChanged == onValueChanged) &&
             (identical(other.selectedValues, selectedValues) ||
@@ -1110,6 +1128,7 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
   int get hashCode => Object.hashAll([
         runtimeType,
         type,
+        key,
         onValueChanged,
         selectedValues,
         selectedMultiValues,
@@ -1175,8 +1194,9 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
 }
 
 abstract class _FieldData<T> implements FieldData<T> {
-  const factory _FieldData(
+  factory _FieldData(
       {required final FieldType type,
+      final Key? key,
       final void Function(List<({String label, T value})>)? onValueChanged,
       final ValueNotifier<List<({String label, T value})>>? selectedValues,
       final ValueNotifier<List<String>>? selectedMultiValues,
@@ -1233,6 +1253,8 @@ abstract class _FieldData<T> implements FieldData<T> {
 
   @override
   FieldType get type;
+  @override
+  Key? get key;
   @override
   void Function(List<({String label, T value})>)? get onValueChanged;
   @override

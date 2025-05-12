@@ -197,7 +197,7 @@ class Field<T> extends StatelessWidget {
         selectedValues: data.selectedValues,
       ),
       FieldType.date => DateField(
-        key: data.fieldKey,
+        key: data.key,
         controller: data.controller,
         initialValue: data.initialValue,
         expands: data.expands,
