@@ -43,8 +43,7 @@ class LocationService {
     //* Checking connection enabled or not
     permission = await Geolocator.checkPermission();
 
-    if (permission == LocationPermission.whileInUse ||
-        permission == LocationPermission.always) {
+    if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
       return true;
     } else if (permission == LocationPermission.deniedForever) {
       await openAppSettings();
@@ -52,8 +51,7 @@ class LocationService {
       permission = await Geolocator.requestPermission();
     }
 
-    if (permission == LocationPermission.whileInUse ||
-        permission == LocationPermission.always) {
+    if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
       return true;
     } else {
       await openAppSettings();
