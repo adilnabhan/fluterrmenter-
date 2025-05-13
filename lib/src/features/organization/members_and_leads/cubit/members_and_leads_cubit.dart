@@ -117,6 +117,12 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     emit(state.copyWith(leadDetails: some(res)));
   }
 
+  Future<void> fetchMembershipPackages() async {
+    emit(state.copyWith(membershipPackages: none()));
+    final res = await MembershipRepository().list(queryParameters: {'organization_id': orgId});
+    emit(state.copyWith(membershipPackages: some(res)));
+  }
+
   Future<void> createOrUpdateLeadDetails({
     required int? leadId,
     required String? fullName,
@@ -209,6 +215,46 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     //     formData.fields.add(MapEntry('categories[${category.key}]', category.value.toString()));
     //   }
     // }
+    final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: formData);
+    emit(state.copyWith(createOrUpdateLead: some(res)));
+  }
+
+  Future<void> updateLeadBasicDetails({
+    required int leadId,
+    required String? fullName,
+    required String? mobileNumber,
+    required String? email,
+    required String? gender,
+    required String? profilePicture,
+  }) async {
+    emit(state.copyWith(createOrUpdateLead: none()));
+    if (fullName?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Full name is required')))));
+      return;
+    } else if (mobileNumber?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Mobile number is required')))));
+      return;
+    } else if (email?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Email is required')))));
+      return;
+    } else if (gender?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Gender is required')))));
+      return;
+    }
+    final formData = FormData.fromMap({
+      'first_name': fullName,
+      'last_name': '',
+      'mobile_number': '+91$mobileNumber',
+      'email': email,
+      'gender': gender?.toLowerCase(),
+      'user_role': 35,
+      'organization_id': orgId,
+      'designation': 'trainer',
+    });
+    // Add profile picture if provided
+    if (profilePicture?.isNotEmpty ?? false) {
+      formData.files.add(MapEntry('profile_picture', await MultipartFile.fromFile(profilePicture!)));
+    }
     final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: formData);
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }

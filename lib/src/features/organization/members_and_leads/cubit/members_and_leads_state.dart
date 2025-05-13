@@ -7,6 +7,7 @@ class MembersAndLeadsState with _$MembersAndLeadsState {
     @Default((data: None(), isPagination: false)) ({Option<Either<ApiException, MembersListingModel>> data, bool isPagination}) members,
     @Default(None()) Option<Either<ApiException, MemberDetailsModel>> memberDetails,
     Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
+    @Default(None()) Option<Either<ApiException, ListMembershipPackagesModel>> membershipPackages,
 
     //* Leads
     @Default((data: None(), isPagination: false)) ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination}) leads,

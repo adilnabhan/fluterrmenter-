@@ -40,4 +40,11 @@ final class ApiUris {
   static const createLead = '${_v1}mentor/trainers/';
   static String updateLead(int id) => '${_v1}mentor/trainers/$id/';
   static String leadDetails(String id) => '${_v1}mentor/trainers/$id/';
+
+  ///============================= Membership =============================\\\
+
+  static const createMembershipPackage = '${_v1}fitnesscenter/membership-plans/';
+  static const listMembershipPackages = '${_v1}fitnesscenter/membership-plans/';
+  static String updateMembershipPackage(int id) => '${_v1}fitnesscenter/membership-plans/$id/';
+  static String deleteMembershipPackage(int id) => '${_v1}fitnesscenter/membership-plans/$id/';
 }

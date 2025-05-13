@@ -2,16 +2,16 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class AddOrEditTrainerScreen extends StatefulWidget {
-  const AddOrEditTrainerScreen({this.leadeDetails, super.key});
+class AddOrEditLeadScreen extends StatefulWidget {
+  const AddOrEditLeadScreen({this.leadeDetails, super.key});
 
   final LeadDetailsModel? leadeDetails;
 
   @override
-  State<AddOrEditTrainerScreen> createState() => _AddOrEditTrainerScreenState();
+  State<AddOrEditLeadScreen> createState() => _AddOrEditLeadScreenState();
 }
 
-class _AddOrEditTrainerScreenState extends State<AddOrEditTrainerScreen> {
+class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
   late final MembersAndLeadsCubit _cubit;
   late final List<FieldData<dynamic>> _fields;
   final _formKey = GlobalKey<FormState>();

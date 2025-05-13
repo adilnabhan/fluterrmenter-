@@ -51,7 +51,7 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
   @override
   Widget build(BuildContext context) {
     return BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
-      listenWhen: (p, c) => p.members != c.members || p.leads != c.leads,
+      listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember || p.createOrUpdateLead != c.createOrUpdateLead,
       bloc: _cubit,
       listener: (context, state) {
         state.createOrUpdateMember?.fold(
@@ -102,7 +102,7 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                         if (v == 'member') {
                           context.push(BlocProvider.value(value: _cubit, child: const AddOrEditMemeberScreen()));
                         } else {
-                          context.push(BlocProvider.value(value: _cubit, child: const AddOrEditTrainerScreen()));
+                          context.push(BlocProvider.value(value: _cubit, child: const AddOrEditLeadScreen()));
                         }
                       },
                     ).show(context);

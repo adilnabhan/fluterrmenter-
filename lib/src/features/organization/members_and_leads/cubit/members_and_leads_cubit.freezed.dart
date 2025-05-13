@@ -22,7 +22,9 @@ mixin _$MembersAndLeadsState {
   Option<Either<ApiException, MemberDetailsModel>> get memberDetails =>
       throw _privateConstructorUsedError;
   Option<Either<ApiException, MemberDetailsModel>>? get createOrUpdateMember =>
-      throw _privateConstructorUsedError; //* Leads
+      throw _privateConstructorUsedError;
+  Option<Either<ApiException, ListMembershipPackagesModel>>
+      get membershipPackages => throw _privateConstructorUsedError; //* Leads
   ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
       get leads => throw _privateConstructorUsedError;
   Option<Either<ApiException, LeadDetailsModel>> get leadDetails =>
@@ -50,6 +52,8 @@ abstract class $MembersAndLeadsStateCopyWith<$Res> {
       }) members,
       Option<Either<ApiException, MemberDetailsModel>> memberDetails,
       Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
+      Option<Either<ApiException, ListMembershipPackagesModel>>
+          membershipPackages,
       ({
         Option<Either<ApiException, LeadsListingModel>> data,
         bool isPagination
@@ -78,6 +82,7 @@ class _$MembersAndLeadsStateCopyWithImpl<$Res,
     Object? members = null,
     Object? memberDetails = null,
     Object? createOrUpdateMember = freezed,
+    Object? membershipPackages = null,
     Object? leads = null,
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
@@ -98,6 +103,10 @@ class _$MembersAndLeadsStateCopyWithImpl<$Res,
           ? _value.createOrUpdateMember
           : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
               as Option<Either<ApiException, MemberDetailsModel>>?,
+      membershipPackages: null == membershipPackages
+          ? _value.membershipPackages
+          : membershipPackages // ignore: cast_nullable_to_non_nullable
+              as Option<Either<ApiException, ListMembershipPackagesModel>>,
       leads: null == leads
           ? _value.leads
           : leads // ignore: cast_nullable_to_non_nullable
@@ -132,6 +141,8 @@ abstract class _$$MembersAndLeadsStateImplCopyWith<$Res>
       }) members,
       Option<Either<ApiException, MemberDetailsModel>> memberDetails,
       Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
+      Option<Either<ApiException, ListMembershipPackagesModel>>
+          membershipPackages,
       ({
         Option<Either<ApiException, LeadsListingModel>> data,
         bool isPagination
@@ -157,6 +168,7 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
     Object? members = null,
     Object? memberDetails = null,
     Object? createOrUpdateMember = freezed,
+    Object? membershipPackages = null,
     Object? leads = null,
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
@@ -177,6 +189,10 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
           ? _value.createOrUpdateMember
           : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
               as Option<Either<ApiException, MemberDetailsModel>>?,
+      membershipPackages: null == membershipPackages
+          ? _value.membershipPackages
+          : membershipPackages // ignore: cast_nullable_to_non_nullable
+              as Option<Either<ApiException, ListMembershipPackagesModel>>,
       leads: null == leads
           ? _value.leads
           : leads // ignore: cast_nullable_to_non_nullable
@@ -203,6 +219,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
       {this.members = const (data: None(), isPagination: false),
       this.memberDetails = const None(),
       this.createOrUpdateMember,
+      this.membershipPackages = const None(),
       this.leads = const (data: None(), isPagination: false),
       this.leadDetails = const None(),
       this.createOrUpdateLead});
@@ -219,6 +236,10 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   final Option<Either<ApiException, MemberDetailsModel>> memberDetails;
   @override
   final Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember;
+  @override
+  @JsonKey()
+  final Option<Either<ApiException, ListMembershipPackagesModel>>
+      membershipPackages;
 //* Leads
   @override
   @JsonKey()
@@ -235,7 +256,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
 
   @override
   String toString() {
-    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead)';
+    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, membershipPackages: $membershipPackages, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead)';
   }
 
   @override
@@ -248,6 +269,8 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
                 other.memberDetails == memberDetails) &&
             (identical(other.createOrUpdateMember, createOrUpdateMember) ||
                 other.createOrUpdateMember == createOrUpdateMember) &&
+            (identical(other.membershipPackages, membershipPackages) ||
+                other.membershipPackages == membershipPackages) &&
             (identical(other.leads, leads) || other.leads == leads) &&
             (identical(other.leadDetails, leadDetails) ||
                 other.leadDetails == leadDetails) &&
@@ -256,8 +279,15 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, members, memberDetails,
-      createOrUpdateMember, leads, leadDetails, createOrUpdateLead);
+  int get hashCode => Object.hash(
+      runtimeType,
+      members,
+      memberDetails,
+      createOrUpdateMember,
+      membershipPackages,
+      leads,
+      leadDetails,
+      createOrUpdateLead);
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.
@@ -279,6 +309,8 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
       final Option<Either<ApiException, MemberDetailsModel>> memberDetails,
       final Option<Either<ApiException, MemberDetailsModel>>?
           createOrUpdateMember,
+      final Option<Either<ApiException, ListMembershipPackagesModel>>
+          membershipPackages,
       final ({
         Option<Either<ApiException, LeadsListingModel>> data,
         bool isPagination
@@ -294,8 +326,10 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
   @override
   Option<Either<ApiException, MemberDetailsModel>> get memberDetails;
   @override
-  Option<Either<ApiException, MemberDetailsModel>>?
-      get createOrUpdateMember; //* Leads
+  Option<Either<ApiException, MemberDetailsModel>>? get createOrUpdateMember;
+  @override
+  Option<Either<ApiException, ListMembershipPackagesModel>>
+      get membershipPackages; //* Leads
   @override
   ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
       get leads;
