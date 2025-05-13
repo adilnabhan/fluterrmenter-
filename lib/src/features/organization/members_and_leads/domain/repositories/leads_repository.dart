@@ -64,7 +64,7 @@ final class LeadsRepository {
           false => Dio().patch<dynamic>(ApiUris.updateLead(leadId!), data: body, options: Options(headers: {'X-Platform': platformSource}).token),
         },
         onSuccess: (res) {
-          if (res.statusCode == 200) {
+          if (res.statusCode == 201) {
             if (res.data != null && res.data is Map) {
               return right(CreateOrUpdateLeadModel.fromJson(res.data as Map<String, dynamic>));
             }
