@@ -22,6 +22,8 @@ MemberDetailsModel _$MemberDetailsModelFromJson(Map<String, dynamic> json) {
 mixin _$MemberDetailsModel {
   @JsonKey(name: 'id')
   int? get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'profile_picture')
+  String? get profilePicture => throw _privateConstructorUsedError;
   @JsonKey(name: 'emergency_contact_name')
   String? get emergencyContactName => throw _privateConstructorUsedError;
   @JsonKey(name: 'emergency_contact_number')
@@ -80,6 +82,7 @@ abstract class $MemberDetailsModelCopyWith<$Res> {
   @useResult
   $Res call(
       {@JsonKey(name: 'id') int? id,
+      @JsonKey(name: 'profile_picture') String? profilePicture,
       @JsonKey(name: 'emergency_contact_name') String? emergencyContactName,
       @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
       @JsonKey(name: 'height') String? height,
@@ -118,6 +121,7 @@ class _$MemberDetailsModelCopyWithImpl<$Res, $Val extends MemberDetailsModel>
   @override
   $Res call({
     Object? id = freezed,
+    Object? profilePicture = freezed,
     Object? emergencyContactName = freezed,
     Object? emergencyContactNumber = freezed,
     Object? height = freezed,
@@ -143,6 +147,10 @@ class _$MemberDetailsModelCopyWithImpl<$Res, $Val extends MemberDetailsModel>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int?,
+      profilePicture: freezed == profilePicture
+          ? _value.profilePicture
+          : profilePicture // ignore: cast_nullable_to_non_nullable
+              as String?,
       emergencyContactName: freezed == emergencyContactName
           ? _value.emergencyContactName
           : emergencyContactName // ignore: cast_nullable_to_non_nullable
@@ -233,6 +241,7 @@ abstract class _$$MemberDetailsModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {@JsonKey(name: 'id') int? id,
+      @JsonKey(name: 'profile_picture') String? profilePicture,
       @JsonKey(name: 'emergency_contact_name') String? emergencyContactName,
       @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
       @JsonKey(name: 'height') String? height,
@@ -269,6 +278,7 @@ class __$$MemberDetailsModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = freezed,
+    Object? profilePicture = freezed,
     Object? emergencyContactName = freezed,
     Object? emergencyContactNumber = freezed,
     Object? height = freezed,
@@ -294,6 +304,10 @@ class __$$MemberDetailsModelImplCopyWithImpl<$Res>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int?,
+      profilePicture: freezed == profilePicture
+          ? _value.profilePicture
+          : profilePicture // ignore: cast_nullable_to_non_nullable
+              as String?,
       emergencyContactName: freezed == emergencyContactName
           ? _value.emergencyContactName
           : emergencyContactName // ignore: cast_nullable_to_non_nullable
@@ -379,6 +393,7 @@ class __$$MemberDetailsModelImplCopyWithImpl<$Res>
 class _$MemberDetailsModelImpl implements _MemberDetailsModel {
   const _$MemberDetailsModelImpl(
       {@JsonKey(name: 'id') this.id,
+      @JsonKey(name: 'profile_picture') this.profilePicture,
       @JsonKey(name: 'emergency_contact_name') this.emergencyContactName,
       @JsonKey(name: 'emergency_contact_number') this.emergencyContactNumber,
       @JsonKey(name: 'height') this.height,
@@ -407,6 +422,9 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
   @override
   @JsonKey(name: 'id')
   final int? id;
+  @override
+  @JsonKey(name: 'profile_picture')
+  final String? profilePicture;
   @override
   @JsonKey(name: 'emergency_contact_name')
   final String? emergencyContactName;
@@ -475,7 +493,7 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
 
   @override
   String toString() {
-    return 'MemberDetailsModel(id: $id, emergencyContactName: $emergencyContactName, emergencyContactNumber: $emergencyContactNumber, height: $height, weight: $weight, profession: $profession, isActiveMember: $isActiveMember, memberships: $memberships, fullName: $fullName, created: $created, modified: $modified, mobileNumber: $mobileNumber, firstName: $firstName, lastName: $lastName, email: $email, dateOfBirth: $dateOfBirth, gender: $gender, bloodGroup: $bloodGroup, userRole: $userRole, hashOfUserPhoneNumber: $hashOfUserPhoneNumber)';
+    return 'MemberDetailsModel(id: $id, profilePicture: $profilePicture, emergencyContactName: $emergencyContactName, emergencyContactNumber: $emergencyContactNumber, height: $height, weight: $weight, profession: $profession, isActiveMember: $isActiveMember, memberships: $memberships, fullName: $fullName, created: $created, modified: $modified, mobileNumber: $mobileNumber, firstName: $firstName, lastName: $lastName, email: $email, dateOfBirth: $dateOfBirth, gender: $gender, bloodGroup: $bloodGroup, userRole: $userRole, hashOfUserPhoneNumber: $hashOfUserPhoneNumber)';
   }
 
   @override
@@ -484,6 +502,8 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
         (other.runtimeType == runtimeType &&
             other is _$MemberDetailsModelImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.profilePicture, profilePicture) ||
+                other.profilePicture == profilePicture) &&
             (identical(other.emergencyContactName, emergencyContactName) ||
                 other.emergencyContactName == emergencyContactName) &&
             (identical(other.emergencyContactNumber, emergencyContactNumber) ||
@@ -524,6 +544,7 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
   int get hashCode => Object.hashAll([
         runtimeType,
         id,
+        profilePicture,
         emergencyContactName,
         emergencyContactNumber,
         height,
@@ -565,6 +586,7 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
 abstract class _MemberDetailsModel implements MemberDetailsModel {
   const factory _MemberDetailsModel(
       {@JsonKey(name: 'id') final int? id,
+      @JsonKey(name: 'profile_picture') final String? profilePicture,
       @JsonKey(name: 'emergency_contact_name')
       final String? emergencyContactName,
       @JsonKey(name: 'emergency_contact_number')
@@ -595,6 +617,9 @@ abstract class _MemberDetailsModel implements MemberDetailsModel {
   @override
   @JsonKey(name: 'id')
   int? get id;
+  @override
+  @JsonKey(name: 'profile_picture')
+  String? get profilePicture;
   @override
   @JsonKey(name: 'emergency_contact_name')
   String? get emergencyContactName;

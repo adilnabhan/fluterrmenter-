@@ -8,6 +8,7 @@ part 'member_details_model.g.dart';
 class MemberDetailsModel with _$MemberDetailsModel {
   const factory MemberDetailsModel({
     @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'profile_picture') String? profilePicture,
     @JsonKey(name: 'emergency_contact_name') String? emergencyContactName,
     @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
     @JsonKey(name: 'height') String? height,

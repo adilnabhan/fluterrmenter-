@@ -109,7 +109,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(2)],
         validator: (value) {
           if (value?.isEmpty ?? true) {
-            return 'Expriece must be selected';
+            return 'Expriece is required';
           }
           return null;
         },
@@ -117,8 +117,9 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           _fields[4].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
-          hintText: 'Select Expriece',
+          hintText: '4',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          suffixIcon: SizedBox.square(dimension: 22, child: Center(child: Text('YEARS   ', style: AppStyles.text14Px.poppins.w400.dark))),
           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
         ),
       ),

@@ -8,6 +8,7 @@ class MembersAndLeadsState with _$MembersAndLeadsState {
     @Default(None()) Option<Either<ApiException, MemberDetailsModel>> memberDetails,
     Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
     @Default(None()) Option<Either<ApiException, ListMembershipPackagesModel>> membershipPackages,
+    bool? memberOnboardedAnimationCompleted,
 
     //* Leads
     @Default((data: None(), isPagination: false)) ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination}) leads,

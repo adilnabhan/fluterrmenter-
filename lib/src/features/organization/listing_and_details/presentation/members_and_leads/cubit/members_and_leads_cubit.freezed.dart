@@ -24,7 +24,9 @@ mixin _$MembersAndLeadsState {
   Option<Either<ApiException, MemberDetailsModel>>? get createOrUpdateMember =>
       throw _privateConstructorUsedError;
   Option<Either<ApiException, ListMembershipPackagesModel>>
-      get membershipPackages => throw _privateConstructorUsedError; //* Leads
+      get membershipPackages => throw _privateConstructorUsedError;
+  bool? get memberOnboardedAnimationCompleted =>
+      throw _privateConstructorUsedError; //* Leads
   ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
       get leads => throw _privateConstructorUsedError;
   Option<Either<ApiException, LeadDetailsModel>> get leadDetails =>
@@ -54,6 +56,7 @@ abstract class $MembersAndLeadsStateCopyWith<$Res> {
       Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
       Option<Either<ApiException, ListMembershipPackagesModel>>
           membershipPackages,
+      bool? memberOnboardedAnimationCompleted,
       ({
         Option<Either<ApiException, LeadsListingModel>> data,
         bool isPagination
@@ -83,6 +86,7 @@ class _$MembersAndLeadsStateCopyWithImpl<$Res,
     Object? memberDetails = null,
     Object? createOrUpdateMember = freezed,
     Object? membershipPackages = null,
+    Object? memberOnboardedAnimationCompleted = freezed,
     Object? leads = null,
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
@@ -107,6 +111,11 @@ class _$MembersAndLeadsStateCopyWithImpl<$Res,
           ? _value.membershipPackages
           : membershipPackages // ignore: cast_nullable_to_non_nullable
               as Option<Either<ApiException, ListMembershipPackagesModel>>,
+      memberOnboardedAnimationCompleted: freezed ==
+              memberOnboardedAnimationCompleted
+          ? _value.memberOnboardedAnimationCompleted
+          : memberOnboardedAnimationCompleted // ignore: cast_nullable_to_non_nullable
+              as bool?,
       leads: null == leads
           ? _value.leads
           : leads // ignore: cast_nullable_to_non_nullable
@@ -143,6 +152,7 @@ abstract class _$$MembersAndLeadsStateImplCopyWith<$Res>
       Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
       Option<Either<ApiException, ListMembershipPackagesModel>>
           membershipPackages,
+      bool? memberOnboardedAnimationCompleted,
       ({
         Option<Either<ApiException, LeadsListingModel>> data,
         bool isPagination
@@ -169,6 +179,7 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
     Object? memberDetails = null,
     Object? createOrUpdateMember = freezed,
     Object? membershipPackages = null,
+    Object? memberOnboardedAnimationCompleted = freezed,
     Object? leads = null,
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
@@ -193,6 +204,11 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
           ? _value.membershipPackages
           : membershipPackages // ignore: cast_nullable_to_non_nullable
               as Option<Either<ApiException, ListMembershipPackagesModel>>,
+      memberOnboardedAnimationCompleted: freezed ==
+              memberOnboardedAnimationCompleted
+          ? _value.memberOnboardedAnimationCompleted
+          : memberOnboardedAnimationCompleted // ignore: cast_nullable_to_non_nullable
+              as bool?,
       leads: null == leads
           ? _value.leads
           : leads // ignore: cast_nullable_to_non_nullable
@@ -220,6 +236,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
       this.memberDetails = const None(),
       this.createOrUpdateMember,
       this.membershipPackages = const None(),
+      this.memberOnboardedAnimationCompleted,
       this.leads = const (data: None(), isPagination: false),
       this.leadDetails = const None(),
       this.createOrUpdateLead});
@@ -240,6 +257,8 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   @JsonKey()
   final Option<Either<ApiException, ListMembershipPackagesModel>>
       membershipPackages;
+  @override
+  final bool? memberOnboardedAnimationCompleted;
 //* Leads
   @override
   @JsonKey()
@@ -256,7 +275,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
 
   @override
   String toString() {
-    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, membershipPackages: $membershipPackages, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead)';
+    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, membershipPackages: $membershipPackages, memberOnboardedAnimationCompleted: $memberOnboardedAnimationCompleted, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead)';
   }
 
   @override
@@ -271,6 +290,10 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
                 other.createOrUpdateMember == createOrUpdateMember) &&
             (identical(other.membershipPackages, membershipPackages) ||
                 other.membershipPackages == membershipPackages) &&
+            (identical(other.memberOnboardedAnimationCompleted,
+                    memberOnboardedAnimationCompleted) ||
+                other.memberOnboardedAnimationCompleted ==
+                    memberOnboardedAnimationCompleted) &&
             (identical(other.leads, leads) || other.leads == leads) &&
             (identical(other.leadDetails, leadDetails) ||
                 other.leadDetails == leadDetails) &&
@@ -285,6 +308,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
       memberDetails,
       createOrUpdateMember,
       membershipPackages,
+      memberOnboardedAnimationCompleted,
       leads,
       leadDetails,
       createOrUpdateLead);
@@ -311,6 +335,7 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
           createOrUpdateMember,
       final Option<Either<ApiException, ListMembershipPackagesModel>>
           membershipPackages,
+      final bool? memberOnboardedAnimationCompleted,
       final ({
         Option<Either<ApiException, LeadsListingModel>> data,
         bool isPagination
@@ -329,7 +354,9 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
   Option<Either<ApiException, MemberDetailsModel>>? get createOrUpdateMember;
   @override
   Option<Either<ApiException, ListMembershipPackagesModel>>
-      get membershipPackages; //* Leads
+      get membershipPackages;
+  @override
+  bool? get memberOnboardedAnimationCompleted; //* Leads
   @override
   ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
       get leads;

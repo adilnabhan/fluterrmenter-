@@ -42,45 +42,33 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     emit(state.copyWith(memberDetails: some(res)));
   }
 
-  Future<void> cerateOrUpdateMemberDetails({
-    required int? memberId,
-    required String? fullName,
-    required String? mobileNumber,
-    required String? email,
-    required String? dateOfBirth,
-    required String? gender,
-    required String? bloodGroup,
-    required String? emergencyContactName,
-    required String? emergencyContactNumber,
-    required double? height,
-    required double? weight,
-    required String? profession,
-    required int? membershipPlanId,
-    required String? profilePicture,
-  }) async {
-    emit(state.copyWith(memberDetails: none()));
+  Future<void> cerateOrUpdateMemberDetails({required MemberDetailsModel memeberDetails, required MembershipPackageModel membershipPackageModel}) async {
+    emit(state.copyWith(createOrUpdateMember: none(), memberOnboardedAnimationCompleted: null));
     final res = await MembersRepository().createOrUpdateMember(
-      memberId: memberId,
+      memberId: null,
       body: {
-        'first_name': fullName,
+        'first_name': memeberDetails.fullName,
         'last_name': '',
-        'mobile_number': mobileNumber,
-        'email': email,
-        'date_of_birth': dateOfBirth,
-        'gender': gender,
-        'blood_group': bloodGroup,
+        'mobile_number': '+91${memeberDetails.mobileNumber}',
+        'email': memeberDetails.email,
+        'date_of_birth': memeberDetails.dateOfBirth?.format('yyyy-MM-dd'),
+        'gender': memeberDetails.gender,
+        'blood_group': memeberDetails.bloodGroup,
         'user_role': 45,
         'organization_id': orgId,
-        'emergency_contact_name': emergencyContactName,
-        'emergency_contact_number': emergencyContactNumber,
-        'height': height,
-        'weight': weight,
-        'profession': profession,
-        'membership_plan_id': membershipPlanId,
-        'profile_picture': profilePicture,
+        // 'emergency_contact_name': emergencyContactName,
+        'emergency_contact_number': '+91${memeberDetails.emergencyContactNumber}',
+        'height': memeberDetails.height,
+        'weight': memeberDetails.weight,
+        'profession': memeberDetails.profession,
+        'membership_plan_id': membershipPackageModel.id,
+        // 'profile_picture': memeberDetails.profilePicture,
       },
     );
-    emit(state.copyWith(memberDetails: some(res)));
+    res.fold((l) {}, (r) {
+      emit(state.copyWith(memberOnboardedAnimationCompleted: true));
+    });
+    emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
   ///============================= Leads =============================\\\

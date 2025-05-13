@@ -10,6 +10,7 @@ _$MemberDetailsModelImpl _$$MemberDetailsModelImplFromJson(
         Map<String, dynamic> json) =>
     _$MemberDetailsModelImpl(
       id: (json['id'] as num?)?.toInt(),
+      profilePicture: json['profile_picture'] as String?,
       emergencyContactName: json['emergency_contact_name'] as String?,
       emergencyContactNumber: json['emergency_contact_number'] as String?,
       height: json['height'] as String?,
@@ -43,6 +44,7 @@ Map<String, dynamic> _$$MemberDetailsModelImplToJson(
         _$MemberDetailsModelImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'profile_picture': instance.profilePicture,
       'emergency_contact_name': instance.emergencyContactName,
       'emergency_contact_number': instance.emergencyContactNumber,
       'height': instance.height,

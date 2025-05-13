@@ -224,6 +224,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         decoration: InputDecoration(
           hintText: '0',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          suffixIcon: SizedBox.square(dimension: 22, child: Center(child: Text('CM', style: AppStyles.text14Px.poppins.w400.dark))),
           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
         ),
       ),
@@ -249,6 +250,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         decoration: InputDecoration(
           hintText: '0',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          suffixIcon: SizedBox.square(dimension: 22, child: Center(child: Text('KG', style: AppStyles.text14Px.poppins.w400.dark))),
           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
         ),
       ),
@@ -293,18 +295,35 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
   }
 
   void _onContinue() {
+    if (_cubit.state.createOrUpdateMember?.isNone() ?? false) {
+      Dialogs.showSnack(msg: 'Please wait');
+      return;
+    }
     if (_formKey.currentState?.validate() ?? false) {
       final fullName = _fields[0].controller?.text;
       final email = _fields[1].controller?.text;
       final mobileNumber = _fields[2].controller?.text;
       final bloodGroup = _fields[3].controller?.text;
-      final gender = _fields[4].controller?.text;
-      final dateOfBirth = _fields[5].controller?.text;
+      final gender = _fields[4].controller?.text.toLowerCase();
+      final dateOfBirth = _fields[5].selectedDateTime;
       final emergencyContactNumber = _fields[6].controller?.text;
       final height = _fields[7].controller?.text;
       final weight = _fields[8].controller?.text;
       final profession = _fields[9].controller?.text;
-      // _cubit.cerateOrUpdateMemberDetails(memberId: widget.memberDetails?.id, fullName: fullName,  mobileNumber: mobileNumber, email: email, dateOfBirth: dateOfBirth, gender: gender, bloodGroup: bloodGroup,   emergencyContactNumber: emergencyContactNumber, height: height?.toNum.toDouble(), weight: weight?.toNum.toDouble(), profession: profession, membershipPlanId: membershipPlanId, profilePicture: profilePicture)
+      final memberDetails = MemberDetailsModel(
+        fullName: fullName,
+        email: email,
+        mobileNumber: mobileNumber,
+        bloodGroup: bloodGroup,
+        gender: gender,
+        dateOfBirth: dateOfBirth,
+        emergencyContactNumber: emergencyContactNumber,
+        height: height,
+        weight: weight,
+        profession: profession,
+        profilePicture: _profilePicture?.path,
+      );
+      context.push(BlocProvider.value(value: _cubit, child: SubscriptionSelectionScreen(memberDetails: memberDetails)));
     } else {
       Dialogs.showSnack(msg: 'Please fill all the fields');
     }
@@ -313,64 +332,64 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
-      listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
-      bloc: _cubit,
+      listenWhen: (p, c) => p.memberOnboardedAnimationCompleted != c.memberOnboardedAnimationCompleted,
       listener: (context, state) {
-        state.createOrUpdateMember?.fold(() => null, (t) {
-          return t.fold(
-            (l) {
-              return Dialogs.showSnack(msg: l.msg);
-            },
-            (r) {
-              if (widget.memberDetails?.id != null) {
-                Dialogs.showSnack(msg: 'Trainer details updated successfully');
-              } else {
-                Dialogs.showSnack(msg: 'Trainer added successfully');
-              }
-              context.pop();
-            },
-          );
+        Future.delayed(const Duration(seconds: 1), () {
+          if (context.mounted) {
+            context.pop();
+          }
         });
       },
-      child: Scaffold(
-        appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Member')),
-        body: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              ProfileImage(isEdit: true, onChanged: (image) => _profilePicture = image, radius: 80).pOnly(bottom: 16),
-              ListView.separated(
-                itemCount: _fields.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                separatorBuilder: (BuildContext context, int index) {
-                  return const SizedBox(height: 22);
-                },
-                itemBuilder: (BuildContext context, int index) {
-                  return Field(
-                    data: _fields[index].copyWith(
-                      decoration: _fields[index].decoration?.copyWith(
-                        filled: false,
-                        border: OutlineInputBorder(borderSide: const BorderSide(color: AppColors.borderGrey), borderRadius: BorderRadius.circular(8)),
-                        focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                        enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                        errorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.error)),
-                        focusedErrorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+      child: BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
+        listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
+        bloc: _cubit,
+        listener: (context, state) {
+          // state.createOrUpdateMember?.fold(() => null, (t) {
+          //   return t.fold((l) {}, (r) {
+          //     context.pop();
+          //   });
+          // });
+        },
+        child: Scaffold(
+          appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Member')),
+          body: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                ProfileImage(isEdit: true, onChanged: (image) => _profilePicture = image, radius: 80).pOnly(bottom: 16),
+                ListView.separated(
+                  itemCount: _fields.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  separatorBuilder: (BuildContext context, int index) {
+                    return const SizedBox(height: 22);
+                  },
+                  itemBuilder: (BuildContext context, int index) {
+                    return Field(
+                      data: _fields[index].copyWith(
+                        decoration: _fields[index].decoration?.copyWith(
+                          filled: false,
+                          border: OutlineInputBorder(borderSide: const BorderSide(color: AppColors.borderGrey), borderRadius: BorderRadius.circular(8)),
+                          focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+                          enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+                          errorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.error)),
+                          focusedErrorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ],
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
+          bottomNavigationBar: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+            buildWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
+            builder: (context, state) {
+              return Button.filled(title: 'Continue', isLoading: state.createOrUpdateMember?.isNone() ?? false, buttonColor: AppColors.primary, ontap: _onContinue);
+            },
+          ).pad(16).pxy(y: 16),
         ),
-        bottomNavigationBar: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
-          buildWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
-          builder: (context, state) {
-            return Button.filled(title: 'Continue', isLoading: state.createOrUpdateMember?.isNone() ?? false, buttonColor: AppColors.primary, ontap: _onContinue);
-          },
-        ).pad(16).pxy(y: 16),
       ),
     );
   }
