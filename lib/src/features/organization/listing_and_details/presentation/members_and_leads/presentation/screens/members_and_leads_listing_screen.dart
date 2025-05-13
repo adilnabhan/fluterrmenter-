@@ -50,25 +50,35 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
-      listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember || p.createOrUpdateLead != c.createOrUpdateLead,
-      bloc: _cubit,
-      listener: (context, state) {
-        state.createOrUpdateMember?.fold(
-          () => null,
-          (either) => either.fold((error) {}, (data) {
-            _tabController.animateTo(0);
-            _fetchMembers();
-          }),
-        );
-        state.createOrUpdateLead?.fold(
-          () => null,
-          (either) => either.fold((error) {}, (data) {
-            _tabController.animateTo(1);
-            _fetchLeads();
-          }),
-        );
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
+          listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
+          bloc: _cubit,
+          listener: (context, state) {
+            state.createOrUpdateMember?.fold(
+              () => null,
+              (either) => either.fold((error) {}, (data) {
+                _tabController.animateTo(0);
+                _fetchMembers();
+              }),
+            );
+          },
+        ),
+        BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
+          listenWhen: (p, c) => p.createOrUpdateLead != c.createOrUpdateLead,
+          bloc: _cubit,
+          listener: (context, state) {
+            state.createOrUpdateLead?.fold(
+              () => null,
+              (either) => either.fold((error) {}, (data) {
+                _tabController.animateTo(1);
+                _fetchLeads();
+              }),
+            );
+          },
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Members & Leads')),
         body: Column(
@@ -216,7 +226,7 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                                                       children: [
                                                         ClipRRect(
                                                           borderRadius: const BorderRadius.all(Radius.circular(80000)),
-                                                          child: ProfileImage(isEdit: false, url: '${memberData?.profilePicture ?? ''}', radius: 40),
+                                                          child: ProfileImage(isEdit: false, url: '//${memberData?.profilePicture ?? ''}', radius: 40),
                                                         ),
                                                         const SizedBox(width: 8),
                                                         Flexible(
@@ -246,7 +256,7 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                                                       children: [
                                                         Text(memberData?.activePlan?.planName ?? '', style: AppStyles.text12Px.poppins.w500.dark),
                                                         // const SizedBox(height: 4),
-                                                        // Text('05:$index AM', style: AppStyles.text12Px.poppins.w500.dark),
+                                                        // Text('05: AM', style: AppStyles.text12Px.poppins.w500.dark),
                                                       ],
                                                     ),
                                                   ],

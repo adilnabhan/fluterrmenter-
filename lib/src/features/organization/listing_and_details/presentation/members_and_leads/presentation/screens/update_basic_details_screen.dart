@@ -146,13 +146,22 @@ class _UpdateBasicDetailsScreenState extends State<UpdateBasicDetailsScreen> {
       final mobileNo = _fields[2].controller?.text;
       final gender = _fields[3].controller?.text;
       final profilePicuture = _profilePicture?.path;
-      widget.details?.fold((l) {
-        if (l.id == null) {
-          Dialogs.showSnack(msg: 'Lead id is null');
-          return;
-        }
-        _cubit.updateLeadBasicDetails(leadId: l.id!, fullName: fullName, mobileNumber: mobileNo, email: emailAddress, gender: gender, profilePicture: profilePicuture);
-      }, (r) {});
+      widget.details?.fold(
+        (l) {
+          if (l.id == null) {
+            Dialogs.showSnack(msg: 'Lead not found!');
+            return;
+          }
+          _cubit.updateLeadBasicDetails(leadId: l.id!, fullName: fullName, mobileNumber: mobileNo, email: emailAddress, gender: gender, profilePicture: profilePicuture);
+        },
+        (r) {
+          if (r.id == null) {
+            Dialogs.showSnack(msg: 'Member not found!');
+            return;
+          }
+          _cubit.updateMemberBasicDetails(memberId: r.id!, fullName: fullName, mobileNumber: mobileNo, email: emailAddress, gender: gender, profilePicture: profilePicuture);
+        },
+      );
     } else {
       Dialogs.showSnack(msg: 'Please fill all the fields');
     }
@@ -160,22 +169,43 @@ class _UpdateBasicDetailsScreenState extends State<UpdateBasicDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
-      listenWhen: (p, c) => p.createOrUpdateLead != c.createOrUpdateLead,
-      bloc: _cubit,
-      listener: (context, state) {
-        state.createOrUpdateLead?.fold(() => null, (t) {
-          return t.fold(
-            (l) {
-              return Dialogs.showSnack(msg: l.msg);
-            },
-            (r) {
-              Dialogs.showSnack(msg: 'Trainer details updated successfully');
-              context.pop();
-            },
-          );
-        });
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
+          listenWhen: (p, c) => p.createOrUpdateLead != c.createOrUpdateLead,
+          bloc: _cubit,
+          listener: (context, state) {
+            state.createOrUpdateLead?.fold(() => null, (t) {
+              t.fold(
+                (l) {
+                  Dialogs.showSnack(msg: l.msg);
+                },
+                (r) {
+                  Dialogs.showSnack(msg: 'Trainer details updated successfully');
+                  context.pop();
+                },
+              );
+            });
+          },
+        ),
+        BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
+          listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
+          bloc: _cubit,
+          listener: (context, state) {
+            state.createOrUpdateMember?.fold(() => null, (t) {
+              t.fold(
+                (l) {
+                  Dialogs.showSnack(msg: l.msg);
+                },
+                (r) {
+                  Dialogs.showSnack(msg: 'Member details updated successfully');
+                  context.pop();
+                },
+              );
+            });
+          },
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Trainer')),
         body: Form(
@@ -213,7 +243,12 @@ class _UpdateBasicDetailsScreenState extends State<UpdateBasicDetailsScreen> {
         bottomNavigationBar: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
           buildWhen: (p, c) => p.createOrUpdateLead != c.createOrUpdateLead || p.createOrUpdateMember != c.createOrUpdateMember,
           builder: (context, state) {
-            return Button.filled(title: 'Save', isLoading: (state.createOrUpdateLead ?? state.createOrUpdateMember)?.isNone() ?? false, buttonColor: AppColors.primary, ontap: _onContinue);
+            return Button.filled(
+              title: 'Save',
+              isLoading: widget.details?.fold((l) => state.createOrUpdateLead, (r) => state.createOrUpdateMember)?.isNone() ?? false,
+              buttonColor: AppColors.primary,
+              ontap: _onContinue,
+            );
           },
         ).pad(16).pxy(y: 16),
       ),

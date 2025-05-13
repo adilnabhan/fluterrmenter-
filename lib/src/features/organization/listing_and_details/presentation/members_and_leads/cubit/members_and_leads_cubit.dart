@@ -248,4 +248,44 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: formData);
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
+
+  Future<void> updateMemberBasicDetails({
+    required int memberId,
+    required String? fullName,
+    required String? mobileNumber,
+    required String? email,
+    required String? gender,
+    required String? profilePicture,
+  }) async {
+    emit(state.copyWith(createOrUpdateMember: none()));
+    if (fullName?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Full name is required')))));
+      return;
+    } else if (mobileNumber?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Mobile number is required')))));
+      return;
+    } else if (email?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Email is required')))));
+      return;
+    } else if (gender?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Gender is required')))));
+      return;
+    }
+    final formData = FormData.fromMap({
+      'first_name': fullName,
+      'last_name': '',
+      'mobile_number': '+91$mobileNumber',
+      'email': email,
+      'gender': gender?.toLowerCase(),
+      'user_role': 35,
+      'organization_id': orgId,
+      'designation': 'trainer',
+    });
+    // Add profile picture if provided
+    if (profilePicture?.isNotEmpty ?? false) {
+      formData.files.add(MapEntry('profile_picture', await MultipartFile.fromFile(profilePicture!)));
+    }
+    final res = await MembersRepository().createOrUpdateMember(memberId: memberId, body: formData);
+    emit(state.copyWith(createOrUpdateMember: some(res)));
+  }
 }

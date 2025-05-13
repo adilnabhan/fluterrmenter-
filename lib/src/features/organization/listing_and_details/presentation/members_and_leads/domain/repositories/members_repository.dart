@@ -74,17 +74,14 @@ final class MembersRepository {
 
   /// @apiSuccess {CreateMemberModel} response Success response
 
-  Future<Either<ApiException, MemberDetailsModel>> createOrUpdateMember({required int? memberId, required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, MemberDetailsModel>> createOrUpdateMember({required int? memberId, required dynamic body}) async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(
-          switch (memberId == null) {
-            true => ApiUris.createMember,
-            false => ApiUris.updateMember(memberId!),
-          },
-          data: body,
-          options: Options(headers: {'X-Platform': platformSource}).token,
-        ),
+        call: switch (memberId == null) {
+          true => Dio().post<dynamic>(ApiUris.createMember, data: body, options: Options(headers: {'X-Platform': platformSource}).token),
+          false => Dio().patch<dynamic>(ApiUris.updateMember(memberId!), data: body, options: Options(headers: {'X-Platform': platformSource}).token),
+        },
+
         onSuccess: (res) {
           if (res.statusCode == 200 || res.statusCode == 201) {
             if (res.data != null && res.data is Map) {
