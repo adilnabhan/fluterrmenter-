@@ -65,10 +65,12 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         // 'profile_picture': memeberDetails.profilePicture,
       },
     );
-    res.fold((l) {}, (r) {
-      emit(state.copyWith(memberOnboardedAnimationCompleted: true));
-    });
     emit(state.copyWith(createOrUpdateMember: some(res)));
+    res.fold((l) {}, (r) {
+      Future.delayed(const Duration(seconds: 1), () {
+        emit(state.copyWith(memberOnboardedAnimationCompleted: true));
+      });
+    });
   }
 
   ///============================= Leads =============================\\\

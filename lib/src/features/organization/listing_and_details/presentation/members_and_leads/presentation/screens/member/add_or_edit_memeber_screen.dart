@@ -334,11 +334,9 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
     return BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
       listenWhen: (p, c) => p.memberOnboardedAnimationCompleted != c.memberOnboardedAnimationCompleted,
       listener: (context, state) {
-        Future.delayed(const Duration(seconds: 1), () {
-          if (context.mounted) {
-            context.pop();
-          }
-        });
+        if (state.memberOnboardedAnimationCompleted ?? false) {
+          context.pop();
+        }
       },
       child: BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
         listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
