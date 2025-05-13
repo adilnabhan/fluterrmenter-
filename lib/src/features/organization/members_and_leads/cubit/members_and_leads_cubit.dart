@@ -176,13 +176,13 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       'date_of_birth': dateOfBirth,
       'gender': gender?.toLowerCase(),
       'blood_group': bloodGroup,
-      'user_role': 45,
+      'user_role': 35,
       'organization_id': orgId,
       // 'emergency_contact': emergencyContact,
       'emergency_contact_number': emergencyContactNumber,
       // 'height': height,
       // 'weight': weight,
-      // 'designation': designation,
+      'designation': 'trainer',
       'experience': experience,
     });
 
