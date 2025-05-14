@@ -54,6 +54,26 @@ final class OrganizationListAndDetailsRepository {
     }
   }
 
+  Future<Either<ApiException, OrganizationDetailsModel>> updateOrgDetails({required int orgId, dynamic body}) async {
+    try {
+      return await Feggy.async(
+        call: Dio().post<dynamic>(ApiUris.updateOrg(orgId), options: Options(headers: {'X-Platform': platformSource}).token, data: body),
+        onSuccess: (res) {
+          if ([200, 201].contains(res.statusCode)) {
+            if (res.data != null && res.data is Map) {
+              return right(OrganizationDetailsModel.fromJson(res.data as Map<String, dynamic>));
+            }
+          }
+          return left(const ApiException.unknown());
+        },
+      );
+    } on ApiException catch (e) {
+      return left(e);
+    } catch (e) {
+      return left(const ApiException.unknown());
+    }
+  }
+
   Future<Either<ApiException, OrganizationHomeDataModel>> fetchHomeData({required int orgId}) async {
     try {
       return await Feggy.async(

@@ -58,15 +58,33 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                       ),
                       const SizedBox(height: 16),
                       ...[
-                        _buildProfileListItem('Gym Details', () {}),
-                        _buildProfileListItem('Gallery', () {}),
-                        _buildProfileListItem('Services', () {}),
-                        _buildProfileListItem('Packages', () {}),
-                        _buildProfileListItem('Trainers', () {}),
-                        _buildProfileListItem('Schedules', () {}),
-                        _buildProfileListItem('Amenities', () {}),
-                        _buildProfileListItem('Wishes', () {}),
-                        _buildProfileListItem('Permissions', () {}),
+                        _buildProfileListItem('Gym Details', () {
+                          context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
+                        }),
+                        _buildProfileListItem('Gallery', () {
+                          context.push(BlocProvider.value(value: _cubit, child: GymGalleryScreen(orgDetails: orgDetails)));
+                        }),
+                        _buildProfileListItem('Services', () {
+                          context.push(BlocProvider.value(value: _cubit, child: GymServicesScreen(orgDetails: orgDetails)));
+                        }),
+                        _buildProfileListItem('Packages', () {
+                          context.push(BlocProvider.value(value: _cubit, child: GymPackagesScreen(orgDetails: orgDetails)));
+                        }),
+                        // _buildProfileListItem('Trainers', () {
+                        //   context.push(BlocProvider.value(value: _cubit, child: GymTrainersScreen(orgDetails: orgDetails)));
+                        // }),
+                        _buildProfileListItem('Schedules', () {
+                          context.push(BlocProvider.value(value: _cubit, child: GymSchedulesScreen(orgDetails: orgDetails)));
+                        }),
+                        _buildProfileListItem('Amenities', () {
+                          context.push(BlocProvider.value(value: _cubit, child: GymAmenitiesScreen(orgDetails: orgDetails)));
+                        }),
+                        // _buildProfileListItem('Wishes', () {
+                        //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
+                        // }),
+                        // _buildProfileListItem('Permissions', () {
+                        //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
+                        // }),
                         _ProfileListItem(label: 'Logout', onTap: () {}, isLogout: true),
                       ],
                     ],

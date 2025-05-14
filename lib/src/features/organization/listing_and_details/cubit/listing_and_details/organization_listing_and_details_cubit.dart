@@ -84,4 +84,10 @@ class OrganizationListingAndDetailsCubit extends Cubit<OrganizationListingAndDet
     final res = await OrganizationListAndDetailsRepository().fetchHomeData(orgId: orgId);
     emit(state.copyWith(homeData: some(res)));
   }
+
+  Future<void> updateOrgDetails({required int orgId, required dynamic body}) async {
+    emit(state.copyWith(updateOrgDetails: none()));
+    final res = await OrganizationListAndDetailsRepository().updateOrgDetails(orgId: orgId, body: body);
+    emit(state.copyWith(updateOrgDetails: some(res)));
+  }
 }

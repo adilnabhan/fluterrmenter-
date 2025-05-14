@@ -1,2 +1,11 @@
+export 'gym_amenities_screen.dart';
+export 'gym_details_screen.dart';
+export 'gym_details_update_template_screen.dart';
+export 'gym_gallery_screen.dart';
+export 'gym_packages_screen.dart';
+export 'gym_schedules_screen.dart';
+export 'gym_services_screen.dart';
+export 'gym_trainers_screen.dart';
+export 'gym_wishes_screen.dart';
 export 'organization_details_screen.dart';
 export 'organization_listing_screen.dart';
