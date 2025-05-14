@@ -69,7 +69,9 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
               }
               return OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), side: const BorderSide(color: Color(0xffDDDDDD))),
-                onPressed: () {},
+                onPressed: () {
+                  const OrganizationSelectionSheet().show(context, _cubit);
+                },
                 label: const Icon(Icons.keyboard_arrow_down_sharp, color: Color(0xff222222), size: 20),
                 icon: Text(state.selectedOrganization?.name ?? '', style: AppStyles.text14Px.poppins.copyWith(color: const Color(0xff222222))),
               );

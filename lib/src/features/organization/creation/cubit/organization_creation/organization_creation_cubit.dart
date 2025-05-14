@@ -110,7 +110,6 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
               'evening_closing_time': '${eveningEndingTime.hour.toString().padLeft(2, '0')}:${eveningEndingTime.minute.toString().padLeft(2, '0')}',
             };
           }).toList(),
-
       'social_media': [
         if (website?.isNotEmpty ?? false) {'platform': 'website', 'url': website},
         if (whatsapp?.isNotEmpty ?? false) {'platform': 'whatsapp', 'url': whatsapp},
