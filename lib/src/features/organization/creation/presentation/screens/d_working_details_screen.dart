@@ -125,16 +125,16 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
       [
         FieldData(
           type: FieldType.word,
-          textInputAction: TextInputAction.done,
           label: 'Social Media',
           requiredLabel: true,
+          textInputAction: TextInputAction.done,
           controller: _socialUrlFields[0],
           focusNode: FocusNode(),
           decoration: InputDecoration(
             hintText: 'Add URL',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/face_book.svg', height: 24, width: 24))),
+            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/website.svg', height: 24, width: 24))),
             suffixIcon: SizedBox(
               height: 24,
               width: 24,
@@ -177,6 +177,123 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
               child: Center(
                 child: ValueListenableBuilder(
                   valueListenable: _socialUrlFields[1],
+                  builder: (context, value, child) {
+                    if (value.text.trim().isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    if (!Uri.parse(value.text).isAbsolute) {
+                      return SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
+                      );
+                    }
+                    return SvgPicture.asset('assets/images/svg/icons/green_success.svg', height: 24, width: 24);
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+      [
+        FieldData(
+          type: FieldType.word,
+          textInputAction: TextInputAction.done,
+          controller: _socialUrlFields[2],
+          focusNode: FocusNode(),
+          decoration: InputDecoration(
+            hintText: 'Add URL',
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/instagram.svg', height: 24, width: 24))),
+            suffixIcon: SizedBox(
+              height: 24,
+              width: 24,
+              child: Center(
+                child: ValueListenableBuilder(
+                  valueListenable: _socialUrlFields[2],
+                  builder: (context, value, child) {
+                    if (value.text.trim().isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    try {
+                      final uri = Uri.parse(value.text);
+                      if (!uri.isAbsolute || !['http', 'https'].contains(uri.scheme)) {
+                        return SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
+                        );
+                      }
+                    } catch (e) {
+                      return SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
+                      );
+                    }
+                    return SvgPicture.asset('assets/images/svg/icons/green_success.svg', height: 24, width: 24);
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+      [
+        FieldData(
+          type: FieldType.word,
+          textInputAction: TextInputAction.done,
+          controller: _socialUrlFields[3],
+          focusNode: FocusNode(),
+          decoration: InputDecoration(
+            hintText: 'Add URL',
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/face_book.svg', height: 24, width: 24))),
+            suffixIcon: SizedBox(
+              height: 24,
+              width: 24,
+              child: Center(
+                child: ValueListenableBuilder(
+                  valueListenable: _socialUrlFields[3],
+                  builder: (context, value, child) {
+                    if (value.text.trim().isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    if (!Uri.parse(value.text).isAbsolute) {
+                      return SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
+                      );
+                    }
+                    return SvgPicture.asset('assets/images/svg/icons/green_success.svg', height: 24, width: 24);
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+      [
+        FieldData(
+          type: FieldType.word,
+          textInputAction: TextInputAction.done,
+          controller: _socialUrlFields[4],
+          focusNode: FocusNode(),
+          decoration: InputDecoration(
+            hintText: 'Add URL',
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/youtube.svg', height: 24, width: 24))),
+            suffixIcon: SizedBox(
+              height: 24,
+              width: 24,
+              child: Center(
+                child: ValueListenableBuilder(
+                  valueListenable: _socialUrlFields[4],
                   builder: (context, value, child) {
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
