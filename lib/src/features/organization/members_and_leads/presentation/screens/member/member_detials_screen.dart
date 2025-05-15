@@ -138,7 +138,11 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ...[
-                              (label: 'Date of Birth', value: data.dateOfBirth?.format('dd MMM yyyy') ?? '', onTap: () {}),
+                              (
+                                label: 'Date of Birth',
+                                value: data.dateOfBirth?.format('dd MMM yyyy') ?? '',
+                                onTap: () => context.push(BlocProvider.value(value: _cubit, child: UpdateDOBScreen(details: right(data)))),
+                              ),
                               (label: 'Height', value: '${data.height ?? ''} CM', onTap: () {}),
                               (label: 'Weight', value: '${data.weight ?? ''} KG', onTap: () {}),
                             ].map((e) {

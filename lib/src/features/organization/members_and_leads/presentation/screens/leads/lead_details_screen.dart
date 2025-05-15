@@ -133,7 +133,11 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ...[
-                              (label: 'Experience', value: '${data.mentorProfile?.experience ?? 0} years', onTap: () {}),
+                              (
+                                label: 'Experience',
+                                value: '${data.mentorProfile?.experience ?? 0} years',
+                                onTap: () => context.push(BlocProvider.value(value: _cubit, child: UpdateDOBScreen(details: left(data)))),
+                              ),
                               (label: 'Date of Birth', value: data.dateOfBirth?.format('dd MMM yyyy') ?? '', onTap: () {}),
                               (label: 'Category', value: 'Add', onTap: () {}),
                             ].map((e) {

@@ -288,4 +288,24 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     final res = await MembersRepository().createOrUpdateMember(memberId: memberId, body: formData);
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
+
+  Future<void> updateMemberDob({required int memberId, required String? dob}) async {
+    emit(state.copyWith(createOrUpdateMember: none()));
+    if (dob?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Date of birth is required')))));
+      return;
+    }
+    final res = await MembersRepository().createOrUpdateMember(memberId: memberId, body: {'date_of_birth': dob, 'organization_id': orgId});
+    emit(state.copyWith(createOrUpdateMember: some(res)));
+  }
+
+  Future<void> updateLeadDob({required int leadId, required String? dob}) async {
+    emit(state.copyWith(createOrUpdateLead: none()));
+    if (dob?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Date of birth is required')))));
+      return;
+    }
+    final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: {'date_of_birth': dob, 'organization_id': orgId});
+    emit(state.copyWith(createOrUpdateLead: some(res)));
+  }
 }
