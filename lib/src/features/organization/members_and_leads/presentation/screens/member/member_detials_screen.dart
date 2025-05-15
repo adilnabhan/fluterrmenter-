@@ -143,8 +143,8 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                                 value: data.dateOfBirth?.format('dd MMM yyyy') ?? '',
                                 onTap: () => context.push(BlocProvider.value(value: _cubit, child: UpdateDOBScreen(details: right(data)))),
                               ),
-                              (label: 'Height', value: '${data.height ?? ''} CM', onTap: () {}),
-                              (label: 'Weight', value: '${data.weight ?? ''} KG', onTap: () {}),
+                              (label: 'Height', value: '${data.height ?? ''} CM', onTap: () => context.push(BlocProvider.value(value: _cubit, child: UpdateHeightScreen(details: data)))),
+                              (label: 'Weight', value: '${data.weight ?? ''} KG', onTap: () => context.push(BlocProvider.value(value: _cubit, child: UpdateWeightScreen(details: data)))),
                             ].map((e) {
                               return InkWell(
                                 onTap: e.onTap,

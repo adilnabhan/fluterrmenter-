@@ -1,15 +1,15 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class UpdateDOBScreen extends StatefulWidget {
-  const UpdateDOBScreen({required this.details, super.key});
+class UpdateHeightScreen extends StatefulWidget {
+  const UpdateHeightScreen({required this.details, super.key});
 
-  final Either<LeadDetailsModel, MemberDetailsModel>? details;
+  final MemberDetailsModel? details;
 
   @override
-  State<UpdateDOBScreen> createState() => _UpdateDOBScreenState();
+  State<UpdateHeightScreen> createState() => _UpdateHeightScreenState();
 }
 
-class _UpdateDOBScreenState extends State<UpdateDOBScreen> {
+class _UpdateHeightScreenState extends State<UpdateHeightScreen> {
   late final MembersAndLeadsCubit _cubit;
   late final FieldData<dynamic> _fieldData;
   final _formKey = GlobalKey<FormState>();
@@ -17,25 +17,26 @@ class _UpdateDOBScreenState extends State<UpdateDOBScreen> {
   @override
   void initState() {
     _cubit = context.read<MembersAndLeadsCubit>();
-    final leadDetails = widget.details?.fold((l) => l, (r) => null);
-    final memebrDetails = widget.details?.fold((l) => null, (r) => r);
     _fieldData = FieldData(
-      type: FieldType.date,
+      type: FieldType.word,
       textInputAction: TextInputAction.done,
-      label: 'Date of Birth',
-      dateTimeShowFormat: DateFormat('dd MMM yyyy'),
+      label: 'Height',
       requiredLabel: true,
-      controller: TextEditingController(text: (leadDetails?.dateOfBirth ?? memebrDetails?.dateOfBirth)?.format('dd MMM yyyy')),
+      controller: TextEditingController(text: widget.details?.height?.toNum.toInt().toString() ?? ''),
+      focusNode: FocusNode(),
+      keyboardType: TextInputType.number,
+      maxLength: 3,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
       validator: (value) {
         if (value?.isEmpty ?? true) {
-          return 'Date of Birth must be selected';
+          return 'Height is required';
         }
         return null;
       },
-      onChanged: (p0) {},
       decoration: InputDecoration(
-        hintText: 'Select Date of Birth',
+        hintText: '0',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        suffixIcon: SizedBox.square(dimension: 22, child: Center(child: Text('CM', style: AppStyles.text14Px.poppins.w400.dark))),
         filled: false,
         border: OutlineInputBorder(borderSide: const BorderSide(color: AppColors.borderGrey), borderRadius: BorderRadius.circular(8)),
         focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
@@ -54,30 +55,16 @@ class _UpdateDOBScreenState extends State<UpdateDOBScreen> {
   }
 
   void _onContinue() {
-    if (_cubit.state.createOrUpdateLead?.isNone() ?? false) {
+    if (_cubit.state.createOrUpdateMember?.isNone() ?? false) {
       return;
     }
     if (_formKey.currentState?.validate() ?? false) {
-      final dob = _fieldData.selectedDateTime?.format('yyyy-MM-dd');
-
-      widget.details?.fold(
-        (l) {
-          if (l.id == null) {
-            Dialogs.showSnack(msg: 'Lead not found!');
-            return;
-          }
-          _cubit.updateLeadDob(leadId: l.id!, dob: dob);
-        },
-        (r) {
-          if (r.id == null) {
-            Dialogs.showSnack(msg: 'Member not found!');
-            return;
-          }
-          _cubit.updateMemberDob(memberId: r.id!, dob: dob);
-        },
-      );
-    } else {
-      Dialogs.showSnack(msg: 'Please enter valid date of birth');
+      final height = _fieldData.controller?.text;
+      if (widget.details?.id == null) {
+        Dialogs.showSnack(msg: 'Member not found!');
+        return;
+      }
+      _cubit.updateMemberHeight(memberId: widget.details!.id!, height: height);
     }
   }
 
@@ -85,23 +72,6 @@ class _UpdateDOBScreenState extends State<UpdateDOBScreen> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
-          listenWhen: (p, c) => p.createOrUpdateLead != c.createOrUpdateLead,
-          bloc: _cubit,
-          listener: (context, state) {
-            state.createOrUpdateLead?.fold(() => null, (t) {
-              t.fold(
-                (l) {
-                  Dialogs.showSnack(msg: l.msg);
-                },
-                (r) {
-                  Dialogs.showSnack(msg: 'Trainer details updated successfully');
-                  context.pop();
-                },
-              );
-            });
-          },
-        ),
         BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
           listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
           bloc: _cubit,
@@ -126,12 +96,7 @@ class _UpdateDOBScreenState extends State<UpdateDOBScreen> {
         bottomNavigationBar: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
           buildWhen: (p, c) => p.createOrUpdateLead != c.createOrUpdateLead || p.createOrUpdateMember != c.createOrUpdateMember,
           builder: (context, state) {
-            return Button.filled(
-              title: 'Save',
-              isLoading: widget.details?.fold((l) => state.createOrUpdateLead, (r) => state.createOrUpdateMember)?.isNone() ?? false,
-              buttonColor: AppColors.primary,
-              ontap: _onContinue,
-            );
+            return Button.filled(title: 'Save', isLoading: state.createOrUpdateMember?.isNone() ?? false, buttonColor: AppColors.primary, ontap: _onContinue);
           },
         ).pad(16).pxy(y: 16),
       ),

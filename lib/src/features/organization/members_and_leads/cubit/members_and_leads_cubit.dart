@@ -299,6 +299,26 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
+  Future<void> updateMemberHeight({required int memberId, required String? height}) async {
+    emit(state.copyWith(createOrUpdateMember: none()));
+    if (height?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Height is required')))));
+      return;
+    }
+    final res = await MembersRepository().createOrUpdateMember(memberId: memberId, body: {'height': height, 'organization_id': orgId});
+    emit(state.copyWith(createOrUpdateMember: some(res)));
+  }
+
+  Future<void> updateMemberWeight({required int memberId, required String? weight}) async {
+    emit(state.copyWith(createOrUpdateMember: none()));
+    if (weight?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Weight is required')))));
+      return;
+    }
+    final res = await MembersRepository().createOrUpdateMember(memberId: memberId, body: {'weight': weight, 'organization_id': orgId});
+    emit(state.copyWith(createOrUpdateMember: some(res)));
+  }
+
   Future<void> updateLeadDob({required int leadId, required String? dob}) async {
     emit(state.copyWith(createOrUpdateLead: none()));
     if (dob?.isEmpty ?? true) {
