@@ -8,6 +8,7 @@ extension TextStyleX on TextStyle {
   TextStyle get montserrat => copyWith(fontFamily: 'Montserrat');
   TextStyle get lato => copyWith(fontFamily: 'Lato');
   TextStyle get poppins => copyWith(fontFamily: 'Poppins');
+  TextStyle get titanOne => copyWith(fontFamily: 'TitanOne');
 
   //* Font weights
   TextStyle get w100 => copyWith(fontWeight: FontWeight.w100);
@@ -31,6 +32,5 @@ extension TextStyleX on TextStyle {
   // TextStyle get adaptive => copyWith(fontSize: fontSize);
   //opacity methods
   ///
-  TextStyle opacity(double opacity) =>
-      copyWith(color: color?.withOpacity(opacity));
+  TextStyle opacity(double opacity) => copyWith(color: color?.withOpacity(opacity));
 }

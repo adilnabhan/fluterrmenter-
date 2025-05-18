@@ -160,6 +160,11 @@ flutter:
     - assets/fonts/
 
   fonts:
+    - family: TitanOne
+      fonts:
+        - asset: assets/fonts/TitanOne-Regular.ttf
+          weight: 100
+
     - family: Montserrat
       fonts:
         - asset: assets/fonts/Montserrat-Thin.ttf
