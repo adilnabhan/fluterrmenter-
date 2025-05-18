@@ -15,7 +15,7 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
   @override
   void initState() {
     super.initState();
-    _services = [...?widget.orgDetails.services];
+    _services = [...?widget.orgDetails.services?.map((e) => e.name ?? '')];
   }
 
   @override

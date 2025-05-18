@@ -24,7 +24,7 @@ class OrganizationDetailsModel with _$OrganizationDetailsModel {
     @JsonKey(name: 'location') LocationModel? location,
     @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
     @JsonKey(name: 'social_media') List<dynamic>? socialMedia,
-    @JsonKey(name: 'services') List<String>? services,
+    @JsonKey(name: 'services') List<AmenityModel>? services,
     @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
     @JsonKey(name: 'categories') List<AmenityModel>? categories,
     @JsonKey(name: 'photos') List<PhotoModel>? photos,

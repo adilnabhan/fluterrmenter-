@@ -50,7 +50,7 @@ mixin _$OrganizationDetailsModel {
   @JsonKey(name: 'social_media')
   List<dynamic>? get socialMedia => throw _privateConstructorUsedError;
   @JsonKey(name: 'services')
-  List<String>? get services => throw _privateConstructorUsedError;
+  List<AmenityModel>? get services => throw _privateConstructorUsedError;
   @JsonKey(name: 'amenities')
   List<AmenityModel>? get amenities => throw _privateConstructorUsedError;
   @JsonKey(name: 'categories')
@@ -93,7 +93,7 @@ abstract class $OrganizationDetailsModelCopyWith<$Res> {
       @JsonKey(name: 'location') LocationModel? location,
       @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
       @JsonKey(name: 'social_media') List<dynamic>? socialMedia,
-      @JsonKey(name: 'services') List<String>? services,
+      @JsonKey(name: 'services') List<AmenityModel>? services,
       @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
       @JsonKey(name: 'categories') List<AmenityModel>? categories,
       @JsonKey(name: 'photos') List<PhotoModel>? photos,
@@ -200,7 +200,7 @@ class _$OrganizationDetailsModelCopyWithImpl<$Res,
       services: freezed == services
           ? _value.services
           : services // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as List<AmenityModel>?,
       amenities: freezed == amenities
           ? _value.amenities
           : amenities // ignore: cast_nullable_to_non_nullable
@@ -263,7 +263,7 @@ abstract class _$$OrganizationDetailsModelImplCopyWith<$Res>
       @JsonKey(name: 'location') LocationModel? location,
       @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
       @JsonKey(name: 'social_media') List<dynamic>? socialMedia,
-      @JsonKey(name: 'services') List<String>? services,
+      @JsonKey(name: 'services') List<AmenityModel>? services,
       @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
       @JsonKey(name: 'categories') List<AmenityModel>? categories,
       @JsonKey(name: 'photos') List<PhotoModel>? photos,
@@ -370,7 +370,7 @@ class __$$OrganizationDetailsModelImplCopyWithImpl<$Res>
       services: freezed == services
           ? _value._services
           : services // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as List<AmenityModel>?,
       amenities: freezed == amenities
           ? _value._amenities
           : amenities // ignore: cast_nullable_to_non_nullable
@@ -413,7 +413,7 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
       @JsonKey(name: 'location') this.location,
       @JsonKey(name: 'working_days') final List<WorkingDayModel>? workingDays,
       @JsonKey(name: 'social_media') final List<dynamic>? socialMedia,
-      @JsonKey(name: 'services') final List<String>? services,
+      @JsonKey(name: 'services') final List<AmenityModel>? services,
       @JsonKey(name: 'amenities') final List<AmenityModel>? amenities,
       @JsonKey(name: 'categories') final List<AmenityModel>? categories,
       @JsonKey(name: 'photos') final List<PhotoModel>? photos,
@@ -488,10 +488,10 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
     return EqualUnmodifiableListView(value);
   }
 
-  final List<String>? _services;
+  final List<AmenityModel>? _services;
   @override
   @JsonKey(name: 'services')
-  List<String>? get services {
+  List<AmenityModel>? get services {
     final value = _services;
     if (value == null) return null;
     if (_services is EqualUnmodifiableListView) return _services;
@@ -650,7 +650,7 @@ abstract class _OrganizationDetailsModel implements OrganizationDetailsModel {
       @JsonKey(name: 'location') final LocationModel? location,
       @JsonKey(name: 'working_days') final List<WorkingDayModel>? workingDays,
       @JsonKey(name: 'social_media') final List<dynamic>? socialMedia,
-      @JsonKey(name: 'services') final List<String>? services,
+      @JsonKey(name: 'services') final List<AmenityModel>? services,
       @JsonKey(name: 'amenities') final List<AmenityModel>? amenities,
       @JsonKey(name: 'categories') final List<AmenityModel>? categories,
       @JsonKey(name: 'photos') final List<PhotoModel>? photos,
@@ -705,7 +705,7 @@ abstract class _OrganizationDetailsModel implements OrganizationDetailsModel {
   List<dynamic>? get socialMedia;
   @override
   @JsonKey(name: 'services')
-  List<String>? get services;
+  List<AmenityModel>? get services;
   @override
   @JsonKey(name: 'amenities')
   List<AmenityModel>? get amenities;

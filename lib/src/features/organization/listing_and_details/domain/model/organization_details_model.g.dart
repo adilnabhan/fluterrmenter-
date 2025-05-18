@@ -28,7 +28,7 @@ _$OrganizationDetailsModelImpl _$$OrganizationDetailsModelImplFromJson(
           .toList(),
       socialMedia: json['social_media'] as List<dynamic>?,
       services: (json['services'] as List<dynamic>?)
-          ?.map((e) => e as String)
+          ?.map((e) => AmenityModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       amenities: (json['amenities'] as List<dynamic>?)
           ?.map((e) => AmenityModel.fromJson(e as Map<String, dynamic>))
