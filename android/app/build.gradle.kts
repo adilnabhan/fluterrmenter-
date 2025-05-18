@@ -19,6 +19,21 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    signingConfigs {
+        create("release") {
+            val keyProperties = java.util.Properties()
+            val keyPropertiesFile = rootProject.file("../key.properties")
+            if (keyPropertiesFile.exists()) {
+                keyProperties.load(java.io.FileInputStream(keyPropertiesFile))
+            }
+
+            storeFile = file(keyProperties.getProperty("storeFile", "discipl_mentor_upload.jks"))
+            storePassword = keyProperties.getProperty("storePassword")
+            keyAlias = keyProperties.getProperty("keyAlias")
+            keyPassword = keyProperties.getProperty("keyPassword")
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.discipl.mentor_mobile_app"
@@ -34,9 +49,13 @@ android {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
+}
+
+dependencies {
+    implementation("com.google.android.material:material:1.12.0")
 }
 
 flutter {
