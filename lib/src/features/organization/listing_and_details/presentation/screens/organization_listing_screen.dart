@@ -181,7 +181,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                                   const Spacer(),
                                   Row(
                                     children: [
-                                      Flexible(child: Text(card.title, style: AppStyles.text14Px.poppins.w600.copyWith(color: card.color))),
+                                      Flexible(child: SizedBox(width: double.maxFinite, child: Text(card.title, style: AppStyles.text14Px.poppins.w600.copyWith(color: card.color)))),
                                       CircleAvatar(backgroundColor: card.color, radius: 18, child: const Icon(Icons.keyboard_arrow_right_outlined, color: AppColors.light)),
                                     ],
                                   ),

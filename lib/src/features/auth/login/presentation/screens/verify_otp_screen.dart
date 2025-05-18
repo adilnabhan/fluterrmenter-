@@ -133,7 +133,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                     ),
                     if (error != null) Text(error.msg, style: AppStyles.text14Px.poppins.w400.error).pOnly(top: 12),
                   ],
-                );
+                ).pxy(x: responsiveSize(context, s: 0, m: 0, l: 200, xl: 200));
               },
             ),
             const SizedBox(height: 26),
