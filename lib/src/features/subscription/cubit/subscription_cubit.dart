@@ -18,6 +18,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   Future<void> fetchSubscriptions() async {
     emit(state.copyWith(plans: none()));
     final res = await SubscriptionRepository().plans();
+    res.fold((l) {}, (plans) {
+      if (plans.results?.isNotEmpty ?? false) {
+        emit(state.copyWith(selectedSubscriptionModel: plans.results!.first));
+      }
+    });
     emit(state.copyWith(plans: some(res)));
   }
 
