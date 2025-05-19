@@ -6,11 +6,7 @@ class ImagePickerDialog extends StatelessWidget {
   final void Function(XFile? image)? onPickedImage;
 
   Future<void> show(BuildContext context) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => this,
-    );
+    await showModalBottomSheet<void>(context: context, isScrollControlled: true, builder: (context) => this);
   }
 
   @override
@@ -50,34 +46,21 @@ class ImagePickerDialog extends StatelessWidget {
       ),
     ];
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.light,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Flexible(
-        child: ListView.separated(
-          shrinkWrap: true,
-          itemCount: contents.length,
-          itemBuilder: (BuildContext context, int index) {
-            return InkWell(
-              onTap: () {
-                contents[index].onTap();
-              },
-              child: Text(
-                contents[index].label,
-                textAlign: TextAlign.center,
-                style: AppStyles.text16Px.poppins.w400.dark,
-              ).pxy(y: 22),
-            );
-          },
-          separatorBuilder: (BuildContext context, int index) {
-            return const Divider(
-              color: AppColors.borderGrey,
-              height: 1,
-              thickness: 1,
-            );
-          },
-        ),
+      decoration: BoxDecoration(color: AppColors.light, borderRadius: BorderRadius.circular(24)),
+      child: ListView.separated(
+        shrinkWrap: true,
+        itemCount: contents.length,
+        itemBuilder: (BuildContext context, int index) {
+          return InkWell(
+            onTap: () {
+              contents[index].onTap();
+            },
+            child: Text(contents[index].label, textAlign: TextAlign.center, style: AppStyles.text16Px.poppins.w400.dark).pxy(y: 22),
+          );
+        },
+        separatorBuilder: (BuildContext context, int index) {
+          return const Divider(color: AppColors.borderGrey, height: 1, thickness: 1);
+        },
       ),
     );
   }
