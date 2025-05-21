@@ -18,6 +18,8 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
     return (label: _basicDetails[fieldIndex].label, value: newValue ?? _basicDetails[fieldIndex].value, onTap: _basicDetails[fieldIndex].onTap);
   }
 
+  XFile? _pickedImage;
+
   @override
   void initState() {
     super.initState();
@@ -160,6 +162,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
           textInputAction: TextInputAction.done,
           controller: _socialUrlFields[1],
           focusNode: FocusNode(),
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
           decoration: InputDecoration(
             hintText: 'Add URL',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
@@ -175,7 +178,9 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    if (!Uri.parse(value.text).isAbsolute) {
+                    // Validate phone number format
+                    final phoneNumber = value.text.trim();
+                    if (!RegExp(r'^\+?[0-9]{10,12}$').hasMatch(phoneNumber)) {
                       return SizedBox(
                         height: 24,
                         width: 24,
@@ -337,6 +342,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            ProfileImage(isEdit: true, onChanged: (image) => _pickedImage = image, radius: 100.w, url: widget.orgDetails.logo ?? '').pxy(y: 16),
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -382,38 +388,54 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
               title: 'Save',
               isLoading: isLoading,
               buttonColor: AppColors.primary,
-              ontap: () {
+              ontap: () async {
                 if (isLoading) {
                   return;
                 }
                 if (_basicDetails[0].value.length < 3) {
-                  Dialogs.showSnack(msg: 'Gym name must be at least 3 characters');
+                  await Dialogs.showSnack(msg: 'Gym name must be at least 3 characters');
                   return;
                 } else if (!_basicDetails[2].value.isEmail) {
-                  Dialogs.showSnack(msg: 'Email address is required');
+                  await Dialogs.showSnack(msg: 'Email address is required');
                   return;
                 } else if (_basicDetails[3].value.length != 10) {
-                  Dialogs.showSnack(msg: 'Mobile number must be 10 digits');
+                  await Dialogs.showSnack(msg: 'Mobile number must be 10 digits');
+                  return;
+                } else if (_socialUrlFields[1].value.text.length != 10) {
+                  await Dialogs.showSnack(msg: 'Whatsapp number must be 10 digits');
                   return;
                 }
-                _cubit.updateOrgDetails(
-                  orgId: widget.orgDetails.id ?? 0,
-                  body: {
-                    'name': _basicDetails[0].value,
-                    'email': _basicDetails[2].value,
-                    'phone_number': '+91${_basicDetails[3].value}',
-                    // 'location': {
-                    //   'street': widget.orgDetails.location?.street,
-                    //   'city': widget.orgDetails.location?.city,
-                    // },
-                    // 'social_media': {
-                    //   'website': _socialUrlFields[0].text.trim(),
-                    //   'whatsapp': _socialUrlFields[1].text.trim(),
-                    //   'instagram': _socialUrlFields[2].text.trim(),
-                    //   'facebook': _socialUrlFields[3].text.trim(),
-                    //   'youtube': _socialUrlFields[4].text.trim(),
-                  },
-                );
+                final body = FormData.fromMap({
+                  'name': _basicDetails[0].value,
+                  'email': _basicDetails[2].value,
+                  'phone_number': '+91${_basicDetails[3].value}',
+                  // 'location': {
+                  //   'street': widget.orgDetails.location?.street,
+                  //   'city': widget.orgDetails.location?.city,
+                  // },
+                  'social_media': [
+                    if (_socialUrlFields[1].text.trim().isNotEmpty) {'platform': 'whatsapp', 'url': '+91${_socialUrlFields[1].text}'},
+                  ],
+                });
+                // if (_socialUrlFields[0].text.trim().isNotEmpty) {
+                //   body.fields.add(MapEntry('social_media.website', _socialUrlFields[0].text));
+                // }
+                // if (_socialUrlFields[1].text.trim().isNotEmpty) {
+                //   body.fields.add(MapEntry('social_media.whatsapp', '+91${_socialUrlFields[1].text}'));
+                // }
+                // if (_socialUrlFields[2].text.trim().isNotEmpty) {
+                //   body.fields.add(MapEntry('social_media.instagram', _socialUrlFields[2].text));
+                // }
+                // if (_socialUrlFields[3].text.trim().isNotEmpty) {
+                //   body.fields.add(MapEntry('social_media.facebook', _socialUrlFields[3].text));
+                // }
+                // if (_socialUrlFields[4].text.trim().isNotEmpty) {
+                //   body.fields.add(MapEntry('social_media.youtube', _socialUrlFields[4].text));
+                // }
+                if (_pickedImage != null) {
+                  body.files.add(MapEntry('logo', await MultipartFile.fromFile(_pickedImage!.path, filename: _pickedImage!.name)));
+                }
+                await _cubit.updateOrgDetails(orgId: widget.orgDetails.id ?? 0, body: body);
               },
             ).pad(16).pxy(y: 16);
           },

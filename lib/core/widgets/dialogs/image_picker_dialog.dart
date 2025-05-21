@@ -39,6 +39,15 @@ class ImagePickerDialog extends StatelessWidget {
         },
       ),
       (
+        label: 'Remove Photo',
+        onTap: () {
+          if (context.mounted) {
+            onPickedImage?.call(null);
+            context.pop();
+          }
+        },
+      ),
+      (
         label: 'Cancel',
         onTap: () {
           context.pop();

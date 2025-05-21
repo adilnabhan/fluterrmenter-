@@ -6,7 +6,7 @@ class ProfileImage extends StatefulWidget {
   final String? url;
   final double? radius;
   final BoxFit fit;
-  final void Function(XFile image)? onChanged;
+  final void Function(XFile? image)? onChanged;
   final bool isEdit;
 
   @override
@@ -22,7 +22,21 @@ class _ProfileImageState extends State<ProfileImage> {
     final iconSize = widget.radius != null ? widget.radius! * .4 : 42.w;
     return InkWell(
       overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-      onTap: () => widget.isEdit ? _showBottomSheet(context) : null,
+      onTap:
+          () =>
+              widget.isEdit
+                  ? ImagePickerDialog(
+                    onPickedImage: (image) {
+                      if (image != null) {
+                        _localImage = image;
+                        widget.onChanged?.call(_localImage);
+                      } else {
+                        _localImage = XFile('');
+                      }
+                      setState(() {});
+                    },
+                  ).show(context)
+                  : null,
       child: SizedBox.square(
         dimension: radius,
         child: Stack(
@@ -54,65 +68,6 @@ class _ProfileImageState extends State<ProfileImage> {
     return Container(
       decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: radius * 0.03)),
       child: SvgPicture.asset('assets/images/svg/icons/person_filled.svg', height: radius, width: radius),
-    );
-  }
-
-  void _showBottomSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (context) {
-        return Container(
-          decoration: BoxDecoration(color: AppColors.light, borderRadius: BorderRadius.circular(24)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min, // Ensures it takes only necessary space
-            children: [
-              InkWell(
-                onTap:
-                    widget.onChanged == null
-                        ? null
-                        : () {
-                          ImagePicker().pickImage(source: ImageSource.camera).then((xFile) {
-                            if (xFile != null) {
-                              setState(() {
-                                widget.onChanged?.call(xFile);
-                                _localImage = xFile;
-                              });
-                            }
-                          });
-                          context.pop();
-                        },
-                child: Container(
-                  decoration: BoxDecoration(border: Border.all(color: AppColors.disabledButton), borderRadius: BorderRadius.circular(4.r)),
-                  child: Row(children: [SvgPicture.asset('assets/images/icons/media_camera.svg'), 16.horizontalSpace, Text('Click Photo', style: AppStyles.text10Px.lato.w400.dark)]).pad(16.r),
-                ),
-              ),
-              30.verticalSpace,
-              InkWell(
-                onTap:
-                    widget.onChanged == null
-                        ? null
-                        : () {
-                          ImagePicker().pickImage(source: ImageSource.gallery).then((xFile) {
-                            if (xFile != null) {
-                              setState(() {
-                                widget.onChanged?.call(xFile);
-                                _localImage = xFile;
-                              });
-                            }
-                          });
-                          context.pop();
-                        },
-                child: Container(
-                  decoration: BoxDecoration(border: Border.all(color: AppColors.disabledButton), borderRadius: BorderRadius.circular(4.r)),
-                  child: Row(
-                    children: [SvgPicture.asset('assets/images/icons/media_gallery.svg'), 16.horizontalSpace, Text('Upload image from Gallery', style: AppStyles.text10Px.lato.w400.dark)],
-                  ).pad(16.r),
-                ),
-              ),
-            ],
-          ).pad(36.r),
-        );
-      },
     );
   }
 }

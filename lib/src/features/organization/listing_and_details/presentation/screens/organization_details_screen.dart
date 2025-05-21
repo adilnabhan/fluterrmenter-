@@ -16,7 +16,11 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
   void initState() {
     super.initState();
     _cubit = context.read<OrganizationListingAndDetailsCubit>();
-    _cubit.fetchHomeData(orgId: widget.orgId);
+    _fetch();
+  }
+
+  Future<void> _fetch() async {
+    await _cubit.fetchDetails(orgId: widget.orgId);
   }
 
   @override
@@ -35,59 +39,65 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                   return const Center(child: Text('Error'));
                 },
                 (orgDetails) {
-                  return ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: AppColors.grey, borderRadius: BorderRadius.circular(16)),
-                        child: Row(
-                          children: [
-                            AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: orgDetails.logo ?? '')),
-                            const SizedBox(width: 16),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(orgDetails.name ?? '', style: AppStyles.text14Px.poppins.w500),
-                                const SizedBox(height: 4),
-                                Text(orgDetails.email ?? '', style: AppStyles.text12Px.poppins.w400),
-                              ],
-                            ),
-                          ],
+                  return RefreshIndicator(
+                    onRefresh: _fetch,
+                    child: ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(color: AppColors.grey, borderRadius: BorderRadius.circular(16)),
+                          child: Row(
+                            children: [
+                              InkWell(
+                                onTap: () => context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails))),
+                                child: AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: orgDetails.logo ?? '')),
+                              ),
+                              const SizedBox(width: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(orgDetails.name ?? '', style: AppStyles.text14Px.poppins.w500),
+                                  const SizedBox(height: 4),
+                                  Text(orgDetails.email ?? '', style: AppStyles.text12Px.poppins.w400),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      ...[
-                        _buildProfileListItem('Gym Details', () {
-                          context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
-                        }),
-                        _buildProfileListItem('Gallery', () {
-                          context.push(BlocProvider.value(value: _cubit, child: GymGalleryScreen(orgDetails: orgDetails)));
-                        }),
-                        _buildProfileListItem('Services', () {
-                          context.push(BlocProvider.value(value: _cubit, child: GymServicesScreen(orgDetails: orgDetails)));
-                        }),
-                        _buildProfileListItem('Packages', () {
-                          context.push(BlocProvider.value(value: _cubit, child: GymPackagesScreen(orgDetails: orgDetails)));
-                        }),
-                        // _buildProfileListItem('Trainers', () {
-                        //   context.push(BlocProvider.value(value: _cubit, child: GymTrainersScreen(orgDetails: orgDetails)));
-                        // }),
-                        _buildProfileListItem('Schedules', () {
-                          context.push(BlocProvider.value(value: _cubit, child: GymSchedulesScreen(orgDetails: orgDetails)));
-                        }),
-                        _buildProfileListItem('Amenities', () {
-                          context.push(BlocProvider.value(value: _cubit, child: GymAmenitiesScreen(orgDetails: orgDetails)));
-                        }),
-                        // _buildProfileListItem('Wishes', () {
-                        //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
-                        // }),
-                        // _buildProfileListItem('Permissions', () {
-                        //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
-                        // }),
-                        _ProfileListItem(label: 'Logout', onTap: () {}, isLogout: true),
+                        const SizedBox(height: 16),
+                        ...[
+                          _buildProfileListItem('Gym Details', () {
+                            context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
+                          }),
+                          _buildProfileListItem('Gallery', () {
+                            context.push(BlocProvider.value(value: _cubit, child: GymGalleryScreen(orgDetails: orgDetails)));
+                          }),
+                          _buildProfileListItem('Services', () {
+                            context.push(BlocProvider.value(value: _cubit, child: GymServicesScreen(orgDetails: orgDetails)));
+                          }),
+                          _buildProfileListItem('Packages', () {
+                            context.push(BlocProvider.value(value: _cubit, child: GymPackagesScreen(orgDetails: orgDetails)));
+                          }),
+                          // _buildProfileListItem('Trainers', () {
+                          //   context.push(BlocProvider.value(value: _cubit, child: GymTrainersScreen(orgDetails: orgDetails)));
+                          // }),
+                          _buildProfileListItem('Schedules', () {
+                            context.push(BlocProvider.value(value: _cubit, child: GymSchedulesScreen(orgDetails: orgDetails)));
+                          }),
+                          _buildProfileListItem('Amenities', () {
+                            context.push(BlocProvider.value(value: _cubit, child: GymAmenitiesScreen(orgDetails: orgDetails)));
+                          }),
+                          // _buildProfileListItem('Wishes', () {
+                          //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
+                          // }),
+                          // _buildProfileListItem('Permissions', () {
+                          //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
+                          // }),
+                          _ProfileListItem(label: 'Logout', onTap: () {}, isLogout: true),
+                        ],
                       ],
-                    ],
+                    ),
                   );
                 },
               );

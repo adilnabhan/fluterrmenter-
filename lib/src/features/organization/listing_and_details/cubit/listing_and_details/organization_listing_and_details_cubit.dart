@@ -10,8 +10,8 @@ class OrganizationListingAndDetailsCubit extends Cubit<OrganizationListingAndDet
     // emit(state.copyWith(sele: organization));
   }
 
-  Future<void> fetchList() async {
-    emit(state.copyWith(list: none(), details: none(), homeData: none()));
+  Future<void> fetchList({bool isRefresh = false}) async {
+    emit(state.copyWith(list: none(), details: none(), homeData: none(), selectedOrganization: isRefresh ? null : state.selectedOrganization));
     final res = await OrganizationListAndDetailsRepository().fetch();
     res.fold(
       (l) {
