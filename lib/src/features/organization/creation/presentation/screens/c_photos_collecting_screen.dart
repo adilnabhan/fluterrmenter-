@@ -27,9 +27,9 @@ class _CreateOrganizationPhotosCollectingScreenState extends State<CreateOrganiz
           const SizedBox(height: 22),
           const OrganizationCreationCompletionStatusCard(progress: 3),
           const SizedBox(height: 28),
-          Text('Use your current location', style: AppStyles.text16Px.poppins.w700.dark),
+          Text('Add Photos & Videos', style: AppStyles.text16Px.poppins.w700.dark),
           const SizedBox(height: 4),
-          Text('How your gym’s equipment, ambiance, trainers, & more.', style: AppStyles.text12Px.poppins.w400.textGrey),
+          Text('Please upload images sized 1485 × 1458 px to ensure the best quality', style: AppStyles.text12Px.poppins.w400.textGrey),
           const SizedBox(height: 18),
           GridView.builder(
             shrinkWrap: true,

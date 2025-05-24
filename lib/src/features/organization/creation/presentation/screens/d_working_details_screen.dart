@@ -52,7 +52,7 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
           type: FieldType.time,
           controller: TextEditingController(),
           focusNode: FocusNode(),
-          label: 'Ending time',
+          label: 'Evening time',
           requiredLabel: true,
           decoration: const InputDecoration(hintText: 'Starting time'),
           validator: (value) {
@@ -353,6 +353,8 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
           children: [
             const SizedBox(height: 22),
             const OrganizationCreationCompletionStatusCard(progress: 4),
+            const SizedBox(height: 28),
+            Text('Profile Details', style: AppStyles.text16Px.poppins.w600.dark),
             const SizedBox(height: 32),
             Row(children: [Text('Set your working days & hours', style: AppStyles.text14Px.poppins.w500.dark), Text('*', style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.primary))]),
             const SizedBox(height: 16),

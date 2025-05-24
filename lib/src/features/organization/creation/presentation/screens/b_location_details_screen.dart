@@ -230,6 +230,8 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
               const SizedBox(height: 22),
               const OrganizationCreationCompletionStatusCard(progress: 2),
               const SizedBox(height: 28),
+              Text('Location Details', style: AppStyles.text16Px.poppins.w600.dark),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   const CircleAvatar(backgroundColor: AppColors.primary, radius: 3).pOnly(right: 6),

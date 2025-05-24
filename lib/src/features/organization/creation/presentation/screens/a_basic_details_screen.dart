@@ -136,6 +136,8 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
             const SizedBox(height: 22),
             const OrganizationCreationCompletionStatusCard(progress: 1),
             const SizedBox(height: 28),
+            Text('Gym Details', style: AppStyles.text16Px.poppins.w600.dark),
+            const SizedBox(height: 16),
             Field(data: _brandName),
             const SizedBox(height: 16),
             Field<String>(
