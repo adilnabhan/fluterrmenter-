@@ -192,7 +192,18 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
       listenWhen: (p, c) => p.selectedPlaceDetails != c.selectedPlaceDetails || p.currentPlaceDetails != c.currentPlaceDetails,
       listener: (context, state) {
         state.currentPlaceDetails?.fold(() {}, (t) {
-          t.fold((l) {}, (r) {});
+          t.fold((l) {}, (r) {
+            _gymLocationCubit.searchPlaces(q: '');
+            _searchField.value = TextEditingValue(text: r.placeName ?? r.placeName ?? '');
+            _searchFocusNode.unfocus();
+            _locationDetails[0][0].controller?.value = TextEditingValue(text: r.placeName ?? '');
+            // _locationDetails[1][0].controller?.value = TextEditingValue(
+            //   text: r.adrAddress ?? '',
+            // );
+            _locationDetails[2][0].controller?.value = TextEditingValue(text: r.district ?? '');
+            _locationDetails[3][0].controller?.value = TextEditingValue(text: r.state ?? '');
+            _locationDetails[3][1].controller?.value = TextEditingValue(text: r.pincode ?? '');
+          });
         });
         state.selectedPlaceDetails?.data.fold(() {}, (t) {
           t.fold((l) {}, (r) {
@@ -260,17 +271,29 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              InkWell(
-                onTap: () {
-                  _gymLocationCubit.getPlaceDetailsFromCurrentLocation();
+              BlocBuilder<OrganizationLocationDetailsCubit, OrganizationLocationDetailsState>(
+                buildWhen: (p, c) => c.currentPlaceDetails != p.currentPlaceDetails,
+                builder: (context, state) {
+                  final isLoading = state.currentPlaceDetails?.fold(() => true, (t) => false) ?? false;
+                  return InkWell(
+                    onTap: () {
+                      if (isLoading) {
+                        return;
+                      }
+                      _gymLocationCubit.getPlaceDetailsFromCurrentLocation();
+                    },
+                    child: Row(
+                      children: [
+                        if (isLoading)
+                          const SizedBox.square(dimension: 32, child: CupertinoActivityIndicator(color: AppColors.dark))
+                        else
+                          SvgPicture.asset('assets/images/svg/icons/map.svg', height: 32, width: 32),
+                        const SizedBox(width: 8),
+                        Flexible(child: Text('Use your current location', style: AppStyles.text14Px.poppins.w600.dark)),
+                      ],
+                    ),
+                  );
                 },
-                child: Row(
-                  children: [
-                    SvgPicture.asset('assets/images/svg/icons/map.svg', height: 32, width: 32),
-                    const SizedBox(width: 8),
-                    Flexible(child: Text('Use your current location', style: AppStyles.text14Px.poppins.w600.dark)),
-                  ],
-                ),
               ),
               const SizedBox(height: 28),
               BlocBuilder<OrganizationLocationDetailsCubit, OrganizationLocationDetailsState>(
