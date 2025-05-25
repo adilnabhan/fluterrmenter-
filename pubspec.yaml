@@ -148,6 +148,9 @@ dev_dependencies:
   #* for code formating
   analyzer: ^6.2.0
 
+  #* for native splash
+  flutter_native_splash: ^2.4.6
+
 flutter:
   uses-material-design: true
   generate: true
