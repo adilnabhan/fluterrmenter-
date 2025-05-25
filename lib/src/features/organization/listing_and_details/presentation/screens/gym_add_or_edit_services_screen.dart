@@ -1,15 +1,15 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class GymAddOrEditServicesScreen extends StatefulWidget {
-  const GymAddOrEditServicesScreen({required this.orgDetails, super.key});
+class GymServicesScreen extends StatefulWidget {
+  const GymServicesScreen({required this.orgDetails, super.key});
 
   final OrganizationDetailsModel orgDetails;
 
   @override
-  State<GymAddOrEditServicesScreen> createState() => _GymAddOrEditServicesScreenState();
+  State<GymServicesScreen> createState() => _GymServicesScreenState();
 }
 
-class _GymAddOrEditServicesScreenState extends State<GymAddOrEditServicesScreen> {
+class _GymServicesScreenState extends State<GymServicesScreen> {
   late final OrganizationListingAndDetailsCubit _cubit;
   late final List<String> _services;
   final _controller = TextEditingController();
@@ -45,7 +45,7 @@ class _GymAddOrEditServicesScreenState extends State<GymAddOrEditServicesScreen>
         });
       },
       child: Scaffold(
-        appBar: AppBar(leading: const PopButton().center, title: Text('Update Services', style: AppStyles.text16Px.poppins.w500)),
+        appBar: AppBar(leading: const PopButton().center, title: Text('Services', style: AppStyles.text16Px.poppins.w500)),
         body: Form(
           key: _formKey,
           child: Column(
