@@ -1,27 +1,41 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class SubscriptionSelectionScreen extends StatefulWidget {
-  const SubscriptionSelectionScreen({required this.memberDetails, super.key});
+class SubscriptionSelectionScreen extends StatelessWidget {
+  const SubscriptionSelectionScreen({required this.orgId, required this.memberDetails, super.key});
+
+  final MemberDetailsModel memberDetails;
+  final int orgId;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(create: (context) => MembershipCubit(orgId: '$orgId'), child: _SubscriptionSelectionScreen(memberDetails: memberDetails));
+  }
+}
+
+class _SubscriptionSelectionScreen extends StatefulWidget {
+  const _SubscriptionSelectionScreen({required this.memberDetails});
 
   final MemberDetailsModel memberDetails;
 
   @override
-  State<SubscriptionSelectionScreen> createState() => _SubscriptionSelectionScreenState();
+  State<_SubscriptionSelectionScreen> createState() => __SubscriptionSelectionScreenState();
 }
 
-class _SubscriptionSelectionScreenState extends State<SubscriptionSelectionScreen> {
+class __SubscriptionSelectionScreenState extends State<_SubscriptionSelectionScreen> {
   late final MembersAndLeadsCubit _cubit;
+  late final MembershipCubit _membershipCubit;
   MembershipPackageModel? _membershipPackageModel;
 
   @override
   void initState() {
     super.initState();
     _cubit = context.read<MembersAndLeadsCubit>();
+    _membershipCubit = context.read<MembershipCubit>();
     _fetch();
   }
 
   Future<void> _fetch() async {
-    await _cubit.fetchMembershipPackages();
+    await _membershipCubit.fetchMembershipPackages();
   }
 
   @override
@@ -55,7 +69,8 @@ class _SubscriptionSelectionScreenState extends State<SubscriptionSelectionScree
         },
         child: Scaffold(
           appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Choose Subscription')),
-          body: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+          body: BlocBuilder<MembershipCubit, MembershipState>(
+            bloc: _membershipCubit,
             buildWhen: (p, c) => p.membershipPackages != c.membershipPackages,
             builder: (context, state) {
               return state.membershipPackages.fold(

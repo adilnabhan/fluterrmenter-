@@ -1,9 +1,10 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class AddOrEditMemeberScreen extends StatefulWidget {
-  const AddOrEditMemeberScreen({this.memberDetails, super.key});
+  const AddOrEditMemeberScreen({required this.orgId, this.memberDetails, super.key});
 
   final MemberDetailsModel? memberDetails;
+  final int orgId;
 
   @override
   State<AddOrEditMemeberScreen> createState() => _AddOrEditMemeberScreenState();
@@ -323,7 +324,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         profession: profession,
         profilePicture: _profilePicture?.path,
       );
-      context.push(BlocProvider.value(value: _cubit, child: SubscriptionSelectionScreen(memberDetails: memberDetails)));
+      context.push(BlocProvider.value(value: _cubit, child: SubscriptionSelectionScreen(orgId: widget.orgId, memberDetails: memberDetails)));
     } else {
       Dialogs.showSnack(msg: 'Please fill all the fields');
     }

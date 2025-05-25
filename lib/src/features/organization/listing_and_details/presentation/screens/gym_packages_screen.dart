@@ -7,24 +7,26 @@ class GymPackagesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => MembersAndLeadsCubit(orgId: orgDetails.id!), child: _GymPackagesScreen());
+    return BlocProvider(create: (context) => MembershipCubit(orgId: '${orgDetails.id!}'), child: _GymPackagesScreen(orgDetails: orgDetails));
   }
 }
 
 class _GymPackagesScreen extends StatefulWidget {
-  const _GymPackagesScreen({super.key});
+  const _GymPackagesScreen({required this.orgDetails});
+
+  final OrganizationDetailsModel orgDetails;
 
   @override
   State<_GymPackagesScreen> createState() => __GymPackagesScreenState();
 }
 
 class __GymPackagesScreenState extends State<_GymPackagesScreen> {
-  late final MembersAndLeadsCubit _cubit;
+  late final MembershipCubit _cubit;
 
   @override
   void initState() {
     super.initState();
-    _cubit = context.read<MembersAndLeadsCubit>();
+    _cubit = context.read<MembershipCubit>();
     _fetch();
   }
 
@@ -43,7 +45,13 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
               Text('Current Packages', style: AppStyles.text16Px.poppins.w500.dark),
               const Spacer(),
               FilledButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  if (widget.orgDetails.id == null) {
+                    Dialogs.showSnack(msg: 'Organization is not available');
+                    return;
+                  }
+                  context.push(BlocProvider.value(value: _cubit, child: const GymAddPackageScreen()));
+                },
                 label: const Text('Add'),
                 icon: const Icon(Icons.add),
                 style: const ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppColors.primary), backgroundColor: WidgetStatePropertyAll(Color(0xffFFEAEA))),
@@ -52,7 +60,7 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+            child: BlocBuilder<MembershipCubit, MembershipState>(
               buildWhen: (p, c) => p.membershipPackages != c.membershipPackages,
               builder: (context, state) {
                 return state.membershipPackages.fold(

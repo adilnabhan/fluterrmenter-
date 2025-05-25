@@ -23,8 +23,6 @@ mixin _$MembersAndLeadsState {
       throw _privateConstructorUsedError;
   Option<Either<ApiException, MemberDetailsModel>>? get createOrUpdateMember =>
       throw _privateConstructorUsedError;
-  Option<Either<ApiException, ListMembershipPackagesModel>>
-      get membershipPackages => throw _privateConstructorUsedError;
   bool? get memberOnboardedAnimationCompleted =>
       throw _privateConstructorUsedError; //* Leads
   ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
@@ -54,8 +52,6 @@ abstract class $MembersAndLeadsStateCopyWith<$Res> {
       }) members,
       Option<Either<ApiException, MemberDetailsModel>> memberDetails,
       Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
-      Option<Either<ApiException, ListMembershipPackagesModel>>
-          membershipPackages,
       bool? memberOnboardedAnimationCompleted,
       ({
         Option<Either<ApiException, LeadsListingModel>> data,
@@ -85,7 +81,6 @@ class _$MembersAndLeadsStateCopyWithImpl<$Res,
     Object? members = null,
     Object? memberDetails = null,
     Object? createOrUpdateMember = freezed,
-    Object? membershipPackages = null,
     Object? memberOnboardedAnimationCompleted = freezed,
     Object? leads = null,
     Object? leadDetails = null,
@@ -107,10 +102,6 @@ class _$MembersAndLeadsStateCopyWithImpl<$Res,
           ? _value.createOrUpdateMember
           : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
               as Option<Either<ApiException, MemberDetailsModel>>?,
-      membershipPackages: null == membershipPackages
-          ? _value.membershipPackages
-          : membershipPackages // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, ListMembershipPackagesModel>>,
       memberOnboardedAnimationCompleted: freezed ==
               memberOnboardedAnimationCompleted
           ? _value.memberOnboardedAnimationCompleted
@@ -150,8 +141,6 @@ abstract class _$$MembersAndLeadsStateImplCopyWith<$Res>
       }) members,
       Option<Either<ApiException, MemberDetailsModel>> memberDetails,
       Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
-      Option<Either<ApiException, ListMembershipPackagesModel>>
-          membershipPackages,
       bool? memberOnboardedAnimationCompleted,
       ({
         Option<Either<ApiException, LeadsListingModel>> data,
@@ -178,7 +167,6 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
     Object? members = null,
     Object? memberDetails = null,
     Object? createOrUpdateMember = freezed,
-    Object? membershipPackages = null,
     Object? memberOnboardedAnimationCompleted = freezed,
     Object? leads = null,
     Object? leadDetails = null,
@@ -200,10 +188,6 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
           ? _value.createOrUpdateMember
           : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
               as Option<Either<ApiException, MemberDetailsModel>>?,
-      membershipPackages: null == membershipPackages
-          ? _value.membershipPackages
-          : membershipPackages // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, ListMembershipPackagesModel>>,
       memberOnboardedAnimationCompleted: freezed ==
               memberOnboardedAnimationCompleted
           ? _value.memberOnboardedAnimationCompleted
@@ -235,7 +219,6 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
       {this.members = const (data: None(), isPagination: false),
       this.memberDetails = const None(),
       this.createOrUpdateMember,
-      this.membershipPackages = const None(),
       this.memberOnboardedAnimationCompleted,
       this.leads = const (data: None(), isPagination: false),
       this.leadDetails = const None(),
@@ -254,10 +237,6 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   @override
   final Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember;
   @override
-  @JsonKey()
-  final Option<Either<ApiException, ListMembershipPackagesModel>>
-      membershipPackages;
-  @override
   final bool? memberOnboardedAnimationCompleted;
 //* Leads
   @override
@@ -275,7 +254,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
 
   @override
   String toString() {
-    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, membershipPackages: $membershipPackages, memberOnboardedAnimationCompleted: $memberOnboardedAnimationCompleted, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead)';
+    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, memberOnboardedAnimationCompleted: $memberOnboardedAnimationCompleted, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead)';
   }
 
   @override
@@ -288,8 +267,6 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
                 other.memberDetails == memberDetails) &&
             (identical(other.createOrUpdateMember, createOrUpdateMember) ||
                 other.createOrUpdateMember == createOrUpdateMember) &&
-            (identical(other.membershipPackages, membershipPackages) ||
-                other.membershipPackages == membershipPackages) &&
             (identical(other.memberOnboardedAnimationCompleted,
                     memberOnboardedAnimationCompleted) ||
                 other.memberOnboardedAnimationCompleted ==
@@ -307,7 +284,6 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
       members,
       memberDetails,
       createOrUpdateMember,
-      membershipPackages,
       memberOnboardedAnimationCompleted,
       leads,
       leadDetails,
@@ -333,8 +309,6 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
       final Option<Either<ApiException, MemberDetailsModel>> memberDetails,
       final Option<Either<ApiException, MemberDetailsModel>>?
           createOrUpdateMember,
-      final Option<Either<ApiException, ListMembershipPackagesModel>>
-          membershipPackages,
       final bool? memberOnboardedAnimationCompleted,
       final ({
         Option<Either<ApiException, LeadsListingModel>> data,
@@ -352,9 +326,6 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
   Option<Either<ApiException, MemberDetailsModel>> get memberDetails;
   @override
   Option<Either<ApiException, MemberDetailsModel>>? get createOrUpdateMember;
-  @override
-  Option<Either<ApiException, ListMembershipPackagesModel>>
-      get membershipPackages;
   @override
   bool? get memberOnboardedAnimationCompleted; //* Leads
   @override

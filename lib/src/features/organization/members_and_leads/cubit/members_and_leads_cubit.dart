@@ -107,12 +107,6 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     emit(state.copyWith(leadDetails: some(res)));
   }
 
-  Future<void> fetchMembershipPackages() async {
-    emit(state.copyWith(membershipPackages: none()));
-    final res = await MembershipRepository().list(queryParameters: {'organization_id': orgId});
-    emit(state.copyWith(membershipPackages: some(res)));
-  }
-
   Future<void> createOrUpdateLeadDetails({
     required int? leadId,
     required String? fullName,

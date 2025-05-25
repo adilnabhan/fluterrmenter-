@@ -7,12 +7,14 @@ class MembersAndLeadsListingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => MembersAndLeadsCubit(orgId: orgId), child: const _MembersAndLeadsListingScreen());
+    return BlocProvider(create: (context) => MembersAndLeadsCubit(orgId: orgId), child: _MembersAndLeadsListingScreen(orgId: orgId));
   }
 }
 
 class _MembersAndLeadsListingScreen extends StatefulWidget {
-  const _MembersAndLeadsListingScreen();
+  const _MembersAndLeadsListingScreen({required this.orgId});
+
+  final int orgId;
 
   @override
   State<_MembersAndLeadsListingScreen> createState() => __MembersAndLeadsListingScreenState();
@@ -110,7 +112,7 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                     AddMemberOrLeadSelectionSheet(
                       onSortSelected: (l, v) {
                         if (v == 'member') {
-                          context.push(BlocProvider.value(value: _cubit, child: const AddOrEditMemeberScreen()));
+                          context.push(BlocProvider.value(value: _cubit, child: AddOrEditMemeberScreen(orgId: widget.orgId)));
                         } else {
                           context.push(BlocProvider.value(value: _cubit, child: const AddOrEditLeadScreen()));
                         }
