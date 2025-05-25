@@ -181,7 +181,9 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    if (!Uri.parse(value.text).isAbsolute) {
+                    // Validate phone number format
+                    final phoneNumber = value.text.trim();
+                    if (!RegExp(r'^\+?[0-9]{10,12}$').hasMatch(phoneNumber)) {
                       return SizedBox(
                         height: 24,
                         width: 24,
