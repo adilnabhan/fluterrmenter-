@@ -1,4 +1,5 @@
 export 'gym_add_or_edit_package_screen.dart';
+export 'gym_add_or_edit_services_screen.dart';
 export 'gym_amenities_screen.dart';
 export 'gym_details_screen.dart';
 export 'gym_details_update_template_screen.dart';

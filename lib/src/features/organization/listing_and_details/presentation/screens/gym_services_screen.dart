@@ -30,7 +30,9 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
               Text('Services Added', style: AppStyles.text16Px.poppins.w500.dark),
               const Spacer(),
               FilledButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  context.push(GymAddOrEditServicesScreen(orgDetails: widget.orgDetails));
+                },
                 label: const Text('Add'),
                 icon: const Icon(Icons.add),
                 style: const ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppColors.primary), backgroundColor: WidgetStatePropertyAll(Color(0xffFFEAEA))),
