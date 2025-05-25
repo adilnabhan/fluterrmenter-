@@ -18,8 +18,8 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$MembershipState {
   Option<Either<ApiException, ListMembershipPackagesModel>>
       get membershipPackages => throw _privateConstructorUsedError;
-  Option<Either<ApiException, MembershipPackageModel>>?
-      get createOrUpdatePackage => throw _privateConstructorUsedError;
+  Option<Either<ApiException, void>>? get createOrUpdatePackage =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of MembershipState
   /// with the given fields replaced by the non-null parameter values.
@@ -37,8 +37,7 @@ abstract class $MembershipStateCopyWith<$Res> {
   $Res call(
       {Option<Either<ApiException, ListMembershipPackagesModel>>
           membershipPackages,
-      Option<Either<ApiException, MembershipPackageModel>>?
-          createOrUpdatePackage});
+      Option<Either<ApiException, void>>? createOrUpdatePackage});
 }
 
 /// @nodoc
@@ -67,7 +66,7 @@ class _$MembershipStateCopyWithImpl<$Res, $Val extends MembershipState>
       createOrUpdatePackage: freezed == createOrUpdatePackage
           ? _value.createOrUpdatePackage
           : createOrUpdatePackage // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, MembershipPackageModel>>?,
+              as Option<Either<ApiException, void>>?,
     ) as $Val);
   }
 }
@@ -83,8 +82,7 @@ abstract class _$$MembershipStateImplCopyWith<$Res>
   $Res call(
       {Option<Either<ApiException, ListMembershipPackagesModel>>
           membershipPackages,
-      Option<Either<ApiException, MembershipPackageModel>>?
-          createOrUpdatePackage});
+      Option<Either<ApiException, void>>? createOrUpdatePackage});
 }
 
 /// @nodoc
@@ -111,7 +109,7 @@ class __$$MembershipStateImplCopyWithImpl<$Res>
       createOrUpdatePackage: freezed == createOrUpdatePackage
           ? _value.createOrUpdatePackage
           : createOrUpdatePackage // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, MembershipPackageModel>>?,
+              as Option<Either<ApiException, void>>?,
     ));
   }
 }
@@ -127,8 +125,7 @@ class _$MembershipStateImpl implements _MembershipState {
   final Option<Either<ApiException, ListMembershipPackagesModel>>
       membershipPackages;
   @override
-  final Option<Either<ApiException, MembershipPackageModel>>?
-      createOrUpdatePackage;
+  final Option<Either<ApiException, void>>? createOrUpdatePackage;
 
   @override
   String toString() {
@@ -162,17 +159,16 @@ class _$MembershipStateImpl implements _MembershipState {
 
 abstract class _MembershipState implements MembershipState {
   const factory _MembershipState(
-      {final Option<Either<ApiException, ListMembershipPackagesModel>>
-          membershipPackages,
-      final Option<Either<ApiException, MembershipPackageModel>>?
-          createOrUpdatePackage}) = _$MembershipStateImpl;
+          {final Option<Either<ApiException, ListMembershipPackagesModel>>
+              membershipPackages,
+          final Option<Either<ApiException, void>>? createOrUpdatePackage}) =
+      _$MembershipStateImpl;
 
   @override
   Option<Either<ApiException, ListMembershipPackagesModel>>
       get membershipPackages;
   @override
-  Option<Either<ApiException, MembershipPackageModel>>?
-      get createOrUpdatePackage;
+  Option<Either<ApiException, void>>? get createOrUpdatePackage;
 
   /// Create a copy of MembershipState
   /// with the given fields replaced by the non-null parameter values.

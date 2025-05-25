@@ -14,10 +14,11 @@ class MembershipCubit extends Cubit<MembershipState> {
     emit(state.copyWith(membershipPackages: some(res)));
   }
 
-  Future<void> createMembershipPackage({
+  Future<void> createOrUpdateMembershipPackage({
+    required int? membershipId,
     required String packageType,
     required String name,
-    required double description,
+    required String description,
     required String actualPrice,
     required String offerPrice,
     required List<String> features,
@@ -25,7 +26,7 @@ class MembershipCubit extends Cubit<MembershipState> {
   }) async {
     emit(state.copyWith(createOrUpdatePackage: none()));
     final body = {
-      'organization_id': orgId,
+      'organization': orgId,
       'package_type': packageType,
       'name': name,
       'description': description,
@@ -35,7 +36,8 @@ class MembershipCubit extends Cubit<MembershipState> {
       'is_emi_available': isEmiAvailable,
       'is_active': true,
     };
-    final res = await MembershipRepository().create(body: body);
+
+    final res = (membershipId != null ? await MembershipRepository().update(id: membershipId, body: body) : await MembershipRepository().create(body: body));
     emit(state.copyWith(createOrUpdatePackage: some(res)));
   }
 }

@@ -34,7 +34,7 @@ final class MembershipRepository {
 
   /// @apiSuccess {CreateModel} response Success response
 
-  Future<Either<ApiException, MembershipPackageModel>> create({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, void>> create({required Map<String, dynamic> body}) async {
     try {
       return await Feggy.async(
         call: Dio().post<dynamic>(ApiUris.createMembershipPackage, data: body, options: Options(headers: {'X-Platform': platformSource}).token),
