@@ -49,5 +49,7 @@
 		<string>Your location is required to provide accurate service and determine your current position for delivery services.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Your location is required to provide accurate service and determine your current position for delivery services.</string>
+		<key>UIStatusBarHidden</key>
+		<false/>
 	</dict>
 </plist>
