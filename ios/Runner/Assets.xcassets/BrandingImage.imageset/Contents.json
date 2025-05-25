@@ -1,12 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "BrandingImage@3x 2.png",
+      "filename" : "BrandingImage.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "BrandingImage@3x 1.png",
+      "filename" : "BrandingImage@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
