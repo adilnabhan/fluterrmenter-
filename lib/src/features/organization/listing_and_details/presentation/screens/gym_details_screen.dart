@@ -396,7 +396,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                 } else if (_basicDetails[3].value.length != 10) {
                   await Dialogs.showSnack(msg: 'Mobile number must be 10 digits');
                   return;
-                } else if (_socialUrlFields[1].value.text.length != 10) {
+                } else if (_socialUrlFields[1].value.text.isNotEmpty && _socialUrlFields[1].value.text.length != 10) {
                   await Dialogs.showSnack(msg: 'Whatsapp number must be 10 digits');
                   return;
                 }
