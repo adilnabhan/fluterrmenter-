@@ -48,7 +48,7 @@ mixin _$OrganizationDetailsModel {
   @JsonKey(name: 'working_days')
   List<WorkingDayModel>? get workingDays => throw _privateConstructorUsedError;
   @JsonKey(name: 'social_media')
-  List<dynamic>? get socialMedia => throw _privateConstructorUsedError;
+  List<SocialMediaModel>? get socialMedia => throw _privateConstructorUsedError;
   @JsonKey(name: 'services')
   List<AmenityModel>? get services => throw _privateConstructorUsedError;
   @JsonKey(name: 'amenities')
@@ -92,7 +92,7 @@ abstract class $OrganizationDetailsModelCopyWith<$Res> {
       @JsonKey(name: 'is_on_free_trial') bool? isOnFreeTrial,
       @JsonKey(name: 'location') LocationModel? location,
       @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
-      @JsonKey(name: 'social_media') List<dynamic>? socialMedia,
+      @JsonKey(name: 'social_media') List<SocialMediaModel>? socialMedia,
       @JsonKey(name: 'services') List<AmenityModel>? services,
       @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
       @JsonKey(name: 'categories') List<AmenityModel>? categories,
@@ -196,7 +196,7 @@ class _$OrganizationDetailsModelCopyWithImpl<$Res,
       socialMedia: freezed == socialMedia
           ? _value.socialMedia
           : socialMedia // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
+              as List<SocialMediaModel>?,
       services: freezed == services
           ? _value.services
           : services // ignore: cast_nullable_to_non_nullable
@@ -262,7 +262,7 @@ abstract class _$$OrganizationDetailsModelImplCopyWith<$Res>
       @JsonKey(name: 'is_on_free_trial') bool? isOnFreeTrial,
       @JsonKey(name: 'location') LocationModel? location,
       @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
-      @JsonKey(name: 'social_media') List<dynamic>? socialMedia,
+      @JsonKey(name: 'social_media') List<SocialMediaModel>? socialMedia,
       @JsonKey(name: 'services') List<AmenityModel>? services,
       @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
       @JsonKey(name: 'categories') List<AmenityModel>? categories,
@@ -366,7 +366,7 @@ class __$$OrganizationDetailsModelImplCopyWithImpl<$Res>
       socialMedia: freezed == socialMedia
           ? _value._socialMedia
           : socialMedia // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
+              as List<SocialMediaModel>?,
       services: freezed == services
           ? _value._services
           : services // ignore: cast_nullable_to_non_nullable
@@ -412,7 +412,7 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
       @JsonKey(name: 'is_on_free_trial') this.isOnFreeTrial,
       @JsonKey(name: 'location') this.location,
       @JsonKey(name: 'working_days') final List<WorkingDayModel>? workingDays,
-      @JsonKey(name: 'social_media') final List<dynamic>? socialMedia,
+      @JsonKey(name: 'social_media') final List<SocialMediaModel>? socialMedia,
       @JsonKey(name: 'services') final List<AmenityModel>? services,
       @JsonKey(name: 'amenities') final List<AmenityModel>? amenities,
       @JsonKey(name: 'categories') final List<AmenityModel>? categories,
@@ -477,10 +477,10 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
     return EqualUnmodifiableListView(value);
   }
 
-  final List<dynamic>? _socialMedia;
+  final List<SocialMediaModel>? _socialMedia;
   @override
   @JsonKey(name: 'social_media')
-  List<dynamic>? get socialMedia {
+  List<SocialMediaModel>? get socialMedia {
     final value = _socialMedia;
     if (value == null) return null;
     if (_socialMedia is EqualUnmodifiableListView) return _socialMedia;
@@ -649,7 +649,7 @@ abstract class _OrganizationDetailsModel implements OrganizationDetailsModel {
       @JsonKey(name: 'is_on_free_trial') final bool? isOnFreeTrial,
       @JsonKey(name: 'location') final LocationModel? location,
       @JsonKey(name: 'working_days') final List<WorkingDayModel>? workingDays,
-      @JsonKey(name: 'social_media') final List<dynamic>? socialMedia,
+      @JsonKey(name: 'social_media') final List<SocialMediaModel>? socialMedia,
       @JsonKey(name: 'services') final List<AmenityModel>? services,
       @JsonKey(name: 'amenities') final List<AmenityModel>? amenities,
       @JsonKey(name: 'categories') final List<AmenityModel>? categories,
@@ -702,7 +702,7 @@ abstract class _OrganizationDetailsModel implements OrganizationDetailsModel {
   List<WorkingDayModel>? get workingDays;
   @override
   @JsonKey(name: 'social_media')
-  List<dynamic>? get socialMedia;
+  List<SocialMediaModel>? get socialMedia;
   @override
   @JsonKey(name: 'services')
   List<AmenityModel>? get services;
@@ -1433,6 +1433,210 @@ abstract class _PhotoModel implements PhotoModel {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PhotoModelImplCopyWith<_$PhotoModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+SocialMediaModel _$SocialMediaModelFromJson(Map<String, dynamic> json) {
+  return _SocialMediaModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$SocialMediaModel {
+  @JsonKey(name: 'id')
+  int? get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'platform')
+  String? get platform => throw _privateConstructorUsedError;
+  @JsonKey(name: 'url')
+  String? get url => throw _privateConstructorUsedError;
+
+  /// Serializes this SocialMediaModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of SocialMediaModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $SocialMediaModelCopyWith<SocialMediaModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $SocialMediaModelCopyWith<$Res> {
+  factory $SocialMediaModelCopyWith(
+          SocialMediaModel value, $Res Function(SocialMediaModel) then) =
+      _$SocialMediaModelCopyWithImpl<$Res, SocialMediaModel>;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'id') int? id,
+      @JsonKey(name: 'platform') String? platform,
+      @JsonKey(name: 'url') String? url});
+}
+
+/// @nodoc
+class _$SocialMediaModelCopyWithImpl<$Res, $Val extends SocialMediaModel>
+    implements $SocialMediaModelCopyWith<$Res> {
+  _$SocialMediaModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of SocialMediaModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? platform = freezed,
+    Object? url = freezed,
+  }) {
+    return _then(_value.copyWith(
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      platform: freezed == platform
+          ? _value.platform
+          : platform // ignore: cast_nullable_to_non_nullable
+              as String?,
+      url: freezed == url
+          ? _value.url
+          : url // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$SocialMediaModelImplCopyWith<$Res>
+    implements $SocialMediaModelCopyWith<$Res> {
+  factory _$$SocialMediaModelImplCopyWith(_$SocialMediaModelImpl value,
+          $Res Function(_$SocialMediaModelImpl) then) =
+      __$$SocialMediaModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'id') int? id,
+      @JsonKey(name: 'platform') String? platform,
+      @JsonKey(name: 'url') String? url});
+}
+
+/// @nodoc
+class __$$SocialMediaModelImplCopyWithImpl<$Res>
+    extends _$SocialMediaModelCopyWithImpl<$Res, _$SocialMediaModelImpl>
+    implements _$$SocialMediaModelImplCopyWith<$Res> {
+  __$$SocialMediaModelImplCopyWithImpl(_$SocialMediaModelImpl _value,
+      $Res Function(_$SocialMediaModelImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SocialMediaModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? platform = freezed,
+    Object? url = freezed,
+  }) {
+    return _then(_$SocialMediaModelImpl(
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      platform: freezed == platform
+          ? _value.platform
+          : platform // ignore: cast_nullable_to_non_nullable
+              as String?,
+      url: freezed == url
+          ? _value.url
+          : url // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$SocialMediaModelImpl implements _SocialMediaModel {
+  const _$SocialMediaModelImpl(
+      {@JsonKey(name: 'id') this.id,
+      @JsonKey(name: 'platform') this.platform,
+      @JsonKey(name: 'url') this.url});
+
+  factory _$SocialMediaModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SocialMediaModelImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'id')
+  final int? id;
+  @override
+  @JsonKey(name: 'platform')
+  final String? platform;
+  @override
+  @JsonKey(name: 'url')
+  final String? url;
+
+  @override
+  String toString() {
+    return 'SocialMediaModel(id: $id, platform: $platform, url: $url)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SocialMediaModelImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.platform, platform) ||
+                other.platform == platform) &&
+            (identical(other.url, url) || other.url == url));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, platform, url);
+
+  /// Create a copy of SocialMediaModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SocialMediaModelImplCopyWith<_$SocialMediaModelImpl> get copyWith =>
+      __$$SocialMediaModelImplCopyWithImpl<_$SocialMediaModelImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$SocialMediaModelImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _SocialMediaModel implements SocialMediaModel {
+  const factory _SocialMediaModel(
+      {@JsonKey(name: 'id') final int? id,
+      @JsonKey(name: 'platform') final String? platform,
+      @JsonKey(name: 'url') final String? url}) = _$SocialMediaModelImpl;
+
+  factory _SocialMediaModel.fromJson(Map<String, dynamic> json) =
+      _$SocialMediaModelImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'id')
+  int? get id;
+  @override
+  @JsonKey(name: 'platform')
+  String? get platform;
+  @override
+  @JsonKey(name: 'url')
+  String? get url;
+
+  /// Create a copy of SocialMediaModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SocialMediaModelImplCopyWith<_$SocialMediaModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

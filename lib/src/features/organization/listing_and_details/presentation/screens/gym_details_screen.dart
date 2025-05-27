@@ -13,7 +13,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
   late final OrganizationListingAndDetailsCubit _cubit;
   late final List<({String label, String value, void Function() onTap})> _basicDetails;
   late final List<List<FieldData<dynamic>>> _socialMediaFields;
-  late final _socialUrlFields = [TextEditingController(), TextEditingController(), TextEditingController(), TextEditingController(), TextEditingController()];
+  late final List<TextEditingController> _socialUrlFields;
   ({String label, String value, void Function() onTap}) copyBasicDetails(String? newValue, int fieldIndex) {
     return (label: _basicDetails[fieldIndex].label, value: newValue ?? _basicDetails[fieldIndex].value, onTap: _basicDetails[fieldIndex].onTap);
   }
@@ -24,6 +24,14 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
   void initState() {
     super.initState();
     _cubit = context.read<OrganizationListingAndDetailsCubit>();
+
+    _socialUrlFields = [
+      TextEditingController(text: widget.orgDetails.website?.url),
+      TextEditingController(text: widget.orgDetails.whatsapp?.url?.replaceAll('+91', '')),
+      TextEditingController(text: widget.orgDetails.instagram?.url),
+      TextEditingController(text: widget.orgDetails.facebook?.url),
+      TextEditingController(text: widget.orgDetails.youtube?.url),
+    ];
     _basicDetails = [
       (
         label: 'Gym Name',
@@ -409,7 +417,11 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                   //   'city': widget.orgDetails.location?.city,
                   // },
                   'social_media': [
+                    if (_socialUrlFields[0].text.trim().isNotEmpty) {'platform': 'website', 'url': _socialUrlFields[0].text},
                     if (_socialUrlFields[1].text.trim().isNotEmpty) {'platform': 'whatsapp', 'url': '+91${_socialUrlFields[1].text}'},
+                    if (_socialUrlFields[2].text.trim().isNotEmpty) {'platform': 'instagram', 'url': _socialUrlFields[2].text},
+                    if (_socialUrlFields[3].text.trim().isNotEmpty) {'platform': 'facebook', 'url': _socialUrlFields[3].text},
+                    if (_socialUrlFields[4].text.trim().isNotEmpty) {'platform': 'youtube', 'url': _socialUrlFields[4].text},
                   ],
                 });
                 // if (_socialUrlFields[0].text.trim().isNotEmpty) {

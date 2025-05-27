@@ -23,7 +23,7 @@ class OrganizationDetailsModel with _$OrganizationDetailsModel {
     @JsonKey(name: 'is_on_free_trial') bool? isOnFreeTrial,
     @JsonKey(name: 'location') LocationModel? location,
     @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
-    @JsonKey(name: 'social_media') List<dynamic>? socialMedia,
+    @JsonKey(name: 'social_media') List<SocialMediaModel>? socialMedia,
     @JsonKey(name: 'services') List<AmenityModel>? services,
     @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
     @JsonKey(name: 'categories') List<AmenityModel>? categories,
@@ -33,6 +33,20 @@ class OrganizationDetailsModel with _$OrganizationDetailsModel {
   }) = _OrganizationDetailsModel;
 
   factory OrganizationDetailsModel.fromJson(Map<String, dynamic> json) => _$OrganizationDetailsModelFromJson(json);
+}
+
+extension OrganizationDetailsModelExtension on OrganizationDetailsModel {
+  SocialMediaModel? _getScoialMedia(SocialMediaType type) {
+    final index = socialMedia?.indexWhere((social) => social.platform?.toLowerCase() == type.name.toLowerCase());
+    if (index == null || index < 0) return null;
+    return socialMedia?[index];
+  }
+
+  SocialMediaModel? get website => _getScoialMedia(SocialMediaType.website);
+  SocialMediaModel? get whatsapp => _getScoialMedia(SocialMediaType.whatsapp);
+  SocialMediaModel? get instagram => _getScoialMedia(SocialMediaType.instagram);
+  SocialMediaModel? get facebook => _getScoialMedia(SocialMediaType.facebook);
+  SocialMediaModel? get youtube => _getScoialMedia(SocialMediaType.youtube);
 }
 
 @freezed
@@ -64,6 +78,15 @@ class PhotoModel with _$PhotoModel {
 
   factory PhotoModel.fromJson(Map<String, dynamic> json) => _$PhotoModelFromJson(json);
 }
+
+@freezed
+class SocialMediaModel with _$SocialMediaModel {
+  const factory SocialMediaModel({@JsonKey(name: 'id') int? id, @JsonKey(name: 'platform') String? platform, @JsonKey(name: 'url') String? url}) = _SocialMediaModel;
+
+  factory SocialMediaModel.fromJson(Map<String, dynamic> json) => _$SocialMediaModelFromJson(json);
+}
+
+enum SocialMediaType { website, whatsapp, instagram, facebook, youtube }
 
 @freezed
 class WorkingDayModel with _$WorkingDayModel {

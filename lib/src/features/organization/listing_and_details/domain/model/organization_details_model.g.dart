@@ -26,7 +26,9 @@ _$OrganizationDetailsModelImpl _$$OrganizationDetailsModelImplFromJson(
       workingDays: (json['working_days'] as List<dynamic>?)
           ?.map((e) => WorkingDayModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      socialMedia: json['social_media'] as List<dynamic>?,
+      socialMedia: (json['social_media'] as List<dynamic>?)
+          ?.map((e) => SocialMediaModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
       services: (json['services'] as List<dynamic>?)
           ?.map((e) => AmenityModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -116,6 +118,22 @@ Map<String, dynamic> _$$PhotoModelImplToJson(_$PhotoModelImpl instance) =>
       'image': instance.image,
       'caption': instance.caption,
       'is_primary': instance.isPrimary,
+    };
+
+_$SocialMediaModelImpl _$$SocialMediaModelImplFromJson(
+        Map<String, dynamic> json) =>
+    _$SocialMediaModelImpl(
+      id: (json['id'] as num?)?.toInt(),
+      platform: json['platform'] as String?,
+      url: json['url'] as String?,
+    );
+
+Map<String, dynamic> _$$SocialMediaModelImplToJson(
+        _$SocialMediaModelImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'platform': instance.platform,
+      'url': instance.url,
     };
 
 _$WorkingDayModelImpl _$$WorkingDayModelImplFromJson(
