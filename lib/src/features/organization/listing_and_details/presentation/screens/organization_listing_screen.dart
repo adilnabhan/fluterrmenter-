@@ -109,7 +109,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
           builder: (context, state) {
             return state.homeData.fold(
               () => const Center(child: CircularProgressIndicator()),
-              (either) => either.fold((error) => const Center(child: Text('Error')), (orgDetails) {
+              (either) => either.fold((error) => error.maybeWhen(orElse: () => ErrorUi.network(onTap: () {})), (orgDetails) {
                 final cards = [
                   (
                     title: 'Active Members',

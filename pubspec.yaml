@@ -160,6 +160,7 @@ flutter:
     - assets/images/svg/icons/
     - assets/images/svg/vectors/
     - assets/images/png/icons/
+    - assets/images/png/vectors/
     - assets/fonts/
 
   fonts:
