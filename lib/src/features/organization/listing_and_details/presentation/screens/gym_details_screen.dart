@@ -141,7 +141,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    if (!Uri.parse(value.text).isAbsolute) {
+                    if (!websiteRegX.hasMatch(value.text)) {
                       return SizedBox(
                         height: 24,
                         width: 24,
@@ -216,16 +216,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    try {
-                      final uri = Uri.parse(value.text);
-                      if (!uri.isAbsolute || !['http', 'https'].contains(uri.scheme)) {
-                        return SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
-                        );
-                      }
-                    } catch (e) {
+                    if (!websiteRegX.hasMatch(value.text)) {
                       return SizedBox(
                         height: 24,
                         width: 24,
@@ -261,7 +252,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    if (!Uri.parse(value.text).isAbsolute) {
+                    if (!websiteRegX.hasMatch(value.text)) {
                       return SizedBox(
                         height: 24,
                         width: 24,
@@ -297,7 +288,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    if (!Uri.parse(value.text).isAbsolute) {
+                    if (!websiteRegX.hasMatch(value.text)) {
                       return SizedBox(
                         height: 24,
                         width: 24,

@@ -145,7 +145,7 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    if (!Uri.parse(value.text).isAbsolute) {
+                    if (!websiteRegX.hasMatch(value.text)) {
                       return SizedBox(
                         height: 24,
                         width: 24,
@@ -167,7 +167,7 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
           controller: _socialUrlFields[1],
           focusNode: FocusNode(),
           decoration: InputDecoration(
-            hintText: 'Add URL',
+            hintText: 'Enter WhatsApp number',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
             prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/whatsapp.svg', height: 24, width: 24))),
@@ -219,16 +219,7 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    try {
-                      final uri = Uri.parse(value.text);
-                      if (!uri.isAbsolute || !['http', 'https'].contains(uri.scheme)) {
-                        return SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
-                        );
-                      }
-                    } catch (e) {
+                    if (!websiteRegX.hasMatch(value.text)) {
                       return SizedBox(
                         height: 24,
                         width: 24,
@@ -264,7 +255,7 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    if (!Uri.parse(value.text).isAbsolute) {
+                    if (!websiteRegX.hasMatch(value.text)) {
                       return SizedBox(
                         height: 24,
                         width: 24,
@@ -300,7 +291,7 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
                     if (value.text.trim().isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    if (!Uri.parse(value.text).isAbsolute) {
+                    if (!websiteRegX.hasMatch(value.text)) {
                       return SizedBox(
                         height: 24,
                         width: 24,
