@@ -148,13 +148,7 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                 if (isLoading) {
                   return;
                 }
-                final services = widget.orgDetails.services?.map((e) => e.name).toList() ?? [];
-                final listServices = _services.where((e) => !services.contains(e)).map((e) => {'name': e}).toList();
-                if (listServices.isEmpty) {
-                  await Dialogs.showSnack(msg: 'No new services to add');
-                  return;
-                }
-                final body = {'services': listServices};
+                final body = {'services': _services};
                 await _cubit.updateOrgDetails(orgId: widget.orgDetails.id ?? 0, body: body);
               },
             ).pad(16).pxy(y: 16);
