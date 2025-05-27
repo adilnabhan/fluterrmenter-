@@ -35,9 +35,7 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
             },
             (either) {
               return either.fold(
-                (error) {
-                  return const Center(child: Text('Error'));
-                },
+                (error) => error.maybeWhen(network: (e) => ErrorUi.network(onTap: _fetch), notFound: (e) => ErrorUi.notFound(onTap: _fetch), orElse: () => ErrorUi.server(onTap: _fetch)),
                 (orgDetails) {
                   return RefreshIndicator(
                     onRefresh: _fetch,

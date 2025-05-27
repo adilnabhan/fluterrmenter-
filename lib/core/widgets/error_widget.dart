@@ -9,7 +9,7 @@ class ErrorUi extends StatefulWidget {
     return ErrorUi._(
       subtitle: "We're sorry, but something went wrong.",
       img: 'assets/images/png/vectors/a_clean_modern_vector_illustration_showing_error.png',
-      title: 'PAGE NOT FOUND',
+      title: 'PAGE NOT FOUND !',
       buttonTitle: 'Back home',
       imageHeight: 328.h,
       imageWidth: 328.w,
@@ -22,7 +22,7 @@ class ErrorUi extends StatefulWidget {
     return ErrorUi._(
       subtitle: "Oops! Something went wrong. We're on it. Please try again later..",
       img: 'assets/images/png/vectors/a_clean_modern_vector_illustration_showing_error-4.png',
-      title: 'Internal server error',
+      title: 'Internal server error !'.toUpperCase(),
       buttonTitle: 'Retry',
       imageHeight: 328.h,
       imageWidth: 328.w,
@@ -33,8 +33,8 @@ class ErrorUi extends StatefulWidget {
   ///* For using Network Error Widget
   factory ErrorUi.network({CallVoid? onTap}) {
     return ErrorUi._(
-      title: 'No internet',
-      subtitle: 'Could not connect to the network. Please check  your internet   ',
+      title: 'No internet !'.toUpperCase(),
+      subtitle: 'Could not connect to the network. Please check your internet.',
       img: 'assets/images/png/vectors/a_clean_modern_vector_illustration_showing_error-3.png',
       buttonTitle: 'Retry',
       imageHeight: 297.h,
@@ -92,11 +92,11 @@ class _ErrorUiState extends State<ErrorUi> {
                 28.verticalSpace,
                 if (widget.buttonTitle?.isNotEmpty ?? false)
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4.r),
+                    borderRadius: BorderRadius.circular(4000000.r),
                     child: InkWell(
                       overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                       onTap: widget.onTap,
-                      child: ColoredBox(color: AppColors.dark, child: Text(widget.buttonTitle ?? '', style: AppStyles.text14Px.w600.copyWith(color: AppColors.dark)).pxy(x: 24.r, y: 10.r)),
+                      child: ColoredBox(color: AppColors.primary, child: Text(widget.buttonTitle ?? '', style: AppStyles.text14Px.w600.copyWith(color: AppColors.light)).pxy(x: 24.r, y: 10.r)),
                     ),
                   ).center,
               ],
