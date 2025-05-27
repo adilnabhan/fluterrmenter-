@@ -166,6 +166,11 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
           textInputAction: TextInputAction.done,
           controller: _socialUrlFields[1],
           focusNode: FocusNode(),
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10), // Limit to 15 characters
+          ],
+          keyboardType: TextInputType.phone,
           decoration: InputDecoration(
             hintText: 'Enter WhatsApp number',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
