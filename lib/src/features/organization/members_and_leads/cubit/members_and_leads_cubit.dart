@@ -82,7 +82,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     }
     emit(state.copyWith(leads: (data: isPagination ? state.leads.data : none(), isPagination: isPagination)));
     final res = await LeadsRepository().leadsListing(
-      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, 'organization_id': 4},
+      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, 'organization_id': orgId},
       nextUrl: isPagination ? leads?.next : null,
     );
     if (isPagination) {

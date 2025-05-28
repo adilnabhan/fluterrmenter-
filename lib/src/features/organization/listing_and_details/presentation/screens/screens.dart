@@ -3,6 +3,7 @@ export 'gym_add_or_edit_services_screen.dart';
 export 'gym_amenities_screen.dart';
 export 'gym_details_screen.dart';
 export 'gym_details_update_template_screen.dart';
+export 'gym_edit_gallery_screen.dart';
 export 'gym_gallery_screen.dart';
 export 'gym_packages_screen.dart';
 export 'gym_schedules_screen.dart';

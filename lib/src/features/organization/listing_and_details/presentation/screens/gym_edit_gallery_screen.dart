@@ -1,21 +1,21 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class GymGalleryScreen extends StatefulWidget {
-  const GymGalleryScreen({required this.orgDetails, super.key});
+class EditGymGalleryScreen extends StatefulWidget {
+  const EditGymGalleryScreen({required this.orgDetails, super.key});
 
   final OrganizationDetailsModel orgDetails;
 
   @override
-  State<GymGalleryScreen> createState() => _GymGalleryScreenState();
+  State<EditGymGalleryScreen> createState() => _EditGymGalleryScreenState();
 }
 
-class _GymGalleryScreenState extends State<GymGalleryScreen> {
-  late final List<String> _images;
+class _EditGymGalleryScreenState extends State<EditGymGalleryScreen> {
+  late final List<({String urlOrPath, String type})> _images;
 
   @override
   void initState() {
     super.initState();
-    _images = widget.orgDetails.photos?.map((image) => image.image ?? '').toList() ?? [];
+    _images = widget.orgDetails.photos?.map((image) => (urlOrPath: image.image ?? '', type: 'network')).toList() ?? [];
   }
 
   @override
@@ -49,7 +49,14 @@ class _GymGalleryScreenState extends State<GymGalleryScreen> {
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: responsiveSize(context, s: 2, m: 3, l: 4, xl: 6).toInt(), crossAxisSpacing: 16, mainAxisSpacing: 16),
                   itemCount: _images.length,
                   itemBuilder: (BuildContext context, int index) {
-                    return ClipRRect(borderRadius: BorderRadius.circular(40), child: ImageNetwork(_images[index]));
+                    final image = _images[index];
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: switch (image.type) {
+                        'network' => ImageNetwork(image.urlOrPath),
+                        _ => Image.file(File(image.urlOrPath), fit: BoxFit.cover),
+                      },
+                    );
                   },
                 );
               },
@@ -57,6 +64,18 @@ class _GymGalleryScreenState extends State<GymGalleryScreen> {
           ),
         ],
       ).pad(16),
+      // bottomNavigationBar: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+      //   buildWhen: (p, c) => p.createOrUpdateLead != c.createOrUpdateLead || p.createOrUpdateMember != c.createOrUpdateMember,
+      //   builder: (context, state) {
+      //     return Button.filled(
+      //       title: 'Save',
+      //       // isLoading: widget.details?.fold((l) => state.createOrUpdateLead, (r) => state.createOrUpdateMember)?.isNone() ?? false,
+      //       buttonColor: AppColors.primary,
+      //       // ontap: _onContinue,
+      //       ontap: () {},
+      //     );
+      //   },
+      // ).pad(16).pxy(y: 16),
     );
   }
 }
