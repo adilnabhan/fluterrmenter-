@@ -92,7 +92,7 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                           // _buildProfileListItem('Permissions', () {
                           //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
                           // }),
-                          _ProfileListItem(label: 'Logout', onTap: () {}, isLogout: true),
+                          _ProfileListItem(label: 'Logout', onTap: () => const LogoutSheet().show(context), isLogout: true),
                         ],
                       ],
                     ),

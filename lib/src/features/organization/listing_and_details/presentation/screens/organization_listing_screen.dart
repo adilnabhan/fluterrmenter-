@@ -21,12 +21,7 @@ class OrganizationListingScreen extends StatelessWidget {
             });
           });
         },
-        child: FlowBuilder(
-          state: true,
-          onGeneratePages: (state, pages) {
-            return [const MaterialPage<void>(child: _OrganizationListingAndDetailsScreen())];
-          },
-        ),
+        child: const _OrganizationListingAndDetailsScreen(),
       ),
     );
   }
@@ -93,7 +88,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                 return InkWell(
                   onTap: () {
                     if (state.selectedOrganization?.id != null) {
-                      context.push(OrganizationDetailsScreen(orgId: state.selectedOrganization!.id!));
+                      context.push(BlocProvider.value(value: _cubit, child: OrganizationDetailsScreen(orgId: state.selectedOrganization!.id!)));
                     } else {
                       Dialogs.showSnack(msg: 'Organization not found');
                     }

@@ -12,9 +12,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  #* Routing
-  flow_builder: ^0.1.0
-
   #* State Management
   bloc: ^9.0.0
   flutter_bloc: ^9.0.0

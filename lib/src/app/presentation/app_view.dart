@@ -53,23 +53,21 @@ class _AppViewState extends State<AppView> {
                 theme: AppThemes.light,
                 darkTheme: AppThemes.dark,
                 locale: state.locale,
-                // home: const ProfileScreen(),
-                home: BlocBuilder<AppCubit, AppState>(
-                  buildWhen: (p, c) => p.currentUser != c.currentUser,
-                  builder: (context, state) {
-                    if (state.currentUser == null) {
-                      return const SentOtpScreen();
-                    } else if (!(state.currentUser?.isProfileCompleted ?? false)) {
-                      return const CreateOrganizationBasicDetailsScreen();
-                    }
-                    return const OrganizationListingScreen();
-                  },
-                ),
+                home: BlocBuilder<AppCubit, AppState>(buildWhen: (p, c) => false, builder: (context, state) => getScreen(state)),
               );
             },
           ),
         ),
       ),
     );
+  }
+
+  Widget getScreen(AppState state) {
+    if (state.currentUser == null) {
+      return const SentOtpScreen();
+    } else if (!(state.currentUser?.isProfileCompleted ?? false)) {
+      return const CreateOrganizationBasicDetailsScreen();
+    }
+    return const OrganizationListingScreen();
   }
 }
