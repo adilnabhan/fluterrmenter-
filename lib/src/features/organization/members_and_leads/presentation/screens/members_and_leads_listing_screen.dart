@@ -85,44 +85,20 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
         appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Members & Leads')),
         body: Column(
           children: [
-            Row(
-              children: [
-                Flexible(
-                  child: TextField(
-                    onChanged: (q) {
-                      EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {});
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search for name or phone number',
-                      hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-                      filled: false,
-                      prefixIcon: SizedBox.square(dimension: 32, child: SvgPicture.asset('assets/images/svg/icons/search.svg', height: 32, width: 32, color: AppColors.textGrey).center),
-                      border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
-                      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
-                      enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
-                    ),
-                  ).pad(16),
-                ),
-                FloatingActionButton(
-                  backgroundColor: const Color(0xffFFF5F6),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.primary)),
-                  foregroundColor: AppColors.primary,
-                  onPressed: () {
-                    AddMemberOrLeadSelectionSheet(
-                      onSortSelected: (l, v) {
-                        if (v == 'member') {
-                          context.push(BlocProvider.value(value: _cubit, child: AddOrEditMemeberScreen(orgId: widget.orgId)));
-                        } else {
-                          context.push(BlocProvider.value(value: _cubit, child: const AddOrEditLeadScreen()));
-                        }
-                      },
-                    ).show(context);
-                  },
-                  child: const Icon(Icons.add, color: AppColors.primary, size: 24),
-                ).pOnly(right: 16),
-              ],
-            ),
+            TextField(
+              onChanged: (q) {
+                EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {});
+              },
+              decoration: InputDecoration(
+                hintText: 'Search for name or phone number',
+                hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+                filled: false,
+                prefixIcon: SizedBox.square(dimension: 32, child: SvgPicture.asset('assets/images/svg/icons/search.svg', height: 32, width: 32, color: AppColors.textGrey).center),
+                border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
+                focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
+                enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
+              ),
+            ).pad(16),
             Expanded(
               child: ColoredBox(
                 color: const Color(0xffF7F7F7),
@@ -198,7 +174,7 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                                   return RefreshIndicator.adaptive(
                                     onRefresh: _fetchMembers,
                                     child: ListView.separated(
-                                      padding: EdgeInsets.zero,
+                                      padding: const EdgeInsets.only(bottom: 104),
                                       itemCount: memebrsDataum.results?.length ?? 0,
                                       separatorBuilder: (BuildContext context, int index) {
                                         return const SizedBox(height: 16);
@@ -288,7 +264,7 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                                   return RefreshIndicator.adaptive(
                                     onRefresh: _fetchLeads,
                                     child: ListView.separated(
-                                      padding: EdgeInsets.zero,
+                                      padding: const EdgeInsets.only(bottom: 104),
                                       itemCount: leadsDataum.results?.length ?? 0,
                                       separatorBuilder: (BuildContext context, int index) {
                                         return const SizedBox(height: 16);
@@ -373,6 +349,22 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
             ),
           ],
         ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          onPressed: () {
+            AddMemberOrLeadSelectionSheet(
+              onSortSelected: (l, v) {
+                if (v == 'member') {
+                  context.push(BlocProvider.value(value: _cubit, child: AddOrEditMemeberScreen(orgId: widget.orgId)));
+                } else {
+                  context.push(BlocProvider.value(value: _cubit, child: const AddOrEditLeadScreen()));
+                }
+              },
+            ).show(context);
+          },
+          child: const Icon(Icons.add),
+        ).pOnly(right: 16),
       ),
     );
   }
