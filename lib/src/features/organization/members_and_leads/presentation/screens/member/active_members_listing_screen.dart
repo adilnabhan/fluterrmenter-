@@ -70,7 +70,7 @@ class _ActiveMembersListingScreenState extends State<_ActiveMembersListingScreen
                       (error) => error.maybeWhen(network: (e) => ErrorUi.network(onTap: _fetch), notFound: (e) => ErrorUi.notFound(onTap: _fetch), orElse: () => ErrorUi.server(onTap: _fetch)),
                       (memebersDataum) {
                         if (memebersDataum.results?.isEmpty ?? true) {
-                          return const Center(child: Text('No members found'));
+                          return ErrorUi.empty().center;
                         }
                         return Column(
                           children: [

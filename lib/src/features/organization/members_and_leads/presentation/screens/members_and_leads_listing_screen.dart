@@ -167,86 +167,93 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                             builder: (context, state) {
                               return state.members.data.fold(
                                 () => const Center(child: CircularProgressIndicator()),
-                                (either) => either.fold((error) => const Center(child: Text('Error')), (memebrsDataum) {
-                                  if (memebrsDataum.results?.isEmpty ?? true) {
-                                    return const Center(child: Text('No members found'));
-                                  }
-                                  return RefreshIndicator.adaptive(
-                                    onRefresh: _fetchMembers,
-                                    child: ListView.separated(
-                                      padding: const EdgeInsets.only(bottom: 104),
-                                      itemCount: memebrsDataum.results?.length ?? 0,
-                                      separatorBuilder: (BuildContext context, int index) {
-                                        return const SizedBox(height: 16);
-                                      },
-                                      itemBuilder: (BuildContext context, int index) {
-                                        final memberData = memebrsDataum.results?[index];
-                                        return InkWell(
-                                          onTap: () {
-                                            if (memberData?.id != null) {
-                                              context.push(BlocProvider.value(value: _cubit, child: MemberDetialsScreen(memberData: memberData!)));
-                                            } else {
-                                              Dialogs.showSnack(msg: 'Selected lead is not valid');
-                                            }
-                                          },
-                                          borderRadius: BorderRadius.circular(16),
-                                          child: ClipRRect(
+                                (either) => either.fold(
+                                  (error) => error.maybeWhen(
+                                    network: (e) => ErrorUi.network(onTap: _fetchMembers),
+                                    notFound: (e) => ErrorUi.notFound(onTap: _fetchMembers),
+                                    orElse: () => ErrorUi.server(onTap: _fetchMembers),
+                                  ),
+                                  (memebrsDataum) {
+                                    if (memebrsDataum.results?.isEmpty ?? true) {
+                                      return ErrorUi.empty().center;
+                                    }
+                                    return RefreshIndicator.adaptive(
+                                      onRefresh: _fetchMembers,
+                                      child: ListView.separated(
+                                        padding: const EdgeInsets.only(bottom: 104),
+                                        itemCount: memebrsDataum.results?.length ?? 0,
+                                        separatorBuilder: (BuildContext context, int index) {
+                                          return const SizedBox(height: 16);
+                                        },
+                                        itemBuilder: (BuildContext context, int index) {
+                                          final memberData = memebrsDataum.results?[index];
+                                          return InkWell(
+                                            onTap: () {
+                                              if (memberData?.id != null) {
+                                                context.push(BlocProvider.value(value: _cubit, child: MemberDetialsScreen(memberData: memberData!)));
+                                              } else {
+                                                Dialogs.showSnack(msg: 'Selected lead is not valid');
+                                              }
+                                            },
                                             borderRadius: BorderRadius.circular(16),
-                                            child: ColoredBox(
-                                              color: Colors.white,
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(16),
-                                                child: Column(
-                                                  spacing: 8,
-                                                  children: [
-                                                    Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        ClipRRect(
-                                                          borderRadius: const BorderRadius.all(Radius.circular(80000)),
-                                                          child: ProfileImage(isEdit: false, url: '//${memberData?.profilePicture ?? ''}', radius: 40),
-                                                        ),
-                                                        const SizedBox(width: 8),
-                                                        Flexible(
-                                                          child: SizedBox(
-                                                            width: double.maxFinite,
-                                                            child: Column(
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                              children: [
-                                                                Text(memberData?.name ?? '', style: AppStyles.text14Px.poppins.w500.dark),
-                                                                const SizedBox(height: 4),
-                                                                Text('+91 ${memberData?.mobileNumber ?? ''}', style: AppStyles.text12Px.poppins.w400.dark),
-                                                              ],
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(16),
+                                              child: ColoredBox(
+                                                color: Colors.white,
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(16),
+                                                  child: Column(
+                                                    spacing: 8,
+                                                    children: [
+                                                      Row(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          ClipRRect(
+                                                            borderRadius: const BorderRadius.all(Radius.circular(80000)),
+                                                            child: ProfileImage(isEdit: false, url: '//${memberData?.profilePicture ?? ''}', radius: 40),
+                                                          ),
+                                                          const SizedBox(width: 8),
+                                                          Flexible(
+                                                            child: SizedBox(
+                                                              width: double.maxFinite,
+                                                              child: Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+                                                                  Text(memberData?.name ?? '', style: AppStyles.text14Px.poppins.w500.dark),
+                                                                  const SizedBox(height: 4),
+                                                                  Text('+91 ${memberData?.mobileNumber ?? ''}', style: AppStyles.text12Px.poppins.w400.dark),
+                                                                ],
+                                                              ),
                                                             ),
                                                           ),
-                                                        ),
-                                                        const SizedBox(width: 8),
-                                                        Text(
-                                                          '# ${memberData?.id}'.length > 3 ? '${'# ${memberData?.id}'.substring(0, 3)}...' : '# ${memberData?.id}',
-                                                          style: AppStyles.text12Px.poppins.w400.textGrey,
-                                                          maxLines: 1,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        Text(memberData?.activePlan?.planName ?? '', style: AppStyles.text12Px.poppins.w500.dark),
-                                                        // const SizedBox(height: 4),
-                                                        // Text('05: AM', style: AppStyles.text12Px.poppins.w500.dark),
-                                                      ],
-                                                    ),
-                                                  ],
+                                                          const SizedBox(width: 8),
+                                                          Text(
+                                                            '# ${memberData?.id}'.length > 3 ? '${'# ${memberData?.id}'.substring(0, 3)}...' : '# ${memberData?.id}',
+                                                            style: AppStyles.text12Px.poppins.w400.textGrey,
+                                                            maxLines: 1,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          Text(memberData?.activePlan?.planName ?? '', style: AppStyles.text12Px.poppins.w500.dark),
+                                                          // const SizedBox(height: 4),
+                                                          // Text('05: AM', style: AppStyles.text12Px.poppins.w500.dark),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  );
-                                }),
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
                               );
                             },
                           ),
@@ -257,86 +264,93 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                             builder: (context, state) {
                               return state.leads.data.fold(
                                 () => const Center(child: CircularProgressIndicator()),
-                                (either) => either.fold((error) => const Center(child: Text('Error')), (leadsDataum) {
-                                  if (leadsDataum.results?.isEmpty ?? true) {
-                                    return const Center(child: Text('No Leads Found'));
-                                  }
-                                  return RefreshIndicator.adaptive(
-                                    onRefresh: _fetchLeads,
-                                    child: ListView.separated(
-                                      padding: const EdgeInsets.only(bottom: 104),
-                                      itemCount: leadsDataum.results?.length ?? 0,
-                                      separatorBuilder: (BuildContext context, int index) {
-                                        return const SizedBox(height: 16);
-                                      },
-                                      itemBuilder: (BuildContext context, int index) {
-                                        final leadsData = leadsDataum.results?[index];
-                                        return InkWell(
-                                          onTap: () {
-                                            if (leadsData?.userId != null) {
-                                              context.push(BlocProvider.value(value: _cubit, child: LeadDetailsScreen(leadData: leadsData!)));
-                                            } else {
-                                              Dialogs.showSnack(msg: 'Selected lead is not valid');
-                                            }
-                                          },
-                                          borderRadius: BorderRadius.circular(16),
-                                          child: ClipRRect(
+                                (either) => either.fold(
+                                  (error) => error.maybeWhen(
+                                    network: (e) => ErrorUi.network(onTap: _fetchLeads),
+                                    notFound: (e) => ErrorUi.notFound(onTap: _fetchLeads),
+                                    orElse: () => ErrorUi.server(onTap: _fetchLeads),
+                                  ),
+                                  (leadsDataum) {
+                                    if (leadsDataum.results?.isEmpty ?? true) {
+                                      return ErrorUi.empty().center;
+                                    }
+                                    return RefreshIndicator.adaptive(
+                                      onRefresh: _fetchLeads,
+                                      child: ListView.separated(
+                                        padding: const EdgeInsets.only(bottom: 104),
+                                        itemCount: leadsDataum.results?.length ?? 0,
+                                        separatorBuilder: (BuildContext context, int index) {
+                                          return const SizedBox(height: 16);
+                                        },
+                                        itemBuilder: (BuildContext context, int index) {
+                                          final leadsData = leadsDataum.results?[index];
+                                          return InkWell(
+                                            onTap: () {
+                                              if (leadsData?.userId != null) {
+                                                context.push(BlocProvider.value(value: _cubit, child: LeadDetailsScreen(leadData: leadsData!)));
+                                              } else {
+                                                Dialogs.showSnack(msg: 'Selected lead is not valid');
+                                              }
+                                            },
                                             borderRadius: BorderRadius.circular(16),
-                                            child: ColoredBox(
-                                              color: Colors.white,
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(16),
-                                                child: Column(
-                                                  spacing: 8,
-                                                  children: [
-                                                    Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        ClipRRect(
-                                                          borderRadius: const BorderRadius.all(Radius.circular(80000)),
-                                                          child: ProfileImage(isEdit: false, url: '${leadsData?.profilePicture ?? ''}', radius: 40),
-                                                        ),
-                                                        const SizedBox(width: 8),
-                                                        Flexible(
-                                                          child: SizedBox(
-                                                            width: double.maxFinite,
-                                                            child: Column(
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                              children: [
-                                                                Text(leadsData?.name ?? '', style: AppStyles.text14Px.poppins.w500.dark),
-                                                                const SizedBox(height: 4),
-                                                                Text('+91 ${leadsData?.mobileNumber ?? ''}', style: AppStyles.text12Px.poppins.w400.dark),
-                                                              ],
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(16),
+                                              child: ColoredBox(
+                                                color: Colors.white,
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(16),
+                                                  child: Column(
+                                                    spacing: 8,
+                                                    children: [
+                                                      Row(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          ClipRRect(
+                                                            borderRadius: const BorderRadius.all(Radius.circular(80000)),
+                                                            child: ProfileImage(isEdit: false, url: '${leadsData?.profilePicture ?? ''}', radius: 40),
+                                                          ),
+                                                          const SizedBox(width: 8),
+                                                          Flexible(
+                                                            child: SizedBox(
+                                                              width: double.maxFinite,
+                                                              child: Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+                                                                  Text(leadsData?.name ?? '', style: AppStyles.text14Px.poppins.w500.dark),
+                                                                  const SizedBox(height: 4),
+                                                                  Text('+91 ${leadsData?.mobileNumber ?? ''}', style: AppStyles.text12Px.poppins.w400.dark),
+                                                                ],
+                                                              ),
                                                             ),
                                                           ),
-                                                        ),
-                                                        const SizedBox(width: 8),
-                                                        Text(
-                                                          '# ${leadsData?.id}'.length > 3 ? '${'# ${leadsData?.id}'.substring(0, 3)}...' : '# ${leadsData?.id}',
-                                                          style: AppStyles.text12Px.poppins.w400.textGrey,
-                                                          maxLines: 1,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        Text('6 MONTH PLAN + Admission', style: AppStyles.text12Px.poppins.w500.dark),
-                                                        // const SizedBox(height: 4),
-                                                        // Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
-                                                      ],
-                                                    ),
-                                                  ],
+                                                          const SizedBox(width: 8),
+                                                          Text(
+                                                            '# ${leadsData?.id}'.length > 3 ? '${'# ${leadsData?.id}'.substring(0, 3)}...' : '# ${leadsData?.id}',
+                                                            style: AppStyles.text12Px.poppins.w400.textGrey,
+                                                            maxLines: 1,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          Text('6 MONTH PLAN + Admission', style: AppStyles.text12Px.poppins.w500.dark),
+                                                          // const SizedBox(height: 4),
+                                                          // Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  );
-                                }),
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
                               );
                             },
                           ),

@@ -8,7 +8,7 @@ class ErrorUi extends StatefulWidget {
   factory ErrorUi.notFound({CallVoid? onTap}) {
     return ErrorUi._(
       subtitle: "We're sorry, but something went wrong.",
-      img: 'assets/images/png/vectors/a_clean_modern_vector_illustration_showing_error.png',
+      img: 'assets/images/png/vectors/404.png',
       title: 'PAGE NOT FOUND !',
       buttonTitle: 'Back home',
       imageHeight: 328.h,
@@ -21,7 +21,7 @@ class ErrorUi extends StatefulWidget {
   factory ErrorUi.server({CallVoid? onTap}) {
     return ErrorUi._(
       subtitle: "Oops! Something went wrong. We're on it. Please try again later..",
-      img: 'assets/images/png/vectors/a_clean_modern_vector_illustration_showing_error-4.png',
+      img: 'assets/images/png/vectors/500.png',
       title: 'Internal server error !'.toUpperCase(),
       buttonTitle: 'Retry',
       imageHeight: 328.h,
@@ -35,7 +35,7 @@ class ErrorUi extends StatefulWidget {
     return ErrorUi._(
       title: 'No internet !'.toUpperCase(),
       subtitle: 'Could not connect to the network. Please check your internet.',
-      img: 'assets/images/png/vectors/a_clean_modern_vector_illustration_showing_error-3.png',
+      img: 'assets/images/png/vectors/network.png',
       buttonTitle: 'Retry',
       imageHeight: 297.h,
       imageWidth: 200.w,
@@ -43,23 +43,18 @@ class ErrorUi extends StatefulWidget {
     );
   }
 
-  // ///* For using Empty bookinglist
-  // factory ErrorUi.emptyBookingList({
-  //   String? title,
-  //   String? subTitle,
-  //   void Function()? onTapBtn,
-  //   String? btnTitle,
-  // }) {
-  //   return ErrorUi._(
-  //     subtitle: subTitle,
-  //     img: ErrorPicturesInSvg().noBookedTrips,
-  //     title: title,
-  //     imageHeight: 80.h,
-  //     imageWidth: 125.w,
-  //     onTap: onTapBtn,
-  //     buttonTitle: btnTitle,
-  //   );
-  // }
+  ///* For using Network Error Widget
+  factory ErrorUi.empty({CallVoid? onTap}) {
+    return ErrorUi._(
+      title: 'Empty Data !'.toUpperCase(),
+      subtitle: 'No data found. Please add some data.',
+      img: 'assets/images/png/vectors/empty.png',
+      buttonTitle: onTap != null ? 'Retry' : null,
+      imageHeight: 297.h,
+      imageWidth: 200.w,
+      onTap: onTap,
+    );
+  }
 
   const ErrorUi._({this.title, this.subtitle, this.img, this.buttonTitle, this.onTap, this.imageHeight, this.imageWidth});
   final String? title;
