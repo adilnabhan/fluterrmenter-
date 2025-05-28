@@ -7,7 +7,7 @@ class OrganizationListingAndDetailsCubit extends Cubit<OrganizationListingAndDet
   OrganizationListingAndDetailsCubit() : super(const OrganizationListingAndDetailsState());
 
   void selectOrganization(SingleOrganizationModel? organization) {
-    // emit(state.copyWith(sele: organization));
+    emit(state.copyWith(selectedOrganization: organization));
   }
 
   Future<void> fetchList({bool isRefresh = false}) async {

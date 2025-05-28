@@ -40,59 +40,60 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                   (either) => either.fold((error) => const Center(child: Text('Error')), (orgsList) {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.disabledButton)),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.disabledButton)),
                       child: ListView(
                         padding: EdgeInsets.zero,
                         shrinkWrap: true,
-                        children:
-                            orgsList.result?.map((org) {
-                              return Column(
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      _cubit.selectOrganization(org);
-                                      context.pop();
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
-                                      child: Row(
-                                        children: [
-                                          SizedBox.square(dimension: 48, child: AbsorbPointer(child: ProfileImage(isEdit: false, radius: 48, url: state.selectedOrganization?.logo ?? ''))),
-                                          const SizedBox(width: 16),
-                                          Text(org.name ?? '', style: AppStyles.text14Px.dark),
-                                        ],
-                                      ),
+                        children: [
+                          ...?orgsList.result?.map((org) {
+                            return Column(
+                              children: [
+                                InkWell(
+                                  overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+                                  onTap: () {
+                                    _cubit.selectOrganization(org);
+                                    context.pop();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    child: Row(
+                                      children: [
+                                        SizedBox.square(dimension: 48, child: AbsorbPointer(child: ProfileImage(isEdit: false, radius: 48, url: state.selectedOrganization?.logo ?? ''))),
+                                        const SizedBox(width: 16),
+                                        Text(org.name ?? '', style: AppStyles.text14Px.dark),
+                                      ],
                                     ),
                                   ),
-                                  const Divider(thickness: 1, color: Color(0xffDDDDDD)),
+                                ),
+                                const Divider(thickness: 1, color: Color(0xffDDDDDD)),
+                              ],
+                            );
+                          }),
 
-                                  ///* Add button
-                                  InkWell(
-                                    onTap: () {
-                                      context
-                                        ..pop()
-                                        ..push(const CreateOrganizationBasicDetailsScreen());
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            width: 48,
-                                            height: 48,
-                                            decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), shape: BoxShape.circle),
-                                            child: const Icon(Icons.add, color: AppColors.primary),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Text('Add Account', style: AppStyles.text14Px.dark),
-                                        ],
-                                      ),
-                                    ),
+                          ///* Add button
+                          InkWell(
+                            onTap: () {
+                              context
+                                ..pop()
+                                ..push(const CreateOrganizationBasicDetailsScreen());
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), shape: BoxShape.circle),
+                                    child: const Icon(Icons.add, color: AppColors.primary),
                                   ),
+                                  const SizedBox(width: 16),
+                                  Text('Add Account', style: AppStyles.text14Px.dark),
                                 ],
-                              );
-                            }).toList() ??
-                            [],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   }),
