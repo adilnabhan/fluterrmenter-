@@ -157,16 +157,29 @@ class __SubscriptionPlanChooseScreenState extends State<_SubscriptionPlanChooseS
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: isSelected ? const Color(0xffC39191) : Colors.transparent),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(plan?.name ?? '', style: AppStyles.text14Px.poppins.w500.light),
+                RichText(
+                  text: TextSpan(
+                    style: AppStyles.text16Px.poppins.w700.light,
+                    children: [
+                      if (plan?.discountedPrice?.isNotEmpty ?? false)
+                        TextSpan(text: '₹${plan?.perMonthPriceExcludeDiscount.toStringAsFixed(2)}', style: AppStyles.text14Px.poppins.w300.light.copyWith(decoration: TextDecoration.lineThrough)),
+                      if (plan?.regularPrice?.isNotEmpty ?? false) const WidgetSpan(child: SizedBox(width: 4)),
+                      TextSpan(text: '₹${plan?.perMonthPriceIncludeDisount.toStringAsFixed(2)}', style: AppStyles.text16Px.poppins.w700.light),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
                 if ((plan?.discountedPrice?.isNotEmpty ?? false) && (plan?.regularPrice?.isNotEmpty ?? false) && plan?.regularPrice != plan?.discountedPrice) ...[
-                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Text('Total ₹${plan?.discountedPrice ?? 00}', style: AppStyles.text12Px.poppins.w400.light),
@@ -179,25 +192,7 @@ class __SubscriptionPlanChooseScreenState extends State<_SubscriptionPlanChooseS
                     ],
                   ),
                 ],
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    style: AppStyles.text16Px.poppins.w700.light,
-                    children: [
-                      if (plan?.discountedPrice?.isNotEmpty ?? false)
-                        TextSpan(text: '₹${plan?.perMonthPriceExcludeDiscount.toStringAsFixed(2)}', style: AppStyles.text14Px.poppins.w300.light.copyWith(decoration: TextDecoration.lineThrough)),
-                      if (plan?.regularPrice?.isNotEmpty ?? false) const WidgetSpan(child: SizedBox(width: 4)),
-                      TextSpan(text: '₹${plan?.perMonthPriceIncludeDisount.toStringAsFixed(2)}', style: AppStyles.text16Px.poppins.w700.light),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text('per month', style: AppStyles.text12Px.poppins.w400.light),
+                // Text('per month', style: AppStyles.text12Px.poppins.w400.light),
               ],
             ),
           ],
