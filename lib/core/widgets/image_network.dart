@@ -44,5 +44,11 @@ class ImageNetwork extends StatelessWidget {
   }
 
   ///
-  Widget get empty => SvgPicture.asset('assets/images/svg/placeholder_image.svg', height: height, width: width, fit: fit, colorFilter: ColorFilter.mode(Colors.grey.shade400, BlendMode.srcIn));
+  Widget get empty => Container(
+    alignment: Alignment.center,
+    height: height,
+    width: width,
+    color: Colors.grey.shade400,
+    child: Icon(Icons.image, color: Colors.white, size: height ?? 50, semanticLabel: 'Image not found'),
+  );
 }
