@@ -39,7 +39,7 @@ final class MembershipRepository {
       return await Feggy.async(
         call: Dio().post<dynamic>(ApiUris.createMembershipPackage, data: body, options: Options(headers: {'X-Platform': platformSource}).token),
         onSuccess: (res) {
-          if (res.statusCode == 200) {
+          if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
               return right(MembershipPackageModel.fromJson(res.data as Map<String, dynamic>));
             }

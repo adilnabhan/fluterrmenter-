@@ -79,6 +79,9 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                     (either) => either.fold(
                       (error) => error.maybeWhen(network: (e) => ErrorUi.network(onTap: _fetch), notFound: (e) => ErrorUi.notFound(onTap: _fetch), orElse: () => ErrorUi.server(onTap: _fetch)),
                       (data) {
+                        if (data.results?.isEmpty ?? true) {
+                          return ErrorUi.empty().center;
+                        }
                         return RefreshIndicator(
                           onRefresh: _fetch,
                           child: ListView.separated(
