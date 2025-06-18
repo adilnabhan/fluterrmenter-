@@ -190,7 +190,7 @@ class DateFieldState extends State<DateField> {
       lastDate: widget.endTime ?? DateTime(2100),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: AppColors.primary), dialogTheme: const DialogTheme(backgroundColor: AppColors.primary)),
+          data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: AppColors.primary), dialogTheme: const DialogThemeData(backgroundColor: AppColors.primary)),
           child: child!,
         );
       },
