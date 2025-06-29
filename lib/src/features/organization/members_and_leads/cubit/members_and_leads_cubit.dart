@@ -322,4 +322,14 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: {'date_of_birth': dob, 'organization_id': orgId});
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
+
+  Future<void> updateLeadExperience({required int leadId, required String? experience}) async {
+    emit(state.copyWith(createOrUpdateLead: none()));
+    if (experience?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Experience is required')))));
+      return;
+    }
+    final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: {'experience': experience, 'organization_id': orgId});
+    emit(state.copyWith(createOrUpdateLead: some(res)));
+  }
 }

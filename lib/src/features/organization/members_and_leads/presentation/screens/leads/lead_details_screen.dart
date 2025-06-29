@@ -151,10 +151,13 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                 (
                                   label: 'Experience',
                                   value: '${data.mentorProfile?.experience ?? 0} years',
+                                  onTap: () => context.push(BlocProvider.value(value: _cubit, child: UpdateExperienceScreen(details: data))),
+                                ),
+                                (
+                                  label: 'Date of Birth',
+                                  value: data.dateOfBirth?.format('dd MMM yyyy') ?? '',
                                   onTap: () => context.push(BlocProvider.value(value: _cubit, child: UpdateDOBScreen(details: left(data)))),
                                 ),
-                                (label: 'Date of Birth', value: data.dateOfBirth?.format('dd MMM yyyy') ?? '', onTap: () {}),
-                                (label: 'Category', value: 'Add', onTap: () {}),
                               ].map((e) {
                                 return InkWell(
                                   onTap: e.onTap,
