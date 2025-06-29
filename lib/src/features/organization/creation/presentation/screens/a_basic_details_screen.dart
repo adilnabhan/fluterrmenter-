@@ -126,56 +126,59 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(leading: const PopButton().center),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          children: [
-            const SizedBox(height: 22),
-            const OrganizationCreationCompletionStatusCard(progress: 1),
-            const SizedBox(height: 28),
-            Text('Gym Details', style: AppStyles.text16Px.poppins.w600.dark),
-            const SizedBox(height: 16),
-            Field(data: _brandName),
-            const SizedBox(height: 16),
-            Field<String>(
-              data: _brandCategory.copyWith(
-                onTap: () {
-                  AddCategorySheet(
-                    selectedValues: _brandCategory.selectedValues?.value ?? [],
-                    onSubmit: (values) {
-                      _brandCategory.selectedValues?.value = [...values];
-                    },
-                  ).show(context);
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        appBar: AppBar(automaticallyImplyLeading: false),
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              const SizedBox(height: 22),
+              const OrganizationCreationCompletionStatusCard(progress: 1),
+              const SizedBox(height: 28),
+              Text('Gym Details', style: AppStyles.text16Px.poppins.w600.dark),
+              const SizedBox(height: 16),
+              Field(data: _brandName),
+              const SizedBox(height: 16),
+              Field<String>(
+                data: _brandCategory.copyWith(
+                  onTap: () {
+                    AddCategorySheet(
+                      selectedValues: _brandCategory.selectedValues?.value ?? [],
+                      onSubmit: (values) {
+                        _brandCategory.selectedValues?.value = [...values];
+                      },
+                    ).show(context);
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('Brand Logo', style: AppStyles.text14Px.poppins.w500.dark),
+              const SizedBox(height: 8),
+              BrandLogoPicker(
+                isEdit: true,
+                onChanged: (brandLogo) {
+                  _selectedBrandLogo = brandLogo;
                 },
               ),
-            ),
-            const SizedBox(height: 16),
-            Text('Brand Logo', style: AppStyles.text14Px.poppins.w500.dark),
-            const SizedBox(height: 8),
-            BrandLogoPicker(
-              isEdit: true,
-              onChanged: (brandLogo) {
-                _selectedBrandLogo = brandLogo;
-              },
-            ),
-            const SizedBox(height: 16),
-            Field(data: _brandDescription),
-            const SizedBox(height: 32),
-          ],
+              const SizedBox(height: 16),
+              Field(data: _brandDescription),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: SizedBox(
-        width: 84,
-        child: FloatingActionButton(
-          onPressed: _onContinue,
-          shape: const StadiumBorder(),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.light,
-          elevation: 0,
-          child: const Icon(Icons.keyboard_arrow_right_outlined),
+        floatingActionButton: SizedBox(
+          width: 84,
+          child: FloatingActionButton(
+            onPressed: _onContinue,
+            shape: const StadiumBorder(),
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.light,
+            elevation: 0,
+            child: const Icon(Icons.keyboard_arrow_right_outlined),
+          ),
         ),
       ),
     );

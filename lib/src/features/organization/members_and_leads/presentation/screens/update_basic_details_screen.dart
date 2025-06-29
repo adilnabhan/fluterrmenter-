@@ -207,7 +207,7 @@ class _UpdateBasicDetailsScreenState extends State<UpdateBasicDetailsScreen> {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Trainer')),
+        appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: Text('Update ${widget.details?.fold((l) => 'Trainer', (r) => 'Member')}')),
         body: Form(
           key: _formKey,
           child: ListView(

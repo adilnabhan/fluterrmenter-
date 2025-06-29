@@ -343,128 +343,131 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
           ),
         );
       },
-      child: Scaffold(
-        appBar: AppBar(leading: const PopButton().center),
-        body: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          children: [
-            const SizedBox(height: 22),
-            const OrganizationCreationCompletionStatusCard(progress: 4),
-            const SizedBox(height: 28),
-            Text('Profile Details', style: AppStyles.text16Px.poppins.w600.dark),
-            const SizedBox(height: 32),
-            Row(children: [Text('Set your working days & hours', style: AppStyles.text14Px.poppins.w500.dark), Text('*', style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.primary))]),
-            const SizedBox(height: 16),
-            ValueListenableBuilder(
-              valueListenable: _selectedWeekDays,
-              builder: (context, selectedWeekDays, child) {
-                return GridView.builder(
-                  shrinkWrap: true,
-                  padding: EdgeInsets.zero,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: responsiveSize(context, s: 3).toInt(), crossAxisSpacing: 26, mainAxisSpacing: 26, mainAxisExtent: 52),
-                  itemCount: _weekDays.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final day = _weekDays[index];
-                    final isSelected = selectedWeekDays.contains(day);
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(40),
-                      onTap: () {
-                        if (isSelected) {
-                          _selectedWeekDays.value.remove(day);
-                        } else {
-                          _selectedWeekDays.value.add(day);
-                        }
-                        _selectedWeekDays.value = [...selectedWeekDays];
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(color: const Color(0xffF4F5FA), borderRadius: BorderRadius.circular(8)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(day, style: AppStyles.text14Px.w400.poppins),
-                            SvgPicture.asset(
-                              isSelected ? 'assets/images/svg/icons/checkbox_filled.svg' : 'assets/images/svg/icons/checkbox_blank.svg',
-                              height: 18,
-                              width: 18,
-                              colorFilter: const ColorFilter.mode(AppColors.dark, BlendMode.srcIn),
-                            ),
-                          ],
+      child: PopScope(
+        canPop: false,
+        child: Scaffold(
+          appBar: AppBar(automaticallyImplyLeading: false),
+          body: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              const SizedBox(height: 22),
+              const OrganizationCreationCompletionStatusCard(progress: 4),
+              const SizedBox(height: 28),
+              Text('Profile Details', style: AppStyles.text16Px.poppins.w600.dark),
+              const SizedBox(height: 32),
+              Row(children: [Text('Set your working days & hours', style: AppStyles.text14Px.poppins.w500.dark), Text('*', style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.primary))]),
+              const SizedBox(height: 16),
+              ValueListenableBuilder(
+                valueListenable: _selectedWeekDays,
+                builder: (context, selectedWeekDays, child) {
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: responsiveSize(context, s: 3).toInt(), crossAxisSpacing: 26, mainAxisSpacing: 26, mainAxisExtent: 52),
+                    itemCount: _weekDays.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final day = _weekDays[index];
+                      final isSelected = selectedWeekDays.contains(day);
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(40),
+                        onTap: () {
+                          if (isSelected) {
+                            _selectedWeekDays.value.remove(day);
+                          } else {
+                            _selectedWeekDays.value.add(day);
+                          }
+                          _selectedWeekDays.value = [...selectedWeekDays];
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(color: const Color(0xffF4F5FA), borderRadius: BorderRadius.circular(8)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(day, style: AppStyles.text14Px.w400.poppins),
+                              SvgPicture.asset(
+                                isSelected ? 'assets/images/svg/icons/checkbox_filled.svg' : 'assets/images/svg/icons/checkbox_blank.svg',
+                                height: 18,
+                                width: 18,
+                                colorFilter: const ColorFilter.mode(AppColors.dark, BlendMode.srcIn),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 22),
+              ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: _gymWorkingDetailsFields.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                separatorBuilder: (BuildContext context, int index) {
+                  return const SizedBox(height: 22);
+                },
+                itemBuilder: (BuildContext context, int index) {
+                  final fields = _gymWorkingDetailsFields[index];
+                  if (fields.length > 1) {
+                    return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [Expanded(child: Field(data: fields[0])), const SizedBox(width: 16), Expanded(child: Field(data: fields[1]))]);
+                  }
+                  if (fields.first.label == 'Amenities') {
+                    return InkWell(
+                      onTap: () {
+                        AddAmenitiesSheet(
+                          selectedValues: [...fields.first.selectedValues?.value.map((e) => (label: e.label, value: '${e.value}')) ?? []],
+                          onSubmit: (values) {
+                            fields.first.selectedValues?.value = values.map((e) => (label: e.label, value: e.value)).toList();
+                          },
+                        ).show(context);
+                      },
+                      child: AbsorbPointer(child: Field<String>(data: fields.first as FieldData<String>)),
                     );
-                  },
+                  }
+                  return Field(data: fields.first);
+                },
+              ),
+              const SizedBox(height: 80),
+            ],
+          ),
+          floatingActionButton: SizedBox(
+            width: 84,
+            child: BlocBuilder<OrganizationCreationCubit, OrganizationCreationState>(
+              bloc: _gymCreationCubit,
+              buildWhen: (previous, current) {
+                return previous.createOrg != current.createOrg;
+              },
+              builder: (context, state) {
+                return FloatingActionButton(
+                  onPressed:
+                      (state.createOrg?.isNone() ?? false)
+                          ? null
+                          : () {
+                            _gymCreationCubit.createOrg(
+                              workingDays: _selectedWeekDays.value,
+                              morningStartingTime: _gymWorkingDetailsFields[0][0].selectedTime,
+                              morningEndingTime: _gymWorkingDetailsFields[0][1].selectedTime,
+                              eveningStartingTime: _gymWorkingDetailsFields[1][0].selectedTime,
+                              eveningEndingTime: _gymWorkingDetailsFields[1][1].selectedTime,
+                              serivicesOffering: _gymWorkingDetailsFields[2][0].selectedMultiValues?.value ?? [],
+                              amenities: _gymWorkingDetailsFields[3][0].selectedValues?.value.map((e) => '${e.value}').toList() ?? [],
+                              website: _socialUrlFields[0].text,
+                              whatsapp: _socialUrlFields[1].text,
+                              instagram: _socialUrlFields[2].text,
+                              facebook: _socialUrlFields[3].text,
+                              youtube: _socialUrlFields[4].text,
+                            );
+                          },
+                  shape: const StadiumBorder(),
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.light,
+                  elevation: 0,
+                  child: const Icon(Icons.keyboard_arrow_right_outlined),
                 );
               },
             ),
-            const SizedBox(height: 22),
-            ListView.separated(
-              padding: EdgeInsets.zero,
-              itemCount: _gymWorkingDetailsFields.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              separatorBuilder: (BuildContext context, int index) {
-                return const SizedBox(height: 22);
-              },
-              itemBuilder: (BuildContext context, int index) {
-                final fields = _gymWorkingDetailsFields[index];
-                if (fields.length > 1) {
-                  return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [Expanded(child: Field(data: fields[0])), const SizedBox(width: 16), Expanded(child: Field(data: fields[1]))]);
-                }
-                if (fields.first.label == 'Amenities') {
-                  return InkWell(
-                    onTap: () {
-                      AddAmenitiesSheet(
-                        selectedValues: [...fields.first.selectedValues?.value.map((e) => (label: e.label, value: '${e.value}')) ?? []],
-                        onSubmit: (values) {
-                          fields.first.selectedValues?.value = values.map((e) => (label: e.label, value: e.value)).toList();
-                        },
-                      ).show(context);
-                    },
-                    child: AbsorbPointer(child: Field<String>(data: fields.first as FieldData<String>)),
-                  );
-                }
-                return Field(data: fields.first);
-              },
-            ),
-            const SizedBox(height: 80),
-          ],
-        ),
-        floatingActionButton: SizedBox(
-          width: 84,
-          child: BlocBuilder<OrganizationCreationCubit, OrganizationCreationState>(
-            bloc: _gymCreationCubit,
-            buildWhen: (previous, current) {
-              return previous.createOrg != current.createOrg;
-            },
-            builder: (context, state) {
-              return FloatingActionButton(
-                onPressed:
-                    (state.createOrg?.isNone() ?? false)
-                        ? null
-                        : () {
-                          _gymCreationCubit.createOrg(
-                            workingDays: _selectedWeekDays.value,
-                            morningStartingTime: _gymWorkingDetailsFields[0][0].selectedTime,
-                            morningEndingTime: _gymWorkingDetailsFields[0][1].selectedTime,
-                            eveningStartingTime: _gymWorkingDetailsFields[1][0].selectedTime,
-                            eveningEndingTime: _gymWorkingDetailsFields[1][1].selectedTime,
-                            serivicesOffering: _gymWorkingDetailsFields[2][0].selectedMultiValues?.value ?? [],
-                            amenities: _gymWorkingDetailsFields[3][0].selectedValues?.value.map((e) => '${e.value}').toList() ?? [],
-                            website: _socialUrlFields[0].text,
-                            whatsapp: _socialUrlFields[1].text,
-                            instagram: _socialUrlFields[2].text,
-                            facebook: _socialUrlFields[3].text,
-                            youtube: _socialUrlFields[4].text,
-                          );
-                        },
-                shape: const StadiumBorder(),
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.light,
-                elevation: 0,
-                child: const Icon(Icons.keyboard_arrow_right_outlined),
-              );
-            },
           ),
         ),
       ),
