@@ -250,6 +250,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required String? email,
     required String? gender,
     required String? profilePicture,
+    required String? emergencyContactNumber,
   }) async {
     emit(state.copyWith(createOrUpdateMember: none()));
     if (fullName?.isEmpty ?? true) {
@@ -264,6 +265,9 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     } else if (gender?.isEmpty ?? true) {
       emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Gender is required')))));
       return;
+    } else if (emergencyContactNumber?.isEmpty ?? true) {
+      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Emergency contact number is required')))));
+      return;
     }
     final formData = FormData.fromMap({
       'first_name': fullName,
@@ -274,6 +278,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       'user_role': 35,
       'organization_id': orgId,
       'designation': 'trainer',
+      'emergency_contact_number': emergencyContactNumber,
     });
     // Add profile picture if provided
     if (profilePicture?.isNotEmpty ?? false) {

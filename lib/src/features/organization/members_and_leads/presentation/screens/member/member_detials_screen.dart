@@ -37,8 +37,26 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
       child: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
         buildWhen: (p, c) => p.memberDetails != c.memberDetails,
         builder: (context, state) {
+          final data = state.memberDetails.fold(() => null, (either) => either.fold((l) => null, (r) => r));
           return Scaffold(
-            appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Member Details')),
+            appBar: AppBar(
+              leading: const PopButton().center,
+              titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
+              title: const Text('Member Details'),
+              actions: [
+                if (data?.mobileNumber?.isNotEmpty ?? false)
+                  IconButton(
+                    onPressed: () {
+                      if (data?.mobileNumber?.isNotEmpty ?? false) {
+                        launchUrl(Uri.parse('tel:${data?.mobileNumber}'));
+                      } else {
+                        Dialogs.showSnack(msg: 'Phone number not available');
+                      }
+                    },
+                    icon: SvgPicture.asset('assets/images/svg/icons/call.svg'),
+                  ),
+              ],
+            ),
             backgroundColor: AppColors.grey,
             body: state.memberDetails.fold(
               _buildShimmerLoading,

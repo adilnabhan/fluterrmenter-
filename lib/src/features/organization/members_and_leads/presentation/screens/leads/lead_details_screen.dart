@@ -37,12 +37,25 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
       child: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
         buildWhen: (p, c) => p.leadDetails != c.leadDetails,
         builder: (context, state) {
+          final data = state.leadDetails.fold(() => null, (either) => either.fold((l) => null, (r) => r));
           return Scaffold(
             appBar: AppBar(
               leading: const PopButton().center,
               titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
               title: const Text('Trainer Details'),
-              actions: [IconButton(onPressed: () {}, icon: SvgPicture.asset('assets/images/svg/icons/call.svg'))],
+              actions: [
+                if (data?.mobileNumber?.isNotEmpty ?? false)
+                  IconButton(
+                    onPressed: () {
+                      if (data?.mobileNumber?.isNotEmpty ?? false) {
+                        launchUrl(Uri.parse('tel:${data?.mobileNumber}'));
+                      } else {
+                        Dialogs.showSnack(msg: 'Phone number not available');
+                      }
+                    },
+                    icon: SvgPicture.asset('assets/images/svg/icons/call.svg'),
+                  ),
+              ],
             ),
             backgroundColor: AppColors.grey,
             body: state.leadDetails.fold(
@@ -172,24 +185,6 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                           .toList(),
                                 ),
                               ],
-                            ],
-                          ),
-                        ).pOnly(bottom: 16),
-
-                        // Emergency Contact
-                        _card(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Emergency Contact', style: AppStyles.text14Px.poppins.w400.textGrey),
-                                  const SizedBox(height: 8),
-                                  Text(data.mentorProfile?.emergencyContact ?? 'N/A', style: AppStyles.text14Px.poppins.w500.dark),
-                                ],
-                              ),
-                              IconButton(onPressed: () {}, icon: SvgPicture.asset('assets/images/svg/icons/call.svg', colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn))),
                             ],
                           ),
                         ).pOnly(bottom: 32),
