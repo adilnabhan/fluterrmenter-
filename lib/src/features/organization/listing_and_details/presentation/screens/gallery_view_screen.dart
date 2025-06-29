@@ -37,31 +37,43 @@ class _GalleryViewScreenState extends State<GalleryViewScreen> {
   }
 
   Future<void> _onDeleteImage() async {
-    final confirm = await showDialog<bool>(
+    await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: Text('Delete Photo', style: AppStyles.text16Px.poppins.w600),
-            content: Text('Are you sure you want to delete this photo?', style: AppStyles.text14Px.poppins.w400),
-            actions: [
-              TextButton(onPressed: context.pop, child: Text('Cancel', style: AppStyles.text14Px.poppins.w500.dark)),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text('Delete', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.white)),
-              ),
-            ],
+      builder: (context) {
+        return BlocListener<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+          bloc: _cubit,
+          listenWhen: (p, c) => p.updateOrgDetails != c.updateOrgDetails,
+          listener: (context, state) => state.updateOrgDetails?.fold(() {}, (t) => t.fold((l) {}, (r) => context.pop())),
+          child: BlocBuilder<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+            bloc: _cubit,
+            buildWhen: (p, c) => p.updateOrgDetails != c.updateOrgDetails,
+            builder: (context, state) {
+              return PopScope(
+                canPop: state.updateOrgDetails?.isNone() ?? false,
+                child: AlertDialog(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: Text('Delete Photo', style: AppStyles.text16Px.poppins.w600),
+                  content: Text('Are you sure you want to delete this photo?', style: AppStyles.text14Px.poppins.w400),
+                  actions: [
+                    TextButton(
+                      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+                      onPressed: (state.updateOrgDetails?.isNone() ?? false) ? () {} : context.pop,
+                      child: Text('Cancel', style: AppStyles.text14Px.poppins.w500.dark),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(backgroundColor: AppColors.primary, shape: const StadiumBorder(), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+                      onPressed: (state.updateOrgDetails?.isNone() ?? false) ? () {} : () => _cubit.deletePhoto(orgId: widget.orgDetails.id!, photoId: photos[_currentIndex].id!),
+                      child: Text(state.updateOrgDetails?.isNone() ?? false ? 'Deleting...' : 'Delete', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
+        );
+      },
     );
-    if ((confirm ?? false) && mounted) {
-      setState(() {
-        photos = photos.where((e) => e.id != photos[_currentIndex].id).toList();
-        _currentIndex = 0;
-        _pageController.animateToPage(_currentIndex, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-      });
-    }
   }
 
   @override

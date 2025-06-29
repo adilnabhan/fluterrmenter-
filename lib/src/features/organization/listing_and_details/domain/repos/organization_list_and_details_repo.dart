@@ -74,6 +74,22 @@ final class OrganizationListAndDetailsRepository {
     }
   }
 
+  Future<Either<ApiException, OrganizationDetailsModel>> deletePhoto({required int orgId, required int photoId}) async {
+    try {
+      return await Feggy.async(
+        call: Dio().delete<dynamic>(ApiUris.deletePhoto(orgId, photoId), options: Options(headers: {'X-Platform': platformSource}).token),
+        onSuccess: (res) {
+          if ([200, 201].contains(res.statusCode)) return fetchDetails(orgId: orgId);
+          return left(const ApiException.unknown());
+        },
+      );
+    } on ApiException catch (e) {
+      return left(e);
+    } catch (e) {
+      return left(const ApiException.unknown());
+    }
+  }
+
   Future<Either<ApiException, OrganizationHomeDataModel>> fetchHomeData({required int orgId}) async {
     try {
       return await Feggy.async(

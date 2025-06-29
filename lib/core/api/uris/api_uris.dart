@@ -3,11 +3,11 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 ///* This class contains Api uris
 @immutable
 final class ApiUris {
-  ///* BASE URL
+  ///* Base Url
   static const _baseUrl = String.fromEnvironment('baseUrl');
   static const _v1 = '$_baseUrl/api/v1/';
 
-  ///============================= AUTH =============================\\\
+  ///============================= Authentication =============================\\\
   static const sentOtp = '${_v1}user/send-otp/';
   static const loginWithOtp = '${_v1}user/otp/verify/';
   static const verifyOtp = '${_v1}user/otp/verification/registration/';
@@ -24,6 +24,7 @@ final class ApiUris {
   static String orgDetails(int orgId) => '${_v1}fitnesscenter/organization/$orgId/';
   static String fetchHomeData(int orgId) => '${_v1}fitnesscenter/home/?organization_id=$orgId';
   static String updateOrg(int orgId) => '${_v1}fitnesscenter/organization/$orgId/update/';
+  static String deletePhoto(int orgId, int photoId) => '${_v1}fitnesscenter/organization/$orgId/photos/$photoId/';
 
   ///============================= Subscription =============================\\\
   static const plans = '${_v1}subscription/discipl-subscription-plans/';
@@ -43,7 +44,6 @@ final class ApiUris {
   static String leadDetails(String id) => '${_v1}mentor/trainers/$id/';
 
   ///============================= Membership =============================\\\
-
   static const createMembershipPackage = '${_v1}fitnesscenter/membership-plans/';
   static const listMembershipPackages = '${_v1}fitnesscenter/membership-plans/';
   static String updateMembershipPackage(int id) => '${_v1}fitnesscenter/membership-plans/$id/';
