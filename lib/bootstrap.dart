@@ -25,27 +25,11 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   Bloc.observer = const AppBlocObserver();
 
   // //* 🍪📦  session configuration
-  HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory:
-        kIsWeb
-            ? HydratedStorageDirectory.web
-            : HydratedStorageDirectory(
-              (await getApplicationCacheDirectory()).path,
-            ),
-  );
+  HydratedBloc.storage = await HydratedStorage.build(storageDirectory: kIsWeb ? HydratedStorageDirectory.web : HydratedStorageDirectory((await getApplicationCacheDirectory()).path));
 
   //* Environment variables
   await dotenv.load();
 
   //* 🏃 for integrate initial widget
-  runApp(
-    DevPreview(
-      isEnabled: Platform.isLinux || Platform.isMacOS,
-      // ||
-      // Platform.isWindows ||
-      // Platform.isIOS ||
-      // Platform.isAndroid
-      child: await builder(),
-    ),
-  );
+  runApp(await builder());
 }

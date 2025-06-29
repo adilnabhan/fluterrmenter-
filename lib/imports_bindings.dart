@@ -61,7 +61,6 @@ export 'package:widget_to_marker/widget_to_marker.dart';
 
 export 'package:google_maps_flutter/google_maps_flutter.dart';
 // export 'package:firebase_crashlytics/firebase_crashlytics.dart';
-export 'package:dev_preview/dev_preview.dart';
 export 'package:flutter_animate/flutter_animate.dart';
 export 'package:dotted_line/dotted_line.dart';
 
