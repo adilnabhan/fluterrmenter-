@@ -70,7 +70,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                                 },
                                 child: Row(
                                   children: [
-                                    AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: '${data}')),
+                                    AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: '$data')),
                                     const SizedBox(width: 16),
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,13 +208,13 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(memebership.membershipName ?? '', style: AppStyles.text14Px.poppins.w600.dark),
-                                      const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.dark).pOnly(left: 8),
-                                    ],
-                                  ),
+                                  // Row(
+                                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  //   children: [
+                                  Text(memebership.membershipName ?? '', style: AppStyles.text14Px.poppins.w600.dark),
+                                  // const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.dark).pOnly(left: 8),
+                                  //   ],
+                                  // ),
                                   // const SizedBox(height: 8),
                                   // Text(data.emergencyContactNumber ?? 'N/A', style: AppStyles.text14Px.poppins.w500.dark),
                                 ],
@@ -235,7 +235,16 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                                   Text(data.emergencyContactNumber ?? 'N/A', style: AppStyles.text14Px.poppins.w500.dark),
                                 ],
                               ),
-                              IconButton(onPressed: () {}, icon: SvgPicture.asset('assets/images/svg/icons/call.svg', colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn))),
+                              IconButton(
+                                onPressed: () {
+                                  if (data.emergencyContactNumber != null) {
+                                    launchUrl(Uri.parse('tel:${data.emergencyContactNumber}'));
+                                  } else {
+                                    Dialogs.showSnack(msg: 'Emergency contact number not found');
+                                  }
+                                },
+                                icon: SvgPicture.asset('assets/images/svg/icons/call.svg', colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn)),
+                              ),
                             ],
                           ),
                         ).pOnly(bottom: 32),

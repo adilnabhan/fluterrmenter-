@@ -77,6 +77,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                       centerTitle: false,
                       actions: [
                         InkWell(
+                          borderRadius: BorderRadius.circular(999999),
                           onTap: () {
                             if (state.selectedOrganization?.id != null) {
                               context.push(BlocProvider.value(value: _cubit, child: OrganizationDetailsScreen(orgId: state.selectedOrganization!.id!)));
@@ -164,11 +165,12 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                                     padding: EdgeInsets.zero,
                                     shrinkWrap: true,
                                     physics: const NeverScrollableScrollPhysics(),
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 16, crossAxisSpacing: 16, mainAxisExtent: 108),
+                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 16, crossAxisSpacing: 16, mainAxisExtent: 128),
                                     itemCount: cards.length,
                                     itemBuilder: (BuildContext context, int index) {
                                       final card = cards[index];
                                       return InkWell(
+                                        borderRadius: BorderRadius.circular(16),
                                         onTap: card.onTap,
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(16),
