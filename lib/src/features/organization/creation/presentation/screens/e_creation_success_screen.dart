@@ -37,7 +37,7 @@ class _OrganizationCreationSuccessScreenState extends State<OrganizationCreation
                     )
                     .scale(duration: const Duration(seconds: 2), curve: Curves.elasticOut, begin: Offset.zero, end: const Offset(1, 1)),
                 const SizedBox(height: 16),
-                Text('Your gym has been successfully created! 🎉', style: AppStyles.text16Px.poppins.w700.dark, textAlign: TextAlign.center),
+                Text('Gym created successfully! 🎉', style: AppStyles.text16Px.poppins.w700.dark, textAlign: TextAlign.center),
               ],
             ),
             // ignore: prefer_const_constructors
