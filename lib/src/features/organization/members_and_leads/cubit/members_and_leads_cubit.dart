@@ -46,7 +46,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     emit(state.copyWith(createOrUpdateMember: none(), memberOnboardedAnimationCompleted: null));
     final res = await MembersRepository().createOrUpdateMember(
       memberId: null,
-      body: {
+      body: FormData.fromMap({
         'first_name': memeberDetails.fullName,
         'last_name': '',
         'mobile_number': '+91${memeberDetails.mobileNumber}',
@@ -62,8 +62,8 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         'weight': memeberDetails.weight,
         'profession': memeberDetails.profession,
         'membership_plan_id': membershipPackageModel.id,
-        // 'profile_picture': memeberDetails.profilePicture,
-      },
+        if (memeberDetails.profilePicture?.isNotEmpty ?? false) 'profile_picture': await MultipartFile.fromFile(memeberDetails.profilePicture ?? ''),
+      }),
     );
     emit(state.copyWith(createOrUpdateMember: some(res)));
     res.fold((l) {}, (r) {

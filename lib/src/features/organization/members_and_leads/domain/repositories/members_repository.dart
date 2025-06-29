@@ -81,7 +81,6 @@ final class MembersRepository {
           true => Dio().post<dynamic>(ApiUris.createMember, data: body, options: Options(headers: {'X-Platform': platformSource}).token),
           false => Dio().patch<dynamic>(ApiUris.updateMember(memberId!), data: body, options: Options(headers: {'X-Platform': platformSource}).token),
         },
-
         onSuccess: (res) {
           if (res.statusCode == 200 || res.statusCode == 201) {
             if (res.data != null && res.data is Map) {

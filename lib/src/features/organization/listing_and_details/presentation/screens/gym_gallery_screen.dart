@@ -29,7 +29,9 @@ class _GymGalleryScreenState extends State<GymGalleryScreen> {
               Text('Photos', style: AppStyles.text16Px.poppins.w500.dark),
               const Spacer(),
               FilledButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  AddGymGalleryPhotosSheet(orgDetails: widget.orgDetails).show(context, context.read<OrganizationListingAndDetailsCubit>());
+                },
                 label: const Text('Add'),
                 icon: SvgPicture.asset('assets/images/svg/icons/camera_outlined.svg', width: 16, height: 16),
                 style: const ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppColors.primary), backgroundColor: WidgetStatePropertyAll(Color(0xffFFEAEA))),
