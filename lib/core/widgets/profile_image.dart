@@ -26,6 +26,7 @@ class _ProfileImageState extends State<ProfileImage> {
           () =>
               widget.isEdit
                   ? ImagePickerDialog(
+                    needRemove: _localImage?.path.isNotEmpty ?? false,
                     onPickedImage: (image) {
                       if (image != null) {
                         _localImage = image;

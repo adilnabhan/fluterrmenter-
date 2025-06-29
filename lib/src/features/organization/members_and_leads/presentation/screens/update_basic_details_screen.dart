@@ -94,33 +94,6 @@ class _UpdateBasicDetailsScreenState extends State<UpdateBasicDetailsScreen> {
           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
         ),
       ),
-      if (memebrDetails != null) ...[
-        FieldData(
-          type: FieldType.word,
-          textInputAction: TextInputAction.done,
-          label: 'Emergency Contact Number',
-          requiredLabel: true,
-          controller: TextEditingController(text: memebrDetails.emergencyContactNumber?.replaceAll('+91', '')),
-          focusNode: FocusNode(),
-          keyboardType: TextInputType.phone,
-          maxLength: 10,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
-          validator: (value) {
-            if (value?.trim().length != 10) {
-              return 'Emergency contact number must be 10 digits';
-            }
-            return null;
-          },
-          onSubmitted: (value) {
-            _fields[3].focusNode?.requestFocus();
-          },
-          decoration: InputDecoration(
-            hintText: 'Enter Emergency Contact Number',
-            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-          ),
-        ),
-      ],
       FieldData(
         type: FieldType.radio,
         textInputAction: TextInputAction.done,
@@ -173,7 +146,6 @@ class _UpdateBasicDetailsScreenState extends State<UpdateBasicDetailsScreen> {
       final mobileNo = _fields[2].controller?.text;
       final gender = _fields[3].controller?.text;
       final profilePicuture = _profilePicture?.path;
-      final emergencyContactNumber = _fields[4].controller?.text;
       widget.details?.fold(
         (l) {
           if (l.id == null) {
@@ -187,15 +159,7 @@ class _UpdateBasicDetailsScreenState extends State<UpdateBasicDetailsScreen> {
             Dialogs.showSnack(msg: 'Member not found!');
             return;
           }
-          _cubit.updateMemberBasicDetails(
-            memberId: r.id!,
-            fullName: fullName,
-            mobileNumber: mobileNo,
-            email: emailAddress,
-            gender: gender,
-            profilePicture: profilePicuture,
-            emergencyContactNumber: emergencyContactNumber,
-          );
+          _cubit.updateMemberBasicDetails(memberId: r.id!, fullName: fullName, mobileNumber: mobileNo, email: emailAddress, gender: gender, profilePicture: profilePicuture);
         },
       );
     } else {
