@@ -11,7 +11,7 @@ class GymGalleryScreen extends StatefulWidget {
 
 class _GymGalleryScreenState extends State<GymGalleryScreen> {
   late final OrganizationListingAndDetailsCubit _cubit;
-  late final List<PhotoModel> _images;
+  late List<PhotoModel> _images;
 
   @override
   void initState() {
@@ -23,9 +23,9 @@ class _GymGalleryScreenState extends State<GymGalleryScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
-      listenWhen: (p, c) => p.updateOrgDetails != c.updateOrgDetails,
+      listenWhen: (p, c) => p.details != c.details,
       listener: (context, state) {
-        state.updateOrgDetails?.fold(() {}, (t) => t.fold((l) {}, (r) => setState(() => _images = r.photos ?? [])));
+        state.details.fold(() {}, (t) => t.fold((l) {}, (r) => setState(() => _images = r.photos ?? [])));
       },
       child: Scaffold(
         appBar: AppBar(leading: const PopButton().center, title: Text('Gallery', style: AppStyles.text16Px.poppins.w500)),
@@ -53,14 +53,12 @@ class _GymGalleryScreenState extends State<GymGalleryScreen> {
                     return Center(child: Text('No Photos found!', style: AppStyles.text14Px.poppins.w400.dark));
                   }
                   return GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: responsiveSize(context, s: 2, m: 3, l: 4, xl: 6).toInt(), crossAxisSpacing: 16, mainAxisSpacing: 16),
                     itemCount: _images.length,
                     itemBuilder: (BuildContext context, int index) {
                       return GestureDetector(
                         onTap: () {
-                          context.push(BlocProvider.value(value: _cubit, child: GalleryViewScreen(images: _images, initialIndex: index)));
+                          context.push(BlocProvider.value(value: _cubit, child: GalleryViewScreen(orgDetails: widget.orgDetails, initialIndex: index)));
                         },
                         child: ClipRRect(borderRadius: BorderRadius.circular(40), child: ImageNetwork(_images[index].image ?? '')),
                       );
