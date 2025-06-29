@@ -43,7 +43,10 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
     if (_cubit.state.updateOrgDetails?.isNone() ?? false) {
       return;
     }
-    await _cubit.updateOrgDetails(orgId: widget.orgDetails.id!, body: FormData.fromMap({'photos': await Future.wait(_images.map(MultipartFile.fromFile).toList())}));
+    await _cubit.updateOrgDetails(
+      orgId: widget.orgDetails.id!,
+      body: FormData.fromMap({'photos': await Future.wait(_images.map((imagePath) => MultipartFile.fromFile(imagePath, filename: imagePath.split('/').last)).toList())}),
+    );
   }
 
   @override
@@ -58,6 +61,7 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
               Dialogs.showSnack(msg: l.msg);
             },
             (r) {
+              _cubit.fetchDetails(orgId: widget.orgDetails.id!);
               context.pop();
               Dialogs.showSnack(msg: 'Photos added successfully');
             },

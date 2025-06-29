@@ -93,7 +93,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
             },
             child: Row(
               children: [
-                AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: '$data')),
+                AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: data.profilePicture ?? '')),
                 const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
