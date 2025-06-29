@@ -36,17 +36,19 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
     _fetchLeads();
   }
 
-  Future<void> _fetchMembers() async {
+  Future<void> _fetchMembers({String? searchQuery}) async {
     await _cubit.fetchMembers(
       sort: (_selectedMembersSorts?.contains(_sortOptions[1]) ?? false) ? ListingSort.recent : null,
       status: (_selectedMembersSorts?.contains(_sortOptions[0]) ?? false) ? MemberStatus.active : null,
+      searchQuery: searchQuery,
     );
   }
 
-  Future<void> _fetchLeads() async {
+  Future<void> _fetchLeads({String? searchQuery}) async {
     await _cubit.fetchLeads(
       sort: (_selectedMembersSorts?.contains(_sortOptions[1]) ?? false) ? ListingSort.recent : null,
       status: (_selectedMembersSorts?.contains(_sortOptions[0]) ?? false) ? MemberStatus.active : null,
+      searchQuery: searchQuery,
     );
   }
 
@@ -87,7 +89,10 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
           children: [
             TextField(
               onChanged: (q) {
-                EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {});
+                EasyDebounce.debounce('members_and_leads_search_query', const Duration(milliseconds: 300), () {
+                  _fetchMembers(searchQuery: q);
+                  _fetchLeads(searchQuery: q);
+                });
               },
               decoration: InputDecoration(
                 hintText: 'Search for name or phone number',

@@ -36,7 +36,7 @@ class _ActiveMembersListingScreenState extends State<_ActiveMembersListingScreen
     _fetch();
   }
 
-  Future<void> _fetch({bool isPaginating = false}) => _cubit.fetchMembers(isPagination: isPaginating, sort: _sort, status: MemberStatus.active);
+  Future<void> _fetch({bool isPaginating = false, String? searchQuery}) => _cubit.fetchMembers(isPagination: isPaginating, sort: _sort, status: MemberStatus.active, searchQuery: searchQuery);
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +46,7 @@ class _ActiveMembersListingScreenState extends State<_ActiveMembersListingScreen
         children: [
           TextField(
             onChanged: (q) {
-              EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {});
+              EasyDebounce.debounce('active_members_search_query', const Duration(milliseconds: 300), () => _fetch(searchQuery: q));
             },
             decoration: InputDecoration(
               hintText: 'Search for name or phone number',
@@ -105,54 +105,63 @@ class _ActiveMembersListingScreenState extends State<_ActiveMembersListingScreen
                                   },
                                   itemBuilder: (BuildContext context, int index) {
                                     final memberData = memebersDataum.results?[index];
-                                    return ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: ColoredBox(
-                                        color: Colors.white,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(16),
-                                          child: Column(
-                                            spacing: 8,
-                                            children: [
-                                              Row(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  ClipRRect(
-                                                    borderRadius: const BorderRadius.all(Radius.circular(80000)),
-                                                    child: ProfileImage(isEdit: false, url: '${memberData?.profilePicture ?? ''}', radius: 40),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Flexible(
-                                                    child: SizedBox(
-                                                      width: double.maxFinite,
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(memberData?.name ?? '', style: AppStyles.text14Px.poppins.w500.dark),
-                                                          const SizedBox(height: 4),
-                                                          Text(memberData?.mobileNumber ?? '', style: AppStyles.text12Px.poppins.w400.dark),
-                                                        ],
+                                    return InkWell(
+                                      onTap: () {
+                                        if (memberData?.id != null) {
+                                          context.push(BlocProvider.value(value: _cubit, child: MemberDetialsScreen(memberData: memberData!)));
+                                        } else {
+                                          Dialogs.showSnack(msg: 'Member not found!');
+                                        }
+                                      },
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: ColoredBox(
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Column(
+                                              spacing: 8,
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius: const BorderRadius.all(Radius.circular(80000)),
+                                                      child: ProfileImage(isEdit: false, url: '${memberData?.profilePicture ?? ''}', radius: 40),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Flexible(
+                                                      child: SizedBox(
+                                                        width: double.maxFinite,
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(memberData?.name ?? '', style: AppStyles.text14Px.poppins.w500.dark),
+                                                            const SizedBox(height: 4),
+                                                            Text(memberData?.mobileNumber ?? '', style: AppStyles.text12Px.poppins.w400.dark),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    '# ${memberData?.id}'.length > 3 ? '${'# ${memberData?.id}'.substring(0, 3)}...' : '# ${memberData?.id}',
-                                                    style: AppStyles.text12Px.poppins.w400.textGrey,
-                                                    maxLines: 1,
-                                                  ),
-                                                ],
-                                              ),
-                                              // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Text(memberData?.activePlan?.planName ?? '', style: AppStyles.text12Px.poppins.w500.dark),
-                                                  // const SizedBox(height: 4),
-                                                  // Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
-                                                ],
-                                              ),
-                                            ],
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      '# ${memberData?.id}'.length > 3 ? '${'# ${memberData?.id}'.substring(0, 3)}...' : '# ${memberData?.id}',
+                                                      style: AppStyles.text12Px.poppins.w400.textGrey,
+                                                      maxLines: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                                // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Text(memberData?.activePlan?.planName ?? '', style: AppStyles.text12Px.poppins.w500.dark),
+                                                    // const SizedBox(height: 4),
+                                                    // Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),

@@ -10,14 +10,14 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
 
   ///============================= Members =============================\\\
 
-  Future<void> fetchMembers({required MemberStatus? status, required ListingSort? sort, bool isPagination = false}) async {
+  Future<void> fetchMembers({required MemberStatus? status, required ListingSort? sort, bool isPagination = false, String? searchQuery}) async {
     final members = state.members.data.fold(() => null, (t) => t.fold((l) => null, (r) => r));
     if (isPagination && (members?.next?.isEmpty ?? true)) {
       return;
     }
     emit(state.copyWith(members: (data: isPagination ? state.members.data : none(), isPagination: isPagination)));
     final res = await MembersRepository().membersListing(
-      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, 'organization_id': orgId},
+      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, 'organization_id': orgId, if (searchQuery?.trim().isNotEmpty ?? false) 'search': searchQuery},
       nextUrl: isPagination ? members?.next : null,
     );
     if (isPagination) {
@@ -75,14 +75,14 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
 
   ///============================= Leads =============================\\\
 
-  Future<void> fetchLeads({required MemberStatus? status, required ListingSort? sort, bool isPagination = false}) async {
+  Future<void> fetchLeads({required MemberStatus? status, required ListingSort? sort, bool isPagination = false, String? searchQuery}) async {
     final leads = state.leads.data.fold(() => null, (t) => t.fold((l) => null, (r) => r));
     if (isPagination && (leads?.next?.isEmpty ?? true)) {
       return;
     }
     emit(state.copyWith(leads: (data: isPagination ? state.leads.data : none(), isPagination: isPagination)));
     final res = await LeadsRepository().leadsListing(
-      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, 'organization_id': orgId},
+      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, if (searchQuery?.trim().isNotEmpty ?? false) 'search': searchQuery, 'organization_id': orgId},
       nextUrl: isPagination ? leads?.next : null,
     );
     if (isPagination) {

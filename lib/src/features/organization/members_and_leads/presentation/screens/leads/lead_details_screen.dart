@@ -59,7 +59,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
             ),
             backgroundColor: AppColors.grey,
             body: state.leadDetails.fold(
-              () => const Center(child: CircularProgressIndicator()),
+              _buildShimmerLoading,
               (either) => either.fold(
                 (error) => error.maybeWhen(network: (e) => ErrorUi.network(onTap: _fetch), notFound: (e) => ErrorUi.notFound(onTap: _fetch), orElse: () => ErrorUi.server(onTap: _fetch)),
                 (data) {
@@ -202,5 +202,87 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
 
   Widget _card({required Widget child}) {
     return Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.light, borderRadius: BorderRadius.circular(16)), child: child);
+  }
+
+  Widget _buildShimmerLoading() {
+    return RefreshIndicator(onRefresh: _fetch, child: ListView(padding: const EdgeInsets.all(16), children: [_buildProfileSectionShimmer(), _buildDetailsSectionShimmer()]));
+  }
+
+  Widget _buildProfileSectionShimmer() {
+    return _card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Profile header shimmer
+          Row(
+            children: [
+              KShimmer(height: 80.w, width: 80.w, radius: 80.w),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    KShimmer.text(width: 150, height: 16, radius: 4),
+                    const SizedBox(height: 4),
+                    KShimmer.text(width: 80, height: 12, radius: 4),
+                    const SizedBox(height: 8),
+                    const Divider(thickness: 1, color: Color(0xffDDDDDD)),
+                  ],
+                ),
+              ),
+              const KShimmer(height: 14, width: 14, radius: 7).pOnly(left: 8),
+            ],
+          ),
+
+          const Divider(thickness: 1, color: Color(0xffDDDDDD)).pxy(y: 8),
+
+          // Contact details shimmer
+          Row(children: [KShimmer.text(width: 60, height: 14, radius: 4), const SizedBox(width: 8), KShimmer.text(width: 120, height: 14, radius: 4)]),
+          const SizedBox(height: 8),
+          Row(children: [KShimmer.text(width: 50, height: 14, radius: 4), const SizedBox(width: 8), KShimmer.text(width: 150, height: 14, radius: 4)]),
+
+          const SizedBox(height: 16),
+
+          // Status badges shimmer
+          Row(spacing: 8, children: [KShimmer(height: 24, width: 60, radius: 12), KShimmer(height: 24, width: 50, radius: 12), KShimmer(height: 24, width: 60, radius: 12)]),
+        ],
+      ),
+    ).pOnly(bottom: 16);
+  }
+
+  Widget _buildDetailsSectionShimmer() {
+    return _card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Details rows shimmer
+          for (int i = 0; i < 3; i++) ...[
+            Row(
+              children: [
+                KShimmer.text(width: 80, height: 14, radius: 4),
+                const Spacer(),
+                KShimmer.text(width: 100, height: 14, radius: 4),
+                const SizedBox(width: 8),
+                const KShimmer(height: 12, width: 12, radius: 6),
+              ],
+            ).pxy(y: 12),
+            if (i < 2) const Divider(height: 1, color: Color(0xffDDDDDD)),
+          ],
+
+          // Categories shimmer
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              KShimmer(height: 28, width: 80, radius: 14),
+              KShimmer(height: 28, width: 90, radius: 14),
+              KShimmer(height: 28, width: 70, radius: 14),
+              KShimmer(height: 28, width: 85, radius: 14),
+            ],
+          ),
+        ],
+      ),
+    ).pOnly(bottom: 32);
   }
 }

@@ -36,7 +36,7 @@ class __ExpiredMembersListingScreenState extends State<_ExpiredMembersListingScr
     _fetch();
   }
 
-  Future<void> _fetch({bool isPaginating = false}) => _cubit.fetchMembers(isPagination: isPaginating, sort: _sort, status: MemberStatus.expired);
+  Future<void> _fetch({bool isPaginating = false, String? searchQuery}) => _cubit.fetchMembers(isPagination: isPaginating, sort: _sort, status: MemberStatus.expired, searchQuery: searchQuery);
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +46,7 @@ class __ExpiredMembersListingScreenState extends State<_ExpiredMembersListingScr
         children: [
           TextField(
             onChanged: (q) {
-              EasyDebounce.debounce('search_query', const Duration(milliseconds: 100), () {});
+              EasyDebounce.debounce('expired_members_search_query', const Duration(milliseconds: 300), () => _fetch(searchQuery: q));
             },
             decoration: InputDecoration(
               hintText: 'Search for name or phone number',
