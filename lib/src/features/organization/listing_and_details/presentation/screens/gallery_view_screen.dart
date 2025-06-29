@@ -59,6 +59,7 @@ class _GalleryViewScreenState extends State<GalleryViewScreen> {
       setState(() {
         photos = photos.where((e) => e.id != photos[_currentIndex].id).toList();
         _currentIndex = 0;
+        _pageController.animateToPage(_currentIndex, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
       });
     }
   }
