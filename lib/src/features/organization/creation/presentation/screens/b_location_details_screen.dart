@@ -135,6 +135,8 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           textInputAction: TextInputAction.done,
           label: 'PIN / ZIP Code',
           requiredLabel: true,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
+          keyboardType: TextInputType.number,
           controller: TextEditingController(),
           focusNode: FocusNode(),
           validator: (value) {

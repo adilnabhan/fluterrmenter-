@@ -62,6 +62,7 @@ class _CreateOrganizationPhotosCollectingScreenState extends State<CreateOrganiz
                 borderRadius: BorderRadius.circular(40),
                 onTap: () {
                   ImagePickerDialog(
+                    needRemove: false,
                     onPickedImage: (image) {
                       if (image != null) {
                         setState(() {

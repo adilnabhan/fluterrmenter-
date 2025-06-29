@@ -6,7 +6,7 @@ class BrandLogoPicker extends StatefulWidget {
   final String? url;
   final double? radius;
   final BoxFit fit;
-  final void Function(XFile image)? onChanged;
+  final void Function(XFile? image)? onChanged;
   final bool isEdit;
 
   @override
@@ -25,13 +25,10 @@ class _BrandLogoPickerState extends State<BrandLogoPicker> {
           () =>
               widget.isEdit
                   ? ImagePickerDialog(
+                    needRemove: _localImage != null,
                     onPickedImage: (image) {
-                      if (image != null) {
-                        widget.onChanged?.call(image);
-                        setState(() {
-                          _localImage = image;
-                        });
-                      }
+                      widget.onChanged?.call(image);
+                      setState(() => _localImage = image);
                     },
                   ).show(context)
                   : null,

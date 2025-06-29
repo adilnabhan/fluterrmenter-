@@ -1,8 +1,9 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class ImagePickerDialog extends StatelessWidget {
-  const ImagePickerDialog({super.key, this.onPickedImage});
+  const ImagePickerDialog({super.key, this.onPickedImage, this.needRemove = true});
 
+  final bool needRemove;
   final void Function(XFile? image)? onPickedImage;
 
   Future<void> show(BuildContext context) async {
@@ -38,15 +39,16 @@ class ImagePickerDialog extends StatelessWidget {
           });
         },
       ),
-      (
-        label: 'Remove Photo',
-        onTap: () {
-          if (context.mounted) {
-            onPickedImage?.call(null);
-            context.pop();
-          }
-        },
-      ),
+      if (needRemove)
+        (
+          label: 'Remove Photo',
+          onTap: () {
+            if (context.mounted) {
+              onPickedImage?.call(null);
+              context.pop();
+            }
+          },
+        ),
       (
         label: 'Cancel',
         onTap: () {

@@ -126,7 +126,6 @@ class _CreateOrganizationWorkingDetailsScreenState extends State<CreateOrganizat
         FieldData(
           type: FieldType.word,
           label: 'Social Media',
-          requiredLabel: true,
           textInputAction: TextInputAction.done,
           controller: _socialUrlFields[0],
           focusNode: FocusNode(),
