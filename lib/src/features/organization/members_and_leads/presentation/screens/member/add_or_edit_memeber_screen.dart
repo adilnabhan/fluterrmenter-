@@ -343,11 +343,20 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
         bloc: _cubit,
         listener: (context, state) {
-          // state.createOrUpdateMember?.fold(() => null, (t) {
-          //   return t.fold((l) {}, (r) {
-          //     context.pop();
-          //   });
-          // });
+          state.createOrUpdateMember?.fold(() => null, (t) {
+            return t.fold(
+              (l) {
+                return Dialogs.showSnack(msg: l.msg);
+              },
+              (r) {
+                if (widget.memberDetails?.id != null) {
+                  Dialogs.showSnack(msg: 'Member details updated successfully');
+                } else {
+                  Dialogs.showSnack(msg: 'Member added successfully');
+                }
+              },
+            );
+          });
         },
         child: Scaffold(
           appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Member')),

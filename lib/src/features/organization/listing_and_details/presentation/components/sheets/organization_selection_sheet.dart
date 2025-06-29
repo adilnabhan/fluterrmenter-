@@ -58,7 +58,7 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                                     padding: const EdgeInsets.symmetric(vertical: 8),
                                     child: Row(
                                       children: [
-                                        SizedBox.square(dimension: 48, child: AbsorbPointer(child: ProfileImage(isEdit: false, radius: 48, url: state.selectedOrganization?.logo ?? ''))),
+                                        SizedBox.square(dimension: 48, child: AbsorbPointer(child: ProfileImage(isEdit: false, radius: 48, url: org.logo ?? ''))),
                                         const SizedBox(width: 16),
                                         Text(org.name ?? '', style: AppStyles.text14Px.dark),
                                       ],
