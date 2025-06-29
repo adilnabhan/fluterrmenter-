@@ -36,7 +36,7 @@ final class ApiUris {
   static String updateMember(int id) => '${_v1}customer/manage/$id/update/';
   static String memberDetails(int id) => '${_v1}customer/manage/$id/';
 
-  ///============================= Leads =============================\\\
+  ///============================= Trainers =============================\\\
   static const leadsListing = '${_v1}fitnesscenter/trainers/';
   static const createLead = '${_v1}mentor/trainers/';
   static String updateLead(int id) => '${_v1}mentor/trainers/$id/';

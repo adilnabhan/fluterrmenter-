@@ -114,7 +114,7 @@ class _OrganizationListingAndDetailsScreenState extends State<_OrganizationListi
                             },
                           ),
                           (
-                            title: 'Total Leads & Members',
+                            title: 'Total Trainers & Members',
                             color: const Color(0xff9C51BF),
                             count: (orgHomeData.trainerCount ?? 0) + (orgHomeData.expiredCustomersCount ?? 0) + (orgHomeData.activeCustomersCount ?? 0),
                             onTap: () {

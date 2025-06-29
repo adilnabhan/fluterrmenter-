@@ -41,7 +41,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
             appBar: AppBar(
               leading: const PopButton().center,
               titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
-              title: Text('#${widget.memberData.id}'),
+              title: const Text('Member Details'),
               actions: [IconButton(onPressed: () {}, icon: SvgPicture.asset('assets/images/svg/icons/call.svg'))],
             ),
             backgroundColor: AppColors.grey,

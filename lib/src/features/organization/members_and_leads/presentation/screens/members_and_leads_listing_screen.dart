@@ -113,7 +113,7 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                             width: 140,
                             child: TabBar(
                               controller: _tabController,
-                              tabs: const [Tab(text: 'Members'), Tab(text: 'Leads')],
+                              tabs: const [Tab(text: 'Members'), Tab(text: 'Trainers')],
                               indicator: const UnderlineTabIndicator(
                                 borderSide: BorderSide(width: 2, color: Colors.red), // Red underline for the active tab
                               ),

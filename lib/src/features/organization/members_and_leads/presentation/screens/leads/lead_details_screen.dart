@@ -41,7 +41,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
             appBar: AppBar(
               leading: const PopButton().center,
               titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
-              title: Text('#${widget.leadData.userId ?? 0}'),
+              title: const Text('Trainer Details'),
               actions: [IconButton(onPressed: () {}, icon: SvgPicture.asset('assets/images/svg/icons/call.svg'))],
             ),
             backgroundColor: AppColors.grey,
