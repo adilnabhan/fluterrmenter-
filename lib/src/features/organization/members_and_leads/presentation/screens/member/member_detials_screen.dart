@@ -38,12 +38,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
         buildWhen: (p, c) => p.memberDetails != c.memberDetails,
         builder: (context, state) {
           return Scaffold(
-            appBar: AppBar(
-              leading: const PopButton().center,
-              titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
-              title: const Text('Member Details'),
-              actions: [IconButton(onPressed: () {}, icon: SvgPicture.asset('assets/images/svg/icons/call.svg'))],
-            ),
+            appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Member Details')),
             backgroundColor: AppColors.grey,
             body: state.memberDetails.fold(
               _buildShimmerLoading,
