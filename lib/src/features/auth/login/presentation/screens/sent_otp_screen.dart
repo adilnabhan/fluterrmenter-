@@ -135,21 +135,18 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
               );
             },
           ),
-          const SizedBox(height: 16),
-          BlocBuilder<SentOtpCubit, SentOtpState>(
-            buildWhen: (p, c) => p.googleSignIn != c.googleSignIn,
-            builder: (context, state) {
-              return Button.outlined(
-                title: 'Or continue with Google',
-                isLoading: state.googleSignIn?.isNone() ?? false,
-                // ontap: context.read<SentOtpCubit>().googleSignIn,
-                ontap: () {
-                  AddCategorySheet(onSubmit: (values) {}, selectedValues: const []).show(context);
-                },
-                icon: SvgPicture.asset('assets/images/svg/icons/google.svg', height: 24, width: 24),
-              );
-            },
-          ),
+          // const SizedBox(height: 16),
+          // BlocBuilder<SentOtpCubit, SentOtpState>(
+          //   buildWhen: (p, c) => p.googleSignIn != c.googleSignIn,
+          //   builder: (context, state) {
+          //     return Button.outlined(
+          //       title: 'Or continue with Google',
+          //       isLoading: state.googleSignIn?.isNone() ?? false,
+          //       ontap: context.read<SentOtpCubit>().googleSignIn,
+          //       icon: SvgPicture.asset('assets/images/svg/icons/google.svg', height: 24, width: 24),
+          //     );
+          //   },
+          // ),
           const SizedBox(height: 16),
         ],
       ),
