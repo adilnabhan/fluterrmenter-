@@ -78,7 +78,7 @@ class _ActiveMembersListingScreenState extends State<_ActiveMembersListingScreen
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text('${memebersDataum.count ?? 0} members', style: AppStyles.text14Px.poppins.w400.dark),
-                                SortButton(
+                                FilterButton(
                                   isSelected: _sort != null,
                                   sortLabel: 'Sort by Joined Recently',
                                   onTap: () {

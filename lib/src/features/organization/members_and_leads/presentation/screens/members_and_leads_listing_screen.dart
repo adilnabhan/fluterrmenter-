@@ -25,7 +25,7 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
   late final MembersAndLeadsCubit _cubit;
   List<({String label, String value})>? _selectedMembersSorts;
   List<({String label, String value})>? _selectedLeadsSorts;
-  final _sortOptions = const [(label: 'Active', value: 'active'), (label: 'New', value: 'new')];
+  final _filterOptions = const [(label: 'Active', value: 'active'), (label: 'New', value: 'new')];
 
   @override
   void initState() {
@@ -38,16 +38,16 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
 
   Future<void> _fetchMembers({String? searchQuery}) async {
     await _cubit.fetchMembers(
-      sort: (_selectedMembersSorts?.contains(_sortOptions[1]) ?? false) ? ListingSort.recent : null,
-      status: (_selectedMembersSorts?.contains(_sortOptions[0]) ?? false) ? MemberStatus.active : null,
+      sort: (_selectedMembersSorts?.contains(_filterOptions[1]) ?? false) ? ListingSort.recent : null,
+      status: (_selectedMembersSorts?.contains(_filterOptions[0]) ?? false) ? MemberStatus.active : null,
       searchQuery: searchQuery,
     );
   }
 
   Future<void> _fetchLeads({String? searchQuery}) async {
     await _cubit.fetchLeads(
-      sort: (_selectedMembersSorts?.contains(_sortOptions[1]) ?? false) ? ListingSort.recent : null,
-      status: (_selectedMembersSorts?.contains(_sortOptions[0]) ?? false) ? MemberStatus.active : null,
+      sort: (_selectedMembersSorts?.contains(_filterOptions[1]) ?? false) ? ListingSort.recent : null,
+      status: (_selectedMembersSorts?.contains(_filterOptions[0]) ?? false) ? MemberStatus.active : null,
       searchQuery: searchQuery,
     );
   }
@@ -136,12 +136,12 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                             valueListenable: _tabController.animation!,
                             builder: (context, value, child) {
                               final isMember = _tabController.index == 0;
-                              return SortButton(
+                              return FilterButton(
                                 isSelected: isMember ? (_selectedMembersSorts?.isNotEmpty ?? false) : (_selectedLeadsSorts?.isNotEmpty ?? false),
                                 onTap: () {
-                                  SortSelectionSheet(
-                                    selectedSorts: (isMember ? _selectedMembersSorts : _selectedLeadsSorts),
-                                    onSortSelected: (values) {
+                                  FilterSelectionSheet(
+                                    selectedFilters: (isMember ? _selectedMembersSorts : _selectedLeadsSorts),
+                                    onFilterSelected: (values) {
                                       if (isMember) {
                                         _selectedMembersSorts = values;
                                         _fetchMembers();
@@ -151,10 +151,10 @@ class __MembersAndLeadsListingScreenState extends State<_MembersAndLeadsListingS
                                       }
                                       setState(() {});
                                     },
-                                    items: _sortOptions,
+                                    items: _filterOptions,
                                   ).show(context);
                                 },
-                                sortLabel: 'Sort by',
+                                sortLabel: 'Filter by',
                               );
                             },
                           ),

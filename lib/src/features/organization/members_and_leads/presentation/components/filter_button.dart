@@ -1,7 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class SortButton extends StatelessWidget {
-  const SortButton({required this.sortLabel, super.key, this.isSelected = false, this.onTap});
+class FilterButton extends StatelessWidget {
+  const FilterButton({required this.sortLabel, super.key, this.isSelected = false, this.onTap});
 
   final bool isSelected;
   final void Function()? onTap;
