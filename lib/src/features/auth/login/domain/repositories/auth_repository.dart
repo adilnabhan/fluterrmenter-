@@ -1,3 +1,5 @@
+import 'dart:developer' as log;
+
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 @immutable
@@ -30,22 +32,34 @@ final class AuthRepository {
 
    @apiSuccess {SentOtpEntity} response Success response
    */
-  Future<Either<ApiException, SentOtpEntity>> sentOtp({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, SentOtpEntity>> sentOtp({
+    required Map<String, dynamic> body,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(ApiUris.sentOtp, data: body, options: Options(headers: {'X-Platform': platformSource})),
+        call: Dio().post<dynamic>(
+          ApiUris.sentOtp,
+          data: body,
+          options: Options(headers: {'X-Platform': platformSource}),
+        ),
         onSuccess: (res) {
+          log.log(res.toString(), name: 'AuthRepository');
           if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
-              return right(SentOtpEntity.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                SentOtpEntity.fromJson(res.data as Map<String, dynamic>),
+              );
             }
           }
+          log.log(res.toString(), name: 'AuthRepository');
           return left(const ApiException.unknown());
         },
       );
     } on ApiException catch (e) {
+      log.log(e.toString(), name: 'AuthRepository');
       return left(e);
     } catch (e) {
+      log.log(e.toString(), name: 'AuthRepository');
       return left(const ApiException.unknown());
     }
   }
@@ -68,17 +82,25 @@ final class AuthRepository {
 
    @apiSuccess {LoginWithOtpEntity} response Success response
    */
-  Future<Either<ApiException, LoginSuccessModel>> loginWithOtp({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, LoginSuccessModel>> loginWithOtp({
+    required Map<String, dynamic> body,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(ApiUris.loginWithOtp, data: body, options: Options(headers: {'X-Platform': platformSource})),
+        call: Dio().post<dynamic>(
+          ApiUris.loginWithOtp,
+          data: body,
+          options: Options(headers: {'X-Platform': platformSource}),
+        ),
         customHandler: (error) {
           return null;
         },
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {
-              return right(LoginSuccessModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                LoginSuccessModel.fromJson(res.data as Map<String, dynamic>),
+              );
             }
           }
           return left(const ApiException.unknown());
@@ -109,10 +131,16 @@ final class AuthRepository {
 
    @apiSuccess {VerifyOtpEntity} response Success response
    */
-  Future<Either<ApiException, void>> verifyOtp({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, void>> verifyOtp({
+    required Map<String, dynamic> body,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(ApiUris.verifyOtp, data: body, options: Options(headers: {'X-Platform': platformSource})),
+        call: Dio().post<dynamic>(
+          ApiUris.verifyOtp,
+          data: body,
+          options: Options(headers: {'X-Platform': platformSource}),
+        ),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {
@@ -146,21 +174,29 @@ final class AuthRepository {
     "source": "mentor-app-android",
     "user_role": "20",
     "meta":{
-        
+
     }
 }
   ```
 
   @apiSuccess {OnboardingEntity} response Success response
    */
-  Future<Either<ApiException, LoginSuccessModel>> onboarding({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, LoginSuccessModel>> onboarding({
+    required Map<String, dynamic> body,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(ApiUris.onboarding, data: body, options: Options(headers: {'X-Platform': platformSource})),
+        call: Dio().post<dynamic>(
+          ApiUris.onboarding,
+          data: body,
+          options: Options(headers: {'X-Platform': platformSource}),
+        ),
         onSuccess: (res) {
           if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
-              return right(LoginSuccessModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                LoginSuccessModel.fromJson(res.data as Map<String, dynamic>),
+              );
             }
           }
           return left(const ApiException.unknown());
@@ -183,7 +219,10 @@ final class AuthRepository {
   Future<Either<ApiException, void>> logout() async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(ApiUris.logout, options: Options(headers: {'X-Platform': platformSource}).token),
+        call: Dio().post<dynamic>(
+          ApiUris.logout,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {

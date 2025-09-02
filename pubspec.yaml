@@ -114,6 +114,7 @@ dependencies:
 
   #* Payment
   razorpay_flutter: ^1.4.0
+  pretty_dio_logger: ^1.4.0
 
 dependency_overrides:
   web: any
