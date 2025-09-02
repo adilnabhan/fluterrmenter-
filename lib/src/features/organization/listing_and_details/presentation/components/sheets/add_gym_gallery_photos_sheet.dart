@@ -6,12 +6,21 @@ class AddGymGalleryPhotosSheet extends StatefulWidget {
 
   final OrganizationDetailsModel orgDetails;
 
-  Future<void> show(BuildContext context, OrganizationListingAndDetailsCubit cubit) async {
-    await showModalBottomSheet<void>(context: context, isScrollControlled: true, backgroundColor: Colors.white, builder: (context) => BlocProvider.value(value: cubit, child: this));
+  Future<void> show(
+    BuildContext context,
+    OrganizationListingAndDetailsCubit cubit,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder: (context) => BlocProvider.value(value: cubit, child: this),
+    );
   }
 
   @override
-  State<AddGymGalleryPhotosSheet> createState() => _AddGymGalleryPhotosSheetState();
+  State<AddGymGalleryPhotosSheet> createState() =>
+      _AddGymGalleryPhotosSheetState();
 }
 
 class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
@@ -45,13 +54,27 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
     }
     await _cubit.updateOrgDetails(
       orgId: widget.orgDetails.id!,
-      body: FormData.fromMap({'photos': await Future.wait(_images.map((imagePath) => MultipartFile.fromFile(imagePath, filename: imagePath.split('/').last)).toList())}),
+      body: FormData.fromMap({
+        'photos': await Future.wait(
+          _images
+              .map(
+                (imagePath) => MultipartFile.fromFile(
+                  imagePath,
+                  filename: imagePath.split('/').last,
+                ),
+              )
+              .toList(),
+        ),
+      }),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+    return BlocListener<
+      OrganizationListingAndDetailsCubit,
+      OrganizationListingAndDetailsState
+    >(
       listenWhen: (p, c) => p.updateOrgDetails != c.updateOrgDetails,
       listener: (context, state) {
         state.updateOrgDetails?.fold(
@@ -68,30 +91,64 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
           ),
         );
       },
-      child: BlocBuilder<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+      child: BlocBuilder<
+        OrganizationListingAndDetailsCubit,
+        OrganizationListingAndDetailsState
+      >(
         buildWhen: (p, c) => p.updateOrgDetails != c.updateOrgDetails,
         builder: (context, state) {
           return AbsorbPointer(
             absorbing: state.updateOrgDetails?.isNone() ?? false,
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.9,
+              ),
               child: Container(
-                decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(margin: const EdgeInsets.only(top: 12), width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                    Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                     const Row(
                       children: [
                         Icon(Icons.photo, color: Colors.red, size: 24),
                         SizedBox(width: 12),
-                        Text('Add Images', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        Text(
+                          'Add Images',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ],
                     ).pOnly(left: 16),
                     Flexible(
                       child: GridView.builder(
                         shrinkWrap: true,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: responsiveSize(context, s: 2, m: 3, l: 4, xl: 6).toInt(), crossAxisSpacing: 16, mainAxisSpacing: 16),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount:
+                              responsiveSize(
+                                context,
+                                s: 2,
+                                m: 3,
+                                l: 4,
+                                xl: 6,
+                              ).toInt(),
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
                         itemCount: _images.length + 1,
                         padding: const EdgeInsets.all(16),
                         itemBuilder: (BuildContext context, int index) {
@@ -100,7 +157,13 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
                             return Stack(
                               fit: StackFit.expand,
                               children: [
-                                ClipRRect(borderRadius: BorderRadius.circular(40), child: Image.file(File(image), fit: BoxFit.cover)),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(40),
+                                  child: Image.file(
+                                    File(image),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                                 Positioned(
                                   right: 16,
                                   top: 16,
@@ -110,7 +173,15 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
                                         _images.removeAt(index - 1);
                                       });
                                     },
-                                    child: SizedBox.square(dimension: 32, child: SvgPicture.asset('assets/images/svg/icons/close.svg', height: 32, width: 32).center),
+                                    child: SizedBox.square(
+                                      dimension: 32,
+                                      child:
+                                          SvgPicture.asset(
+                                            'assets/images/svg/icons/close.svg',
+                                            height: 32,
+                                            width: 32,
+                                          ).center,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -120,8 +191,17 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
                             borderRadius: BorderRadius.circular(40),
                             onTap: _addImages,
                             child: Container(
-                              decoration: BoxDecoration(color: const Color(0xffFDD6D6), borderRadius: BorderRadius.circular(40), border: Border.all(color: AppColors.primary)),
-                              child: Center(child: SvgPicture.asset('assets/images/svg/icons/camera_plus.svg', height: 28)),
+                              decoration: BoxDecoration(
+                                color: const Color(0xffFDD6D6),
+                                borderRadius: BorderRadius.circular(40),
+                                border: Border.all(color: AppColors.primary),
+                              ),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/images/svg/icons/camera_plus.svg',
+                                  height: 28,
+                                ),
+                              ),
                             ),
                           );
                         },
@@ -139,7 +219,11 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
                                   borderRadius: BorderRadius.circular(12),
                                   color: Colors.grey.shade100,
                                   onPressed: () => Navigator.of(context).pop(),
-                                  child: Text('Cancel', style: AppStyles.text16Px.poppins.w500.copyWith(color: Colors.black)),
+                                  child: Text(
+                                    'Cancel',
+                                    style: AppStyles.text16Px.poppins.w500
+                                        .copyWith(color: Colors.black),
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -147,11 +231,23 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
                                 child: CupertinoButton.filled(
                                   borderRadius: BorderRadius.circular(12),
                                   onPressed: _onSave,
-                                  color: Colors.red,
+                                  //  color: Colors.red,
                                   child:
-                                      (state.updateOrgDetails?.isNone() ?? false)
-                                          ? const SizedBox.square(dimension: 24, child: Center(child: CupertinoActivityIndicator(color: AppColors.light)))
-                                          : Text('Save', style: AppStyles.text16Px.poppins.w500),
+                                      (state.updateOrgDetails?.isNone() ??
+                                              false)
+                                          ? const SizedBox.square(
+                                            dimension: 24,
+                                            child: Center(
+                                              child: CupertinoActivityIndicator(
+                                                color: AppColors.light,
+                                              ),
+                                            ),
+                                          )
+                                          : Text(
+                                            'Save',
+                                            style:
+                                                AppStyles.text16Px.poppins.w500,
+                                          ),
                                 ),
                               ),
                             ],
