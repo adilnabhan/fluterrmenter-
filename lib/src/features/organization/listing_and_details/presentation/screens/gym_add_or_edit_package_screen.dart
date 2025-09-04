@@ -1,6 +1,5 @@
-import 'dart:developer' as dev;
-
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/membership/domain/models/emi_options_model.dart';
 
 class GymAddOrEditPackageScreen extends StatefulWidget {
   const GymAddOrEditPackageScreen({super.key, this.membershipPackage});
@@ -369,7 +368,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                           ),
                         ],
                       ),
-                      if (_isEmi)
+                      if (_isEmi) ...[
                         ..._emiOptions.asMap().entries.map((entry) {
                           final i = entry.key;
                           final emi = entry.value;
@@ -383,55 +382,75 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                               monthText.isNotEmpty &&
                               priceText.isNotEmpty;
 
+                          double emiTotal() {
+                            final month = int.tryParse(monthText) ?? 0;
+                            final price = double.tryParse(priceText) ?? 0.0;
+                            return month * price;
+                          }
+
                           return Padding(
                             padding: const EdgeInsets.only(top: 16),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Expanded(child: Field(data: emi.month)),
-                                const SizedBox(width: 16),
-                                Expanded(child: Field(data: emi.price)),
-                                IconButton.filled(
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: AppColors.lightPrimary,
-                                    foregroundColor: Colors.red,
-                                    shape: const CircleBorder(),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(child: Field(data: emi.month)),
+                                    const SizedBox(width: 16),
+                                    Expanded(child: Field(data: emi.price)),
+
+                                    IconButton.filled(
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: AppColors.lightPrimary,
+                                        foregroundColor: Colors.red,
+                                        shape: const CircleBorder(),
+                                      ),
+                                      icon: const Icon(
+                                        Icons.close,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          emi.month.controller?.dispose();
+                                          emi.price.controller?.dispose();
+                                          _emiOptions.removeAt(i);
+                                          if (_emiOptions.isEmpty) {
+                                            _isEmi = false;
+                                          }
+                                        });
+                                      },
+                                    ).pOnly(top: 24, left: 8),
+                                    if (showAddButton)
+                                      IconButton.filled(
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                          foregroundColor: Colors.white,
+                                          shape: const CircleBorder(),
+                                        ),
+                                        icon: const Icon(Icons.add),
+                                        onPressed: () {
+                                          setState(() {
+                                            _emiOptions.add(
+                                              _createEmptyEmiOption(),
+                                            );
+                                          });
+                                        },
+                                      ).pOnly(top: 24, left: 8),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 5),
+                                  child: Text(
+                                    'Total: ${emiTotal().toStringAsFixed(2)}',
+                                    style: AppStyles.text14Px.w600,
                                   ),
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      emi.month.controller?.dispose();
-                                      emi.price.controller?.dispose();
-                                      _emiOptions.removeAt(i);
-                                      if (_emiOptions.isEmpty) {
-                                        _isEmi = false;
-                                      }
-                                    });
-                                  },
-                                ).pOnly(top: 24, left: 8),
-                                if (showAddButton)
-                                  IconButton.filled(
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: Colors.green,
-                                      foregroundColor: Colors.white,
-                                      shape: const CircleBorder(),
-                                    ),
-                                    icon: const Icon(Icons.add),
-                                    onPressed: () {
-                                      setState(() {
-                                        _emiOptions.add(
-                                          _createEmptyEmiOption(),
-                                        );
-                                      });
-                                    },
-                                  ).pOnly(top: 24, left: 8),
+                                ),
                               ],
                             ),
                           );
                         }),
+                      ],
                     ],
                   ),
                 ),
@@ -449,21 +468,28 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
               isLoading: isLoading,
               buttonColor: AppColors.primary,
               ontap: () {
-                final List<List<String>> emiData;
+                final List<EmiOptionsModel> emiData;
                 if (_isEmi) {
                   emiData =
                       _emiOptions
+                          .where(
+                            (e) =>
+                                e.month.controller!.text.trim().isNotEmpty &&
+                                e.price.controller!.text.trim().isNotEmpty,
+                          )
                           .map(
-                            (e) => [
-                              e.month.controller!.text.trim(),
-                              e.price.controller!.text.trim(),
-                            ],
+                            (e) => EmiOptionsModel(
+                              month: int.parse(e.month.controller!.text.trim()),
+                              price: double.parse(
+                                e.price.controller!.text.trim(),
+                              ),
+                            ),
                           )
                           .toList();
                 } else {
                   emiData = [];
                 }
-                dev.log(emiData.toString(), name: 'emiData');
+
                 if (isLoading) {
                   return;
                 }
@@ -518,6 +544,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                   offerPrice: offerPrice,
                   features: [],
                   isEmiAvailable: _isEmi,
+                  emiOptions: emiData,
                 );
               },
             );
@@ -558,6 +585,16 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       label: Text(priceType.pascalCase),
       icon: const Icon(Icons.radio_button_off),
     );
+  }
+
+  double _emiTotalForOption(
+    ({FieldData<String> month, FieldData<String> price}) emi,
+  ) {
+    final monthText = emi.month.controller?.text.trim() ?? '0';
+    final priceText = emi.price.controller?.text.trim() ?? '0';
+    final month = int.tryParse(monthText) ?? 0;
+    final price = double.tryParse(priceText) ?? 0.0;
+    return month * price;
   }
 }
 
