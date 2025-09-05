@@ -102,11 +102,88 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
     super.initState();
     _cubit = context.read<MembershipCubit>();
     _emiOptions = [];
-    if (widget.membershipPackage != null &&
-        widget.membershipPackage!.isEmiAvailable == true) {
+    _selectedPackageType =
+        PackageType.fromLabel(widget.membershipPackage?.packageType) ??
+        PackageType.monthly;
+
+    if (widget.membershipPackage == null) {
+      _emiOptions = [];
+      _isEmi = false;
+    } else if (widget.membershipPackage?.emiPlans != null &&
+        widget.membershipPackage!.emiPlans.isNotEmpty) {
+      for (final plan in widget.membershipPackage!.emiPlans) {
+        final monthController = TextEditingController(
+          text: plan.month.toString(),
+        );
+        final priceController = TextEditingController(
+          text: plan.price.toString(),
+        );
+
+        final monthField = FieldData<String>(
+          type: FieldType.radio,
+          items: [
+            ...List.generate(switch (_selectedPackageType) {
+              PackageType.yearly => 12,
+              PackageType.quarterly => 3,
+              _ => 0,
+            }, (index) => (label: '${index + 1}', value: '${index + 1}')),
+          ],
+          textInputAction: TextInputAction.done,
+          label: 'Month',
+          requiredLabel: true,
+          controller: monthController,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value?.isEmpty ?? true) return 'Month is required!';
+            return null;
+          },
+          onValueChanged: (p0) {},
+          onSubmitted: (value) {},
+          decoration: InputDecoration(
+            hintText: 'Enter month',
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+          ),
+        );
+
+        final priceField = FieldData<String>(
+          type: FieldType.word,
+          textInputAction: TextInputAction.done,
+          label: 'Price',
+          requiredLabel: true,
+          controller: priceController,
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+          ],
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value?.isEmpty ?? true) return 'Price is required!';
+            return null;
+          },
+          onValueChanged: (p0) {},
+          onSubmitted: (value) {},
+          decoration: InputDecoration(
+            hintText: 'Enter price',
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+          ),
+        );
+
+        _emiOptions.add((month: monthField, price: priceField));
+      }
+      _isEmi = true;
+    } else if ((widget.membershipPackage?.isEmiAvailable ?? false)) {
       _emiOptions.add(_createEmptyEmiOption());
       _isEmi = true;
     }
+
     _membershipNameField = FieldData<String>(
       type: FieldType.word,
       textInputAction: TextInputAction.done,
@@ -133,9 +210,6 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
         ),
       ),
     );
-    _selectedPackageType =
-        PackageType.fromName(widget.membershipPackage?.packageType) ??
-        PackageType.monthly;
     _packageTypeField = FieldData<String>(
       type: FieldType.radio,
       textInputAction: TextInputAction.done,
@@ -154,7 +228,8 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       },
       onValueChanged: (value) {
         setState(() {
-          _selectedPackageType = PackageType.fromName(value.first.value);
+          _selectedPackageType = PackageType.fromLabel(value.first.label);
+
           _isEmi = false;
           for (final emi in _emiOptions) {
             emi.month.controller?.dispose();
@@ -329,8 +404,8 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                   ],
                 ),
               ),
-              if (_selectedPackageType != PackageType.monthly &&
-                  _selectedPackageType != null) ...[
+              if (_selectedPackageType == PackageType.quarterly ||
+                  _selectedPackageType == PackageType.yearly) ...[
                 const _Divider(),
                 _ShadowCard(
                   color: Colors.transparent,

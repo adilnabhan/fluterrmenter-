@@ -43,6 +43,10 @@ _$MembershipPackageModelImpl _$$MembershipPackageModelImplFromJson(
           .toList(),
       isActive: json['is_active'] as bool?,
       isEmiAvailable: json['is_emi_available'] as bool?,
+      emiPlans: (json['emi_plans'] as List<dynamic>?)
+              ?.map((e) => EmiPlansModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$$MembershipPackageModelImplToJson(
@@ -59,4 +63,19 @@ Map<String, dynamic> _$$MembershipPackageModelImplToJson(
       'features': instance.features,
       'is_active': instance.isActive,
       'is_emi_available': instance.isEmiAvailable,
+      'emi_plans': instance.emiPlans,
+    };
+
+_$EmiPlansModelImpl _$$EmiPlansModelImplFromJson(Map<String, dynamic> json) =>
+    _$EmiPlansModelImpl(
+      month: (json['number_of_installments'] as num).toInt(),
+      price:
+          StringToDoubleConverter.fromJsonStatic(json['emi_amount_per_cycle']),
+    );
+
+Map<String, dynamic> _$$EmiPlansModelImplToJson(_$EmiPlansModelImpl instance) =>
+    <String, dynamic>{
+      'number_of_installments': instance.month,
+      'emi_amount_per_cycle':
+          StringToDoubleConverter.toJsonStatic(instance.price),
     };

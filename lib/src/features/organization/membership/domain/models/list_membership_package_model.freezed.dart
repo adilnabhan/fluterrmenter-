@@ -295,6 +295,8 @@ mixin _$MembershipPackageModel {
   bool? get isActive => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_emi_available')
   bool? get isEmiAvailable => throw _privateConstructorUsedError;
+  @JsonKey(name: 'emi_plans')
+  List<EmiPlansModel> get emiPlans => throw _privateConstructorUsedError;
 
   /// Serializes this MembershipPackageModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -323,7 +325,8 @@ abstract class $MembershipPackageModelCopyWith<$Res> {
       @JsonKey(name: 'duration_days') int? durationDays,
       @JsonKey(name: 'features') List<String>? features,
       @JsonKey(name: 'is_active') bool? isActive,
-      @JsonKey(name: 'is_emi_available') bool? isEmiAvailable});
+      @JsonKey(name: 'is_emi_available') bool? isEmiAvailable,
+      @JsonKey(name: 'emi_plans') List<EmiPlansModel> emiPlans});
 }
 
 /// @nodoc
@@ -353,6 +356,7 @@ class _$MembershipPackageModelCopyWithImpl<$Res,
     Object? features = freezed,
     Object? isActive = freezed,
     Object? isEmiAvailable = freezed,
+    Object? emiPlans = null,
   }) {
     return _then(_value.copyWith(
       id: freezed == id
@@ -399,6 +403,10 @@ class _$MembershipPackageModelCopyWithImpl<$Res,
           ? _value.isEmiAvailable
           : isEmiAvailable // ignore: cast_nullable_to_non_nullable
               as bool?,
+      emiPlans: null == emiPlans
+          ? _value.emiPlans
+          : emiPlans // ignore: cast_nullable_to_non_nullable
+              as List<EmiPlansModel>,
     ) as $Val);
   }
 }
@@ -423,7 +431,8 @@ abstract class _$$MembershipPackageModelImplCopyWith<$Res>
       @JsonKey(name: 'duration_days') int? durationDays,
       @JsonKey(name: 'features') List<String>? features,
       @JsonKey(name: 'is_active') bool? isActive,
-      @JsonKey(name: 'is_emi_available') bool? isEmiAvailable});
+      @JsonKey(name: 'is_emi_available') bool? isEmiAvailable,
+      @JsonKey(name: 'emi_plans') List<EmiPlansModel> emiPlans});
 }
 
 /// @nodoc
@@ -452,6 +461,7 @@ class __$$MembershipPackageModelImplCopyWithImpl<$Res>
     Object? features = freezed,
     Object? isActive = freezed,
     Object? isEmiAvailable = freezed,
+    Object? emiPlans = null,
   }) {
     return _then(_$MembershipPackageModelImpl(
       id: freezed == id
@@ -498,6 +508,10 @@ class __$$MembershipPackageModelImplCopyWithImpl<$Res>
           ? _value.isEmiAvailable
           : isEmiAvailable // ignore: cast_nullable_to_non_nullable
               as bool?,
+      emiPlans: null == emiPlans
+          ? _value._emiPlans
+          : emiPlans // ignore: cast_nullable_to_non_nullable
+              as List<EmiPlansModel>,
     ));
   }
 }
@@ -516,8 +530,11 @@ class _$MembershipPackageModelImpl implements _MembershipPackageModel {
       @JsonKey(name: 'duration_days') this.durationDays,
       @JsonKey(name: 'features') final List<String>? features,
       @JsonKey(name: 'is_active') this.isActive,
-      @JsonKey(name: 'is_emi_available') this.isEmiAvailable})
-      : _features = features;
+      @JsonKey(name: 'is_emi_available') this.isEmiAvailable,
+      @JsonKey(name: 'emi_plans')
+      final List<EmiPlansModel> emiPlans = const []})
+      : _features = features,
+        _emiPlans = emiPlans;
 
   factory _$MembershipPackageModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$MembershipPackageModelImplFromJson(json);
@@ -563,10 +580,18 @@ class _$MembershipPackageModelImpl implements _MembershipPackageModel {
   @override
   @JsonKey(name: 'is_emi_available')
   final bool? isEmiAvailable;
+  final List<EmiPlansModel> _emiPlans;
+  @override
+  @JsonKey(name: 'emi_plans')
+  List<EmiPlansModel> get emiPlans {
+    if (_emiPlans is EqualUnmodifiableListView) return _emiPlans;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_emiPlans);
+  }
 
   @override
   String toString() {
-    return 'MembershipPackageModel(id: $id, organization: $organization, packageType: $packageType, name: $name, description: $description, actualPrice: $actualPrice, offerPrice: $offerPrice, durationDays: $durationDays, features: $features, isActive: $isActive, isEmiAvailable: $isEmiAvailable)';
+    return 'MembershipPackageModel(id: $id, organization: $organization, packageType: $packageType, name: $name, description: $description, actualPrice: $actualPrice, offerPrice: $offerPrice, durationDays: $durationDays, features: $features, isActive: $isActive, isEmiAvailable: $isEmiAvailable, emiPlans: $emiPlans)';
   }
 
   @override
@@ -592,7 +617,8 @@ class _$MembershipPackageModelImpl implements _MembershipPackageModel {
             (identical(other.isActive, isActive) ||
                 other.isActive == isActive) &&
             (identical(other.isEmiAvailable, isEmiAvailable) ||
-                other.isEmiAvailable == isEmiAvailable));
+                other.isEmiAvailable == isEmiAvailable) &&
+            const DeepCollectionEquality().equals(other._emiPlans, _emiPlans));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -609,7 +635,8 @@ class _$MembershipPackageModelImpl implements _MembershipPackageModel {
       durationDays,
       const DeepCollectionEquality().hash(_features),
       isActive,
-      isEmiAvailable);
+      isEmiAvailable,
+      const DeepCollectionEquality().hash(_emiPlans));
 
   /// Create a copy of MembershipPackageModel
   /// with the given fields replaced by the non-null parameter values.
@@ -640,7 +667,8 @@ abstract class _MembershipPackageModel implements MembershipPackageModel {
           @JsonKey(name: 'duration_days') final int? durationDays,
           @JsonKey(name: 'features') final List<String>? features,
           @JsonKey(name: 'is_active') final bool? isActive,
-          @JsonKey(name: 'is_emi_available') final bool? isEmiAvailable}) =
+          @JsonKey(name: 'is_emi_available') final bool? isEmiAvailable,
+          @JsonKey(name: 'emi_plans') final List<EmiPlansModel> emiPlans}) =
       _$MembershipPackageModelImpl;
 
   factory _MembershipPackageModel.fromJson(Map<String, dynamic> json) =
@@ -679,6 +707,9 @@ abstract class _MembershipPackageModel implements MembershipPackageModel {
   @override
   @JsonKey(name: 'is_emi_available')
   bool? get isEmiAvailable;
+  @override
+  @JsonKey(name: 'emi_plans')
+  List<EmiPlansModel> get emiPlans;
 
   /// Create a copy of MembershipPackageModel
   /// with the given fields replaced by the non-null parameter values.
@@ -686,4 +717,208 @@ abstract class _MembershipPackageModel implements MembershipPackageModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MembershipPackageModelImplCopyWith<_$MembershipPackageModelImpl>
       get copyWith => throw _privateConstructorUsedError;
+}
+
+EmiPlansModel _$EmiPlansModelFromJson(Map<String, dynamic> json) {
+  return _EmiPlansModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$EmiPlansModel {
+  @JsonKey(name: 'number_of_installments')
+  int get month => throw _privateConstructorUsedError;
+  @JsonKey(
+      name: 'emi_amount_per_cycle',
+      fromJson: StringToDoubleConverter.fromJsonStatic,
+      toJson: StringToDoubleConverter.toJsonStatic)
+  double get price => throw _privateConstructorUsedError;
+
+  /// Serializes this EmiPlansModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of EmiPlansModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $EmiPlansModelCopyWith<EmiPlansModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $EmiPlansModelCopyWith<$Res> {
+  factory $EmiPlansModelCopyWith(
+          EmiPlansModel value, $Res Function(EmiPlansModel) then) =
+      _$EmiPlansModelCopyWithImpl<$Res, EmiPlansModel>;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'number_of_installments') int month,
+      @JsonKey(
+          name: 'emi_amount_per_cycle',
+          fromJson: StringToDoubleConverter.fromJsonStatic,
+          toJson: StringToDoubleConverter.toJsonStatic)
+      double price});
+}
+
+/// @nodoc
+class _$EmiPlansModelCopyWithImpl<$Res, $Val extends EmiPlansModel>
+    implements $EmiPlansModelCopyWith<$Res> {
+  _$EmiPlansModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of EmiPlansModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? month = null,
+    Object? price = null,
+  }) {
+    return _then(_value.copyWith(
+      month: null == month
+          ? _value.month
+          : month // ignore: cast_nullable_to_non_nullable
+              as int,
+      price: null == price
+          ? _value.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as double,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$EmiPlansModelImplCopyWith<$Res>
+    implements $EmiPlansModelCopyWith<$Res> {
+  factory _$$EmiPlansModelImplCopyWith(
+          _$EmiPlansModelImpl value, $Res Function(_$EmiPlansModelImpl) then) =
+      __$$EmiPlansModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'number_of_installments') int month,
+      @JsonKey(
+          name: 'emi_amount_per_cycle',
+          fromJson: StringToDoubleConverter.fromJsonStatic,
+          toJson: StringToDoubleConverter.toJsonStatic)
+      double price});
+}
+
+/// @nodoc
+class __$$EmiPlansModelImplCopyWithImpl<$Res>
+    extends _$EmiPlansModelCopyWithImpl<$Res, _$EmiPlansModelImpl>
+    implements _$$EmiPlansModelImplCopyWith<$Res> {
+  __$$EmiPlansModelImplCopyWithImpl(
+      _$EmiPlansModelImpl _value, $Res Function(_$EmiPlansModelImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of EmiPlansModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? month = null,
+    Object? price = null,
+  }) {
+    return _then(_$EmiPlansModelImpl(
+      month: null == month
+          ? _value.month
+          : month // ignore: cast_nullable_to_non_nullable
+              as int,
+      price: null == price
+          ? _value.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as double,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$EmiPlansModelImpl implements _EmiPlansModel {
+  const _$EmiPlansModelImpl(
+      {@JsonKey(name: 'number_of_installments') required this.month,
+      @JsonKey(
+          name: 'emi_amount_per_cycle',
+          fromJson: StringToDoubleConverter.fromJsonStatic,
+          toJson: StringToDoubleConverter.toJsonStatic)
+      required this.price});
+
+  factory _$EmiPlansModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$EmiPlansModelImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'number_of_installments')
+  final int month;
+  @override
+  @JsonKey(
+      name: 'emi_amount_per_cycle',
+      fromJson: StringToDoubleConverter.fromJsonStatic,
+      toJson: StringToDoubleConverter.toJsonStatic)
+  final double price;
+
+  @override
+  String toString() {
+    return 'EmiPlansModel(month: $month, price: $price)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$EmiPlansModelImpl &&
+            (identical(other.month, month) || other.month == month) &&
+            (identical(other.price, price) || other.price == price));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, month, price);
+
+  /// Create a copy of EmiPlansModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$EmiPlansModelImplCopyWith<_$EmiPlansModelImpl> get copyWith =>
+      __$$EmiPlansModelImplCopyWithImpl<_$EmiPlansModelImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$EmiPlansModelImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _EmiPlansModel implements EmiPlansModel {
+  const factory _EmiPlansModel(
+      {@JsonKey(name: 'number_of_installments') required final int month,
+      @JsonKey(
+          name: 'emi_amount_per_cycle',
+          fromJson: StringToDoubleConverter.fromJsonStatic,
+          toJson: StringToDoubleConverter.toJsonStatic)
+      required final double price}) = _$EmiPlansModelImpl;
+
+  factory _EmiPlansModel.fromJson(Map<String, dynamic> json) =
+      _$EmiPlansModelImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'number_of_installments')
+  int get month;
+  @override
+  @JsonKey(
+      name: 'emi_amount_per_cycle',
+      fromJson: StringToDoubleConverter.fromJsonStatic,
+      toJson: StringToDoubleConverter.toJsonStatic)
+  double get price;
+
+  /// Create a copy of EmiPlansModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$EmiPlansModelImplCopyWith<_$EmiPlansModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
