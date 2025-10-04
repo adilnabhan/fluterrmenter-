@@ -11,11 +11,19 @@ class GymDetailsScreen extends StatefulWidget {
 
 class _GymDetailsScreenState extends State<GymDetailsScreen> {
   late final OrganizationListingAndDetailsCubit _cubit;
-  late final List<({String label, String value, void Function() onTap})> _basicDetails;
+  late final List<({String label, String value, void Function() onTap})>
+  _basicDetails;
   late final List<List<FieldData<dynamic>>> _socialMediaFields;
   late final List<TextEditingController> _socialUrlFields;
-  ({String label, String value, void Function() onTap}) copyBasicDetails(String? newValue, int fieldIndex) {
-    return (label: _basicDetails[fieldIndex].label, value: newValue ?? _basicDetails[fieldIndex].value, onTap: _basicDetails[fieldIndex].onTap);
+  ({String label, String value, void Function() onTap}) copyBasicDetails(
+    String? newValue,
+    int fieldIndex,
+  ) {
+    return (
+      label: _basicDetails[fieldIndex].label,
+      value: newValue ?? _basicDetails[fieldIndex].value,
+      onTap: _basicDetails[fieldIndex].onTap,
+    );
   }
 
   XFile? _pickedImage;
@@ -27,7 +35,9 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
 
     _socialUrlFields = [
       TextEditingController(text: widget.orgDetails.website?.url),
-      TextEditingController(text: widget.orgDetails.whatsapp?.url?.replaceAll('+91', '')),
+      TextEditingController(
+        text: widget.orgDetails.whatsapp?.url?.replaceAll('+91', ''),
+      ),
       TextEditingController(text: widget.orgDetails.instagram?.url),
       TextEditingController(text: widget.orgDetails.facebook?.url),
       TextEditingController(text: widget.orgDetails.youtube?.url),
@@ -65,7 +75,35 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
           );
         },
       ),
-      (label: 'Location', value: '${widget.orgDetails.location?.street},${widget.orgDetails.location?.city}', onTap: () {}),
+      (
+        label: 'Location',
+        value:
+            '${widget.orgDetails.location?.street},${widget.orgDetails.location?.city}',
+        onTap: () {
+          context.push(
+            GymDetailsUpdateTemplateScreen(
+              title: 'Add Location',
+              questionText: 'Enter your gym location?',
+              label: 'Location',
+              hintText: 'Enter location',
+              keyboardType: TextInputType.streetAddress,
+              inputFormatters: const [],
+              onSave: (value) {
+                setState(() {
+                  _basicDetails[1] = copyBasicDetails(value, 1);
+                });
+              },
+              initialValue: _basicDetails[1].value,
+              validator: (value) {
+                if (value?.trim().isEmpty ?? true) {
+                  return 'Location is required';
+                }
+                return null;
+              },
+            ),
+          );
+        },
+      ),
       (
         label: 'Email',
         value: widget.orgDetails.email ?? '',
@@ -87,7 +125,9 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
               validator: (value) {
                 if (value?.trim().isEmpty ?? true) {
                   return 'Email address is required';
-                } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value!)) {
+                } else if (!RegExp(
+                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                ).hasMatch(value!)) {
                   return 'Invalid email address';
                 }
                 return null;
@@ -112,7 +152,10 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                 });
               },
               keyboardType: TextInputType.phone,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
               initialValue: _basicDetails[3].value,
               validator: (value) {
                 if (value?.trim().isEmpty ?? true) {
@@ -137,8 +180,21 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
           decoration: InputDecoration(
             hintText: 'Add URL',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/website.svg', height: 24, width: 24))),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+            prefixIcon: SizedBox(
+              height: 24,
+              width: 24,
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/svg/icons/website.svg',
+                  height: 24,
+                  width: 24,
+                ),
+              ),
+            ),
             suffixIcon: SizedBox(
               height: 24,
               width: 24,
@@ -153,10 +209,24 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                       return SizedBox(
                         height: 24,
                         width: 24,
-                        child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(1000),
+                          child: const ColoredBox(
+                            color: AppColors.error,
+                            child: Icon(
+                              Icons.close,
+                              color: AppColors.light,
+                              size: 16,
+                            ),
+                          ),
+                        ),
                       );
                     }
-                    return SvgPicture.asset('assets/images/svg/icons/green_success.svg', height: 24, width: 24);
+                    return SvgPicture.asset(
+                      'assets/images/svg/icons/green_success.svg',
+                      height: 24,
+                      width: 24,
+                    );
                   },
                 ),
               ),
@@ -178,8 +248,21 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
           decoration: InputDecoration(
             hintText: 'Add URL',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/whatsapp.svg', height: 24, width: 24))),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+            prefixIcon: SizedBox(
+              height: 24,
+              width: 24,
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/svg/icons/whatsapp.svg',
+                  height: 24,
+                  width: 24,
+                ),
+              ),
+            ),
             suffixIcon: SizedBox(
               height: 24,
               width: 24,
@@ -196,10 +279,24 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                       return SizedBox(
                         height: 24,
                         width: 24,
-                        child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(1000),
+                          child: const ColoredBox(
+                            color: AppColors.error,
+                            child: Icon(
+                              Icons.close,
+                              color: AppColors.light,
+                              size: 16,
+                            ),
+                          ),
+                        ),
                       );
                     }
-                    return SvgPicture.asset('assets/images/svg/icons/green_success.svg', height: 24, width: 24);
+                    return SvgPicture.asset(
+                      'assets/images/svg/icons/green_success.svg',
+                      height: 24,
+                      width: 24,
+                    );
                   },
                 ),
               ),
@@ -216,8 +313,21 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
           decoration: InputDecoration(
             hintText: 'Add URL',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/instagram.svg', height: 24, width: 24))),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+            prefixIcon: SizedBox(
+              height: 24,
+              width: 24,
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/svg/icons/instagram.svg',
+                  height: 24,
+                  width: 24,
+                ),
+              ),
+            ),
             suffixIcon: SizedBox(
               height: 24,
               width: 24,
@@ -232,10 +342,24 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                       return SizedBox(
                         height: 24,
                         width: 24,
-                        child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(1000),
+                          child: const ColoredBox(
+                            color: AppColors.error,
+                            child: Icon(
+                              Icons.close,
+                              color: AppColors.light,
+                              size: 16,
+                            ),
+                          ),
+                        ),
                       );
                     }
-                    return SvgPicture.asset('assets/images/svg/icons/green_success.svg', height: 24, width: 24);
+                    return SvgPicture.asset(
+                      'assets/images/svg/icons/green_success.svg',
+                      height: 24,
+                      width: 24,
+                    );
                   },
                 ),
               ),
@@ -252,8 +376,21 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
           decoration: InputDecoration(
             hintText: 'Add URL',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/face_book.svg', height: 24, width: 24))),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+            prefixIcon: SizedBox(
+              height: 24,
+              width: 24,
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/svg/icons/face_book.svg',
+                  height: 24,
+                  width: 24,
+                ),
+              ),
+            ),
             suffixIcon: SizedBox(
               height: 24,
               width: 24,
@@ -268,10 +405,24 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                       return SizedBox(
                         height: 24,
                         width: 24,
-                        child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(1000),
+                          child: const ColoredBox(
+                            color: AppColors.error,
+                            child: Icon(
+                              Icons.close,
+                              color: AppColors.light,
+                              size: 16,
+                            ),
+                          ),
+                        ),
                       );
                     }
-                    return SvgPicture.asset('assets/images/svg/icons/green_success.svg', height: 24, width: 24);
+                    return SvgPicture.asset(
+                      'assets/images/svg/icons/green_success.svg',
+                      height: 24,
+                      width: 24,
+                    );
                   },
                 ),
               ),
@@ -288,8 +439,21 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
           decoration: InputDecoration(
             hintText: 'Add URL',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-            prefixIcon: SizedBox(height: 24, width: 24, child: Center(child: SvgPicture.asset('assets/images/svg/icons/youtube.svg', height: 24, width: 24))),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+            prefixIcon: SizedBox(
+              height: 24,
+              width: 24,
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/svg/icons/youtube.svg',
+                  height: 24,
+                  width: 24,
+                ),
+              ),
+            ),
             suffixIcon: SizedBox(
               height: 24,
               width: 24,
@@ -304,10 +468,24 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                       return SizedBox(
                         height: 24,
                         width: 24,
-                        child: ClipRRect(borderRadius: BorderRadius.circular(1000), child: const ColoredBox(color: AppColors.error, child: Icon(Icons.close, color: AppColors.light, size: 16))),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(1000),
+                          child: const ColoredBox(
+                            color: AppColors.error,
+                            child: Icon(
+                              Icons.close,
+                              color: AppColors.light,
+                              size: 16,
+                            ),
+                          ),
+                        ),
                       );
                     }
-                    return SvgPicture.asset('assets/images/svg/icons/green_success.svg', height: 24, width: 24);
+                    return SvgPicture.asset(
+                      'assets/images/svg/icons/green_success.svg',
+                      height: 24,
+                      width: 24,
+                    );
                   },
                 ),
               ),
@@ -320,7 +498,10 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+    return BlocListener<
+      OrganizationListingAndDetailsCubit,
+      OrganizationListingAndDetailsState
+    >(
       listenWhen: (p, c) => p.updateOrgDetails != c.updateOrgDetails,
       listener: (context, state) {
         state.updateOrgDetails?.fold(() {}, (either) {
@@ -341,32 +522,55 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
         });
       },
       child: Scaffold(
-        appBar: AppBar(leading: const PopButton().center, title: Text('Gym Details', style: AppStyles.text16Px.poppins.w500)),
+        appBar: AppBar(
+          leading: const PopButton().center,
+          title: Text('Gym Details', style: AppStyles.text16Px.poppins.w500),
+        ),
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            ProfileImage(isEdit: true, onChanged: (image) => _pickedImage = image, radius: 100.w, url: widget.orgDetails.logo ?? '').pxy(y: 16),
+            ProfileImage(
+              isEdit: true,
+              onChanged: (image) => _pickedImage = image,
+              radius: 100.w,
+              url: widget.orgDetails.logo ?? '',
+            ).pxy(y: 16),
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _basicDetails.length,
-              separatorBuilder: (context, index) => const Divider(thickness: 1, color: Color(0xffDDDDDD)),
+              separatorBuilder:
+                  (context, index) =>
+                      const Divider(thickness: 1, color: Color(0xffDDDDDD)),
               itemBuilder: (context, index) {
                 final e = _basicDetails[index];
                 return InkWell(
                   onTap: e.onTap,
                   child: Row(
                     children: [
-                      Text(e.label, style: AppStyles.text14Px.poppins.w400.textGrey),
+                      Text(
+                        e.label,
+                        style: AppStyles.text14Px.poppins.w400.textGrey,
+                      ),
                       const Spacer(),
-                      Text(e.value, style: AppStyles.text14Px.poppins.w500.dark),
-                      const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.dark).pOnly(left: 8),
+                      Text(
+                        e.value,
+                        style: AppStyles.text14Px.poppins.w500.dark,
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 12,
+                        color: AppColors.dark,
+                      ).pOnly(left: 8),
                     ],
                   ).pxy(y: 16),
                 );
               },
             ),
-            Text('Social Media', style: AppStyles.text16Px.poppins.w600.dark).pOnly(bottom: 16),
+            Text(
+              'Social Media',
+              style: AppStyles.text16Px.poppins.w600.dark,
+            ).pOnly(bottom: 16),
             ListView.separated(
               padding: EdgeInsets.zero,
               itemCount: _socialMediaFields.length,
@@ -382,8 +586,13 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
             ),
           ],
         ),
-        bottomNavigationBar: BlocBuilder<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
-          buildWhen: (previous, current) => previous.updateOrgDetails != current.updateOrgDetails,
+        bottomNavigationBar: BlocBuilder<
+          OrganizationListingAndDetailsCubit,
+          OrganizationListingAndDetailsState
+        >(
+          buildWhen:
+              (previous, current) =>
+                  previous.updateOrgDetails != current.updateOrgDetails,
           builder: (context, state) {
             final isLoading = state.updateOrgDetails?.isNone() ?? false;
             return Button.filled(
@@ -396,16 +605,23 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                   return;
                 }
                 if (_basicDetails[0].value.length < 3) {
-                  await Dialogs.showSnack(msg: 'Gym name must be at least 3 characters');
+                  await Dialogs.showSnack(
+                    msg: 'Gym name must be at least 3 characters',
+                  );
                   return;
                 } else if (!_basicDetails[2].value.isEmail) {
                   await Dialogs.showSnack(msg: 'Email address is required');
                   return;
                 } else if (_basicDetails[3].value.length != 10) {
-                  await Dialogs.showSnack(msg: 'Mobile number must be 10 digits');
+                  await Dialogs.showSnack(
+                    msg: 'Mobile number must be 10 digits',
+                  );
                   return;
-                } else if (_socialUrlFields[1].value.text.isNotEmpty && _socialUrlFields[1].value.text.length != 10) {
-                  await Dialogs.showSnack(msg: 'Whatsapp number must be 10 digits');
+                } else if (_socialUrlFields[1].value.text.isNotEmpty &&
+                    _socialUrlFields[1].value.text.length != 10) {
+                  await Dialogs.showSnack(
+                    msg: 'Whatsapp number must be 10 digits',
+                  );
                   return;
                 }
                 final body = FormData.fromMap({
@@ -417,11 +633,22 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                   //   'city': widget.orgDetails.location?.city,
                   // },
                   'social_media': [
-                    if (_socialUrlFields[0].text.trim().isNotEmpty) {'platform': 'website', 'url': _socialUrlFields[0].text},
-                    if (_socialUrlFields[1].text.trim().isNotEmpty) {'platform': 'whatsapp', 'url': '+91${_socialUrlFields[1].text}'},
-                    if (_socialUrlFields[2].text.trim().isNotEmpty) {'platform': 'instagram', 'url': _socialUrlFields[2].text},
-                    if (_socialUrlFields[3].text.trim().isNotEmpty) {'platform': 'facebook', 'url': _socialUrlFields[3].text},
-                    if (_socialUrlFields[4].text.trim().isNotEmpty) {'platform': 'youtube', 'url': _socialUrlFields[4].text},
+                    if (_socialUrlFields[0].text.trim().isNotEmpty)
+                      {'platform': 'website', 'url': _socialUrlFields[0].text},
+                    if (_socialUrlFields[1].text.trim().isNotEmpty)
+                      {
+                        'platform': 'whatsapp',
+                        'url': '+91${_socialUrlFields[1].text}',
+                      },
+                    if (_socialUrlFields[2].text.trim().isNotEmpty)
+                      {
+                        'platform': 'instagram',
+                        'url': _socialUrlFields[2].text,
+                      },
+                    if (_socialUrlFields[3].text.trim().isNotEmpty)
+                      {'platform': 'facebook', 'url': _socialUrlFields[3].text},
+                    if (_socialUrlFields[4].text.trim().isNotEmpty)
+                      {'platform': 'youtube', 'url': _socialUrlFields[4].text},
                   ],
                 });
                 // if (_socialUrlFields[0].text.trim().isNotEmpty) {
@@ -440,9 +667,20 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                 //   body.fields.add(MapEntry('social_media.youtube', _socialUrlFields[4].text));
                 // }
                 if (_pickedImage != null) {
-                  body.files.add(MapEntry('logo', await MultipartFile.fromFile(_pickedImage!.path, filename: _pickedImage!.name)));
+                  body.files.add(
+                    MapEntry(
+                      'logo',
+                      await MultipartFile.fromFile(
+                        _pickedImage!.path,
+                        filename: _pickedImage!.name,
+                      ),
+                    ),
+                  );
                 }
-                await _cubit.updateOrgDetails(orgId: widget.orgDetails.id ?? 0, body: body);
+                await _cubit.updateOrgDetails(
+                  orgId: widget.orgDetails.id ?? 0,
+                  body: body,
+                );
               },
             ).pad(16).pxy(y: 16);
           },
