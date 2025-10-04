@@ -6,7 +6,8 @@ class OrganizationDetailsScreen extends StatefulWidget {
   final int orgId;
 
   @override
-  State<OrganizationDetailsScreen> createState() => _OrganizationDetailsScreenState();
+  State<OrganizationDetailsScreen> createState() =>
+      _OrganizationDetailsScreenState();
 }
 
 class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
@@ -26,8 +27,14 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: const PopButton().center, title: Text('Profile', style: AppStyles.text16Px.poppins.w500)),
-      body: BlocBuilder<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+      appBar: AppBar(
+        leading: const PopButton().center,
+        title: Text('Profile', style: AppStyles.text16Px.poppins.w500),
+      ),
+      body: BlocBuilder<
+        OrganizationListingAndDetailsCubit,
+        OrganizationListingAndDetailsState
+      >(
         builder: (context, state) {
           return state.details.fold(
             () {
@@ -35,7 +42,14 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
             },
             (either) {
               return either.fold(
-                (error) => error.maybeWhen(network: (e) => ErrorUi.network(onTap: _fetch), notFound: (e) => ErrorUi.notFound(onTap: _fetch), orElse: () => ErrorUi.server(onTap: _fetch)).center,
+                (error) =>
+                    error
+                        .maybeWhen(
+                          network: (e) => ErrorUi.network(onTap: _fetch),
+                          notFound: (e) => ErrorUi.notFound(onTap: _fetch),
+                          orElse: () => ErrorUi.server(onTap: _fetch),
+                        )
+                        .center,
                 (orgDetails) {
                   return RefreshIndicator(
                     onRefresh: _fetch,
@@ -44,20 +58,44 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(color: AppColors.grey, borderRadius: BorderRadius.circular(16)),
+                          decoration: BoxDecoration(
+                            color: AppColors.grey,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                           child: Row(
                             children: [
                               InkWell(
-                                onTap: () => context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails))),
-                                child: AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: orgDetails.logo ?? '')),
+                                onTap:
+                                    () => context.push(
+                                      BlocProvider.value(
+                                        value: _cubit,
+                                        child: GymDetailsScreen(
+                                          orgDetails: orgDetails,
+                                        ),
+                                      ),
+                                    ),
+                                child: AbsorbPointer(
+                                  child: ProfileImage(
+                                    isEdit: true,
+                                    onChanged: (image) {},
+                                    radius: 80.w,
+                                    url: orgDetails.logo ?? '',
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 16),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(orgDetails.name ?? '', style: AppStyles.text14Px.poppins.w500),
+                                  Text(
+                                    orgDetails.name ?? '',
+                                    style: AppStyles.text14Px.poppins.w500,
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text(orgDetails.email ?? '', style: AppStyles.text12Px.poppins.w400),
+                                  Text(
+                                    orgDetails.email ?? '',
+                                    style: AppStyles.text12Px.poppins.w400,
+                                  ),
                                 ],
                               ),
                             ],
@@ -66,25 +104,63 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                         const SizedBox(height: 16),
                         ...[
                           _buildProfileListItem('Gym Details', () {
-                            context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
+                            context.push(
+                              BlocProvider.value(
+                                value: _cubit,
+                                child: GymDetailsScreen(orgDetails: orgDetails),
+                              ),
+                            );
                           }),
                           _buildProfileListItem('Gallery', () {
-                            context.push(BlocProvider.value(value: _cubit, child: GymGalleryScreen(orgDetails: orgDetails)));
+                            context.push(
+                              BlocProvider.value(
+                                value: _cubit,
+                                child: GymGalleryScreen(orgDetails: orgDetails),
+                              ),
+                            );
                           }),
                           _buildProfileListItem('Services', () {
-                            context.push(BlocProvider.value(value: _cubit, child: GymServicesScreen(orgDetails: orgDetails)));
+                            context.push(
+                              BlocProvider.value(
+                                value: _cubit,
+                                child: GymServicesScreen(
+                                  orgDetails: orgDetails,
+                                ),
+                              ),
+                            );
                           }),
                           _buildProfileListItem('Packages', () {
-                            context.push(BlocProvider.value(value: _cubit, child: GymPackagesScreen(orgDetails: orgDetails)));
+                            context.push(
+                              BlocProvider.value(
+                                value: _cubit,
+                                child: GymPackagesScreen(
+                                  orgDetails: orgDetails,
+                                ),
+                              ),
+                            );
                           }),
                           // _buildProfileListItem('Trainers', () {
                           //   context.push(BlocProvider.value(value: _cubit, child: GymTrainersScreen(orgDetails: orgDetails)));
                           // }),
                           _buildProfileListItem('Schedules', () {
-                            context.push(BlocProvider.value(value: _cubit, child: GymSchedulesScreen(orgDetails: orgDetails)));
+                            context.push(
+                              BlocProvider.value(
+                                value: _cubit,
+                                child: GymSchedulesScreen(
+                                  orgDetails: orgDetails,
+                                ),
+                              ),
+                            );
                           }),
-                          _buildProfileListItem('Amenities', () {
-                            context.push(BlocProvider.value(value: _cubit, child: GymAmenitiesScreen(orgDetails: orgDetails)));
+                          _buildProfileListItem('Services', () {
+                            context.push(
+                              BlocProvider.value(
+                                value: _cubit,
+                                child: GymAmenitiesScreen(
+                                  orgDetails: orgDetails,
+                                ),
+                              ),
+                            );
                           }),
                           // _buildProfileListItem('Wishes', () {
                           //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
@@ -92,7 +168,11 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                           // _buildProfileListItem('Permissions', () {
                           //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
                           // }),
-                          _ProfileListItem(label: 'Logout', onTap: () => const LogoutSheet().show(context), isLogout: true),
+                          _ProfileListItem(
+                            label: 'Logout',
+                            onTap: () => const LogoutSheet().show(context),
+                            isLogout: true,
+                          ),
                         ],
                       ],
                     ),
@@ -121,7 +201,11 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
 }
 
 class _ProfileListItem extends StatelessWidget {
-  const _ProfileListItem({required this.label, required this.onTap, this.isLogout = false});
+  const _ProfileListItem({
+    required this.label,
+    required this.onTap,
+    this.isLogout = false,
+  });
   final String label;
   final VoidCallback onTap;
   final bool isLogout;
@@ -130,8 +214,17 @@ class _ProfileListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      title: Text(label, style: isLogout ? AppStyles.text14Px.poppins.w500.copyWith(color: Colors.red) : AppStyles.text14Px.poppins.w500),
-      trailing: isLogout ? null : const Icon(Icons.chevron_right, color: Colors.black),
+      title: Text(
+        label,
+        style:
+            isLogout
+                ? AppStyles.text14Px.poppins.w500.copyWith(color: Colors.red)
+                : AppStyles.text14Px.poppins.w500,
+      ),
+      trailing:
+          isLogout
+              ? null
+              : const Icon(Icons.chevron_right, color: Colors.black),
       onTap: onTap,
     );
   }

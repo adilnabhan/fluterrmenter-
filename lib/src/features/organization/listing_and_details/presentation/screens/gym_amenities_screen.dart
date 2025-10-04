@@ -22,7 +22,10 @@ class _GymAmenitiesScreenState extends State<GymAmenitiesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+    return BlocListener<
+      OrganizationListingAndDetailsCubit,
+      OrganizationListingAndDetailsState
+    >(
       listenWhen: (p, c) => p.updateOrgDetails != c.updateOrgDetails,
       listener: (context, state) {
         state.updateOrgDetails?.fold(() {}, (either) {
@@ -43,30 +46,52 @@ class _GymAmenitiesScreenState extends State<GymAmenitiesScreen> {
         });
       },
       child: Scaffold(
-        appBar: AppBar(leading: const PopButton().center, title: Text('Aminities', style: AppStyles.text16Px.poppins.w500)),
+        appBar: AppBar(
+          leading: const PopButton().center,
+          title: Text('Services', style: AppStyles.text16Px.poppins.w500),
+        ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Text('Aminities Added', style: AppStyles.text16Px.poppins.w500.dark),
+                Text(
+                  'Services Added',
+                  style: AppStyles.text16Px.poppins.w500.dark,
+                ),
                 const Spacer(),
                 FilledButton.icon(
                   onPressed: () {
                     AddAmenitiesSheet(
-                      selectedValues: [..._amenities.map((e) => (label: e.name ?? '', value: '${e.id}'))],
+                      selectedValues: [
+                        ..._amenities.map(
+                          (e) => (label: e.name ?? '', value: '${e.id}'),
+                        ),
+                      ],
                       onSubmit: (values) {
                         setState(() {
                           _amenities
                             ..clear()
-                            ..addAll(values.map((e) => AmenityModel(id: e.value.toNum.toInt(), name: e.label)).toList());
+                            ..addAll(
+                              values
+                                  .map(
+                                    (e) => AmenityModel(
+                                      id: e.value.toNum.toInt(),
+                                      name: e.label,
+                                    ),
+                                  )
+                                  .toList(),
+                            );
                         });
                       },
                     ).show(context);
                   },
                   label: const Text('Add'),
                   icon: const Icon(Icons.add),
-                  style: const ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppColors.primary), backgroundColor: WidgetStatePropertyAll(Color(0xffFFEAEA))),
+                  style: const ButtonStyle(
+                    foregroundColor: WidgetStatePropertyAll(AppColors.primary),
+                    backgroundColor: WidgetStatePropertyAll(Color(0xffFFEAEA)),
+                  ),
                 ),
               ],
             ),
@@ -75,7 +100,12 @@ class _GymAmenitiesScreenState extends State<GymAmenitiesScreen> {
               child: Builder(
                 builder: (context) {
                   if (_amenities.isEmpty) {
-                    return Center(child: Text('No Aminities found!', style: AppStyles.text14Px.poppins.w400.dark));
+                    return Center(
+                      child: Text(
+                        'No Services found!',
+                        style: AppStyles.text14Px.poppins.w400.dark,
+                      ),
+                    );
                   }
                   return SingleChildScrollView(
                     child: Wrap(
@@ -85,9 +115,18 @@ class _GymAmenitiesScreenState extends State<GymAmenitiesScreen> {
                           _amenities
                               .map(
                                 (e) => Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(16)),
-                                  child: Text(e.name ?? '', style: AppStyles.text14Px.poppins.w400.dark),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade200,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Text(
+                                    e.name ?? '',
+                                    style: AppStyles.text14Px.poppins.w400.dark,
+                                  ),
                                 ),
                               )
                               .toList(),
@@ -98,9 +137,14 @@ class _GymAmenitiesScreenState extends State<GymAmenitiesScreen> {
             ),
           ],
         ).pad(16),
-        bottomNavigationBar: BlocBuilder<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+        bottomNavigationBar: BlocBuilder<
+          OrganizationListingAndDetailsCubit,
+          OrganizationListingAndDetailsState
+        >(
           bloc: _cubit,
-          buildWhen: (previous, current) => previous.updateOrgDetails != current.updateOrgDetails,
+          buildWhen:
+              (previous, current) =>
+                  previous.updateOrgDetails != current.updateOrgDetails,
           builder: (context, state) {
             final isLoading = state.updateOrgDetails?.isNone() ?? false;
             return Button.filled(
@@ -112,7 +156,10 @@ class _GymAmenitiesScreenState extends State<GymAmenitiesScreen> {
                 if (isLoading) {
                   return;
                 }
-                await _cubit.updateOrgDetails(orgId: widget.orgDetails.id ?? 0, body: {'amenities': _amenities.map((e) => e.id).toList()});
+                await _cubit.updateOrgDetails(
+                  orgId: widget.orgDetails.id ?? 0,
+                  body: {'amenities': _amenities.map((e) => e.id).toList()},
+                );
               },
             ).pad(16).pxy(y: 16);
           },
