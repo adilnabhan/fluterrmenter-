@@ -7,7 +7,10 @@ class GymPackagesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => MembershipCubit(orgId: '${orgDetails.id!}'), child: _GymPackagesScreen(orgDetails: orgDetails));
+    return BlocProvider(
+      create: (context) => MembershipCubit(orgId: '${orgDetails.id!}'),
+      child: _GymPackagesScreen(orgDetails: orgDetails),
+    );
   }
 }
 
@@ -48,12 +51,18 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
         );
       },
       child: Scaffold(
-        appBar: AppBar(leading: const PopButton().center, title: Text('Package', style: AppStyles.text16Px.poppins.w500)),
+        appBar: AppBar(
+          leading: const PopButton().center,
+          title: Text('Package', style: AppStyles.text16Px.poppins.w500),
+        ),
         body: Column(
           children: [
             Row(
               children: [
-                Text('Current Packages', style: AppStyles.text16Px.poppins.w500.dark),
+                Text(
+                  'Current Packages',
+                  style: AppStyles.text16Px.poppins.w500.dark,
+                ),
                 const Spacer(),
                 FilledButton.icon(
                   onPressed: () {
@@ -61,23 +70,36 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                       Dialogs.showSnack(msg: 'Organization is not available');
                       return;
                     }
-                    context.push(BlocProvider.value(value: _cubit, child: const GymAddOrEditPackageScreen()));
+                    context.push(
+                      BlocProvider.value(
+                        value: _cubit,
+                        child: const GymAddOrEditPackageScreen(),
+                      ),
+                    );
                   },
                   label: const Text('Add'),
                   icon: const Icon(Icons.add),
-                  style: const ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppColors.primary), backgroundColor: WidgetStatePropertyAll(Color(0xffFFEAEA))),
+                  style: const ButtonStyle(
+                    foregroundColor: WidgetStatePropertyAll(AppColors.primary),
+                    backgroundColor: WidgetStatePropertyAll(Color(0xffFFEAEA)),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
             Expanded(
               child: BlocBuilder<MembershipCubit, MembershipState>(
-                buildWhen: (p, c) => p.membershipPackages != c.membershipPackages,
+                buildWhen:
+                    (p, c) => p.membershipPackages != c.membershipPackages,
                 builder: (context, state) {
                   return state.membershipPackages.fold(
                     () => const Center(child: CircularProgressIndicator()),
                     (either) => either.fold(
-                      (error) => error.maybeWhen(network: (e) => ErrorUi.network(onTap: _fetch), notFound: (e) => ErrorUi.notFound(onTap: _fetch), orElse: () => ErrorUi.server(onTap: _fetch)),
+                      (error) => error.maybeWhen(
+                        network: (e) => ErrorUi.network(onTap: _fetch),
+                        notFound: (e) => ErrorUi.notFound(onTap: _fetch),
+                        orElse: () => ErrorUi.server(onTap: _fetch),
+                      ),
                       (data) {
                         if (data.results?.isEmpty ?? true) {
                           return ErrorUi.empty().center;
@@ -87,7 +109,10 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                           child: ListView.separated(
                             padding: EdgeInsets.zero,
                             itemCount: data.results?.length ?? 0,
-                            separatorBuilder: (BuildContext context, int index) {
+                            separatorBuilder: (
+                              BuildContext context,
+                              int index,
+                            ) {
                               return const SizedBox(height: 16);
                             },
                             itemBuilder: (BuildContext context, int index) {
@@ -96,47 +121,149 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                 onTap: () {},
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(color: AppColors.light, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.borderGrey)),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.light,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: AppColors.borderGrey,
+                                    ),
+                                  ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(membership?.name ?? '', style: AppStyles.text14Px.poppins.w600.dark),
+                                          Text(
+                                            membership?.name ?? '',
+                                            style:
+                                                AppStyles
+                                                    .text14Px
+                                                    .poppins
+                                                    .w600
+                                                    .dark,
+                                          ),
                                           TextButton(
                                             onPressed: () {
-                                              if (widget.orgDetails.id == null) {
-                                                Dialogs.showSnack(msg: 'Organization is not available');
+                                              if (widget.orgDetails.id ==
+                                                  null) {
+                                                Dialogs.showSnack(
+                                                  msg:
+                                                      'Organization is not available',
+                                                );
                                                 return;
                                               }
-                                              context.push(BlocProvider.value(value: _cubit, child: GymAddOrEditPackageScreen(membershipPackage: membership)));
+                                              context.push(
+                                                BlocProvider.value(
+                                                  value: _cubit,
+                                                  child:
+                                                      GymAddOrEditPackageScreen(
+                                                        membershipPackage:
+                                                            membership,
+                                                      ),
+                                                ),
+                                              );
                                             },
-                                            style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                            style: TextButton.styleFrom(
+                                              foregroundColor: Colors.red,
+                                            ),
                                             child: const Text('Edit'),
                                           ).pOnly(left: 8),
                                         ],
                                       ),
-                                      const SizedBox(height: 1, child: Divider(thickness: 1, color: Color(0xffDDDDDD))).pOnly(bottom: 20, top: 12),
-                                      if (membership?.offerPrice?.isNotEmpty ?? false)
+                                      const SizedBox(
+                                        height: 1,
+                                        child: Divider(
+                                          thickness: 1,
+                                          color: Color(0xffDDDDDD),
+                                        ),
+                                      ).pOnly(bottom: 20, top: 12),
+                                      if (membership?.offerPrice?.isNotEmpty ??
+                                          false)
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text('Offer Price', style: AppStyles.text13Px.poppins.w400.dark),
+                                            Text(
+                                              'Offer Price',
+                                              style:
+                                                  AppStyles
+                                                      .text13Px
+                                                      .poppins
+                                                      .w400
+                                                      .dark,
+                                            ),
 
                                             ///
-                                            Text('₹${membership?.offerPrice}', style: AppStyles.text14Px.poppins.w500.dark),
+                                            Text(
+                                              '₹${membership?.offerPrice}',
+                                              style:
+                                                  AppStyles
+                                                      .text14Px
+                                                      .poppins
+                                                      .w500
+                                                      .dark,
+                                            ),
                                           ],
                                         ).pOnly(bottom: 16),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text('Actual Price', style: AppStyles.text13Px.poppins.w400.dark),
+                                          Text(
+                                            'Duration',
+                                            style:
+                                                AppStyles
+                                                    .text13Px
+                                                    .poppins
+                                                    .w400
+                                                    .dark,
+                                          ),
+                                          Text(
+                                            '${(membership?.durationDays ?? 0) ~/ 30} months',
+                                            style:
+                                                AppStyles
+                                                    .text14Px
+                                                    .poppins
+                                                    .w500
+                                                    .dark,
+                                          ),
+                                        ],
+                                      ).pOnly(bottom: 16),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Actual Price',
+                                            style:
+                                                AppStyles
+                                                    .text13Px
+                                                    .poppins
+                                                    .w400
+                                                    .dark,
+                                          ),
 
                                           ///
                                           Text(
                                             '₹${membership?.actualPrice}',
-                                            style: AppStyles.text14Px.poppins.w500.dark.copyWith(decoration: membership?.offerPrice?.isNotEmpty ?? false ? TextDecoration.lineThrough : null),
+                                            style: AppStyles
+                                                .text14Px
+                                                .poppins
+                                                .w500
+                                                .dark
+                                                .copyWith(
+                                                  decoration:
+                                                      membership
+                                                                  ?.offerPrice
+                                                                  ?.isNotEmpty ??
+                                                              false
+                                                          ? TextDecoration
+                                                              .lineThrough
+                                                          : null,
+                                                ),
                                           ),
                                         ],
                                       ),
