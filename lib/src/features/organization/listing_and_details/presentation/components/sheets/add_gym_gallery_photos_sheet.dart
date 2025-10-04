@@ -14,7 +14,11 @@ class AddGymGalleryPhotosSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      builder: (context) => BlocProvider.value(value: cubit, child: this),
+      builder:
+          (context) => BlocProvider.value(
+            value: cubit,
+            child: AddGymGalleryPhotosSheet(orgDetails: orgDetails),
+          ),
     );
   }
 
@@ -25,45 +29,38 @@ class AddGymGalleryPhotosSheet extends StatefulWidget {
 
 class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
   late final OrganizationListingAndDetailsCubit _cubit;
-  late final ImagePicker _imagePicker;
   final List<String> _images = [];
 
   @override
   void initState() {
     super.initState();
-    _imagePicker = ImagePicker();
     _cubit = context.read<OrganizationListingAndDetailsCubit>();
   }
 
-  Future<void> _addImages() async {
-    final images = await _imagePicker.pickMultiImage();
-    if (images.isEmpty) {
-      return;
-    }
-    for (final image in images) {
-      if (image.path.isNotEmpty) {
-        _images.add(image.path);
-      }
-    }
-    setState(() {});
+  Future<void> _pickImageDialog() async {
+    await ImagePickerDialog(
+      needRemove: false,
+      onPickedImage: (xFile) {
+        if (xFile != null && xFile.path.isNotEmpty) {
+          setState(() => _images.add(xFile.path));
+        }
+      },
+    ).show(context);
   }
 
   Future<void> _onSave() async {
-    if (_cubit.state.updateOrgDetails?.isNone() ?? false) {
-      return;
-    }
+    if (_cubit.state.updateOrgDetails?.isNone() ?? false) return;
+
     await _cubit.updateOrgDetails(
       orgId: widget.orgDetails.id!,
       body: FormData.fromMap({
         'photos': await Future.wait(
-          _images
-              .map(
-                (imagePath) => MultipartFile.fromFile(
-                  imagePath,
-                  filename: imagePath.split('/').last,
-                ),
-              )
-              .toList(),
+          _images.map(
+            (imagePath) => MultipartFile.fromFile(
+              imagePath,
+              filename: imagePath.split('/').last,
+            ),
+          ),
         ),
       }),
     );
@@ -189,7 +186,7 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
                           }
                           return InkWell(
                             borderRadius: BorderRadius.circular(40),
-                            onTap: _addImages,
+                            onTap: _pickImageDialog,
                             child: Container(
                               decoration: BoxDecoration(
                                 color: const Color(0xffFDD6D6),
@@ -231,7 +228,6 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
                                 child: CupertinoButton.filled(
                                   borderRadius: BorderRadius.circular(12),
                                   onPressed: _onSave,
-                                  //  color: Colors.red,
                                   child:
                                       (state.updateOrgDetails?.isNone() ??
                                               false)

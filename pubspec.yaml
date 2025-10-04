@@ -133,7 +133,7 @@ dev_dependencies:
   very_good_analysis: ^7.0.0
 
   #* for code formating
-  analyzer: ^6.2.0
+  analyzer: ^7.7.1
 
   #* for native splash
   flutter_native_splash: ^2.4.6
