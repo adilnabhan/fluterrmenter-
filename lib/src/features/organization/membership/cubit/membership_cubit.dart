@@ -1,7 +1,10 @@
-import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'dart:developer' as dev;
 
-part 'membership_state.dart';
+import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/membership/domain/models/emi_options_model.dart';
+
 part 'membership_cubit.freezed.dart';
+part 'membership_state.dart';
 
 class MembershipCubit extends Cubit<MembershipState> {
   MembershipCubit({required this.orgId}) : super(const MembershipState());
@@ -10,7 +13,9 @@ class MembershipCubit extends Cubit<MembershipState> {
 
   Future<void> fetchMembershipPackages() async {
     emit(state.copyWith(membershipPackages: none()));
-    final res = await MembershipRepository().list(queryParameters: {'organization_id': orgId});
+    final res = await MembershipRepository().list(
+      queryParameters: {'organization_id': orgId},
+    );
     emit(state.copyWith(membershipPackages: some(res)));
   }
 
@@ -23,6 +28,7 @@ class MembershipCubit extends Cubit<MembershipState> {
     required String offerPrice,
     required List<String> features,
     required bool isEmiAvailable,
+    List<EmiOptionsModel>? emiOptions,
   }) async {
     emit(state.copyWith(createOrUpdatePackage: none()));
     final body = {
@@ -35,9 +41,13 @@ class MembershipCubit extends Cubit<MembershipState> {
       'features': features,
       'is_emi_available': isEmiAvailable,
       'is_active': true,
+      'emi_plans': emiOptions?.map((e) => e.toJson()).toList(),
     };
 
-    final res = (membershipId != null ? await MembershipRepository().update(id: membershipId, body: body) : await MembershipRepository().create(body: body));
+    final res =
+        (membershipId != null
+            ? await MembershipRepository().update(id: membershipId, body: body)
+            : await MembershipRepository().create(body: body));
     emit(state.copyWith(createOrUpdatePackage: some(res)));
   }
 }

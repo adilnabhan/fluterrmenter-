@@ -13,7 +13,8 @@ class ListMembershipPackagesModel with _$ListMembershipPackagesModel {
     @JsonKey(name: 'results') List<MembershipPackageModel>? results,
   }) = _ListMembershipPackagesModel;
 
-  factory ListMembershipPackagesModel.fromJson(Map<String, dynamic> json) => _$ListMembershipPackagesModelFromJson(json);
+  factory ListMembershipPackagesModel.fromJson(Map<String, dynamic> json) =>
+      _$ListMembershipPackagesModelFromJson(json);
 }
 
 @freezed
@@ -30,7 +31,38 @@ class MembershipPackageModel with _$MembershipPackageModel {
     @JsonKey(name: 'features') List<String>? features,
     @JsonKey(name: 'is_active') bool? isActive,
     @JsonKey(name: 'is_emi_available') bool? isEmiAvailable,
+    @JsonKey(name: 'emi_plans') @Default([]) List<EmiPlansModel> emiPlans,
   }) = _MembershipPackageModel;
 
-  factory MembershipPackageModel.fromJson(Map<String, dynamic> json) => _$MembershipPackageModelFromJson(json);
+  factory MembershipPackageModel.fromJson(Map<String, dynamic> json) =>
+      _$MembershipPackageModelFromJson(json);
+}
+
+@freezed
+class EmiPlansModel with _$EmiPlansModel {
+  const factory EmiPlansModel({
+    @JsonKey(name: 'number_of_installments') required int month,
+    @JsonKey(
+      name: 'emi_amount_per_cycle',
+      fromJson: StringToDoubleConverter.fromJsonStatic,
+      toJson: StringToDoubleConverter.toJsonStatic,
+    )
+    required double price,
+  }) = _EmiPlansModel;
+
+  factory EmiPlansModel.fromJson(Map<String, dynamic> json) =>
+      _$EmiPlansModelFromJson(json);
+}
+
+class StringToDoubleConverter {
+  const StringToDoubleConverter();
+
+  static double fromJsonStatic(Object? json) {
+    if (json == null) return 0;
+    if (json is num) return json.toDouble();
+    if (json is String) return double.tryParse(json) ?? 0.0;
+    return 0;
+  }
+
+  static Object toJsonStatic(double object) => object;
 }

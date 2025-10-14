@@ -1,13 +1,23 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class AddAmenitiesSheet extends StatefulWidget {
-  const AddAmenitiesSheet({required this.selectedValues, required this.onSubmit, super.key});
+  const AddAmenitiesSheet({
+    required this.selectedValues,
+    required this.onSubmit,
+    super.key,
+  });
 
   final List<({String value, String label})> selectedValues;
   final void Function(List<({String value, String label})> values) onSubmit;
 
   Future<void> show(BuildContext context) async {
-    await showModalBottomSheet<void>(context: context, isScrollControlled: true, useSafeArea: true, backgroundColor: Colors.transparent, builder: (context) => this);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => this,
+    );
   }
 
   @override
@@ -17,7 +27,8 @@ class AddAmenitiesSheet extends StatefulWidget {
 class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
   bool isLoading = true;
   String errorText = '';
-  late final ValueNotifier<List<({String value, String label})>> _selectedValues;
+  late final ValueNotifier<List<({String value, String label})>>
+  _selectedValues;
   final _filteredValues = <({String value, String label})>[];
   final _allValues = <({String value, String label})>[];
 
@@ -33,7 +44,9 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
       errorText = '';
       this.isLoading = isLoading;
     });
-    final response = await CommonRepository().getAmenities(params: {if (q != null) 'name': q});
+    final response = await CommonRepository().getAmenities(
+      params: {if (q != null) 'name': q},
+    );
     response.fold(
       (l) {
         errorText = l.msg;
@@ -41,7 +54,12 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
       (r) {
         _allValues
           ..clear()
-          ..addAll(r.results?.map((e) => (value: e.id.toString(), label: e.name ?? '')) ?? []);
+          ..addAll(
+            r.results?.map(
+                  (e) => (value: e.id.toString(), label: e.name ?? ''),
+                ) ??
+                [],
+          );
         _filteredValues
           ..clear()
           ..addAll(_allValues);
@@ -55,9 +73,9 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
   @override
   Widget build(BuildContext context) {
     return MultiSelectSheetTemplate(
-      titleText: 'Add amenities',
-      hintText: 'Search for amenities',
-      emptyText: 'No matching amenities found. Try a different search.',
+      titleText: 'Add Services',
+      hintText: 'Search for services',
+      emptyText: 'No matching service found. Try a different search.',
       errorText: errorText,
       selectedValues: _selectedValues,
       availableValues: _filteredValues,
@@ -70,7 +88,11 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
         } else {
           _filteredValues
             ..clear()
-            ..addAll(_allValues.where((e) => e.label.toLowerCase().contains(q.toLowerCase())));
+            ..addAll(
+              _allValues.where(
+                (e) => e.label.toLowerCase().contains(q.toLowerCase()),
+              ),
+            );
           setState(() {});
         }
       },

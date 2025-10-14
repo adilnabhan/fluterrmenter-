@@ -1,27 +1,27 @@
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 @immutable
 final class OrganizationListAndDetailsRepository {
-  ///* This constructor body for creating singleton widget
-  factory OrganizationListAndDetailsRepository() {
-    _instance ??= const OrganizationListAndDetailsRepository._internal();
-    return _instance!;
-  }
+  OrganizationListAndDetailsRepository() : _dio = DioClient().dio;
 
-  //* This named constructor for create object for this class
-  const OrganizationListAndDetailsRepository._internal();
-
-  //* This variable for store this class object globally
-  static OrganizationListAndDetailsRepository? _instance;
+  final Dio _dio;
 
   Future<Either<ApiException, OrganizationsListModel>> fetch() async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(ApiUris.listOrganizations, options: Options(headers: {'X-Platform': platformSource}).token),
+        call: _dio.get<dynamic>(
+          ApiUris.listOrganizations,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
         onSuccess: (res) {
           if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
-              return right(OrganizationsListModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                OrganizationsListModel.fromJson(
+                  res.data as Map<String, dynamic>,
+                ),
+              );
             }
           }
           return left(const ApiException.unknown());
@@ -29,19 +29,28 @@ final class OrganizationListAndDetailsRepository {
       );
     } on ApiException catch (e) {
       return left(e);
-    } catch (e) {
+    } catch (_) {
       return left(const ApiException.unknown());
     }
   }
 
-  Future<Either<ApiException, OrganizationDetailsModel>> fetchDetails({required int orgId}) async {
+  Future<Either<ApiException, OrganizationDetailsModel>> fetchDetails({
+    required int orgId,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(ApiUris.orgDetails(orgId), options: Options(headers: {'X-Platform': platformSource}).token),
+        call: _dio.get<dynamic>(
+          ApiUris.orgDetails(orgId),
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
         onSuccess: (res) {
           if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
-              return right(OrganizationDetailsModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                OrganizationDetailsModel.fromJson(
+                  res.data as Map<String, dynamic>,
+                ),
+              );
             }
           }
           return left(const ApiException.unknown());
@@ -49,19 +58,30 @@ final class OrganizationListAndDetailsRepository {
       );
     } on ApiException catch (e) {
       return left(e);
-    } catch (e) {
+    } catch (_) {
       return left(const ApiException.unknown());
     }
   }
 
-  Future<Either<ApiException, OrganizationDetailsModel>> updateOrgDetails({required int orgId, dynamic body}) async {
+  Future<Either<ApiException, OrganizationDetailsModel>> updateOrgDetails({
+    required int orgId,
+    dynamic body,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().patch<dynamic>(ApiUris.updateOrg(orgId), options: Options(headers: {'X-Platform': platformSource}).token, data: body),
+        call: _dio.patch<dynamic>(
+          ApiUris.updateOrg(orgId),
+          options: Options(headers: {'X-Platform': platformSource}).token,
+          data: body,
+        ),
         onSuccess: (res) {
           if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
-              return right(OrganizationDetailsModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                OrganizationDetailsModel.fromJson(
+                  res.data as Map<String, dynamic>,
+                ),
+              );
             }
           }
           return left(const ApiException.unknown());
@@ -69,35 +89,51 @@ final class OrganizationListAndDetailsRepository {
       );
     } on ApiException catch (e) {
       return left(e);
-    } catch (e) {
+    } catch (_) {
       return left(const ApiException.unknown());
     }
   }
 
-  Future<Either<ApiException, OrganizationDetailsModel>> deletePhoto({required int orgId, required int photoId}) async {
+  Future<Either<ApiException, OrganizationDetailsModel>> deletePhoto({
+    required int orgId,
+    required int photoId,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().delete<dynamic>(ApiUris.deletePhoto(orgId, photoId), options: Options(headers: {'X-Platform': platformSource}).token),
+        call: _dio.delete<dynamic>(
+          ApiUris.deletePhoto(orgId, photoId),
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
         onSuccess: (res) {
-          if ([200, 201].contains(res.statusCode)) return fetchDetails(orgId: orgId);
+          if ([200, 201].contains(res.statusCode))
+            return fetchDetails(orgId: orgId);
           return left(const ApiException.unknown());
         },
       );
     } on ApiException catch (e) {
       return left(e);
-    } catch (e) {
+    } catch (_) {
       return left(const ApiException.unknown());
     }
   }
 
-  Future<Either<ApiException, OrganizationHomeDataModel>> fetchHomeData({required int orgId}) async {
+  Future<Either<ApiException, OrganizationHomeDataModel>> fetchHomeData({
+    required int orgId,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(ApiUris.fetchHomeData(orgId), options: Options(headers: {'X-Platform': platformSource}).token),
+        call: _dio.get<dynamic>(
+          ApiUris.fetchHomeData(orgId),
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
         onSuccess: (res) {
           if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
-              return right(OrganizationHomeDataModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                OrganizationHomeDataModel.fromJson(
+                  res.data as Map<String, dynamic>,
+                ),
+              );
             }
           }
           return left(const ApiException.unknown());
@@ -105,7 +141,7 @@ final class OrganizationListAndDetailsRepository {
       );
     } on ApiException catch (e) {
       return left(e);
-    } catch (e) {
+    } catch (_) {
       return left(const ApiException.unknown());
     }
   }
