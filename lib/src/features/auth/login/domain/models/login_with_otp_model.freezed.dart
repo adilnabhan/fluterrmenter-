@@ -12,7 +12,8 @@ part of 'login_with_otp_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 LoginSuccessModel _$LoginSuccessModelFromJson(Map<String, dynamic> json) {
   return _LoginWithOtpEntity.fromJson(json);
@@ -62,24 +63,26 @@ mixin _$LoginSuccessModel {
 /// @nodoc
 abstract class $LoginSuccessModelCopyWith<$Res> {
   factory $LoginSuccessModelCopyWith(
-          LoginSuccessModel value, $Res Function(LoginSuccessModel) then) =
-      _$LoginSuccessModelCopyWithImpl<$Res, LoginSuccessModel>;
+    LoginSuccessModel value,
+    $Res Function(LoginSuccessModel) then,
+  ) = _$LoginSuccessModelCopyWithImpl<$Res, LoginSuccessModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'access') String? access,
-      @JsonKey(name: 'refresh') String? refresh,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'blood_group') String? bloodGroup,
-      @JsonKey(name: 'last_login') DateTime? lastLogin,
-      @JsonKey(name: 'mentor') Mentor? mentor,
-      @JsonKey(name: 'customer') dynamic customer,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture,
-      @JsonKey(name: 'warnings') List<dynamic>? warnings,
-      @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'access') String? access,
+    @JsonKey(name: 'refresh') String? refresh,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'blood_group') String? bloodGroup,
+    @JsonKey(name: 'last_login') DateTime? lastLogin,
+    @JsonKey(name: 'mentor') Mentor? mentor,
+    @JsonKey(name: 'customer') dynamic customer,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+    @JsonKey(name: 'warnings') List<dynamic>? warnings,
+    @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
+  });
 
   $MentorCopyWith<$Res>? get mentor;
 }
@@ -114,64 +117,81 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
     Object? warnings = freezed,
     Object? isProfileCompleted = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      access: freezed == access
-          ? _value.access
-          : access // ignore: cast_nullable_to_non_nullable
-              as String?,
-      refresh: freezed == refresh
-          ? _value.refresh
-          : refresh // ignore: cast_nullable_to_non_nullable
-              as String?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bloodGroup: freezed == bloodGroup
-          ? _value.bloodGroup
-          : bloodGroup // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastLogin: freezed == lastLogin
-          ? _value.lastLogin
-          : lastLogin // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      mentor: freezed == mentor
-          ? _value.mentor
-          : mentor // ignore: cast_nullable_to_non_nullable
-              as Mentor?,
-      customer: freezed == customer
-          ? _value.customer
-          : customer // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      warnings: freezed == warnings
-          ? _value.warnings
-          : warnings // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
-      isProfileCompleted: freezed == isProfileCompleted
-          ? _value.isProfileCompleted
-          : isProfileCompleted // ignore: cast_nullable_to_non_nullable
-              as bool?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            access:
+                freezed == access
+                    ? _value.access
+                    : access // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            refresh:
+                freezed == refresh
+                    ? _value.refresh
+                    : refresh // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            firstName:
+                freezed == firstName
+                    ? _value.firstName
+                    : firstName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastName:
+                freezed == lastName
+                    ? _value.lastName
+                    : lastName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            mobileNumber:
+                freezed == mobileNumber
+                    ? _value.mobileNumber
+                    : mobileNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            email:
+                freezed == email
+                    ? _value.email
+                    : email // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            bloodGroup:
+                freezed == bloodGroup
+                    ? _value.bloodGroup
+                    : bloodGroup // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastLogin:
+                freezed == lastLogin
+                    ? _value.lastLogin
+                    : lastLogin // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            mentor:
+                freezed == mentor
+                    ? _value.mentor
+                    : mentor // ignore: cast_nullable_to_non_nullable
+                        as Mentor?,
+            customer:
+                freezed == customer
+                    ? _value.customer
+                    : customer // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            profilePicture:
+                freezed == profilePicture
+                    ? _value.profilePicture
+                    : profilePicture // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            warnings:
+                freezed == warnings
+                    ? _value.warnings
+                    : warnings // ignore: cast_nullable_to_non_nullable
+                        as List<dynamic>?,
+            isProfileCompleted:
+                freezed == isProfileCompleted
+                    ? _value.isProfileCompleted
+                    : isProfileCompleted // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of LoginSuccessModel
@@ -192,26 +212,28 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
 /// @nodoc
 abstract class _$$LoginWithOtpEntityImplCopyWith<$Res>
     implements $LoginSuccessModelCopyWith<$Res> {
-  factory _$$LoginWithOtpEntityImplCopyWith(_$LoginWithOtpEntityImpl value,
-          $Res Function(_$LoginWithOtpEntityImpl) then) =
-      __$$LoginWithOtpEntityImplCopyWithImpl<$Res>;
+  factory _$$LoginWithOtpEntityImplCopyWith(
+    _$LoginWithOtpEntityImpl value,
+    $Res Function(_$LoginWithOtpEntityImpl) then,
+  ) = __$$LoginWithOtpEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'access') String? access,
-      @JsonKey(name: 'refresh') String? refresh,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'blood_group') String? bloodGroup,
-      @JsonKey(name: 'last_login') DateTime? lastLogin,
-      @JsonKey(name: 'mentor') Mentor? mentor,
-      @JsonKey(name: 'customer') dynamic customer,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture,
-      @JsonKey(name: 'warnings') List<dynamic>? warnings,
-      @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'access') String? access,
+    @JsonKey(name: 'refresh') String? refresh,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'blood_group') String? bloodGroup,
+    @JsonKey(name: 'last_login') DateTime? lastLogin,
+    @JsonKey(name: 'mentor') Mentor? mentor,
+    @JsonKey(name: 'customer') dynamic customer,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+    @JsonKey(name: 'warnings') List<dynamic>? warnings,
+    @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
+  });
 
   @override
   $MentorCopyWith<$Res>? get mentor;
@@ -221,9 +243,10 @@ abstract class _$$LoginWithOtpEntityImplCopyWith<$Res>
 class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
     extends _$LoginSuccessModelCopyWithImpl<$Res, _$LoginWithOtpEntityImpl>
     implements _$$LoginWithOtpEntityImplCopyWith<$Res> {
-  __$$LoginWithOtpEntityImplCopyWithImpl(_$LoginWithOtpEntityImpl _value,
-      $Res Function(_$LoginWithOtpEntityImpl) _then)
-      : super(_value, _then);
+  __$$LoginWithOtpEntityImplCopyWithImpl(
+    _$LoginWithOtpEntityImpl _value,
+    $Res Function(_$LoginWithOtpEntityImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of LoginSuccessModel
   /// with the given fields replaced by the non-null parameter values.
@@ -245,86 +268,102 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
     Object? warnings = freezed,
     Object? isProfileCompleted = freezed,
   }) {
-    return _then(_$LoginWithOtpEntityImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      access: freezed == access
-          ? _value.access
-          : access // ignore: cast_nullable_to_non_nullable
-              as String?,
-      refresh: freezed == refresh
-          ? _value.refresh
-          : refresh // ignore: cast_nullable_to_non_nullable
-              as String?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bloodGroup: freezed == bloodGroup
-          ? _value.bloodGroup
-          : bloodGroup // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastLogin: freezed == lastLogin
-          ? _value.lastLogin
-          : lastLogin // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      mentor: freezed == mentor
-          ? _value.mentor
-          : mentor // ignore: cast_nullable_to_non_nullable
-              as Mentor?,
-      customer: freezed == customer
-          ? _value.customer
-          : customer // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      warnings: freezed == warnings
-          ? _value._warnings
-          : warnings // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
-      isProfileCompleted: freezed == isProfileCompleted
-          ? _value.isProfileCompleted
-          : isProfileCompleted // ignore: cast_nullable_to_non_nullable
-              as bool?,
-    ));
+    return _then(
+      _$LoginWithOtpEntityImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        access:
+            freezed == access
+                ? _value.access
+                : access // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        refresh:
+            freezed == refresh
+                ? _value.refresh
+                : refresh // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        firstName:
+            freezed == firstName
+                ? _value.firstName
+                : firstName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastName:
+            freezed == lastName
+                ? _value.lastName
+                : lastName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        mobileNumber:
+            freezed == mobileNumber
+                ? _value.mobileNumber
+                : mobileNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        email:
+            freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        bloodGroup:
+            freezed == bloodGroup
+                ? _value.bloodGroup
+                : bloodGroup // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastLogin:
+            freezed == lastLogin
+                ? _value.lastLogin
+                : lastLogin // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        mentor:
+            freezed == mentor
+                ? _value.mentor
+                : mentor // ignore: cast_nullable_to_non_nullable
+                    as Mentor?,
+        customer:
+            freezed == customer
+                ? _value.customer
+                : customer // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        profilePicture:
+            freezed == profilePicture
+                ? _value.profilePicture
+                : profilePicture // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        warnings:
+            freezed == warnings
+                ? _value._warnings
+                : warnings // ignore: cast_nullable_to_non_nullable
+                    as List<dynamic>?,
+        isProfileCompleted:
+            freezed == isProfileCompleted
+                ? _value.isProfileCompleted
+                : isProfileCompleted // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
-  const _$LoginWithOtpEntityImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'access') this.access,
-      @JsonKey(name: 'refresh') this.refresh,
-      @JsonKey(name: 'first_name') this.firstName,
-      @JsonKey(name: 'last_name') this.lastName,
-      @JsonKey(name: 'mobile_number') this.mobileNumber,
-      @JsonKey(name: 'email') this.email,
-      @JsonKey(name: 'blood_group') this.bloodGroup,
-      @JsonKey(name: 'last_login') this.lastLogin,
-      @JsonKey(name: 'mentor') this.mentor,
-      @JsonKey(name: 'customer') this.customer,
-      @JsonKey(name: 'profile_picture') this.profilePicture,
-      @JsonKey(name: 'warnings') final List<dynamic>? warnings,
-      @JsonKey(name: 'is_profile_complete') this.isProfileCompleted})
-      : _warnings = warnings;
+  const _$LoginWithOtpEntityImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'access') this.access,
+    @JsonKey(name: 'refresh') this.refresh,
+    @JsonKey(name: 'first_name') this.firstName,
+    @JsonKey(name: 'last_name') this.lastName,
+    @JsonKey(name: 'mobile_number') this.mobileNumber,
+    @JsonKey(name: 'email') this.email,
+    @JsonKey(name: 'blood_group') this.bloodGroup,
+    @JsonKey(name: 'last_login') this.lastLogin,
+    @JsonKey(name: 'mentor') this.mentor,
+    @JsonKey(name: 'customer') this.customer,
+    @JsonKey(name: 'profile_picture') this.profilePicture,
+    @JsonKey(name: 'warnings') final List<dynamic>? warnings,
+    @JsonKey(name: 'is_profile_complete') this.isProfileCompleted,
+  }) : _warnings = warnings;
 
   factory _$LoginWithOtpEntityImpl.fromJson(Map<String, dynamic> json) =>
       _$$LoginWithOtpEntityImplFromJson(json);
@@ -406,8 +445,10 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
                 other.lastLogin == lastLogin) &&
             (identical(other.mentor, mentor) || other.mentor == mentor) &&
             const DeepCollectionEquality().equals(other.customer, customer) &&
-            const DeepCollectionEquality()
-                .equals(other.profilePicture, profilePicture) &&
+            const DeepCollectionEquality().equals(
+              other.profilePicture,
+              profilePicture,
+            ) &&
             const DeepCollectionEquality().equals(other._warnings, _warnings) &&
             (identical(other.isProfileCompleted, isProfileCompleted) ||
                 other.isProfileCompleted == isProfileCompleted));
@@ -416,21 +457,22 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      access,
-      refresh,
-      firstName,
-      lastName,
-      mobileNumber,
-      email,
-      bloodGroup,
-      lastLogin,
-      mentor,
-      const DeepCollectionEquality().hash(customer),
-      const DeepCollectionEquality().hash(profilePicture),
-      const DeepCollectionEquality().hash(_warnings),
-      isProfileCompleted);
+    runtimeType,
+    id,
+    access,
+    refresh,
+    firstName,
+    lastName,
+    mobileNumber,
+    email,
+    bloodGroup,
+    lastLogin,
+    mentor,
+    const DeepCollectionEquality().hash(customer),
+    const DeepCollectionEquality().hash(profilePicture),
+    const DeepCollectionEquality().hash(_warnings),
+    isProfileCompleted,
+  );
 
   /// Create a copy of LoginSuccessModel
   /// with the given fields replaced by the non-null parameter values.
@@ -439,33 +481,33 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
   @pragma('vm:prefer-inline')
   _$$LoginWithOtpEntityImplCopyWith<_$LoginWithOtpEntityImpl> get copyWith =>
       __$$LoginWithOtpEntityImplCopyWithImpl<_$LoginWithOtpEntityImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$LoginWithOtpEntityImplToJson(
-      this,
-    );
+    return _$$LoginWithOtpEntityImplToJson(this);
   }
 }
 
 abstract class _LoginWithOtpEntity implements LoginSuccessModel {
-  const factory _LoginWithOtpEntity(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'access') final String? access,
-      @JsonKey(name: 'refresh') final String? refresh,
-      @JsonKey(name: 'first_name') final String? firstName,
-      @JsonKey(name: 'last_name') final String? lastName,
-      @JsonKey(name: 'mobile_number') final String? mobileNumber,
-      @JsonKey(name: 'email') final String? email,
-      @JsonKey(name: 'blood_group') final String? bloodGroup,
-      @JsonKey(name: 'last_login') final DateTime? lastLogin,
-      @JsonKey(name: 'mentor') final Mentor? mentor,
-      @JsonKey(name: 'customer') final dynamic customer,
-      @JsonKey(name: 'profile_picture') final dynamic profilePicture,
-      @JsonKey(name: 'warnings') final List<dynamic>? warnings,
-      @JsonKey(name: 'is_profile_complete')
-      final bool? isProfileCompleted}) = _$LoginWithOtpEntityImpl;
+  const factory _LoginWithOtpEntity({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'access') final String? access,
+    @JsonKey(name: 'refresh') final String? refresh,
+    @JsonKey(name: 'first_name') final String? firstName,
+    @JsonKey(name: 'last_name') final String? lastName,
+    @JsonKey(name: 'mobile_number') final String? mobileNumber,
+    @JsonKey(name: 'email') final String? email,
+    @JsonKey(name: 'blood_group') final String? bloodGroup,
+    @JsonKey(name: 'last_login') final DateTime? lastLogin,
+    @JsonKey(name: 'mentor') final Mentor? mentor,
+    @JsonKey(name: 'customer') final dynamic customer,
+    @JsonKey(name: 'profile_picture') final dynamic profilePicture,
+    @JsonKey(name: 'warnings') final List<dynamic>? warnings,
+    @JsonKey(name: 'is_profile_complete') final bool? isProfileCompleted,
+  }) = _$LoginWithOtpEntityImpl;
 
   factory _LoginWithOtpEntity.fromJson(Map<String, dynamic> json) =
       _$LoginWithOtpEntityImpl.fromJson;
@@ -546,8 +588,10 @@ abstract class $MentorCopyWith<$Res> {
   factory $MentorCopyWith(Mentor value, $Res Function(Mentor) then) =
       _$MentorCopyWithImpl<$Res, Mentor>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id, @JsonKey(name: 'name') String? name});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+  });
 }
 
 /// @nodoc
@@ -564,32 +608,37 @@ class _$MentorCopyWithImpl<$Res, $Val extends Mentor>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? id = freezed,
-    Object? name = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? id = freezed, Object? name = freezed}) {
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$MentorImplCopyWith<$Res> implements $MentorCopyWith<$Res> {
   factory _$$MentorImplCopyWith(
-          _$MentorImpl value, $Res Function(_$MentorImpl) then) =
-      __$$MentorImplCopyWithImpl<$Res>;
+    _$MentorImpl value,
+    $Res Function(_$MentorImpl) then,
+  ) = __$$MentorImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id, @JsonKey(name: 'name') String? name});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+  });
 }
 
 /// @nodoc
@@ -597,35 +646,39 @@ class __$$MentorImplCopyWithImpl<$Res>
     extends _$MentorCopyWithImpl<$Res, _$MentorImpl>
     implements _$$MentorImplCopyWith<$Res> {
   __$$MentorImplCopyWithImpl(
-      _$MentorImpl _value, $Res Function(_$MentorImpl) _then)
-      : super(_value, _then);
+    _$MentorImpl _value,
+    $Res Function(_$MentorImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Mentor
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? id = freezed,
-    Object? name = freezed,
-  }) {
-    return _then(_$MentorImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? id = freezed, Object? name = freezed}) {
+    return _then(
+      _$MentorImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MentorImpl implements _Mentor {
-  const _$MentorImpl(
-      {@JsonKey(name: 'id') this.id, @JsonKey(name: 'name') this.name});
+  const _$MentorImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'name') this.name,
+  });
 
   factory _$MentorImpl.fromJson(Map<String, dynamic> json) =>
       _$$MentorImplFromJson(json);
@@ -665,16 +718,15 @@ class _$MentorImpl implements _Mentor {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MentorImplToJson(
-      this,
-    );
+    return _$$MentorImplToJson(this);
   }
 }
 
 abstract class _Mentor implements Mentor {
-  const factory _Mentor(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'name') final String? name}) = _$MentorImpl;
+  const factory _Mentor({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'name') final String? name,
+  }) = _$MentorImpl;
 
   factory _Mentor.fromJson(Map<String, dynamic> json) = _$MentorImpl.fromJson;
 

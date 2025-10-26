@@ -23,11 +23,16 @@ final class SubscriptionRepository {
   Future<Either<ApiException, PlansModel>> plans() async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(ApiUris.plans, options: Options(headers: {'X-Platform': platformSource}).token),
+        call: Dio().get<dynamic>(
+          ApiUris.plans,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {
-              return right(PlansModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                PlansModel.fromJson(res.data as Map<String, dynamic>),
+              );
             }
           }
           return left(const ApiException.unknown());
@@ -55,14 +60,23 @@ final class SubscriptionRepository {
 
   /// @apiSuccess {InitiateRazorpayPaymentModel} response Success response
 
-  Future<Either<ApiException, InitiateRazorpayPaymentModel>> initiateRazorpayPayment({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, InitiateRazorpayPaymentModel>>
+  initiateRazorpayPayment({required Map<String, dynamic> body}) async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(ApiUris.initiateRazorpayPayment, data: body, options: Options(headers: {'X-Platform': platformSource}).token),
+        call: Dio().post<dynamic>(
+          ApiUris.initiateRazorpayPayment,
+          data: body,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
         onSuccess: (res) {
           if ([200, 201].contains(res.statusCode)) {
             if (res.data != null && res.data is Map) {
-              return right(InitiateRazorpayPaymentModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                InitiateRazorpayPaymentModel.fromJson(
+                  res.data as Map<String, dynamic>,
+                ),
+              );
             }
           }
           return left(const ApiException.unknown());
@@ -98,10 +112,16 @@ final class SubscriptionRepository {
 
   /// @apiSuccess {void} response Success response
 
-  Future<Either<ApiException, void>> webhook({required Map<String, dynamic> body}) async {
+  Future<Either<ApiException, void>> webhook({
+    required Map<String, dynamic> body,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().post<dynamic>(ApiUris.webhook, options: Options().token, data: body),
+        call: Dio().post<dynamic>(
+          ApiUris.webhook,
+          options: Options().token,
+          data: body,
+        ),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             return right(null);

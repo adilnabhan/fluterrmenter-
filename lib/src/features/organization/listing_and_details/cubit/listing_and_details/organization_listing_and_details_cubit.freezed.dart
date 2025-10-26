@@ -12,7 +12,8 @@ part of 'organization_listing_and_details_cubit.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$OrganizationListingAndDetailsState {
@@ -25,38 +26,44 @@ mixin _$OrganizationListingAndDetailsState {
   Option<Either<ApiException, OrganizationHomeDataModel>> get homeData =>
       throw _privateConstructorUsedError;
   Option<Either<ApiException, OrganizationDetailsModel>>?
-      get updateOrgDetails => throw _privateConstructorUsedError;
+  get updateOrgDetails => throw _privateConstructorUsedError;
 
   /// Create a copy of OrganizationListingAndDetailsState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   $OrganizationListingAndDetailsStateCopyWith<
-          OrganizationListingAndDetailsState>
-      get copyWith => throw _privateConstructorUsedError;
+    OrganizationListingAndDetailsState
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $OrganizationListingAndDetailsStateCopyWith<$Res> {
   factory $OrganizationListingAndDetailsStateCopyWith(
-          OrganizationListingAndDetailsState value,
-          $Res Function(OrganizationListingAndDetailsState) then) =
-      _$OrganizationListingAndDetailsStateCopyWithImpl<$Res,
-          OrganizationListingAndDetailsState>;
+    OrganizationListingAndDetailsState value,
+    $Res Function(OrganizationListingAndDetailsState) then,
+  ) =
+      _$OrganizationListingAndDetailsStateCopyWithImpl<
+        $Res,
+        OrganizationListingAndDetailsState
+      >;
   @useResult
-  $Res call(
-      {SingleOrganizationModel? selectedOrganization,
-      Option<Either<ApiException, OrganizationsListModel>> list,
-      Option<Either<ApiException, OrganizationDetailsModel>> details,
-      Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
-      Option<Either<ApiException, OrganizationDetailsModel>>?
-          updateOrgDetails});
+  $Res call({
+    SingleOrganizationModel? selectedOrganization,
+    Option<Either<ApiException, OrganizationsListModel>> list,
+    Option<Either<ApiException, OrganizationDetailsModel>> details,
+    Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
+    Option<Either<ApiException, OrganizationDetailsModel>>? updateOrgDetails,
+  });
 
   $SingleOrganizationModelCopyWith<$Res>? get selectedOrganization;
 }
 
 /// @nodoc
-class _$OrganizationListingAndDetailsStateCopyWithImpl<$Res,
-        $Val extends OrganizationListingAndDetailsState>
+class _$OrganizationListingAndDetailsStateCopyWithImpl<
+  $Res,
+  $Val extends OrganizationListingAndDetailsState
+>
     implements $OrganizationListingAndDetailsStateCopyWith<$Res> {
   _$OrganizationListingAndDetailsStateCopyWithImpl(this._value, this._then);
 
@@ -76,28 +83,42 @@ class _$OrganizationListingAndDetailsStateCopyWithImpl<$Res,
     Object? homeData = null,
     Object? updateOrgDetails = freezed,
   }) {
-    return _then(_value.copyWith(
-      selectedOrganization: freezed == selectedOrganization
-          ? _value.selectedOrganization
-          : selectedOrganization // ignore: cast_nullable_to_non_nullable
-              as SingleOrganizationModel?,
-      list: null == list
-          ? _value.list
-          : list // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, OrganizationsListModel>>,
-      details: null == details
-          ? _value.details
-          : details // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, OrganizationDetailsModel>>,
-      homeData: null == homeData
-          ? _value.homeData
-          : homeData // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, OrganizationHomeDataModel>>,
-      updateOrgDetails: freezed == updateOrgDetails
-          ? _value.updateOrgDetails
-          : updateOrgDetails // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, OrganizationDetailsModel>>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            selectedOrganization:
+                freezed == selectedOrganization
+                    ? _value.selectedOrganization
+                    : selectedOrganization // ignore: cast_nullable_to_non_nullable
+                        as SingleOrganizationModel?,
+            list:
+                null == list
+                    ? _value.list
+                    : list // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, OrganizationsListModel>>,
+            details:
+                null == details
+                    ? _value.details
+                    : details // ignore: cast_nullable_to_non_nullable
+                        as Option<
+                          Either<ApiException, OrganizationDetailsModel>
+                        >,
+            homeData:
+                null == homeData
+                    ? _value.homeData
+                    : homeData // ignore: cast_nullable_to_non_nullable
+                        as Option<
+                          Either<ApiException, OrganizationHomeDataModel>
+                        >,
+            updateOrgDetails:
+                freezed == updateOrgDetails
+                    ? _value.updateOrgDetails
+                    : updateOrgDetails // ignore: cast_nullable_to_non_nullable
+                        as Option<
+                          Either<ApiException, OrganizationDetailsModel>
+                        >?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of OrganizationListingAndDetailsState
@@ -109,10 +130,12 @@ class _$OrganizationListingAndDetailsStateCopyWithImpl<$Res,
       return null;
     }
 
-    return $SingleOrganizationModelCopyWith<$Res>(_value.selectedOrganization!,
-        (value) {
-      return _then(_value.copyWith(selectedOrganization: value) as $Val);
-    });
+    return $SingleOrganizationModelCopyWith<$Res>(
+      _value.selectedOrganization!,
+      (value) {
+        return _then(_value.copyWith(selectedOrganization: value) as $Val);
+      },
+    );
   }
 }
 
@@ -120,18 +143,18 @@ class _$OrganizationListingAndDetailsStateCopyWithImpl<$Res,
 abstract class _$$OrganizationListingAndDetailsStateImplCopyWith<$Res>
     implements $OrganizationListingAndDetailsStateCopyWith<$Res> {
   factory _$$OrganizationListingAndDetailsStateImplCopyWith(
-          _$OrganizationListingAndDetailsStateImpl value,
-          $Res Function(_$OrganizationListingAndDetailsStateImpl) then) =
-      __$$OrganizationListingAndDetailsStateImplCopyWithImpl<$Res>;
+    _$OrganizationListingAndDetailsStateImpl value,
+    $Res Function(_$OrganizationListingAndDetailsStateImpl) then,
+  ) = __$$OrganizationListingAndDetailsStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {SingleOrganizationModel? selectedOrganization,
-      Option<Either<ApiException, OrganizationsListModel>> list,
-      Option<Either<ApiException, OrganizationDetailsModel>> details,
-      Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
-      Option<Either<ApiException, OrganizationDetailsModel>>?
-          updateOrgDetails});
+  $Res call({
+    SingleOrganizationModel? selectedOrganization,
+    Option<Either<ApiException, OrganizationsListModel>> list,
+    Option<Either<ApiException, OrganizationDetailsModel>> details,
+    Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
+    Option<Either<ApiException, OrganizationDetailsModel>>? updateOrgDetails,
+  });
 
   @override
   $SingleOrganizationModelCopyWith<$Res>? get selectedOrganization;
@@ -139,13 +162,16 @@ abstract class _$$OrganizationListingAndDetailsStateImplCopyWith<$Res>
 
 /// @nodoc
 class __$$OrganizationListingAndDetailsStateImplCopyWithImpl<$Res>
-    extends _$OrganizationListingAndDetailsStateCopyWithImpl<$Res,
-        _$OrganizationListingAndDetailsStateImpl>
+    extends
+        _$OrganizationListingAndDetailsStateCopyWithImpl<
+          $Res,
+          _$OrganizationListingAndDetailsStateImpl
+        >
     implements _$$OrganizationListingAndDetailsStateImplCopyWith<$Res> {
   __$$OrganizationListingAndDetailsStateImplCopyWithImpl(
-      _$OrganizationListingAndDetailsStateImpl _value,
-      $Res Function(_$OrganizationListingAndDetailsStateImpl) _then)
-      : super(_value, _then);
+    _$OrganizationListingAndDetailsStateImpl _value,
+    $Res Function(_$OrganizationListingAndDetailsStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of OrganizationListingAndDetailsState
   /// with the given fields replaced by the non-null parameter values.
@@ -158,28 +184,35 @@ class __$$OrganizationListingAndDetailsStateImplCopyWithImpl<$Res>
     Object? homeData = null,
     Object? updateOrgDetails = freezed,
   }) {
-    return _then(_$OrganizationListingAndDetailsStateImpl(
-      selectedOrganization: freezed == selectedOrganization
-          ? _value.selectedOrganization
-          : selectedOrganization // ignore: cast_nullable_to_non_nullable
-              as SingleOrganizationModel?,
-      list: null == list
-          ? _value.list
-          : list // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, OrganizationsListModel>>,
-      details: null == details
-          ? _value.details
-          : details // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, OrganizationDetailsModel>>,
-      homeData: null == homeData
-          ? _value.homeData
-          : homeData // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, OrganizationHomeDataModel>>,
-      updateOrgDetails: freezed == updateOrgDetails
-          ? _value.updateOrgDetails
-          : updateOrgDetails // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, OrganizationDetailsModel>>?,
-    ));
+    return _then(
+      _$OrganizationListingAndDetailsStateImpl(
+        selectedOrganization:
+            freezed == selectedOrganization
+                ? _value.selectedOrganization
+                : selectedOrganization // ignore: cast_nullable_to_non_nullable
+                    as SingleOrganizationModel?,
+        list:
+            null == list
+                ? _value.list
+                : list // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, OrganizationsListModel>>,
+        details:
+            null == details
+                ? _value.details
+                : details // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, OrganizationDetailsModel>>,
+        homeData:
+            null == homeData
+                ? _value.homeData
+                : homeData // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, OrganizationHomeDataModel>>,
+        updateOrgDetails:
+            freezed == updateOrgDetails
+                ? _value.updateOrgDetails
+                : updateOrgDetails // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, OrganizationDetailsModel>>?,
+      ),
+    );
   }
 }
 
@@ -187,12 +220,13 @@ class __$$OrganizationListingAndDetailsStateImplCopyWithImpl<$Res>
 
 class _$OrganizationListingAndDetailsStateImpl
     implements _OrganizationListingAndDetailsState {
-  const _$OrganizationListingAndDetailsStateImpl(
-      {this.selectedOrganization,
-      this.list = const None(),
-      this.details = const None(),
-      this.homeData = const None(),
-      this.updateOrgDetails});
+  const _$OrganizationListingAndDetailsStateImpl({
+    this.selectedOrganization,
+    this.list = const None(),
+    this.details = const None(),
+    this.homeData = const None(),
+    this.updateOrgDetails,
+  });
 
   @override
   final SingleOrganizationModel? selectedOrganization;
@@ -207,7 +241,7 @@ class _$OrganizationListingAndDetailsStateImpl
   final Option<Either<ApiException, OrganizationHomeDataModel>> homeData;
   @override
   final Option<Either<ApiException, OrganizationDetailsModel>>?
-      updateOrgDetails;
+  updateOrgDetails;
 
   @override
   String toString() {
@@ -230,8 +264,14 @@ class _$OrganizationListingAndDetailsStateImpl
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, selectedOrganization, list,
-      details, homeData, updateOrgDetails);
+  int get hashCode => Object.hash(
+    runtimeType,
+    selectedOrganization,
+    list,
+    details,
+    homeData,
+    updateOrgDetails,
+  );
 
   /// Create a copy of OrganizationListingAndDetailsState
   /// with the given fields replaced by the non-null parameter values.
@@ -239,20 +279,23 @@ class _$OrganizationListingAndDetailsStateImpl
   @override
   @pragma('vm:prefer-inline')
   _$$OrganizationListingAndDetailsStateImplCopyWith<
-          _$OrganizationListingAndDetailsStateImpl>
-      get copyWith => __$$OrganizationListingAndDetailsStateImplCopyWithImpl<
-          _$OrganizationListingAndDetailsStateImpl>(this, _$identity);
+    _$OrganizationListingAndDetailsStateImpl
+  >
+  get copyWith => __$$OrganizationListingAndDetailsStateImplCopyWithImpl<
+    _$OrganizationListingAndDetailsStateImpl
+  >(this, _$identity);
 }
 
 abstract class _OrganizationListingAndDetailsState
     implements OrganizationListingAndDetailsState {
-  const factory _OrganizationListingAndDetailsState(
-      {final SingleOrganizationModel? selectedOrganization,
-      final Option<Either<ApiException, OrganizationsListModel>> list,
-      final Option<Either<ApiException, OrganizationDetailsModel>> details,
-      final Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
-      final Option<Either<ApiException, OrganizationDetailsModel>>?
-          updateOrgDetails}) = _$OrganizationListingAndDetailsStateImpl;
+  const factory _OrganizationListingAndDetailsState({
+    final SingleOrganizationModel? selectedOrganization,
+    final Option<Either<ApiException, OrganizationsListModel>> list,
+    final Option<Either<ApiException, OrganizationDetailsModel>> details,
+    final Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
+    final Option<Either<ApiException, OrganizationDetailsModel>>?
+    updateOrgDetails,
+  }) = _$OrganizationListingAndDetailsStateImpl;
 
   @override
   SingleOrganizationModel? get selectedOrganization;
@@ -270,6 +313,7 @@ abstract class _OrganizationListingAndDetailsState
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OrganizationListingAndDetailsStateImplCopyWith<
-          _$OrganizationListingAndDetailsStateImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$OrganizationListingAndDetailsStateImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }

@@ -162,6 +162,26 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                               ),
                             );
                           }),
+                          // _buildProfileListItem('Payment UpComing', () {
+                          //   context.push(
+                          //     BlocProvider.value(
+                          //       value: _cubit,
+                          //       child: PaymentUpcomingViewScreen(
+                          //      orgId: orgDetails,
+                          //       ),
+                          //     ),
+                          //   );
+                          // }),
+                          _buildProfileListItem('Bank A/c Details', () {
+                            context.push(
+                              BlocProvider.value(
+                                value: _cubit,
+                                child:  BankListingViewScreen(
+                                  orgDetails: orgDetails,
+                                ),
+                              ),
+                            );
+                          }),
                           // _buildProfileListItem('Wishes', () {
                           //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
                           // }),

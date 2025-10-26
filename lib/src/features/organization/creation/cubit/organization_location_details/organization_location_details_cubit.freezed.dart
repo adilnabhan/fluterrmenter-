@@ -12,48 +12,56 @@ part of 'organization_location_details_cubit.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$OrganizationLocationDetailsState {
   Option<Either<ApiException, GooglePlaceResponseEntity>>?
-      get currentPlaceDetails => throw _privateConstructorUsedError;
+  get currentPlaceDetails => throw _privateConstructorUsedError;
   Option<Either<ApiException, GoogleAutoCompleteEntity>>?
-      get placeAutoCompletes => throw _privateConstructorUsedError;
+  get placeAutoCompletes => throw _privateConstructorUsedError;
   ({
     Option<Either<ApiException, GooglePlaceResponseEntity>> data,
-    String placeID
-  })? get selectedPlaceDetails => throw _privateConstructorUsedError;
+    String placeID,
+  })?
+  get selectedPlaceDetails => throw _privateConstructorUsedError;
 
   /// Create a copy of OrganizationLocationDetailsState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   $OrganizationLocationDetailsStateCopyWith<OrganizationLocationDetailsState>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $OrganizationLocationDetailsStateCopyWith<$Res> {
   factory $OrganizationLocationDetailsStateCopyWith(
-          OrganizationLocationDetailsState value,
-          $Res Function(OrganizationLocationDetailsState) then) =
-      _$OrganizationLocationDetailsStateCopyWithImpl<$Res,
-          OrganizationLocationDetailsState>;
+    OrganizationLocationDetailsState value,
+    $Res Function(OrganizationLocationDetailsState) then,
+  ) =
+      _$OrganizationLocationDetailsStateCopyWithImpl<
+        $Res,
+        OrganizationLocationDetailsState
+      >;
   @useResult
-  $Res call(
-      {Option<Either<ApiException, GooglePlaceResponseEntity>>?
-          currentPlaceDetails,
-      Option<Either<ApiException, GoogleAutoCompleteEntity>>?
-          placeAutoCompletes,
-      ({
-        Option<Either<ApiException, GooglePlaceResponseEntity>> data,
-        String placeID
-      })? selectedPlaceDetails});
+  $Res call({
+    Option<Either<ApiException, GooglePlaceResponseEntity>>?
+    currentPlaceDetails,
+    Option<Either<ApiException, GoogleAutoCompleteEntity>>? placeAutoCompletes,
+    ({
+      Option<Either<ApiException, GooglePlaceResponseEntity>> data,
+      String placeID,
+    })?
+    selectedPlaceDetails,
+  });
 }
 
 /// @nodoc
-class _$OrganizationLocationDetailsStateCopyWithImpl<$Res,
-        $Val extends OrganizationLocationDetailsState>
+class _$OrganizationLocationDetailsStateCopyWithImpl<
+  $Res,
+  $Val extends OrganizationLocationDetailsState
+>
     implements $OrganizationLocationDetailsStateCopyWith<$Res> {
   _$OrganizationLocationDetailsStateCopyWithImpl(this._value, this._then);
 
@@ -71,23 +79,36 @@ class _$OrganizationLocationDetailsStateCopyWithImpl<$Res,
     Object? placeAutoCompletes = freezed,
     Object? selectedPlaceDetails = freezed,
   }) {
-    return _then(_value.copyWith(
-      currentPlaceDetails: freezed == currentPlaceDetails
-          ? _value.currentPlaceDetails
-          : currentPlaceDetails // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, GooglePlaceResponseEntity>>?,
-      placeAutoCompletes: freezed == placeAutoCompletes
-          ? _value.placeAutoCompletes
-          : placeAutoCompletes // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, GoogleAutoCompleteEntity>>?,
-      selectedPlaceDetails: freezed == selectedPlaceDetails
-          ? _value.selectedPlaceDetails
-          : selectedPlaceDetails // ignore: cast_nullable_to_non_nullable
-              as ({
-              Option<Either<ApiException, GooglePlaceResponseEntity>> data,
-              String placeID
-            })?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            currentPlaceDetails:
+                freezed == currentPlaceDetails
+                    ? _value.currentPlaceDetails
+                    : currentPlaceDetails // ignore: cast_nullable_to_non_nullable
+                        as Option<
+                          Either<ApiException, GooglePlaceResponseEntity>
+                        >?,
+            placeAutoCompletes:
+                freezed == placeAutoCompletes
+                    ? _value.placeAutoCompletes
+                    : placeAutoCompletes // ignore: cast_nullable_to_non_nullable
+                        as Option<
+                          Either<ApiException, GoogleAutoCompleteEntity>
+                        >?,
+            selectedPlaceDetails:
+                freezed == selectedPlaceDetails
+                    ? _value.selectedPlaceDetails
+                    : selectedPlaceDetails // ignore: cast_nullable_to_non_nullable
+                        as ({
+                          Option<
+                            Either<ApiException, GooglePlaceResponseEntity>
+                          >
+                          data,
+                          String placeID,
+                        })?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -95,31 +116,35 @@ class _$OrganizationLocationDetailsStateCopyWithImpl<$Res,
 abstract class _$$OrganizationLocationDetailsStateImplCopyWith<$Res>
     implements $OrganizationLocationDetailsStateCopyWith<$Res> {
   factory _$$OrganizationLocationDetailsStateImplCopyWith(
-          _$OrganizationLocationDetailsStateImpl value,
-          $Res Function(_$OrganizationLocationDetailsStateImpl) then) =
-      __$$OrganizationLocationDetailsStateImplCopyWithImpl<$Res>;
+    _$OrganizationLocationDetailsStateImpl value,
+    $Res Function(_$OrganizationLocationDetailsStateImpl) then,
+  ) = __$$OrganizationLocationDetailsStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {Option<Either<ApiException, GooglePlaceResponseEntity>>?
-          currentPlaceDetails,
-      Option<Either<ApiException, GoogleAutoCompleteEntity>>?
-          placeAutoCompletes,
-      ({
-        Option<Either<ApiException, GooglePlaceResponseEntity>> data,
-        String placeID
-      })? selectedPlaceDetails});
+  $Res call({
+    Option<Either<ApiException, GooglePlaceResponseEntity>>?
+    currentPlaceDetails,
+    Option<Either<ApiException, GoogleAutoCompleteEntity>>? placeAutoCompletes,
+    ({
+      Option<Either<ApiException, GooglePlaceResponseEntity>> data,
+      String placeID,
+    })?
+    selectedPlaceDetails,
+  });
 }
 
 /// @nodoc
 class __$$OrganizationLocationDetailsStateImplCopyWithImpl<$Res>
-    extends _$OrganizationLocationDetailsStateCopyWithImpl<$Res,
-        _$OrganizationLocationDetailsStateImpl>
+    extends
+        _$OrganizationLocationDetailsStateCopyWithImpl<
+          $Res,
+          _$OrganizationLocationDetailsStateImpl
+        >
     implements _$$OrganizationLocationDetailsStateImplCopyWith<$Res> {
   __$$OrganizationLocationDetailsStateImplCopyWithImpl(
-      _$OrganizationLocationDetailsStateImpl _value,
-      $Res Function(_$OrganizationLocationDetailsStateImpl) _then)
-      : super(_value, _then);
+    _$OrganizationLocationDetailsStateImpl _value,
+    $Res Function(_$OrganizationLocationDetailsStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of OrganizationLocationDetailsState
   /// with the given fields replaced by the non-null parameter values.
@@ -130,23 +155,29 @@ class __$$OrganizationLocationDetailsStateImplCopyWithImpl<$Res>
     Object? placeAutoCompletes = freezed,
     Object? selectedPlaceDetails = freezed,
   }) {
-    return _then(_$OrganizationLocationDetailsStateImpl(
-      currentPlaceDetails: freezed == currentPlaceDetails
-          ? _value.currentPlaceDetails
-          : currentPlaceDetails // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, GooglePlaceResponseEntity>>?,
-      placeAutoCompletes: freezed == placeAutoCompletes
-          ? _value.placeAutoCompletes
-          : placeAutoCompletes // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, GoogleAutoCompleteEntity>>?,
-      selectedPlaceDetails: freezed == selectedPlaceDetails
-          ? _value.selectedPlaceDetails
-          : selectedPlaceDetails // ignore: cast_nullable_to_non_nullable
-              as ({
-              Option<Either<ApiException, GooglePlaceResponseEntity>> data,
-              String placeID
-            })?,
-    ));
+    return _then(
+      _$OrganizationLocationDetailsStateImpl(
+        currentPlaceDetails:
+            freezed == currentPlaceDetails
+                ? _value.currentPlaceDetails
+                : currentPlaceDetails // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, GooglePlaceResponseEntity>>?,
+        placeAutoCompletes:
+            freezed == placeAutoCompletes
+                ? _value.placeAutoCompletes
+                : placeAutoCompletes // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, GoogleAutoCompleteEntity>>?,
+        selectedPlaceDetails:
+            freezed == selectedPlaceDetails
+                ? _value.selectedPlaceDetails
+                : selectedPlaceDetails // ignore: cast_nullable_to_non_nullable
+                    as ({
+                      Option<Either<ApiException, GooglePlaceResponseEntity>>
+                      data,
+                      String placeID,
+                    })?,
+      ),
+    );
   }
 }
 
@@ -154,22 +185,24 @@ class __$$OrganizationLocationDetailsStateImplCopyWithImpl<$Res>
 
 class _$OrganizationLocationDetailsStateImpl
     implements _OrganizationLocationDetailsState {
-  const _$OrganizationLocationDetailsStateImpl(
-      {this.currentPlaceDetails,
-      this.placeAutoCompletes,
-      this.selectedPlaceDetails});
+  const _$OrganizationLocationDetailsStateImpl({
+    this.currentPlaceDetails,
+    this.placeAutoCompletes,
+    this.selectedPlaceDetails,
+  });
 
   @override
   final Option<Either<ApiException, GooglePlaceResponseEntity>>?
-      currentPlaceDetails;
+  currentPlaceDetails;
   @override
   final Option<Either<ApiException, GoogleAutoCompleteEntity>>?
-      placeAutoCompletes;
+  placeAutoCompletes;
   @override
   final ({
     Option<Either<ApiException, GooglePlaceResponseEntity>> data,
-    String placeID
-  })? selectedPlaceDetails;
+    String placeID,
+  })?
+  selectedPlaceDetails;
 
   @override
   String toString() {
@@ -190,8 +223,12 @@ class _$OrganizationLocationDetailsStateImpl
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, currentPlaceDetails,
-      placeAutoCompletes, selectedPlaceDetails);
+  int get hashCode => Object.hash(
+    runtimeType,
+    currentPlaceDetails,
+    placeAutoCompletes,
+    selectedPlaceDetails,
+  );
 
   /// Create a copy of OrganizationLocationDetailsState
   /// with the given fields replaced by the non-null parameter values.
@@ -199,40 +236,46 @@ class _$OrganizationLocationDetailsStateImpl
   @override
   @pragma('vm:prefer-inline')
   _$$OrganizationLocationDetailsStateImplCopyWith<
-          _$OrganizationLocationDetailsStateImpl>
-      get copyWith => __$$OrganizationLocationDetailsStateImplCopyWithImpl<
-          _$OrganizationLocationDetailsStateImpl>(this, _$identity);
+    _$OrganizationLocationDetailsStateImpl
+  >
+  get copyWith => __$$OrganizationLocationDetailsStateImplCopyWithImpl<
+    _$OrganizationLocationDetailsStateImpl
+  >(this, _$identity);
 }
 
 abstract class _OrganizationLocationDetailsState
     implements OrganizationLocationDetailsState {
-  const factory _OrganizationLocationDetailsState(
-      {final Option<Either<ApiException, GooglePlaceResponseEntity>>?
-          currentPlaceDetails,
-      final Option<Either<ApiException, GoogleAutoCompleteEntity>>?
-          placeAutoCompletes,
-      final ({
-        Option<Either<ApiException, GooglePlaceResponseEntity>> data,
-        String placeID
-      })? selectedPlaceDetails}) = _$OrganizationLocationDetailsStateImpl;
+  const factory _OrganizationLocationDetailsState({
+    final Option<Either<ApiException, GooglePlaceResponseEntity>>?
+    currentPlaceDetails,
+    final Option<Either<ApiException, GoogleAutoCompleteEntity>>?
+    placeAutoCompletes,
+    final ({
+      Option<Either<ApiException, GooglePlaceResponseEntity>> data,
+      String placeID,
+    })?
+    selectedPlaceDetails,
+  }) = _$OrganizationLocationDetailsStateImpl;
 
   @override
   Option<Either<ApiException, GooglePlaceResponseEntity>>?
-      get currentPlaceDetails;
+  get currentPlaceDetails;
   @override
   Option<Either<ApiException, GoogleAutoCompleteEntity>>?
-      get placeAutoCompletes;
+  get placeAutoCompletes;
   @override
   ({
     Option<Either<ApiException, GooglePlaceResponseEntity>> data,
-    String placeID
-  })? get selectedPlaceDetails;
+    String placeID,
+  })?
+  get selectedPlaceDetails;
 
   /// Create a copy of OrganizationLocationDetailsState
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OrganizationLocationDetailsStateImplCopyWith<
-          _$OrganizationLocationDetailsStateImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$OrganizationLocationDetailsStateImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }

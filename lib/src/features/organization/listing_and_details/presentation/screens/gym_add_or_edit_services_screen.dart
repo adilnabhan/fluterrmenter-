@@ -24,7 +24,10 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
+    return BlocListener<
+      OrganizationListingAndDetailsCubit,
+      OrganizationListingAndDetailsState
+    >(
       listenWhen: (p, c) => p.updateOrgDetails != c.updateOrgDetails,
       listener: (context, state) {
         state.updateOrgDetails?.fold(() {}, (either) {
@@ -45,7 +48,10 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
         });
       },
       child: Scaffold(
-        appBar: AppBar(leading: const PopButton().center, title: Text('Services', style: AppStyles.text16Px.poppins.w500)),
+        appBar: AppBar(
+          leading: const PopButton().center,
+          title: Text('Services', style: AppStyles.text16Px.poppins.w500),
+        ),
         body: Form(
           key: _formKey,
           child: Column(
@@ -61,7 +67,9 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                         textInputAction: TextInputAction.next,
                         onSubmitted: (value) {
                           if (_controller.text.isEmpty) {
-                            Dialogs.showSnack(msg: 'Please enter a service name');
+                            Dialogs.showSnack(
+                              msg: 'Please enter a service name',
+                            );
                             return;
                           }
                           setState(() {
@@ -75,11 +83,28 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                           fillColor: AppColors.lightPrimary.withAlpha(50),
                           hintText: 'Enter service name',
                           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-                          border: OutlineInputBorder(borderSide: const BorderSide(color: AppColors.lightPrimary), borderRadius: BorderRadius.circular(16)),
-                          focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                          enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                          errorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16)), borderSide: BorderSide(color: AppColors.error)),
-                          focusedErrorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16)), borderSide: BorderSide(color: AppColors.borderGrey)),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: AppColors.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                            borderSide: BorderSide(color: AppColors.borderGrey),
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                            borderSide: BorderSide(color: AppColors.borderGrey),
+                          ),
+                          errorBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                            borderSide: BorderSide(color: AppColors.error),
+                          ),
+                          focusedErrorBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                            borderSide: BorderSide(color: AppColors.borderGrey),
+                          ),
                         ),
                       ),
                     ),
@@ -95,7 +120,14 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                         _controller.clear();
                       });
                     },
-                    style: const ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppColors.primary), backgroundColor: WidgetStatePropertyAll(Color(0xffFFEAEA))),
+                    style: const ButtonStyle(
+                      foregroundColor: WidgetStatePropertyAll(
+                        AppColors.primary,
+                      ),
+                      backgroundColor: WidgetStatePropertyAll(
+                        Color(0xffFFEAEA),
+                      ),
+                    ),
                     child: const Text('Add'),
                   ),
                 ],
@@ -105,7 +137,12 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                 child: Builder(
                   builder: (context) {
                     if (_services.isEmpty) {
-                      return Center(child: Text('No Services found!', style: AppStyles.text14Px.poppins.w400.dark));
+                      return Center(
+                        child: Text(
+                          'No Services found!',
+                          style: AppStyles.text14Px.poppins.w400.dark,
+                        ),
+                      );
                     }
                     return SingleChildScrollView(
                       child: Wrap(
@@ -115,8 +152,15 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                             _services
                                 .map(
                                   (service) => Chip(
-                                    label: Text(service, style: AppStyles.text14Px.poppins.w400.dark),
-                                    deleteIcon: const Icon(Icons.close, size: 18),
+                                    label: Text(
+                                      service,
+                                      style:
+                                          AppStyles.text14Px.poppins.w400.dark,
+                                    ),
+                                    deleteIcon: const Icon(
+                                      Icons.close,
+                                      size: 18,
+                                    ),
                                     onDeleted: () {
                                       setState(() {
                                         _services.remove(service);
@@ -135,8 +179,13 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
             ],
           ).pad(16),
         ),
-        bottomNavigationBar: BlocBuilder<OrganizationListingAndDetailsCubit, OrganizationListingAndDetailsState>(
-          buildWhen: (previous, current) => previous.updateOrgDetails != current.updateOrgDetails,
+        bottomNavigationBar: BlocBuilder<
+          OrganizationListingAndDetailsCubit,
+          OrganizationListingAndDetailsState
+        >(
+          buildWhen:
+              (previous, current) =>
+                  previous.updateOrgDetails != current.updateOrgDetails,
           builder: (context, state) {
             final isLoading = state.updateOrgDetails?.isNone() ?? false;
             return Button.filled(
@@ -149,7 +198,10 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                   return;
                 }
                 final body = {'services': _services};
-                await _cubit.updateOrgDetails(orgId: widget.orgDetails.id ?? 0, body: body);
+                await _cubit.updateOrgDetails(
+                  orgId: widget.orgDetails.id ?? 0,
+                  body: body,
+                );
               },
             ).pad(16).pxy(y: 16);
           },

@@ -12,7 +12,8 @@ part of 'sent_otp_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 SentOtpEntity _$SentOtpEntityFromJson(Map<String, dynamic> json) {
   return _SentOtpEntity.fromJson(json);
@@ -44,15 +45,17 @@ mixin _$SentOtpEntity {
 /// @nodoc
 abstract class $SentOtpEntityCopyWith<$Res> {
   factory $SentOtpEntityCopyWith(
-          SentOtpEntity value, $Res Function(SentOtpEntity) then) =
-      _$SentOtpEntityCopyWithImpl<$Res, SentOtpEntity>;
+    SentOtpEntity value,
+    $Res Function(SentOtpEntity) then,
+  ) = _$SentOtpEntityCopyWithImpl<$Res, SentOtpEntity>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String? id,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'process') String? process,
-      @JsonKey(name: 'source') String? source,
-      @JsonKey(name: 'otp') String? otp});
+  $Res call({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'process') String? process,
+    @JsonKey(name: 'source') String? source,
+    @JsonKey(name: 'otp') String? otp,
+  });
 }
 
 /// @nodoc
@@ -76,28 +79,36 @@ class _$SentOtpEntityCopyWithImpl<$Res, $Val extends SentOtpEntity>
     Object? source = freezed,
     Object? otp = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      process: freezed == process
-          ? _value.process
-          : process // ignore: cast_nullable_to_non_nullable
-              as String?,
-      source: freezed == source
-          ? _value.source
-          : source // ignore: cast_nullable_to_non_nullable
-              as String?,
-      otp: freezed == otp
-          ? _value.otp
-          : otp // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            mobileNumber:
+                freezed == mobileNumber
+                    ? _value.mobileNumber
+                    : mobileNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            process:
+                freezed == process
+                    ? _value.process
+                    : process // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            source:
+                freezed == source
+                    ? _value.source
+                    : source // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            otp:
+                freezed == otp
+                    ? _value.otp
+                    : otp // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -105,16 +116,18 @@ class _$SentOtpEntityCopyWithImpl<$Res, $Val extends SentOtpEntity>
 abstract class _$$SentOtpEntityImplCopyWith<$Res>
     implements $SentOtpEntityCopyWith<$Res> {
   factory _$$SentOtpEntityImplCopyWith(
-          _$SentOtpEntityImpl value, $Res Function(_$SentOtpEntityImpl) then) =
-      __$$SentOtpEntityImplCopyWithImpl<$Res>;
+    _$SentOtpEntityImpl value,
+    $Res Function(_$SentOtpEntityImpl) then,
+  ) = __$$SentOtpEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String? id,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'process') String? process,
-      @JsonKey(name: 'source') String? source,
-      @JsonKey(name: 'otp') String? otp});
+  $Res call({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'process') String? process,
+    @JsonKey(name: 'source') String? source,
+    @JsonKey(name: 'otp') String? otp,
+  });
 }
 
 /// @nodoc
@@ -122,8 +135,9 @@ class __$$SentOtpEntityImplCopyWithImpl<$Res>
     extends _$SentOtpEntityCopyWithImpl<$Res, _$SentOtpEntityImpl>
     implements _$$SentOtpEntityImplCopyWith<$Res> {
   __$$SentOtpEntityImplCopyWithImpl(
-      _$SentOtpEntityImpl _value, $Res Function(_$SentOtpEntityImpl) _then)
-      : super(_value, _then);
+    _$SentOtpEntityImpl _value,
+    $Res Function(_$SentOtpEntityImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of SentOtpEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -136,40 +150,48 @@ class __$$SentOtpEntityImplCopyWithImpl<$Res>
     Object? source = freezed,
     Object? otp = freezed,
   }) {
-    return _then(_$SentOtpEntityImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      process: freezed == process
-          ? _value.process
-          : process // ignore: cast_nullable_to_non_nullable
-              as String?,
-      source: freezed == source
-          ? _value.source
-          : source // ignore: cast_nullable_to_non_nullable
-              as String?,
-      otp: freezed == otp
-          ? _value.otp
-          : otp // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$SentOtpEntityImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        mobileNumber:
+            freezed == mobileNumber
+                ? _value.mobileNumber
+                : mobileNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        process:
+            freezed == process
+                ? _value.process
+                : process // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        source:
+            freezed == source
+                ? _value.source
+                : source // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        otp:
+            freezed == otp
+                ? _value.otp
+                : otp // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$SentOtpEntityImpl implements _SentOtpEntity {
-  const _$SentOtpEntityImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'mobile_number') this.mobileNumber,
-      @JsonKey(name: 'process') this.process,
-      @JsonKey(name: 'source') this.source,
-      @JsonKey(name: 'otp') this.otp});
+  const _$SentOtpEntityImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'mobile_number') this.mobileNumber,
+    @JsonKey(name: 'process') this.process,
+    @JsonKey(name: 'source') this.source,
+    @JsonKey(name: 'otp') this.otp,
+  });
 
   factory _$SentOtpEntityImpl.fromJson(Map<String, dynamic> json) =>
       _$$SentOtpEntityImplFromJson(json);
@@ -223,19 +245,18 @@ class _$SentOtpEntityImpl implements _SentOtpEntity {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SentOtpEntityImplToJson(
-      this,
-    );
+    return _$$SentOtpEntityImplToJson(this);
   }
 }
 
 abstract class _SentOtpEntity implements SentOtpEntity {
-  const factory _SentOtpEntity(
-      {@JsonKey(name: 'id') final String? id,
-      @JsonKey(name: 'mobile_number') final String? mobileNumber,
-      @JsonKey(name: 'process') final String? process,
-      @JsonKey(name: 'source') final String? source,
-      @JsonKey(name: 'otp') final String? otp}) = _$SentOtpEntityImpl;
+  const factory _SentOtpEntity({
+    @JsonKey(name: 'id') final String? id,
+    @JsonKey(name: 'mobile_number') final String? mobileNumber,
+    @JsonKey(name: 'process') final String? process,
+    @JsonKey(name: 'source') final String? source,
+    @JsonKey(name: 'otp') final String? otp,
+  }) = _$SentOtpEntityImpl;
 
   factory _SentOtpEntity.fromJson(Map<String, dynamic> json) =
       _$SentOtpEntityImpl.fromJson;

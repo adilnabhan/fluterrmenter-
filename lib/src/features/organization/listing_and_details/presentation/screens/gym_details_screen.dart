@@ -632,6 +632,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
                   //   'street': widget.orgDetails.location?.street,
                   //   'city': widget.orgDetails.location?.city,
                   // },
+                  'location': {'street': _basicDetails[1].value, 'city': ''},
                   'social_media': [
                     if (_socialUrlFields[0].text.trim().isNotEmpty)
                       {'platform': 'website', 'url': _socialUrlFields[0].text},

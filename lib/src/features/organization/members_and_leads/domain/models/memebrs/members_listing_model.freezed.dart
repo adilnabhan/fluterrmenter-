@@ -12,7 +12,8 @@ part of 'members_listing_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 MembersListingModel _$MembersListingModelFromJson(Map<String, dynamic> json) {
   return _MembersListingModel.fromJson(json);
@@ -42,14 +43,16 @@ mixin _$MembersListingModel {
 /// @nodoc
 abstract class $MembersListingModelCopyWith<$Res> {
   factory $MembersListingModelCopyWith(
-          MembersListingModel value, $Res Function(MembersListingModel) then) =
-      _$MembersListingModelCopyWithImpl<$Res, MembersListingModel>;
+    MembersListingModel value,
+    $Res Function(MembersListingModel) then,
+  ) = _$MembersListingModelCopyWithImpl<$Res, MembersListingModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'count') int? count,
-      @JsonKey(name: 'next') String? next,
-      @JsonKey(name: 'previous') String? previous,
-      @JsonKey(name: 'results') List<MemberDataModel>? results});
+  $Res call({
+    @JsonKey(name: 'count') int? count,
+    @JsonKey(name: 'next') String? next,
+    @JsonKey(name: 'previous') String? previous,
+    @JsonKey(name: 'results') List<MemberDataModel>? results,
+  });
 }
 
 /// @nodoc
@@ -72,49 +75,59 @@ class _$MembersListingModelCopyWithImpl<$Res, $Val extends MembersListingModel>
     Object? previous = freezed,
     Object? results = freezed,
   }) {
-    return _then(_value.copyWith(
-      count: freezed == count
-          ? _value.count
-          : count // ignore: cast_nullable_to_non_nullable
-              as int?,
-      next: freezed == next
-          ? _value.next
-          : next // ignore: cast_nullable_to_non_nullable
-              as String?,
-      previous: freezed == previous
-          ? _value.previous
-          : previous // ignore: cast_nullable_to_non_nullable
-              as String?,
-      results: freezed == results
-          ? _value.results
-          : results // ignore: cast_nullable_to_non_nullable
-              as List<MemberDataModel>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            count:
+                freezed == count
+                    ? _value.count
+                    : count // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            next:
+                freezed == next
+                    ? _value.next
+                    : next // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            previous:
+                freezed == previous
+                    ? _value.previous
+                    : previous // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            results:
+                freezed == results
+                    ? _value.results
+                    : results // ignore: cast_nullable_to_non_nullable
+                        as List<MemberDataModel>?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$MembersListingModelImplCopyWith<$Res>
     implements $MembersListingModelCopyWith<$Res> {
-  factory _$$MembersListingModelImplCopyWith(_$MembersListingModelImpl value,
-          $Res Function(_$MembersListingModelImpl) then) =
-      __$$MembersListingModelImplCopyWithImpl<$Res>;
+  factory _$$MembersListingModelImplCopyWith(
+    _$MembersListingModelImpl value,
+    $Res Function(_$MembersListingModelImpl) then,
+  ) = __$$MembersListingModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'count') int? count,
-      @JsonKey(name: 'next') String? next,
-      @JsonKey(name: 'previous') String? previous,
-      @JsonKey(name: 'results') List<MemberDataModel>? results});
+  $Res call({
+    @JsonKey(name: 'count') int? count,
+    @JsonKey(name: 'next') String? next,
+    @JsonKey(name: 'previous') String? previous,
+    @JsonKey(name: 'results') List<MemberDataModel>? results,
+  });
 }
 
 /// @nodoc
 class __$$MembersListingModelImplCopyWithImpl<$Res>
     extends _$MembersListingModelCopyWithImpl<$Res, _$MembersListingModelImpl>
     implements _$$MembersListingModelImplCopyWith<$Res> {
-  __$$MembersListingModelImplCopyWithImpl(_$MembersListingModelImpl _value,
-      $Res Function(_$MembersListingModelImpl) _then)
-      : super(_value, _then);
+  __$$MembersListingModelImplCopyWithImpl(
+    _$MembersListingModelImpl _value,
+    $Res Function(_$MembersListingModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of MembersListingModel
   /// with the given fields replaced by the non-null parameter values.
@@ -126,36 +139,42 @@ class __$$MembersListingModelImplCopyWithImpl<$Res>
     Object? previous = freezed,
     Object? results = freezed,
   }) {
-    return _then(_$MembersListingModelImpl(
-      count: freezed == count
-          ? _value.count
-          : count // ignore: cast_nullable_to_non_nullable
-              as int?,
-      next: freezed == next
-          ? _value.next
-          : next // ignore: cast_nullable_to_non_nullable
-              as String?,
-      previous: freezed == previous
-          ? _value.previous
-          : previous // ignore: cast_nullable_to_non_nullable
-              as String?,
-      results: freezed == results
-          ? _value._results
-          : results // ignore: cast_nullable_to_non_nullable
-              as List<MemberDataModel>?,
-    ));
+    return _then(
+      _$MembersListingModelImpl(
+        count:
+            freezed == count
+                ? _value.count
+                : count // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        next:
+            freezed == next
+                ? _value.next
+                : next // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        previous:
+            freezed == previous
+                ? _value.previous
+                : previous // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        results:
+            freezed == results
+                ? _value._results
+                : results // ignore: cast_nullable_to_non_nullable
+                    as List<MemberDataModel>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MembersListingModelImpl implements _MembersListingModel {
-  const _$MembersListingModelImpl(
-      {@JsonKey(name: 'count') this.count,
-      @JsonKey(name: 'next') this.next,
-      @JsonKey(name: 'previous') this.previous,
-      @JsonKey(name: 'results') final List<MemberDataModel>? results})
-      : _results = results;
+  const _$MembersListingModelImpl({
+    @JsonKey(name: 'count') this.count,
+    @JsonKey(name: 'next') this.next,
+    @JsonKey(name: 'previous') this.previous,
+    @JsonKey(name: 'results') final List<MemberDataModel>? results,
+  }) : _results = results;
 
   factory _$MembersListingModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$MembersListingModelImplFromJson(json);
@@ -199,8 +218,13 @@ class _$MembersListingModelImpl implements _MembersListingModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, count, next, previous,
-      const DeepCollectionEquality().hash(_results));
+  int get hashCode => Object.hash(
+    runtimeType,
+    count,
+    next,
+    previous,
+    const DeepCollectionEquality().hash(_results),
+  );
 
   /// Create a copy of MembersListingModel
   /// with the given fields replaced by the non-null parameter values.
@@ -209,23 +233,23 @@ class _$MembersListingModelImpl implements _MembersListingModel {
   @pragma('vm:prefer-inline')
   _$$MembersListingModelImplCopyWith<_$MembersListingModelImpl> get copyWith =>
       __$$MembersListingModelImplCopyWithImpl<_$MembersListingModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MembersListingModelImplToJson(
-      this,
-    );
+    return _$$MembersListingModelImplToJson(this);
   }
 }
 
 abstract class _MembersListingModel implements MembersListingModel {
-  const factory _MembersListingModel(
-          {@JsonKey(name: 'count') final int? count,
-          @JsonKey(name: 'next') final String? next,
-          @JsonKey(name: 'previous') final String? previous,
-          @JsonKey(name: 'results') final List<MemberDataModel>? results}) =
-      _$MembersListingModelImpl;
+  const factory _MembersListingModel({
+    @JsonKey(name: 'count') final int? count,
+    @JsonKey(name: 'next') final String? next,
+    @JsonKey(name: 'previous') final String? previous,
+    @JsonKey(name: 'results') final List<MemberDataModel>? results,
+  }) = _$MembersListingModelImpl;
 
   factory _MembersListingModel.fromJson(Map<String, dynamic> json) =
       _$MembersListingModelImpl.fromJson;
@@ -283,16 +307,18 @@ mixin _$MemberDataModel {
 /// @nodoc
 abstract class $MemberDataModelCopyWith<$Res> {
   factory $MemberDataModelCopyWith(
-          MemberDataModel value, $Res Function(MemberDataModel) then) =
-      _$MemberDataModelCopyWithImpl<$Res, MemberDataModel>;
+    MemberDataModel value,
+    $Res Function(MemberDataModel) then,
+  ) = _$MemberDataModelCopyWithImpl<$Res, MemberDataModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture,
-      @JsonKey(name: 'joined_date') DateTime? joinedDate,
-      @JsonKey(name: 'active_plan') ActivePlan? activePlan});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+    @JsonKey(name: 'joined_date') DateTime? joinedDate,
+    @JsonKey(name: 'active_plan') ActivePlan? activePlan,
+  });
 
   $ActivePlanCopyWith<$Res>? get activePlan;
 }
@@ -319,32 +345,41 @@ class _$MemberDataModelCopyWithImpl<$Res, $Val extends MemberDataModel>
     Object? joinedDate = freezed,
     Object? activePlan = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      joinedDate: freezed == joinedDate
-          ? _value.joinedDate
-          : joinedDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      activePlan: freezed == activePlan
-          ? _value.activePlan
-          : activePlan // ignore: cast_nullable_to_non_nullable
-              as ActivePlan?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            mobileNumber:
+                freezed == mobileNumber
+                    ? _value.mobileNumber
+                    : mobileNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            profilePicture:
+                freezed == profilePicture
+                    ? _value.profilePicture
+                    : profilePicture // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            joinedDate:
+                freezed == joinedDate
+                    ? _value.joinedDate
+                    : joinedDate // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            activePlan:
+                freezed == activePlan
+                    ? _value.activePlan
+                    : activePlan // ignore: cast_nullable_to_non_nullable
+                        as ActivePlan?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of MemberDataModel
@@ -365,18 +400,20 @@ class _$MemberDataModelCopyWithImpl<$Res, $Val extends MemberDataModel>
 /// @nodoc
 abstract class _$$MemberDataModelImplCopyWith<$Res>
     implements $MemberDataModelCopyWith<$Res> {
-  factory _$$MemberDataModelImplCopyWith(_$MemberDataModelImpl value,
-          $Res Function(_$MemberDataModelImpl) then) =
-      __$$MemberDataModelImplCopyWithImpl<$Res>;
+  factory _$$MemberDataModelImplCopyWith(
+    _$MemberDataModelImpl value,
+    $Res Function(_$MemberDataModelImpl) then,
+  ) = __$$MemberDataModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture,
-      @JsonKey(name: 'joined_date') DateTime? joinedDate,
-      @JsonKey(name: 'active_plan') ActivePlan? activePlan});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+    @JsonKey(name: 'joined_date') DateTime? joinedDate,
+    @JsonKey(name: 'active_plan') ActivePlan? activePlan,
+  });
 
   @override
   $ActivePlanCopyWith<$Res>? get activePlan;
@@ -387,8 +424,9 @@ class __$$MemberDataModelImplCopyWithImpl<$Res>
     extends _$MemberDataModelCopyWithImpl<$Res, _$MemberDataModelImpl>
     implements _$$MemberDataModelImplCopyWith<$Res> {
   __$$MemberDataModelImplCopyWithImpl(
-      _$MemberDataModelImpl _value, $Res Function(_$MemberDataModelImpl) _then)
-      : super(_value, _then);
+    _$MemberDataModelImpl _value,
+    $Res Function(_$MemberDataModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of MemberDataModel
   /// with the given fields replaced by the non-null parameter values.
@@ -402,45 +440,54 @@ class __$$MemberDataModelImplCopyWithImpl<$Res>
     Object? joinedDate = freezed,
     Object? activePlan = freezed,
   }) {
-    return _then(_$MemberDataModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      joinedDate: freezed == joinedDate
-          ? _value.joinedDate
-          : joinedDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      activePlan: freezed == activePlan
-          ? _value.activePlan
-          : activePlan // ignore: cast_nullable_to_non_nullable
-              as ActivePlan?,
-    ));
+    return _then(
+      _$MemberDataModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        mobileNumber:
+            freezed == mobileNumber
+                ? _value.mobileNumber
+                : mobileNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        profilePicture:
+            freezed == profilePicture
+                ? _value.profilePicture
+                : profilePicture // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        joinedDate:
+            freezed == joinedDate
+                ? _value.joinedDate
+                : joinedDate // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        activePlan:
+            freezed == activePlan
+                ? _value.activePlan
+                : activePlan // ignore: cast_nullable_to_non_nullable
+                    as ActivePlan?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MemberDataModelImpl implements _MemberDataModel {
-  const _$MemberDataModelImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'name') this.name,
-      @JsonKey(name: 'mobile_number') this.mobileNumber,
-      @JsonKey(name: 'profile_picture') this.profilePicture,
-      @JsonKey(name: 'joined_date') this.joinedDate,
-      @JsonKey(name: 'active_plan') this.activePlan});
+  const _$MemberDataModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'name') this.name,
+    @JsonKey(name: 'mobile_number') this.mobileNumber,
+    @JsonKey(name: 'profile_picture') this.profilePicture,
+    @JsonKey(name: 'joined_date') this.joinedDate,
+    @JsonKey(name: 'active_plan') this.activePlan,
+  });
 
   factory _$MemberDataModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$MemberDataModelImplFromJson(json);
@@ -478,8 +525,10 @@ class _$MemberDataModelImpl implements _MemberDataModel {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.mobileNumber, mobileNumber) ||
                 other.mobileNumber == mobileNumber) &&
-            const DeepCollectionEquality()
-                .equals(other.profilePicture, profilePicture) &&
+            const DeepCollectionEquality().equals(
+              other.profilePicture,
+              profilePicture,
+            ) &&
             (identical(other.joinedDate, joinedDate) ||
                 other.joinedDate == joinedDate) &&
             (identical(other.activePlan, activePlan) ||
@@ -489,13 +538,14 @@ class _$MemberDataModelImpl implements _MemberDataModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      name,
-      mobileNumber,
-      const DeepCollectionEquality().hash(profilePicture),
-      joinedDate,
-      activePlan);
+    runtimeType,
+    id,
+    name,
+    mobileNumber,
+    const DeepCollectionEquality().hash(profilePicture),
+    joinedDate,
+    activePlan,
+  );
 
   /// Create a copy of MemberDataModel
   /// with the given fields replaced by the non-null parameter values.
@@ -504,25 +554,25 @@ class _$MemberDataModelImpl implements _MemberDataModel {
   @pragma('vm:prefer-inline')
   _$$MemberDataModelImplCopyWith<_$MemberDataModelImpl> get copyWith =>
       __$$MemberDataModelImplCopyWithImpl<_$MemberDataModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MemberDataModelImplToJson(
-      this,
-    );
+    return _$$MemberDataModelImplToJson(this);
   }
 }
 
 abstract class _MemberDataModel implements MemberDataModel {
-  const factory _MemberDataModel(
-          {@JsonKey(name: 'id') final int? id,
-          @JsonKey(name: 'name') final String? name,
-          @JsonKey(name: 'mobile_number') final String? mobileNumber,
-          @JsonKey(name: 'profile_picture') final dynamic profilePicture,
-          @JsonKey(name: 'joined_date') final DateTime? joinedDate,
-          @JsonKey(name: 'active_plan') final ActivePlan? activePlan}) =
-      _$MemberDataModelImpl;
+  const factory _MemberDataModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'name') final String? name,
+    @JsonKey(name: 'mobile_number') final String? mobileNumber,
+    @JsonKey(name: 'profile_picture') final dynamic profilePicture,
+    @JsonKey(name: 'joined_date') final DateTime? joinedDate,
+    @JsonKey(name: 'active_plan') final ActivePlan? activePlan,
+  }) = _$MemberDataModelImpl;
 
   factory _MemberDataModel.fromJson(Map<String, dynamic> json) =
       _$MemberDataModelImpl.fromJson;
@@ -584,15 +634,17 @@ mixin _$ActivePlan {
 /// @nodoc
 abstract class $ActivePlanCopyWith<$Res> {
   factory $ActivePlanCopyWith(
-          ActivePlan value, $Res Function(ActivePlan) then) =
-      _$ActivePlanCopyWithImpl<$Res, ActivePlan>;
+    ActivePlan value,
+    $Res Function(ActivePlan) then,
+  ) = _$ActivePlanCopyWithImpl<$Res, ActivePlan>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'plan_name') String? planName,
-      @JsonKey(name: 'start_date') DateTime? startDate,
-      @JsonKey(name: 'end_date') DateTime? endDate,
-      @JsonKey(name: 'status') String? status});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'plan_name') String? planName,
+    @JsonKey(name: 'start_date') DateTime? startDate,
+    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(name: 'status') String? status,
+  });
 }
 
 /// @nodoc
@@ -616,28 +668,36 @@ class _$ActivePlanCopyWithImpl<$Res, $Val extends ActivePlan>
     Object? endDate = freezed,
     Object? status = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      planName: freezed == planName
-          ? _value.planName
-          : planName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      startDate: freezed == startDate
-          ? _value.startDate
-          : startDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      endDate: freezed == endDate
-          ? _value.endDate
-          : endDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      status: freezed == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            planName:
+                freezed == planName
+                    ? _value.planName
+                    : planName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            startDate:
+                freezed == startDate
+                    ? _value.startDate
+                    : startDate // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            endDate:
+                freezed == endDate
+                    ? _value.endDate
+                    : endDate // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            status:
+                freezed == status
+                    ? _value.status
+                    : status // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -645,16 +705,18 @@ class _$ActivePlanCopyWithImpl<$Res, $Val extends ActivePlan>
 abstract class _$$ActivePlanImplCopyWith<$Res>
     implements $ActivePlanCopyWith<$Res> {
   factory _$$ActivePlanImplCopyWith(
-          _$ActivePlanImpl value, $Res Function(_$ActivePlanImpl) then) =
-      __$$ActivePlanImplCopyWithImpl<$Res>;
+    _$ActivePlanImpl value,
+    $Res Function(_$ActivePlanImpl) then,
+  ) = __$$ActivePlanImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'plan_name') String? planName,
-      @JsonKey(name: 'start_date') DateTime? startDate,
-      @JsonKey(name: 'end_date') DateTime? endDate,
-      @JsonKey(name: 'status') String? status});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'plan_name') String? planName,
+    @JsonKey(name: 'start_date') DateTime? startDate,
+    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(name: 'status') String? status,
+  });
 }
 
 /// @nodoc
@@ -662,8 +724,9 @@ class __$$ActivePlanImplCopyWithImpl<$Res>
     extends _$ActivePlanCopyWithImpl<$Res, _$ActivePlanImpl>
     implements _$$ActivePlanImplCopyWith<$Res> {
   __$$ActivePlanImplCopyWithImpl(
-      _$ActivePlanImpl _value, $Res Function(_$ActivePlanImpl) _then)
-      : super(_value, _then);
+    _$ActivePlanImpl _value,
+    $Res Function(_$ActivePlanImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ActivePlan
   /// with the given fields replaced by the non-null parameter values.
@@ -676,40 +739,48 @@ class __$$ActivePlanImplCopyWithImpl<$Res>
     Object? endDate = freezed,
     Object? status = freezed,
   }) {
-    return _then(_$ActivePlanImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      planName: freezed == planName
-          ? _value.planName
-          : planName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      startDate: freezed == startDate
-          ? _value.startDate
-          : startDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      endDate: freezed == endDate
-          ? _value.endDate
-          : endDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      status: freezed == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$ActivePlanImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        planName:
+            freezed == planName
+                ? _value.planName
+                : planName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        startDate:
+            freezed == startDate
+                ? _value.startDate
+                : startDate // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        endDate:
+            freezed == endDate
+                ? _value.endDate
+                : endDate // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        status:
+            freezed == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ActivePlanImpl implements _ActivePlan {
-  const _$ActivePlanImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'plan_name') this.planName,
-      @JsonKey(name: 'start_date') this.startDate,
-      @JsonKey(name: 'end_date') this.endDate,
-      @JsonKey(name: 'status') this.status});
+  const _$ActivePlanImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'plan_name') this.planName,
+    @JsonKey(name: 'start_date') this.startDate,
+    @JsonKey(name: 'end_date') this.endDate,
+    @JsonKey(name: 'status') this.status,
+  });
 
   factory _$ActivePlanImpl.fromJson(Map<String, dynamic> json) =>
       _$$ActivePlanImplFromJson(json);
@@ -764,19 +835,18 @@ class _$ActivePlanImpl implements _ActivePlan {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ActivePlanImplToJson(
-      this,
-    );
+    return _$$ActivePlanImplToJson(this);
   }
 }
 
 abstract class _ActivePlan implements ActivePlan {
-  const factory _ActivePlan(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'plan_name') final String? planName,
-      @JsonKey(name: 'start_date') final DateTime? startDate,
-      @JsonKey(name: 'end_date') final DateTime? endDate,
-      @JsonKey(name: 'status') final String? status}) = _$ActivePlanImpl;
+  const factory _ActivePlan({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'plan_name') final String? planName,
+    @JsonKey(name: 'start_date') final DateTime? startDate,
+    @JsonKey(name: 'end_date') final DateTime? endDate,
+    @JsonKey(name: 'status') final String? status,
+  }) = _$ActivePlanImpl;
 
   factory _ActivePlan.fromJson(Map<String, dynamic> json) =
       _$ActivePlanImpl.fromJson;

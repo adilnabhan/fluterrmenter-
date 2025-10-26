@@ -12,7 +12,8 @@ part of 'lead_details_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 LeadDetailsModel _$LeadDetailsModelFromJson(Map<String, dynamic> json) {
   return _LeadDetailsModel.fromJson(json);
@@ -56,21 +57,23 @@ mixin _$LeadDetailsModel {
 /// @nodoc
 abstract class $LeadDetailsModelCopyWith<$Res> {
   factory $LeadDetailsModelCopyWith(
-          LeadDetailsModel value, $Res Function(LeadDetailsModel) then) =
-      _$LeadDetailsModelCopyWithImpl<$Res, LeadDetailsModel>;
+    LeadDetailsModel value,
+    $Res Function(LeadDetailsModel) then,
+  ) = _$LeadDetailsModelCopyWithImpl<$Res, LeadDetailsModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'gender') String? gender,
-      @JsonKey(name: 'blood_group') String? bloodGroup,
-      @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
-      @JsonKey(name: 'mentor_profile') MentorProfileData? mentorProfile,
-      @JsonKey(name: 'certificates') List<dynamic>? certificates,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'blood_group') String? bloodGroup,
+    @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
+    @JsonKey(name: 'mentor_profile') MentorProfileData? mentorProfile,
+    @JsonKey(name: 'certificates') List<dynamic>? certificates,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+  });
 
   $MentorProfileDataCopyWith<$Res>? get mentorProfile;
 }
@@ -102,52 +105,66 @@ class _$LeadDetailsModelCopyWithImpl<$Res, $Val extends LeadDetailsModel>
     Object? certificates = freezed,
     Object? profilePicture = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      gender: freezed == gender
-          ? _value.gender
-          : gender // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bloodGroup: freezed == bloodGroup
-          ? _value.bloodGroup
-          : bloodGroup // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dateOfBirth: freezed == dateOfBirth
-          ? _value.dateOfBirth
-          : dateOfBirth // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      mentorProfile: freezed == mentorProfile
-          ? _value.mentorProfile
-          : mentorProfile // ignore: cast_nullable_to_non_nullable
-              as MentorProfileData?,
-      certificates: freezed == certificates
-          ? _value.certificates
-          : certificates // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            firstName:
+                freezed == firstName
+                    ? _value.firstName
+                    : firstName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastName:
+                freezed == lastName
+                    ? _value.lastName
+                    : lastName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            mobileNumber:
+                freezed == mobileNumber
+                    ? _value.mobileNumber
+                    : mobileNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            email:
+                freezed == email
+                    ? _value.email
+                    : email // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            gender:
+                freezed == gender
+                    ? _value.gender
+                    : gender // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            bloodGroup:
+                freezed == bloodGroup
+                    ? _value.bloodGroup
+                    : bloodGroup // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            dateOfBirth:
+                freezed == dateOfBirth
+                    ? _value.dateOfBirth
+                    : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            mentorProfile:
+                freezed == mentorProfile
+                    ? _value.mentorProfile
+                    : mentorProfile // ignore: cast_nullable_to_non_nullable
+                        as MentorProfileData?,
+            certificates:
+                freezed == certificates
+                    ? _value.certificates
+                    : certificates // ignore: cast_nullable_to_non_nullable
+                        as List<dynamic>?,
+            profilePicture:
+                freezed == profilePicture
+                    ? _value.profilePicture
+                    : profilePicture // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of LeadDetailsModel
@@ -168,23 +185,25 @@ class _$LeadDetailsModelCopyWithImpl<$Res, $Val extends LeadDetailsModel>
 /// @nodoc
 abstract class _$$LeadDetailsModelImplCopyWith<$Res>
     implements $LeadDetailsModelCopyWith<$Res> {
-  factory _$$LeadDetailsModelImplCopyWith(_$LeadDetailsModelImpl value,
-          $Res Function(_$LeadDetailsModelImpl) then) =
-      __$$LeadDetailsModelImplCopyWithImpl<$Res>;
+  factory _$$LeadDetailsModelImplCopyWith(
+    _$LeadDetailsModelImpl value,
+    $Res Function(_$LeadDetailsModelImpl) then,
+  ) = __$$LeadDetailsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'gender') String? gender,
-      @JsonKey(name: 'blood_group') String? bloodGroup,
-      @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
-      @JsonKey(name: 'mentor_profile') MentorProfileData? mentorProfile,
-      @JsonKey(name: 'certificates') List<dynamic>? certificates,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'blood_group') String? bloodGroup,
+    @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
+    @JsonKey(name: 'mentor_profile') MentorProfileData? mentorProfile,
+    @JsonKey(name: 'certificates') List<dynamic>? certificates,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+  });
 
   @override
   $MentorProfileDataCopyWith<$Res>? get mentorProfile;
@@ -194,9 +213,10 @@ abstract class _$$LeadDetailsModelImplCopyWith<$Res>
 class __$$LeadDetailsModelImplCopyWithImpl<$Res>
     extends _$LeadDetailsModelCopyWithImpl<$Res, _$LeadDetailsModelImpl>
     implements _$$LeadDetailsModelImplCopyWith<$Res> {
-  __$$LeadDetailsModelImplCopyWithImpl(_$LeadDetailsModelImpl _value,
-      $Res Function(_$LeadDetailsModelImpl) _then)
-      : super(_value, _then);
+  __$$LeadDetailsModelImplCopyWithImpl(
+    _$LeadDetailsModelImpl _value,
+    $Res Function(_$LeadDetailsModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of LeadDetailsModel
   /// with the given fields replaced by the non-null parameter values.
@@ -215,71 +235,84 @@ class __$$LeadDetailsModelImplCopyWithImpl<$Res>
     Object? certificates = freezed,
     Object? profilePicture = freezed,
   }) {
-    return _then(_$LeadDetailsModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      gender: freezed == gender
-          ? _value.gender
-          : gender // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bloodGroup: freezed == bloodGroup
-          ? _value.bloodGroup
-          : bloodGroup // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dateOfBirth: freezed == dateOfBirth
-          ? _value.dateOfBirth
-          : dateOfBirth // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      mentorProfile: freezed == mentorProfile
-          ? _value.mentorProfile
-          : mentorProfile // ignore: cast_nullable_to_non_nullable
-              as MentorProfileData?,
-      certificates: freezed == certificates
-          ? _value._certificates
-          : certificates // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-    ));
+    return _then(
+      _$LeadDetailsModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        firstName:
+            freezed == firstName
+                ? _value.firstName
+                : firstName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastName:
+            freezed == lastName
+                ? _value.lastName
+                : lastName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        mobileNumber:
+            freezed == mobileNumber
+                ? _value.mobileNumber
+                : mobileNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        email:
+            freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        gender:
+            freezed == gender
+                ? _value.gender
+                : gender // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        bloodGroup:
+            freezed == bloodGroup
+                ? _value.bloodGroup
+                : bloodGroup // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        dateOfBirth:
+            freezed == dateOfBirth
+                ? _value.dateOfBirth
+                : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        mentorProfile:
+            freezed == mentorProfile
+                ? _value.mentorProfile
+                : mentorProfile // ignore: cast_nullable_to_non_nullable
+                    as MentorProfileData?,
+        certificates:
+            freezed == certificates
+                ? _value._certificates
+                : certificates // ignore: cast_nullable_to_non_nullable
+                    as List<dynamic>?,
+        profilePicture:
+            freezed == profilePicture
+                ? _value.profilePicture
+                : profilePicture // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$LeadDetailsModelImpl implements _LeadDetailsModel {
-  const _$LeadDetailsModelImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'first_name') this.firstName,
-      @JsonKey(name: 'last_name') this.lastName,
-      @JsonKey(name: 'mobile_number') this.mobileNumber,
-      @JsonKey(name: 'email') this.email,
-      @JsonKey(name: 'gender') this.gender,
-      @JsonKey(name: 'blood_group') this.bloodGroup,
-      @JsonKey(name: 'date_of_birth') this.dateOfBirth,
-      @JsonKey(name: 'mentor_profile') this.mentorProfile,
-      @JsonKey(name: 'certificates') final List<dynamic>? certificates,
-      @JsonKey(name: 'profile_picture') this.profilePicture})
-      : _certificates = certificates;
+  const _$LeadDetailsModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'first_name') this.firstName,
+    @JsonKey(name: 'last_name') this.lastName,
+    @JsonKey(name: 'mobile_number') this.mobileNumber,
+    @JsonKey(name: 'email') this.email,
+    @JsonKey(name: 'gender') this.gender,
+    @JsonKey(name: 'blood_group') this.bloodGroup,
+    @JsonKey(name: 'date_of_birth') this.dateOfBirth,
+    @JsonKey(name: 'mentor_profile') this.mentorProfile,
+    @JsonKey(name: 'certificates') final List<dynamic>? certificates,
+    @JsonKey(name: 'profile_picture') this.profilePicture,
+  }) : _certificates = certificates;
 
   factory _$LeadDetailsModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$LeadDetailsModelImplFromJson(json);
@@ -351,27 +384,32 @@ class _$LeadDetailsModelImpl implements _LeadDetailsModel {
                 other.dateOfBirth == dateOfBirth) &&
             (identical(other.mentorProfile, mentorProfile) ||
                 other.mentorProfile == mentorProfile) &&
-            const DeepCollectionEquality()
-                .equals(other._certificates, _certificates) &&
-            const DeepCollectionEquality()
-                .equals(other.profilePicture, profilePicture));
+            const DeepCollectionEquality().equals(
+              other._certificates,
+              _certificates,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other.profilePicture,
+              profilePicture,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      firstName,
-      lastName,
-      mobileNumber,
-      email,
-      gender,
-      bloodGroup,
-      dateOfBirth,
-      mentorProfile,
-      const DeepCollectionEquality().hash(_certificates),
-      const DeepCollectionEquality().hash(profilePicture));
+    runtimeType,
+    id,
+    firstName,
+    lastName,
+    mobileNumber,
+    email,
+    gender,
+    bloodGroup,
+    dateOfBirth,
+    mentorProfile,
+    const DeepCollectionEquality().hash(_certificates),
+    const DeepCollectionEquality().hash(profilePicture),
+  );
 
   /// Create a copy of LeadDetailsModel
   /// with the given fields replaced by the non-null parameter values.
@@ -380,30 +418,30 @@ class _$LeadDetailsModelImpl implements _LeadDetailsModel {
   @pragma('vm:prefer-inline')
   _$$LeadDetailsModelImplCopyWith<_$LeadDetailsModelImpl> get copyWith =>
       __$$LeadDetailsModelImplCopyWithImpl<_$LeadDetailsModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$LeadDetailsModelImplToJson(
-      this,
-    );
+    return _$$LeadDetailsModelImplToJson(this);
   }
 }
 
 abstract class _LeadDetailsModel implements LeadDetailsModel {
-  const factory _LeadDetailsModel(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'first_name') final String? firstName,
-      @JsonKey(name: 'last_name') final String? lastName,
-      @JsonKey(name: 'mobile_number') final String? mobileNumber,
-      @JsonKey(name: 'email') final String? email,
-      @JsonKey(name: 'gender') final String? gender,
-      @JsonKey(name: 'blood_group') final String? bloodGroup,
-      @JsonKey(name: 'date_of_birth') final DateTime? dateOfBirth,
-      @JsonKey(name: 'mentor_profile') final MentorProfileData? mentorProfile,
-      @JsonKey(name: 'certificates') final List<dynamic>? certificates,
-      @JsonKey(name: 'profile_picture')
-      final dynamic profilePicture}) = _$LeadDetailsModelImpl;
+  const factory _LeadDetailsModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'first_name') final String? firstName,
+    @JsonKey(name: 'last_name') final String? lastName,
+    @JsonKey(name: 'mobile_number') final String? mobileNumber,
+    @JsonKey(name: 'email') final String? email,
+    @JsonKey(name: 'gender') final String? gender,
+    @JsonKey(name: 'blood_group') final String? bloodGroup,
+    @JsonKey(name: 'date_of_birth') final DateTime? dateOfBirth,
+    @JsonKey(name: 'mentor_profile') final MentorProfileData? mentorProfile,
+    @JsonKey(name: 'certificates') final List<dynamic>? certificates,
+    @JsonKey(name: 'profile_picture') final dynamic profilePicture,
+  }) = _$LeadDetailsModelImpl;
 
   factory _LeadDetailsModel.fromJson(Map<String, dynamic> json) =
       _$LeadDetailsModelImpl.fromJson;
@@ -485,18 +523,19 @@ mixin _$MentorProfileData {
 /// @nodoc
 abstract class $MentorProfileDataCopyWith<$Res> {
   factory $MentorProfileDataCopyWith(
-          MentorProfileData value, $Res Function(MentorProfileData) then) =
-      _$MentorProfileDataCopyWithImpl<$Res, MentorProfileData>;
+    MentorProfileData value,
+    $Res Function(MentorProfileData) then,
+  ) = _$MentorProfileDataCopyWithImpl<$Res, MentorProfileData>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'organization') Organization? organization,
-      @JsonKey(name: 'experience') String? experience,
-      @JsonKey(name: 'designation') String? designation,
-      @JsonKey(name: 'emergency_contact') String? emergencyContact,
-      @JsonKey(name: 'address_proof') dynamic addressProof,
-      @JsonKey(name: 'categories')
-      List<MultiSelectSingleDataEntity>? categories});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'organization') Organization? organization,
+    @JsonKey(name: 'experience') String? experience,
+    @JsonKey(name: 'designation') String? designation,
+    @JsonKey(name: 'emergency_contact') String? emergencyContact,
+    @JsonKey(name: 'address_proof') dynamic addressProof,
+    @JsonKey(name: 'categories') List<MultiSelectSingleDataEntity>? categories,
+  });
 
   $OrganizationCopyWith<$Res>? get organization;
 }
@@ -524,36 +563,46 @@ class _$MentorProfileDataCopyWithImpl<$Res, $Val extends MentorProfileData>
     Object? addressProof = freezed,
     Object? categories = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      organization: freezed == organization
-          ? _value.organization
-          : organization // ignore: cast_nullable_to_non_nullable
-              as Organization?,
-      experience: freezed == experience
-          ? _value.experience
-          : experience // ignore: cast_nullable_to_non_nullable
-              as String?,
-      designation: freezed == designation
-          ? _value.designation
-          : designation // ignore: cast_nullable_to_non_nullable
-              as String?,
-      emergencyContact: freezed == emergencyContact
-          ? _value.emergencyContact
-          : emergencyContact // ignore: cast_nullable_to_non_nullable
-              as String?,
-      addressProof: freezed == addressProof
-          ? _value.addressProof
-          : addressProof // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      categories: freezed == categories
-          ? _value.categories
-          : categories // ignore: cast_nullable_to_non_nullable
-              as List<MultiSelectSingleDataEntity>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            organization:
+                freezed == organization
+                    ? _value.organization
+                    : organization // ignore: cast_nullable_to_non_nullable
+                        as Organization?,
+            experience:
+                freezed == experience
+                    ? _value.experience
+                    : experience // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            designation:
+                freezed == designation
+                    ? _value.designation
+                    : designation // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            emergencyContact:
+                freezed == emergencyContact
+                    ? _value.emergencyContact
+                    : emergencyContact // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            addressProof:
+                freezed == addressProof
+                    ? _value.addressProof
+                    : addressProof // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            categories:
+                freezed == categories
+                    ? _value.categories
+                    : categories // ignore: cast_nullable_to_non_nullable
+                        as List<MultiSelectSingleDataEntity>?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of MentorProfileData
@@ -574,20 +623,21 @@ class _$MentorProfileDataCopyWithImpl<$Res, $Val extends MentorProfileData>
 /// @nodoc
 abstract class _$$MentorProfileDataImplCopyWith<$Res>
     implements $MentorProfileDataCopyWith<$Res> {
-  factory _$$MentorProfileDataImplCopyWith(_$MentorProfileDataImpl value,
-          $Res Function(_$MentorProfileDataImpl) then) =
-      __$$MentorProfileDataImplCopyWithImpl<$Res>;
+  factory _$$MentorProfileDataImplCopyWith(
+    _$MentorProfileDataImpl value,
+    $Res Function(_$MentorProfileDataImpl) then,
+  ) = __$$MentorProfileDataImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'organization') Organization? organization,
-      @JsonKey(name: 'experience') String? experience,
-      @JsonKey(name: 'designation') String? designation,
-      @JsonKey(name: 'emergency_contact') String? emergencyContact,
-      @JsonKey(name: 'address_proof') dynamic addressProof,
-      @JsonKey(name: 'categories')
-      List<MultiSelectSingleDataEntity>? categories});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'organization') Organization? organization,
+    @JsonKey(name: 'experience') String? experience,
+    @JsonKey(name: 'designation') String? designation,
+    @JsonKey(name: 'emergency_contact') String? emergencyContact,
+    @JsonKey(name: 'address_proof') dynamic addressProof,
+    @JsonKey(name: 'categories') List<MultiSelectSingleDataEntity>? categories,
+  });
 
   @override
   $OrganizationCopyWith<$Res>? get organization;
@@ -597,9 +647,10 @@ abstract class _$$MentorProfileDataImplCopyWith<$Res>
 class __$$MentorProfileDataImplCopyWithImpl<$Res>
     extends _$MentorProfileDataCopyWithImpl<$Res, _$MentorProfileDataImpl>
     implements _$$MentorProfileDataImplCopyWith<$Res> {
-  __$$MentorProfileDataImplCopyWithImpl(_$MentorProfileDataImpl _value,
-      $Res Function(_$MentorProfileDataImpl) _then)
-      : super(_value, _then);
+  __$$MentorProfileDataImplCopyWithImpl(
+    _$MentorProfileDataImpl _value,
+    $Res Function(_$MentorProfileDataImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of MentorProfileData
   /// with the given fields replaced by the non-null parameter values.
@@ -614,52 +665,61 @@ class __$$MentorProfileDataImplCopyWithImpl<$Res>
     Object? addressProof = freezed,
     Object? categories = freezed,
   }) {
-    return _then(_$MentorProfileDataImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      organization: freezed == organization
-          ? _value.organization
-          : organization // ignore: cast_nullable_to_non_nullable
-              as Organization?,
-      experience: freezed == experience
-          ? _value.experience
-          : experience // ignore: cast_nullable_to_non_nullable
-              as String?,
-      designation: freezed == designation
-          ? _value.designation
-          : designation // ignore: cast_nullable_to_non_nullable
-              as String?,
-      emergencyContact: freezed == emergencyContact
-          ? _value.emergencyContact
-          : emergencyContact // ignore: cast_nullable_to_non_nullable
-              as String?,
-      addressProof: freezed == addressProof
-          ? _value.addressProof
-          : addressProof // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      categories: freezed == categories
-          ? _value._categories
-          : categories // ignore: cast_nullable_to_non_nullable
-              as List<MultiSelectSingleDataEntity>?,
-    ));
+    return _then(
+      _$MentorProfileDataImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        organization:
+            freezed == organization
+                ? _value.organization
+                : organization // ignore: cast_nullable_to_non_nullable
+                    as Organization?,
+        experience:
+            freezed == experience
+                ? _value.experience
+                : experience // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        designation:
+            freezed == designation
+                ? _value.designation
+                : designation // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        emergencyContact:
+            freezed == emergencyContact
+                ? _value.emergencyContact
+                : emergencyContact // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        addressProof:
+            freezed == addressProof
+                ? _value.addressProof
+                : addressProof // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        categories:
+            freezed == categories
+                ? _value._categories
+                : categories // ignore: cast_nullable_to_non_nullable
+                    as List<MultiSelectSingleDataEntity>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MentorProfileDataImpl implements _MentorProfileData {
-  const _$MentorProfileDataImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'organization') this.organization,
-      @JsonKey(name: 'experience') this.experience,
-      @JsonKey(name: 'designation') this.designation,
-      @JsonKey(name: 'emergency_contact') this.emergencyContact,
-      @JsonKey(name: 'address_proof') this.addressProof,
-      @JsonKey(name: 'categories')
-      final List<MultiSelectSingleDataEntity>? categories})
-      : _categories = categories;
+  const _$MentorProfileDataImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'organization') this.organization,
+    @JsonKey(name: 'experience') this.experience,
+    @JsonKey(name: 'designation') this.designation,
+    @JsonKey(name: 'emergency_contact') this.emergencyContact,
+    @JsonKey(name: 'address_proof') this.addressProof,
+    @JsonKey(name: 'categories')
+    final List<MultiSelectSingleDataEntity>? categories,
+  }) : _categories = categories;
 
   factory _$MentorProfileDataImpl.fromJson(Map<String, dynamic> json) =>
       _$$MentorProfileDataImplFromJson(json);
@@ -712,23 +772,28 @@ class _$MentorProfileDataImpl implements _MentorProfileData {
                 other.designation == designation) &&
             (identical(other.emergencyContact, emergencyContact) ||
                 other.emergencyContact == emergencyContact) &&
-            const DeepCollectionEquality()
-                .equals(other.addressProof, addressProof) &&
-            const DeepCollectionEquality()
-                .equals(other._categories, _categories));
+            const DeepCollectionEquality().equals(
+              other.addressProof,
+              addressProof,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._categories,
+              _categories,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      organization,
-      experience,
-      designation,
-      emergencyContact,
-      const DeepCollectionEquality().hash(addressProof),
-      const DeepCollectionEquality().hash(_categories));
+    runtimeType,
+    id,
+    organization,
+    experience,
+    designation,
+    emergencyContact,
+    const DeepCollectionEquality().hash(addressProof),
+    const DeepCollectionEquality().hash(_categories),
+  );
 
   /// Create a copy of MentorProfileData
   /// with the given fields replaced by the non-null parameter values.
@@ -737,27 +802,27 @@ class _$MentorProfileDataImpl implements _MentorProfileData {
   @pragma('vm:prefer-inline')
   _$$MentorProfileDataImplCopyWith<_$MentorProfileDataImpl> get copyWith =>
       __$$MentorProfileDataImplCopyWithImpl<_$MentorProfileDataImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MentorProfileDataImplToJson(
-      this,
-    );
+    return _$$MentorProfileDataImplToJson(this);
   }
 }
 
 abstract class _MentorProfileData implements MentorProfileData {
-  const factory _MentorProfileData(
-          {@JsonKey(name: 'id') final int? id,
-          @JsonKey(name: 'organization') final Organization? organization,
-          @JsonKey(name: 'experience') final String? experience,
-          @JsonKey(name: 'designation') final String? designation,
-          @JsonKey(name: 'emergency_contact') final String? emergencyContact,
-          @JsonKey(name: 'address_proof') final dynamic addressProof,
-          @JsonKey(name: 'categories')
-          final List<MultiSelectSingleDataEntity>? categories}) =
-      _$MentorProfileDataImpl;
+  const factory _MentorProfileData({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'organization') final Organization? organization,
+    @JsonKey(name: 'experience') final String? experience,
+    @JsonKey(name: 'designation') final String? designation,
+    @JsonKey(name: 'emergency_contact') final String? emergencyContact,
+    @JsonKey(name: 'address_proof') final dynamic addressProof,
+    @JsonKey(name: 'categories')
+    final List<MultiSelectSingleDataEntity>? categories,
+  }) = _$MentorProfileDataImpl;
 
   factory _MentorProfileData.fromJson(Map<String, dynamic> json) =
       _$MentorProfileDataImpl.fromJson;
@@ -824,16 +889,18 @@ mixin _$Organization {
 /// @nodoc
 abstract class $OrganizationCopyWith<$Res> {
   factory $OrganizationCopyWith(
-          Organization value, $Res Function(Organization) then) =
-      _$OrganizationCopyWithImpl<$Res, Organization>;
+    Organization value,
+    $Res Function(Organization) then,
+  ) = _$OrganizationCopyWithImpl<$Res, Organization>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'category') List<int>? category,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'phone_number') String? phoneNumber,
-      @JsonKey(name: 'logo') dynamic logo});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'category') List<int>? category,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'phone_number') String? phoneNumber,
+    @JsonKey(name: 'logo') dynamic logo,
+  });
 }
 
 /// @nodoc
@@ -858,32 +925,41 @@ class _$OrganizationCopyWithImpl<$Res, $Val extends Organization>
     Object? phoneNumber = freezed,
     Object? logo = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      category: freezed == category
-          ? _value.category
-          : category // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      phoneNumber: freezed == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      logo: freezed == logo
-          ? _value.logo
-          : logo // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            category:
+                freezed == category
+                    ? _value.category
+                    : category // ignore: cast_nullable_to_non_nullable
+                        as List<int>?,
+            email:
+                freezed == email
+                    ? _value.email
+                    : email // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            phoneNumber:
+                freezed == phoneNumber
+                    ? _value.phoneNumber
+                    : phoneNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            logo:
+                freezed == logo
+                    ? _value.logo
+                    : logo // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -891,17 +967,19 @@ class _$OrganizationCopyWithImpl<$Res, $Val extends Organization>
 abstract class _$$OrganizationImplCopyWith<$Res>
     implements $OrganizationCopyWith<$Res> {
   factory _$$OrganizationImplCopyWith(
-          _$OrganizationImpl value, $Res Function(_$OrganizationImpl) then) =
-      __$$OrganizationImplCopyWithImpl<$Res>;
+    _$OrganizationImpl value,
+    $Res Function(_$OrganizationImpl) then,
+  ) = __$$OrganizationImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'category') List<int>? category,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'phone_number') String? phoneNumber,
-      @JsonKey(name: 'logo') dynamic logo});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'category') List<int>? category,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'phone_number') String? phoneNumber,
+    @JsonKey(name: 'logo') dynamic logo,
+  });
 }
 
 /// @nodoc
@@ -909,8 +987,9 @@ class __$$OrganizationImplCopyWithImpl<$Res>
     extends _$OrganizationCopyWithImpl<$Res, _$OrganizationImpl>
     implements _$$OrganizationImplCopyWith<$Res> {
   __$$OrganizationImplCopyWithImpl(
-      _$OrganizationImpl _value, $Res Function(_$OrganizationImpl) _then)
-      : super(_value, _then);
+    _$OrganizationImpl _value,
+    $Res Function(_$OrganizationImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Organization
   /// with the given fields replaced by the non-null parameter values.
@@ -924,46 +1003,54 @@ class __$$OrganizationImplCopyWithImpl<$Res>
     Object? phoneNumber = freezed,
     Object? logo = freezed,
   }) {
-    return _then(_$OrganizationImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      category: freezed == category
-          ? _value._category
-          : category // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      phoneNumber: freezed == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      logo: freezed == logo
-          ? _value.logo
-          : logo // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-    ));
+    return _then(
+      _$OrganizationImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        category:
+            freezed == category
+                ? _value._category
+                : category // ignore: cast_nullable_to_non_nullable
+                    as List<int>?,
+        email:
+            freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        phoneNumber:
+            freezed == phoneNumber
+                ? _value.phoneNumber
+                : phoneNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        logo:
+            freezed == logo
+                ? _value.logo
+                : logo // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$OrganizationImpl implements _Organization {
-  const _$OrganizationImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'name') this.name,
-      @JsonKey(name: 'category') final List<int>? category,
-      @JsonKey(name: 'email') this.email,
-      @JsonKey(name: 'phone_number') this.phoneNumber,
-      @JsonKey(name: 'logo') this.logo})
-      : _category = category;
+  const _$OrganizationImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'name') this.name,
+    @JsonKey(name: 'category') final List<int>? category,
+    @JsonKey(name: 'email') this.email,
+    @JsonKey(name: 'phone_number') this.phoneNumber,
+    @JsonKey(name: 'logo') this.logo,
+  }) : _category = category;
 
   factory _$OrganizationImpl.fromJson(Map<String, dynamic> json) =>
       _$$OrganizationImplFromJson(json);
@@ -1017,13 +1104,14 @@ class _$OrganizationImpl implements _Organization {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      name,
-      const DeepCollectionEquality().hash(_category),
-      email,
-      phoneNumber,
-      const DeepCollectionEquality().hash(logo));
+    runtimeType,
+    id,
+    name,
+    const DeepCollectionEquality().hash(_category),
+    email,
+    phoneNumber,
+    const DeepCollectionEquality().hash(logo),
+  );
 
   /// Create a copy of Organization
   /// with the given fields replaced by the non-null parameter values.
@@ -1035,20 +1123,19 @@ class _$OrganizationImpl implements _Organization {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$OrganizationImplToJson(
-      this,
-    );
+    return _$$OrganizationImplToJson(this);
   }
 }
 
 abstract class _Organization implements Organization {
-  const factory _Organization(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'name') final String? name,
-      @JsonKey(name: 'category') final List<int>? category,
-      @JsonKey(name: 'email') final String? email,
-      @JsonKey(name: 'phone_number') final String? phoneNumber,
-      @JsonKey(name: 'logo') final dynamic logo}) = _$OrganizationImpl;
+  const factory _Organization({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'name') final String? name,
+    @JsonKey(name: 'category') final List<int>? category,
+    @JsonKey(name: 'email') final String? email,
+    @JsonKey(name: 'phone_number') final String? phoneNumber,
+    @JsonKey(name: 'logo') final dynamic logo,
+  }) = _$OrganizationImpl;
 
   factory _Organization.fromJson(Map<String, dynamic> json) =
       _$OrganizationImpl.fromJson;

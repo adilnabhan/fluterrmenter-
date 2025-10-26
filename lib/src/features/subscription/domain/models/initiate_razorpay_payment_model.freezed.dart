@@ -12,10 +12,12 @@ part of 'initiate_razorpay_payment_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 InitiateRazorpayPaymentModel _$InitiateRazorpayPaymentModelFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return _InitiateRazorpayPaymentModel.fromJson(json);
 }
 
@@ -41,32 +43,38 @@ mixin _$InitiateRazorpayPaymentModel {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   $InitiateRazorpayPaymentModelCopyWith<InitiateRazorpayPaymentModel>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $InitiateRazorpayPaymentModelCopyWith<$Res> {
   factory $InitiateRazorpayPaymentModelCopyWith(
-          InitiateRazorpayPaymentModel value,
-          $Res Function(InitiateRazorpayPaymentModel) then) =
-      _$InitiateRazorpayPaymentModelCopyWithImpl<$Res,
-          InitiateRazorpayPaymentModel>;
+    InitiateRazorpayPaymentModel value,
+    $Res Function(InitiateRazorpayPaymentModel) then,
+  ) =
+      _$InitiateRazorpayPaymentModelCopyWithImpl<
+        $Res,
+        InitiateRazorpayPaymentModel
+      >;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String? id,
-      @JsonKey(name: 'order_id') String? orderId,
-      @JsonKey(name: 'user') User? user,
-      @JsonKey(name: 'organization') String? organization,
-      @JsonKey(name: 'discipl_plan') DisciplPlan? disciplPlan,
-      @JsonKey(name: 'amount') String? amount});
+  $Res call({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: 'order_id') String? orderId,
+    @JsonKey(name: 'user') User? user,
+    @JsonKey(name: 'organization') String? organization,
+    @JsonKey(name: 'discipl_plan') DisciplPlan? disciplPlan,
+    @JsonKey(name: 'amount') String? amount,
+  });
 
   $UserCopyWith<$Res>? get user;
   $DisciplPlanCopyWith<$Res>? get disciplPlan;
 }
 
 /// @nodoc
-class _$InitiateRazorpayPaymentModelCopyWithImpl<$Res,
-        $Val extends InitiateRazorpayPaymentModel>
+class _$InitiateRazorpayPaymentModelCopyWithImpl<
+  $Res,
+  $Val extends InitiateRazorpayPaymentModel
+>
     implements $InitiateRazorpayPaymentModelCopyWith<$Res> {
   _$InitiateRazorpayPaymentModelCopyWithImpl(this._value, this._then);
 
@@ -87,32 +95,41 @@ class _$InitiateRazorpayPaymentModelCopyWithImpl<$Res,
     Object? disciplPlan = freezed,
     Object? amount = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      orderId: freezed == orderId
-          ? _value.orderId
-          : orderId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      user: freezed == user
-          ? _value.user
-          : user // ignore: cast_nullable_to_non_nullable
-              as User?,
-      organization: freezed == organization
-          ? _value.organization
-          : organization // ignore: cast_nullable_to_non_nullable
-              as String?,
-      disciplPlan: freezed == disciplPlan
-          ? _value.disciplPlan
-          : disciplPlan // ignore: cast_nullable_to_non_nullable
-              as DisciplPlan?,
-      amount: freezed == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            orderId:
+                freezed == orderId
+                    ? _value.orderId
+                    : orderId // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            user:
+                freezed == user
+                    ? _value.user
+                    : user // ignore: cast_nullable_to_non_nullable
+                        as User?,
+            organization:
+                freezed == organization
+                    ? _value.organization
+                    : organization // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            disciplPlan:
+                freezed == disciplPlan
+                    ? _value.disciplPlan
+                    : disciplPlan // ignore: cast_nullable_to_non_nullable
+                        as DisciplPlan?,
+            amount:
+                freezed == amount
+                    ? _value.amount
+                    : amount // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of InitiateRazorpayPaymentModel
@@ -148,18 +165,19 @@ class _$InitiateRazorpayPaymentModelCopyWithImpl<$Res,
 abstract class _$$InitiateRazorpayPaymentModelImplCopyWith<$Res>
     implements $InitiateRazorpayPaymentModelCopyWith<$Res> {
   factory _$$InitiateRazorpayPaymentModelImplCopyWith(
-          _$InitiateRazorpayPaymentModelImpl value,
-          $Res Function(_$InitiateRazorpayPaymentModelImpl) then) =
-      __$$InitiateRazorpayPaymentModelImplCopyWithImpl<$Res>;
+    _$InitiateRazorpayPaymentModelImpl value,
+    $Res Function(_$InitiateRazorpayPaymentModelImpl) then,
+  ) = __$$InitiateRazorpayPaymentModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String? id,
-      @JsonKey(name: 'order_id') String? orderId,
-      @JsonKey(name: 'user') User? user,
-      @JsonKey(name: 'organization') String? organization,
-      @JsonKey(name: 'discipl_plan') DisciplPlan? disciplPlan,
-      @JsonKey(name: 'amount') String? amount});
+  $Res call({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: 'order_id') String? orderId,
+    @JsonKey(name: 'user') User? user,
+    @JsonKey(name: 'organization') String? organization,
+    @JsonKey(name: 'discipl_plan') DisciplPlan? disciplPlan,
+    @JsonKey(name: 'amount') String? amount,
+  });
 
   @override
   $UserCopyWith<$Res>? get user;
@@ -169,13 +187,16 @@ abstract class _$$InitiateRazorpayPaymentModelImplCopyWith<$Res>
 
 /// @nodoc
 class __$$InitiateRazorpayPaymentModelImplCopyWithImpl<$Res>
-    extends _$InitiateRazorpayPaymentModelCopyWithImpl<$Res,
-        _$InitiateRazorpayPaymentModelImpl>
+    extends
+        _$InitiateRazorpayPaymentModelCopyWithImpl<
+          $Res,
+          _$InitiateRazorpayPaymentModelImpl
+        >
     implements _$$InitiateRazorpayPaymentModelImplCopyWith<$Res> {
   __$$InitiateRazorpayPaymentModelImplCopyWithImpl(
-      _$InitiateRazorpayPaymentModelImpl _value,
-      $Res Function(_$InitiateRazorpayPaymentModelImpl) _then)
-      : super(_value, _then);
+    _$InitiateRazorpayPaymentModelImpl _value,
+    $Res Function(_$InitiateRazorpayPaymentModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of InitiateRazorpayPaymentModel
   /// with the given fields replaced by the non-null parameter values.
@@ -189,32 +210,40 @@ class __$$InitiateRazorpayPaymentModelImplCopyWithImpl<$Res>
     Object? disciplPlan = freezed,
     Object? amount = freezed,
   }) {
-    return _then(_$InitiateRazorpayPaymentModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      orderId: freezed == orderId
-          ? _value.orderId
-          : orderId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      user: freezed == user
-          ? _value.user
-          : user // ignore: cast_nullable_to_non_nullable
-              as User?,
-      organization: freezed == organization
-          ? _value.organization
-          : organization // ignore: cast_nullable_to_non_nullable
-              as String?,
-      disciplPlan: freezed == disciplPlan
-          ? _value.disciplPlan
-          : disciplPlan // ignore: cast_nullable_to_non_nullable
-              as DisciplPlan?,
-      amount: freezed == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$InitiateRazorpayPaymentModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        orderId:
+            freezed == orderId
+                ? _value.orderId
+                : orderId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        user:
+            freezed == user
+                ? _value.user
+                : user // ignore: cast_nullable_to_non_nullable
+                    as User?,
+        organization:
+            freezed == organization
+                ? _value.organization
+                : organization // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        disciplPlan:
+            freezed == disciplPlan
+                ? _value.disciplPlan
+                : disciplPlan // ignore: cast_nullable_to_non_nullable
+                    as DisciplPlan?,
+        amount:
+            freezed == amount
+                ? _value.amount
+                : amount // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -222,17 +251,18 @@ class __$$InitiateRazorpayPaymentModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$InitiateRazorpayPaymentModelImpl
     implements _InitiateRazorpayPaymentModel {
-  const _$InitiateRazorpayPaymentModelImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'order_id') this.orderId,
-      @JsonKey(name: 'user') this.user,
-      @JsonKey(name: 'organization') this.organization,
-      @JsonKey(name: 'discipl_plan') this.disciplPlan,
-      @JsonKey(name: 'amount') this.amount});
+  const _$InitiateRazorpayPaymentModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'order_id') this.orderId,
+    @JsonKey(name: 'user') this.user,
+    @JsonKey(name: 'organization') this.organization,
+    @JsonKey(name: 'discipl_plan') this.disciplPlan,
+    @JsonKey(name: 'amount') this.amount,
+  });
 
   factory _$InitiateRazorpayPaymentModelImpl.fromJson(
-          Map<String, dynamic> json) =>
-      _$$InitiateRazorpayPaymentModelImplFromJson(json);
+    Map<String, dynamic> json,
+  ) => _$$InitiateRazorpayPaymentModelImplFromJson(json);
 
   @override
   @JsonKey(name: 'id')
@@ -276,7 +306,14 @@ class _$InitiateRazorpayPaymentModelImpl
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, orderId, user, organization, disciplPlan, amount);
+    runtimeType,
+    id,
+    orderId,
+    user,
+    organization,
+    disciplPlan,
+    amount,
+  );
 
   /// Create a copy of InitiateRazorpayPaymentModel
   /// with the given fields replaced by the non-null parameter values.
@@ -284,28 +321,28 @@ class _$InitiateRazorpayPaymentModelImpl
   @override
   @pragma('vm:prefer-inline')
   _$$InitiateRazorpayPaymentModelImplCopyWith<
-          _$InitiateRazorpayPaymentModelImpl>
-      get copyWith => __$$InitiateRazorpayPaymentModelImplCopyWithImpl<
-          _$InitiateRazorpayPaymentModelImpl>(this, _$identity);
+    _$InitiateRazorpayPaymentModelImpl
+  >
+  get copyWith => __$$InitiateRazorpayPaymentModelImplCopyWithImpl<
+    _$InitiateRazorpayPaymentModelImpl
+  >(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$InitiateRazorpayPaymentModelImplToJson(
-      this,
-    );
+    return _$$InitiateRazorpayPaymentModelImplToJson(this);
   }
 }
 
 abstract class _InitiateRazorpayPaymentModel
     implements InitiateRazorpayPaymentModel {
-  const factory _InitiateRazorpayPaymentModel(
-          {@JsonKey(name: 'id') final String? id,
-          @JsonKey(name: 'order_id') final String? orderId,
-          @JsonKey(name: 'user') final User? user,
-          @JsonKey(name: 'organization') final String? organization,
-          @JsonKey(name: 'discipl_plan') final DisciplPlan? disciplPlan,
-          @JsonKey(name: 'amount') final String? amount}) =
-      _$InitiateRazorpayPaymentModelImpl;
+  const factory _InitiateRazorpayPaymentModel({
+    @JsonKey(name: 'id') final String? id,
+    @JsonKey(name: 'order_id') final String? orderId,
+    @JsonKey(name: 'user') final User? user,
+    @JsonKey(name: 'organization') final String? organization,
+    @JsonKey(name: 'discipl_plan') final DisciplPlan? disciplPlan,
+    @JsonKey(name: 'amount') final String? amount,
+  }) = _$InitiateRazorpayPaymentModelImpl;
 
   factory _InitiateRazorpayPaymentModel.fromJson(Map<String, dynamic> json) =
       _$InitiateRazorpayPaymentModelImpl.fromJson;
@@ -334,8 +371,9 @@ abstract class _InitiateRazorpayPaymentModel
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InitiateRazorpayPaymentModelImplCopyWith<
-          _$InitiateRazorpayPaymentModelImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$InitiateRazorpayPaymentModelImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 DisciplPlan _$DisciplPlanFromJson(Map<String, dynamic> json) {
@@ -370,16 +408,18 @@ mixin _$DisciplPlan {
 /// @nodoc
 abstract class $DisciplPlanCopyWith<$Res> {
   factory $DisciplPlanCopyWith(
-          DisciplPlan value, $Res Function(DisciplPlan) then) =
-      _$DisciplPlanCopyWithImpl<$Res, DisciplPlan>;
+    DisciplPlan value,
+    $Res Function(DisciplPlan) then,
+  ) = _$DisciplPlanCopyWithImpl<$Res, DisciplPlan>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'plan_type') String? planType,
-      @JsonKey(name: 'regular_price') String? regularPrice,
-      @JsonKey(name: 'discounted_price') String? discountedPrice,
-      @JsonKey(name: 'period') int? period});
+  $Res call({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'plan_type') String? planType,
+    @JsonKey(name: 'regular_price') String? regularPrice,
+    @JsonKey(name: 'discounted_price') String? discountedPrice,
+    @JsonKey(name: 'period') int? period,
+  });
 }
 
 /// @nodoc
@@ -404,32 +444,41 @@ class _$DisciplPlanCopyWithImpl<$Res, $Val extends DisciplPlan>
     Object? discountedPrice = freezed,
     Object? period = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      planType: freezed == planType
-          ? _value.planType
-          : planType // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regularPrice: freezed == regularPrice
-          ? _value.regularPrice
-          : regularPrice // ignore: cast_nullable_to_non_nullable
-              as String?,
-      discountedPrice: freezed == discountedPrice
-          ? _value.discountedPrice
-          : discountedPrice // ignore: cast_nullable_to_non_nullable
-              as String?,
-      period: freezed == period
-          ? _value.period
-          : period // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            planType:
+                freezed == planType
+                    ? _value.planType
+                    : planType // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            regularPrice:
+                freezed == regularPrice
+                    ? _value.regularPrice
+                    : regularPrice // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            discountedPrice:
+                freezed == discountedPrice
+                    ? _value.discountedPrice
+                    : discountedPrice // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            period:
+                freezed == period
+                    ? _value.period
+                    : period // ignore: cast_nullable_to_non_nullable
+                        as int?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -437,17 +486,19 @@ class _$DisciplPlanCopyWithImpl<$Res, $Val extends DisciplPlan>
 abstract class _$$DisciplPlanImplCopyWith<$Res>
     implements $DisciplPlanCopyWith<$Res> {
   factory _$$DisciplPlanImplCopyWith(
-          _$DisciplPlanImpl value, $Res Function(_$DisciplPlanImpl) then) =
-      __$$DisciplPlanImplCopyWithImpl<$Res>;
+    _$DisciplPlanImpl value,
+    $Res Function(_$DisciplPlanImpl) then,
+  ) = __$$DisciplPlanImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'plan_type') String? planType,
-      @JsonKey(name: 'regular_price') String? regularPrice,
-      @JsonKey(name: 'discounted_price') String? discountedPrice,
-      @JsonKey(name: 'period') int? period});
+  $Res call({
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'plan_type') String? planType,
+    @JsonKey(name: 'regular_price') String? regularPrice,
+    @JsonKey(name: 'discounted_price') String? discountedPrice,
+    @JsonKey(name: 'period') int? period,
+  });
 }
 
 /// @nodoc
@@ -455,8 +506,9 @@ class __$$DisciplPlanImplCopyWithImpl<$Res>
     extends _$DisciplPlanCopyWithImpl<$Res, _$DisciplPlanImpl>
     implements _$$DisciplPlanImplCopyWith<$Res> {
   __$$DisciplPlanImplCopyWithImpl(
-      _$DisciplPlanImpl _value, $Res Function(_$DisciplPlanImpl) _then)
-      : super(_value, _then);
+    _$DisciplPlanImpl _value,
+    $Res Function(_$DisciplPlanImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of DisciplPlan
   /// with the given fields replaced by the non-null parameter values.
@@ -470,45 +522,54 @@ class __$$DisciplPlanImplCopyWithImpl<$Res>
     Object? discountedPrice = freezed,
     Object? period = freezed,
   }) {
-    return _then(_$DisciplPlanImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      planType: freezed == planType
-          ? _value.planType
-          : planType // ignore: cast_nullable_to_non_nullable
-              as String?,
-      regularPrice: freezed == regularPrice
-          ? _value.regularPrice
-          : regularPrice // ignore: cast_nullable_to_non_nullable
-              as String?,
-      discountedPrice: freezed == discountedPrice
-          ? _value.discountedPrice
-          : discountedPrice // ignore: cast_nullable_to_non_nullable
-              as String?,
-      period: freezed == period
-          ? _value.period
-          : period // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ));
+    return _then(
+      _$DisciplPlanImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        planType:
+            freezed == planType
+                ? _value.planType
+                : planType // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        regularPrice:
+            freezed == regularPrice
+                ? _value.regularPrice
+                : regularPrice // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        discountedPrice:
+            freezed == discountedPrice
+                ? _value.discountedPrice
+                : discountedPrice // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        period:
+            freezed == period
+                ? _value.period
+                : period // ignore: cast_nullable_to_non_nullable
+                    as int?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$DisciplPlanImpl implements _DisciplPlan {
-  const _$DisciplPlanImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'name') this.name,
-      @JsonKey(name: 'plan_type') this.planType,
-      @JsonKey(name: 'regular_price') this.regularPrice,
-      @JsonKey(name: 'discounted_price') this.discountedPrice,
-      @JsonKey(name: 'period') this.period});
+  const _$DisciplPlanImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'name') this.name,
+    @JsonKey(name: 'plan_type') this.planType,
+    @JsonKey(name: 'regular_price') this.regularPrice,
+    @JsonKey(name: 'discounted_price') this.discountedPrice,
+    @JsonKey(name: 'period') this.period,
+  });
 
   factory _$DisciplPlanImpl.fromJson(Map<String, dynamic> json) =>
       _$$DisciplPlanImplFromJson(json);
@@ -556,7 +617,14 @@ class _$DisciplPlanImpl implements _DisciplPlan {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, name, planType, regularPrice, discountedPrice, period);
+    runtimeType,
+    id,
+    name,
+    planType,
+    regularPrice,
+    discountedPrice,
+    period,
+  );
 
   /// Create a copy of DisciplPlan
   /// with the given fields replaced by the non-null parameter values.
@@ -568,20 +636,19 @@ class _$DisciplPlanImpl implements _DisciplPlan {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$DisciplPlanImplToJson(
-      this,
-    );
+    return _$$DisciplPlanImplToJson(this);
   }
 }
 
 abstract class _DisciplPlan implements DisciplPlan {
-  const factory _DisciplPlan(
-      {@JsonKey(name: 'id') final String? id,
-      @JsonKey(name: 'name') final String? name,
-      @JsonKey(name: 'plan_type') final String? planType,
-      @JsonKey(name: 'regular_price') final String? regularPrice,
-      @JsonKey(name: 'discounted_price') final String? discountedPrice,
-      @JsonKey(name: 'period') final int? period}) = _$DisciplPlanImpl;
+  const factory _DisciplPlan({
+    @JsonKey(name: 'id') final String? id,
+    @JsonKey(name: 'name') final String? name,
+    @JsonKey(name: 'plan_type') final String? planType,
+    @JsonKey(name: 'regular_price') final String? regularPrice,
+    @JsonKey(name: 'discounted_price') final String? discountedPrice,
+    @JsonKey(name: 'period') final int? period,
+  }) = _$DisciplPlanImpl;
 
   factory _DisciplPlan.fromJson(Map<String, dynamic> json) =
       _$DisciplPlanImpl.fromJson;
@@ -644,12 +711,13 @@ abstract class $UserCopyWith<$Res> {
   factory $UserCopyWith(User value, $Res Function(User) then) =
       _$UserCopyWithImpl<$Res, User>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'mobile_number') String? mobileNumber});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+  });
 }
 
 /// @nodoc
@@ -673,44 +741,54 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? lastName = freezed,
     Object? mobileNumber = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            email:
+                freezed == email
+                    ? _value.email
+                    : email // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            firstName:
+                freezed == firstName
+                    ? _value.firstName
+                    : firstName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastName:
+                freezed == lastName
+                    ? _value.lastName
+                    : lastName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            mobileNumber:
+                freezed == mobileNumber
+                    ? _value.mobileNumber
+                    : mobileNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$$UserImplCopyWith(
-          _$UserImpl value, $Res Function(_$UserImpl) then) =
-      __$$UserImplCopyWithImpl<$Res>;
+    _$UserImpl value,
+    $Res Function(_$UserImpl) then,
+  ) = __$$UserImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'mobile_number') String? mobileNumber});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+  });
 }
 
 /// @nodoc
@@ -718,7 +796,7 @@ class __$$UserImplCopyWithImpl<$Res>
     extends _$UserCopyWithImpl<$Res, _$UserImpl>
     implements _$$UserImplCopyWith<$Res> {
   __$$UserImplCopyWithImpl(_$UserImpl _value, $Res Function(_$UserImpl) _then)
-      : super(_value, _then);
+    : super(_value, _then);
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.
@@ -731,40 +809,48 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? lastName = freezed,
     Object? mobileNumber = freezed,
   }) {
-    return _then(_$UserImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$UserImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        email:
+            freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        firstName:
+            freezed == firstName
+                ? _value.firstName
+                : firstName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastName:
+            freezed == lastName
+                ? _value.lastName
+                : lastName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        mobileNumber:
+            freezed == mobileNumber
+                ? _value.mobileNumber
+                : mobileNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$UserImpl implements _User {
-  const _$UserImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'email') this.email,
-      @JsonKey(name: 'first_name') this.firstName,
-      @JsonKey(name: 'last_name') this.lastName,
-      @JsonKey(name: 'mobile_number') this.mobileNumber});
+  const _$UserImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'email') this.email,
+    @JsonKey(name: 'first_name') this.firstName,
+    @JsonKey(name: 'last_name') this.lastName,
+    @JsonKey(name: 'mobile_number') this.mobileNumber,
+  });
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserImplFromJson(json);
@@ -820,19 +906,18 @@ class _$UserImpl implements _User {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UserImplToJson(
-      this,
-    );
+    return _$$UserImplToJson(this);
   }
 }
 
 abstract class _User implements User {
-  const factory _User(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'email') final String? email,
-      @JsonKey(name: 'first_name') final String? firstName,
-      @JsonKey(name: 'last_name') final String? lastName,
-      @JsonKey(name: 'mobile_number') final String? mobileNumber}) = _$UserImpl;
+  const factory _User({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'email') final String? email,
+    @JsonKey(name: 'first_name') final String? firstName,
+    @JsonKey(name: 'last_name') final String? lastName,
+    @JsonKey(name: 'mobile_number') final String? mobileNumber,
+  }) = _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
 

@@ -12,7 +12,8 @@ part of 'verify_otp_cubit.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$VerifyOtpState {
@@ -33,14 +34,16 @@ mixin _$VerifyOtpState {
 /// @nodoc
 abstract class $VerifyOtpStateCopyWith<$Res> {
   factory $VerifyOtpStateCopyWith(
-          VerifyOtpState value, $Res Function(VerifyOtpState) then) =
-      _$VerifyOtpStateCopyWithImpl<$Res, VerifyOtpState>;
+    VerifyOtpState value,
+    $Res Function(VerifyOtpState) then,
+  ) = _$VerifyOtpStateCopyWithImpl<$Res, VerifyOtpState>;
   @useResult
-  $Res call(
-      {SentOtpEntity sentOtpEntity,
-      Option<Either<ApiException, LoginSuccessModel?>>? verifyOtp,
-      Option<Either<ApiException, SentOtpEntity>>? resentOtp,
-      int resentOtpReminigTime});
+  $Res call({
+    SentOtpEntity sentOtpEntity,
+    Option<Either<ApiException, LoginSuccessModel?>>? verifyOtp,
+    Option<Either<ApiException, SentOtpEntity>>? resentOtp,
+    int resentOtpReminigTime,
+  });
 
   $SentOtpEntityCopyWith<$Res> get sentOtpEntity;
 }
@@ -65,24 +68,31 @@ class _$VerifyOtpStateCopyWithImpl<$Res, $Val extends VerifyOtpState>
     Object? resentOtp = freezed,
     Object? resentOtpReminigTime = null,
   }) {
-    return _then(_value.copyWith(
-      sentOtpEntity: null == sentOtpEntity
-          ? _value.sentOtpEntity
-          : sentOtpEntity // ignore: cast_nullable_to_non_nullable
-              as SentOtpEntity,
-      verifyOtp: freezed == verifyOtp
-          ? _value.verifyOtp
-          : verifyOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LoginSuccessModel?>>?,
-      resentOtp: freezed == resentOtp
-          ? _value.resentOtp
-          : resentOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, SentOtpEntity>>?,
-      resentOtpReminigTime: null == resentOtpReminigTime
-          ? _value.resentOtpReminigTime
-          : resentOtpReminigTime // ignore: cast_nullable_to_non_nullable
-              as int,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            sentOtpEntity:
+                null == sentOtpEntity
+                    ? _value.sentOtpEntity
+                    : sentOtpEntity // ignore: cast_nullable_to_non_nullable
+                        as SentOtpEntity,
+            verifyOtp:
+                freezed == verifyOtp
+                    ? _value.verifyOtp
+                    : verifyOtp // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, LoginSuccessModel?>>?,
+            resentOtp:
+                freezed == resentOtp
+                    ? _value.resentOtp
+                    : resentOtp // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, SentOtpEntity>>?,
+            resentOtpReminigTime:
+                null == resentOtpReminigTime
+                    ? _value.resentOtpReminigTime
+                    : resentOtpReminigTime // ignore: cast_nullable_to_non_nullable
+                        as int,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of VerifyOtpState
@@ -99,16 +109,18 @@ class _$VerifyOtpStateCopyWithImpl<$Res, $Val extends VerifyOtpState>
 /// @nodoc
 abstract class _$$VerifyOtpStateImplCopyWith<$Res>
     implements $VerifyOtpStateCopyWith<$Res> {
-  factory _$$VerifyOtpStateImplCopyWith(_$VerifyOtpStateImpl value,
-          $Res Function(_$VerifyOtpStateImpl) then) =
-      __$$VerifyOtpStateImplCopyWithImpl<$Res>;
+  factory _$$VerifyOtpStateImplCopyWith(
+    _$VerifyOtpStateImpl value,
+    $Res Function(_$VerifyOtpStateImpl) then,
+  ) = __$$VerifyOtpStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {SentOtpEntity sentOtpEntity,
-      Option<Either<ApiException, LoginSuccessModel?>>? verifyOtp,
-      Option<Either<ApiException, SentOtpEntity>>? resentOtp,
-      int resentOtpReminigTime});
+  $Res call({
+    SentOtpEntity sentOtpEntity,
+    Option<Either<ApiException, LoginSuccessModel?>>? verifyOtp,
+    Option<Either<ApiException, SentOtpEntity>>? resentOtp,
+    int resentOtpReminigTime,
+  });
 
   @override
   $SentOtpEntityCopyWith<$Res> get sentOtpEntity;
@@ -119,8 +131,9 @@ class __$$VerifyOtpStateImplCopyWithImpl<$Res>
     extends _$VerifyOtpStateCopyWithImpl<$Res, _$VerifyOtpStateImpl>
     implements _$$VerifyOtpStateImplCopyWith<$Res> {
   __$$VerifyOtpStateImplCopyWithImpl(
-      _$VerifyOtpStateImpl _value, $Res Function(_$VerifyOtpStateImpl) _then)
-      : super(_value, _then);
+    _$VerifyOtpStateImpl _value,
+    $Res Function(_$VerifyOtpStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of VerifyOtpState
   /// with the given fields replaced by the non-null parameter values.
@@ -132,35 +145,42 @@ class __$$VerifyOtpStateImplCopyWithImpl<$Res>
     Object? resentOtp = freezed,
     Object? resentOtpReminigTime = null,
   }) {
-    return _then(_$VerifyOtpStateImpl(
-      sentOtpEntity: null == sentOtpEntity
-          ? _value.sentOtpEntity
-          : sentOtpEntity // ignore: cast_nullable_to_non_nullable
-              as SentOtpEntity,
-      verifyOtp: freezed == verifyOtp
-          ? _value.verifyOtp
-          : verifyOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LoginSuccessModel?>>?,
-      resentOtp: freezed == resentOtp
-          ? _value.resentOtp
-          : resentOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, SentOtpEntity>>?,
-      resentOtpReminigTime: null == resentOtpReminigTime
-          ? _value.resentOtpReminigTime
-          : resentOtpReminigTime // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
+    return _then(
+      _$VerifyOtpStateImpl(
+        sentOtpEntity:
+            null == sentOtpEntity
+                ? _value.sentOtpEntity
+                : sentOtpEntity // ignore: cast_nullable_to_non_nullable
+                    as SentOtpEntity,
+        verifyOtp:
+            freezed == verifyOtp
+                ? _value.verifyOtp
+                : verifyOtp // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, LoginSuccessModel?>>?,
+        resentOtp:
+            freezed == resentOtp
+                ? _value.resentOtp
+                : resentOtp // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, SentOtpEntity>>?,
+        resentOtpReminigTime:
+            null == resentOtpReminigTime
+                ? _value.resentOtpReminigTime
+                : resentOtpReminigTime // ignore: cast_nullable_to_non_nullable
+                    as int,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$VerifyOtpStateImpl implements _VerifyOtpState {
-  const _$VerifyOtpStateImpl(
-      {required this.sentOtpEntity,
-      this.verifyOtp,
-      this.resentOtp,
-      this.resentOtpReminigTime = 0});
+  const _$VerifyOtpStateImpl({
+    required this.sentOtpEntity,
+    this.verifyOtp,
+    this.resentOtp,
+    this.resentOtpReminigTime = 0,
+  });
 
   @override
   final SentOtpEntity sentOtpEntity;
@@ -194,7 +214,12 @@ class _$VerifyOtpStateImpl implements _VerifyOtpState {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, sentOtpEntity, verifyOtp, resentOtp, resentOtpReminigTime);
+    runtimeType,
+    sentOtpEntity,
+    verifyOtp,
+    resentOtp,
+    resentOtpReminigTime,
+  );
 
   /// Create a copy of VerifyOtpState
   /// with the given fields replaced by the non-null parameter values.
@@ -203,15 +228,18 @@ class _$VerifyOtpStateImpl implements _VerifyOtpState {
   @pragma('vm:prefer-inline')
   _$$VerifyOtpStateImplCopyWith<_$VerifyOtpStateImpl> get copyWith =>
       __$$VerifyOtpStateImplCopyWithImpl<_$VerifyOtpStateImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 }
 
 abstract class _VerifyOtpState implements VerifyOtpState {
-  const factory _VerifyOtpState(
-      {required final SentOtpEntity sentOtpEntity,
-      final Option<Either<ApiException, LoginSuccessModel?>>? verifyOtp,
-      final Option<Either<ApiException, SentOtpEntity>>? resentOtp,
-      final int resentOtpReminigTime}) = _$VerifyOtpStateImpl;
+  const factory _VerifyOtpState({
+    required final SentOtpEntity sentOtpEntity,
+    final Option<Either<ApiException, LoginSuccessModel?>>? verifyOtp,
+    final Option<Either<ApiException, SentOtpEntity>>? resentOtp,
+    final int resentOtpReminigTime,
+  }) = _$VerifyOtpStateImpl;
 
   @override
   SentOtpEntity get sentOtpEntity;

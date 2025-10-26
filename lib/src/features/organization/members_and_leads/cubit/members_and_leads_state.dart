@@ -4,15 +4,25 @@ part of 'members_and_leads_cubit.dart';
 class MembersAndLeadsState with _$MembersAndLeadsState {
   const factory MembersAndLeadsState({
     //* Members
-    @Default((data: None(), isPagination: false)) ({Option<Either<ApiException, MembersListingModel>> data, bool isPagination}) members,
-    @Default(None()) Option<Either<ApiException, MemberDetailsModel>> memberDetails,
+    @Default((data: None(), isPagination: false))
+    ({
+      Option<Either<ApiException, MembersListingModel>> data,
+      bool isPagination,
+    })
+    members,
+    @Default(None())
+    Option<Either<ApiException, MemberDetailsModel>> memberDetails,
     Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
     bool? memberOnboardedAnimationCompleted,
 
     //* Leads
-    @Default((data: None(), isPagination: false)) ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination}) leads,
+    @Default((data: None(), isPagination: false))
+    ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
+    leads,
     @Default(None()) Option<Either<ApiException, LeadDetailsModel>> leadDetails,
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
+    @Default(None())
+    Option<Either<ApiException, List<UpComingPayments>?>> upComingPayments,
   }) = _MembersAndLeadsState;
 }
 

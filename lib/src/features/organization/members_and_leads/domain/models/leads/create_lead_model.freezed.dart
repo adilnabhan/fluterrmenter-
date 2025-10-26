@@ -12,10 +12,12 @@ part of 'create_lead_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 CreateOrUpdateLeadModel _$CreateOrUpdateLeadModelFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return _CreateOrUpdateLeadModel.fromJson(json);
 }
 
@@ -67,33 +69,37 @@ mixin _$CreateOrUpdateLeadModel {
 
 /// @nodoc
 abstract class $CreateOrUpdateLeadModelCopyWith<$Res> {
-  factory $CreateOrUpdateLeadModelCopyWith(CreateOrUpdateLeadModel value,
-          $Res Function(CreateOrUpdateLeadModel) then) =
-      _$CreateOrUpdateLeadModelCopyWithImpl<$Res, CreateOrUpdateLeadModel>;
+  factory $CreateOrUpdateLeadModelCopyWith(
+    CreateOrUpdateLeadModel value,
+    $Res Function(CreateOrUpdateLeadModel) then,
+  ) = _$CreateOrUpdateLeadModelCopyWithImpl<$Res, CreateOrUpdateLeadModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'experience') String? experience,
-      @JsonKey(name: 'emergency_contact') String? emergencyContact,
-      @JsonKey(name: 'gender') String? gender,
-      @JsonKey(name: 'blood_group') String? bloodGroup,
-      @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
-      @JsonKey(name: 'address_proof') dynamic addressProof,
-      @JsonKey(name: 'certificates') List<dynamic>? certificates,
-      @JsonKey(name: 'designation') String? designation,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture,
-      @JsonKey(name: 'user_role') int? userRole,
-      @JsonKey(name: 'category_data')
-      List<MultiSelectSingleDataEntity>? categoryData});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'experience') String? experience,
+    @JsonKey(name: 'emergency_contact') String? emergencyContact,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'blood_group') String? bloodGroup,
+    @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
+    @JsonKey(name: 'address_proof') dynamic addressProof,
+    @JsonKey(name: 'certificates') List<dynamic>? certificates,
+    @JsonKey(name: 'designation') String? designation,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+    @JsonKey(name: 'user_role') int? userRole,
+    @JsonKey(name: 'category_data')
+    List<MultiSelectSingleDataEntity>? categoryData,
+  });
 }
 
 /// @nodoc
-class _$CreateOrUpdateLeadModelCopyWithImpl<$Res,
-        $Val extends CreateOrUpdateLeadModel>
+class _$CreateOrUpdateLeadModelCopyWithImpl<
+  $Res,
+  $Val extends CreateOrUpdateLeadModel
+>
     implements $CreateOrUpdateLeadModelCopyWith<$Res> {
   _$CreateOrUpdateLeadModelCopyWithImpl(this._value, this._then);
 
@@ -124,72 +130,91 @@ class _$CreateOrUpdateLeadModelCopyWithImpl<$Res,
     Object? userRole = freezed,
     Object? categoryData = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      experience: freezed == experience
-          ? _value.experience
-          : experience // ignore: cast_nullable_to_non_nullable
-              as String?,
-      emergencyContact: freezed == emergencyContact
-          ? _value.emergencyContact
-          : emergencyContact // ignore: cast_nullable_to_non_nullable
-              as String?,
-      gender: freezed == gender
-          ? _value.gender
-          : gender // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bloodGroup: freezed == bloodGroup
-          ? _value.bloodGroup
-          : bloodGroup // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dateOfBirth: freezed == dateOfBirth
-          ? _value.dateOfBirth
-          : dateOfBirth // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      addressProof: freezed == addressProof
-          ? _value.addressProof
-          : addressProof // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      certificates: freezed == certificates
-          ? _value.certificates
-          : certificates // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
-      designation: freezed == designation
-          ? _value.designation
-          : designation // ignore: cast_nullable_to_non_nullable
-              as String?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      userRole: freezed == userRole
-          ? _value.userRole
-          : userRole // ignore: cast_nullable_to_non_nullable
-              as int?,
-      categoryData: freezed == categoryData
-          ? _value.categoryData
-          : categoryData // ignore: cast_nullable_to_non_nullable
-              as List<MultiSelectSingleDataEntity>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            firstName:
+                freezed == firstName
+                    ? _value.firstName
+                    : firstName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastName:
+                freezed == lastName
+                    ? _value.lastName
+                    : lastName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            mobileNumber:
+                freezed == mobileNumber
+                    ? _value.mobileNumber
+                    : mobileNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            email:
+                freezed == email
+                    ? _value.email
+                    : email // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            experience:
+                freezed == experience
+                    ? _value.experience
+                    : experience // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            emergencyContact:
+                freezed == emergencyContact
+                    ? _value.emergencyContact
+                    : emergencyContact // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            gender:
+                freezed == gender
+                    ? _value.gender
+                    : gender // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            bloodGroup:
+                freezed == bloodGroup
+                    ? _value.bloodGroup
+                    : bloodGroup // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            dateOfBirth:
+                freezed == dateOfBirth
+                    ? _value.dateOfBirth
+                    : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            addressProof:
+                freezed == addressProof
+                    ? _value.addressProof
+                    : addressProof // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            certificates:
+                freezed == certificates
+                    ? _value.certificates
+                    : certificates // ignore: cast_nullable_to_non_nullable
+                        as List<dynamic>?,
+            designation:
+                freezed == designation
+                    ? _value.designation
+                    : designation // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            profilePicture:
+                freezed == profilePicture
+                    ? _value.profilePicture
+                    : profilePicture // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            userRole:
+                freezed == userRole
+                    ? _value.userRole
+                    : userRole // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            categoryData:
+                freezed == categoryData
+                    ? _value.categoryData
+                    : categoryData // ignore: cast_nullable_to_non_nullable
+                        as List<MultiSelectSingleDataEntity>?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -197,40 +222,44 @@ class _$CreateOrUpdateLeadModelCopyWithImpl<$Res,
 abstract class _$$CreateOrUpdateLeadModelImplCopyWith<$Res>
     implements $CreateOrUpdateLeadModelCopyWith<$Res> {
   factory _$$CreateOrUpdateLeadModelImplCopyWith(
-          _$CreateOrUpdateLeadModelImpl value,
-          $Res Function(_$CreateOrUpdateLeadModelImpl) then) =
-      __$$CreateOrUpdateLeadModelImplCopyWithImpl<$Res>;
+    _$CreateOrUpdateLeadModelImpl value,
+    $Res Function(_$CreateOrUpdateLeadModelImpl) then,
+  ) = __$$CreateOrUpdateLeadModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'experience') String? experience,
-      @JsonKey(name: 'emergency_contact') String? emergencyContact,
-      @JsonKey(name: 'gender') String? gender,
-      @JsonKey(name: 'blood_group') String? bloodGroup,
-      @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
-      @JsonKey(name: 'address_proof') dynamic addressProof,
-      @JsonKey(name: 'certificates') List<dynamic>? certificates,
-      @JsonKey(name: 'designation') String? designation,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture,
-      @JsonKey(name: 'user_role') int? userRole,
-      @JsonKey(name: 'category_data')
-      List<MultiSelectSingleDataEntity>? categoryData});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'experience') String? experience,
+    @JsonKey(name: 'emergency_contact') String? emergencyContact,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'blood_group') String? bloodGroup,
+    @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
+    @JsonKey(name: 'address_proof') dynamic addressProof,
+    @JsonKey(name: 'certificates') List<dynamic>? certificates,
+    @JsonKey(name: 'designation') String? designation,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+    @JsonKey(name: 'user_role') int? userRole,
+    @JsonKey(name: 'category_data')
+    List<MultiSelectSingleDataEntity>? categoryData,
+  });
 }
 
 /// @nodoc
 class __$$CreateOrUpdateLeadModelImplCopyWithImpl<$Res>
-    extends _$CreateOrUpdateLeadModelCopyWithImpl<$Res,
-        _$CreateOrUpdateLeadModelImpl>
+    extends
+        _$CreateOrUpdateLeadModelCopyWithImpl<
+          $Res,
+          _$CreateOrUpdateLeadModelImpl
+        >
     implements _$$CreateOrUpdateLeadModelImplCopyWith<$Res> {
   __$$CreateOrUpdateLeadModelImplCopyWithImpl(
-      _$CreateOrUpdateLeadModelImpl _value,
-      $Res Function(_$CreateOrUpdateLeadModelImpl) _then)
-      : super(_value, _then);
+    _$CreateOrUpdateLeadModelImpl _value,
+    $Res Function(_$CreateOrUpdateLeadModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of CreateOrUpdateLeadModel
   /// with the given fields replaced by the non-null parameter values.
@@ -254,98 +283,116 @@ class __$$CreateOrUpdateLeadModelImplCopyWithImpl<$Res>
     Object? userRole = freezed,
     Object? categoryData = freezed,
   }) {
-    return _then(_$CreateOrUpdateLeadModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      experience: freezed == experience
-          ? _value.experience
-          : experience // ignore: cast_nullable_to_non_nullable
-              as String?,
-      emergencyContact: freezed == emergencyContact
-          ? _value.emergencyContact
-          : emergencyContact // ignore: cast_nullable_to_non_nullable
-              as String?,
-      gender: freezed == gender
-          ? _value.gender
-          : gender // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bloodGroup: freezed == bloodGroup
-          ? _value.bloodGroup
-          : bloodGroup // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dateOfBirth: freezed == dateOfBirth
-          ? _value.dateOfBirth
-          : dateOfBirth // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      addressProof: freezed == addressProof
-          ? _value.addressProof
-          : addressProof // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      certificates: freezed == certificates
-          ? _value._certificates
-          : certificates // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
-      designation: freezed == designation
-          ? _value.designation
-          : designation // ignore: cast_nullable_to_non_nullable
-              as String?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      userRole: freezed == userRole
-          ? _value.userRole
-          : userRole // ignore: cast_nullable_to_non_nullable
-              as int?,
-      categoryData: freezed == categoryData
-          ? _value._categoryData
-          : categoryData // ignore: cast_nullable_to_non_nullable
-              as List<MultiSelectSingleDataEntity>?,
-    ));
+    return _then(
+      _$CreateOrUpdateLeadModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        firstName:
+            freezed == firstName
+                ? _value.firstName
+                : firstName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastName:
+            freezed == lastName
+                ? _value.lastName
+                : lastName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        mobileNumber:
+            freezed == mobileNumber
+                ? _value.mobileNumber
+                : mobileNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        email:
+            freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        experience:
+            freezed == experience
+                ? _value.experience
+                : experience // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        emergencyContact:
+            freezed == emergencyContact
+                ? _value.emergencyContact
+                : emergencyContact // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        gender:
+            freezed == gender
+                ? _value.gender
+                : gender // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        bloodGroup:
+            freezed == bloodGroup
+                ? _value.bloodGroup
+                : bloodGroup // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        dateOfBirth:
+            freezed == dateOfBirth
+                ? _value.dateOfBirth
+                : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        addressProof:
+            freezed == addressProof
+                ? _value.addressProof
+                : addressProof // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        certificates:
+            freezed == certificates
+                ? _value._certificates
+                : certificates // ignore: cast_nullable_to_non_nullable
+                    as List<dynamic>?,
+        designation:
+            freezed == designation
+                ? _value.designation
+                : designation // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        profilePicture:
+            freezed == profilePicture
+                ? _value.profilePicture
+                : profilePicture // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        userRole:
+            freezed == userRole
+                ? _value.userRole
+                : userRole // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        categoryData:
+            freezed == categoryData
+                ? _value._categoryData
+                : categoryData // ignore: cast_nullable_to_non_nullable
+                    as List<MultiSelectSingleDataEntity>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$CreateOrUpdateLeadModelImpl implements _CreateOrUpdateLeadModel {
-  const _$CreateOrUpdateLeadModelImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'first_name') this.firstName,
-      @JsonKey(name: 'last_name') this.lastName,
-      @JsonKey(name: 'mobile_number') this.mobileNumber,
-      @JsonKey(name: 'email') this.email,
-      @JsonKey(name: 'experience') this.experience,
-      @JsonKey(name: 'emergency_contact') this.emergencyContact,
-      @JsonKey(name: 'gender') this.gender,
-      @JsonKey(name: 'blood_group') this.bloodGroup,
-      @JsonKey(name: 'date_of_birth') this.dateOfBirth,
-      @JsonKey(name: 'address_proof') this.addressProof,
-      @JsonKey(name: 'certificates') final List<dynamic>? certificates,
-      @JsonKey(name: 'designation') this.designation,
-      @JsonKey(name: 'profile_picture') this.profilePicture,
-      @JsonKey(name: 'user_role') this.userRole,
-      @JsonKey(name: 'category_data')
-      final List<MultiSelectSingleDataEntity>? categoryData})
-      : _certificates = certificates,
-        _categoryData = categoryData;
+  const _$CreateOrUpdateLeadModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'first_name') this.firstName,
+    @JsonKey(name: 'last_name') this.lastName,
+    @JsonKey(name: 'mobile_number') this.mobileNumber,
+    @JsonKey(name: 'email') this.email,
+    @JsonKey(name: 'experience') this.experience,
+    @JsonKey(name: 'emergency_contact') this.emergencyContact,
+    @JsonKey(name: 'gender') this.gender,
+    @JsonKey(name: 'blood_group') this.bloodGroup,
+    @JsonKey(name: 'date_of_birth') this.dateOfBirth,
+    @JsonKey(name: 'address_proof') this.addressProof,
+    @JsonKey(name: 'certificates') final List<dynamic>? certificates,
+    @JsonKey(name: 'designation') this.designation,
+    @JsonKey(name: 'profile_picture') this.profilePicture,
+    @JsonKey(name: 'user_role') this.userRole,
+    @JsonKey(name: 'category_data')
+    final List<MultiSelectSingleDataEntity>? categoryData,
+  }) : _certificates = certificates,
+       _categoryData = categoryData;
 
   factory _$CreateOrUpdateLeadModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$CreateOrUpdateLeadModelImplFromJson(json);
@@ -441,40 +488,49 @@ class _$CreateOrUpdateLeadModelImpl implements _CreateOrUpdateLeadModel {
                 other.bloodGroup == bloodGroup) &&
             (identical(other.dateOfBirth, dateOfBirth) ||
                 other.dateOfBirth == dateOfBirth) &&
-            const DeepCollectionEquality()
-                .equals(other.addressProof, addressProof) &&
-            const DeepCollectionEquality()
-                .equals(other._certificates, _certificates) &&
+            const DeepCollectionEquality().equals(
+              other.addressProof,
+              addressProof,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._certificates,
+              _certificates,
+            ) &&
             (identical(other.designation, designation) ||
                 other.designation == designation) &&
-            const DeepCollectionEquality()
-                .equals(other.profilePicture, profilePicture) &&
+            const DeepCollectionEquality().equals(
+              other.profilePicture,
+              profilePicture,
+            ) &&
             (identical(other.userRole, userRole) ||
                 other.userRole == userRole) &&
-            const DeepCollectionEquality()
-                .equals(other._categoryData, _categoryData));
+            const DeepCollectionEquality().equals(
+              other._categoryData,
+              _categoryData,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      firstName,
-      lastName,
-      mobileNumber,
-      email,
-      experience,
-      emergencyContact,
-      gender,
-      bloodGroup,
-      dateOfBirth,
-      const DeepCollectionEquality().hash(addressProof),
-      const DeepCollectionEquality().hash(_certificates),
-      designation,
-      const DeepCollectionEquality().hash(profilePicture),
-      userRole,
-      const DeepCollectionEquality().hash(_categoryData));
+    runtimeType,
+    id,
+    firstName,
+    lastName,
+    mobileNumber,
+    email,
+    experience,
+    emergencyContact,
+    gender,
+    bloodGroup,
+    dateOfBirth,
+    const DeepCollectionEquality().hash(addressProof),
+    const DeepCollectionEquality().hash(_certificates),
+    designation,
+    const DeepCollectionEquality().hash(profilePicture),
+    userRole,
+    const DeepCollectionEquality().hash(_categoryData),
+  );
 
   /// Create a copy of CreateOrUpdateLeadModel
   /// with the given fields replaced by the non-null parameter values.
@@ -482,37 +538,36 @@ class _$CreateOrUpdateLeadModelImpl implements _CreateOrUpdateLeadModel {
   @override
   @pragma('vm:prefer-inline')
   _$$CreateOrUpdateLeadModelImplCopyWith<_$CreateOrUpdateLeadModelImpl>
-      get copyWith => __$$CreateOrUpdateLeadModelImplCopyWithImpl<
-          _$CreateOrUpdateLeadModelImpl>(this, _$identity);
+  get copyWith => __$$CreateOrUpdateLeadModelImplCopyWithImpl<
+    _$CreateOrUpdateLeadModelImpl
+  >(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$CreateOrUpdateLeadModelImplToJson(
-      this,
-    );
+    return _$$CreateOrUpdateLeadModelImplToJson(this);
   }
 }
 
 abstract class _CreateOrUpdateLeadModel implements CreateOrUpdateLeadModel {
-  const factory _CreateOrUpdateLeadModel(
-          {@JsonKey(name: 'id') final int? id,
-          @JsonKey(name: 'first_name') final String? firstName,
-          @JsonKey(name: 'last_name') final String? lastName,
-          @JsonKey(name: 'mobile_number') final String? mobileNumber,
-          @JsonKey(name: 'email') final String? email,
-          @JsonKey(name: 'experience') final String? experience,
-          @JsonKey(name: 'emergency_contact') final String? emergencyContact,
-          @JsonKey(name: 'gender') final String? gender,
-          @JsonKey(name: 'blood_group') final String? bloodGroup,
-          @JsonKey(name: 'date_of_birth') final DateTime? dateOfBirth,
-          @JsonKey(name: 'address_proof') final dynamic addressProof,
-          @JsonKey(name: 'certificates') final List<dynamic>? certificates,
-          @JsonKey(name: 'designation') final String? designation,
-          @JsonKey(name: 'profile_picture') final dynamic profilePicture,
-          @JsonKey(name: 'user_role') final int? userRole,
-          @JsonKey(name: 'category_data')
-          final List<MultiSelectSingleDataEntity>? categoryData}) =
-      _$CreateOrUpdateLeadModelImpl;
+  const factory _CreateOrUpdateLeadModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'first_name') final String? firstName,
+    @JsonKey(name: 'last_name') final String? lastName,
+    @JsonKey(name: 'mobile_number') final String? mobileNumber,
+    @JsonKey(name: 'email') final String? email,
+    @JsonKey(name: 'experience') final String? experience,
+    @JsonKey(name: 'emergency_contact') final String? emergencyContact,
+    @JsonKey(name: 'gender') final String? gender,
+    @JsonKey(name: 'blood_group') final String? bloodGroup,
+    @JsonKey(name: 'date_of_birth') final DateTime? dateOfBirth,
+    @JsonKey(name: 'address_proof') final dynamic addressProof,
+    @JsonKey(name: 'certificates') final List<dynamic>? certificates,
+    @JsonKey(name: 'designation') final String? designation,
+    @JsonKey(name: 'profile_picture') final dynamic profilePicture,
+    @JsonKey(name: 'user_role') final int? userRole,
+    @JsonKey(name: 'category_data')
+    final List<MultiSelectSingleDataEntity>? categoryData,
+  }) = _$CreateOrUpdateLeadModelImpl;
 
   factory _CreateOrUpdateLeadModel.fromJson(Map<String, dynamic> json) =
       _$CreateOrUpdateLeadModelImpl.fromJson;
@@ -571,5 +626,5 @@ abstract class _CreateOrUpdateLeadModel implements CreateOrUpdateLeadModel {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CreateOrUpdateLeadModelImplCopyWith<_$CreateOrUpdateLeadModelImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

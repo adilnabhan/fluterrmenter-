@@ -12,7 +12,8 @@ part of 'field_data.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$FieldData<T> {
@@ -94,65 +95,67 @@ mixin _$FieldData<T> {
 /// @nodoc
 abstract class $FieldDataCopyWith<T, $Res> {
   factory $FieldDataCopyWith(
-          FieldData<T> value, $Res Function(FieldData<T>) then) =
-      _$FieldDataCopyWithImpl<T, $Res, FieldData<T>>;
+    FieldData<T> value,
+    $Res Function(FieldData<T>) then,
+  ) = _$FieldDataCopyWithImpl<T, $Res, FieldData<T>>;
   @useResult
-  $Res call(
-      {FieldType type,
-      Key? key,
-      void Function(List<({String label, T value})>)? onValueChanged,
-      ValueNotifier<List<({String label, T value})>>? selectedValues,
-      ValueNotifier<List<String>>? selectedMultiValues,
-      double tileHeight,
-      int tileShowCount,
-      double dividerHeight,
-      int maxLines,
-      TextCapitalization textCapitalization,
-      TextAlign textAlign,
-      bool autofocus,
-      bool readOnly,
-      bool onTapAlwaysCalled,
-      double cursorWidth,
-      bool obscureText,
-      List<({String label, T value})>? items,
-      String? label,
-      TextStyle? labelStyle,
-      bool? requiredLabel,
-      Key? fieldKey,
-      TextEditingController? controller,
-      String? initialValue,
-      FocusNode? focusNode,
-      InputDecoration? decoration,
-      TextInputType? keyboardType,
-      TextInputAction? textInputAction,
-      TextStyle? style,
-      StrutStyle? strutStyle,
-      TextDirection? textDirection,
-      TextAlignVertical? textAlignVertical,
-      MaxLengthEnforcement? maxLengthEnforcement,
-      int? minLines,
-      bool? expands,
-      int? maxLength,
-      void Function(String)? onChanged,
-      void Function(PointerDownEvent)? onTapOutside,
-      void Function()? onEditingComplete,
-      void Function(String)? onSubmitted,
-      void Function(String?)? onSaved,
-      void Function()? onTap,
-      String? Function(String?)? validator,
-      List<TextInputFormatter>? inputFormatters,
-      bool? enabled,
-      double? cursorHeight,
-      Radius? cursorRadius,
-      Color? cursorColor,
-      Color? cursorErrorColor,
-      Brightness? keyboardAppearance,
-      AutovalidateMode? autovalidateMode,
-      DateTime? startTime,
-      DateTime? endTime,
-      BorderRadius? borderRadius,
-      Iterable<String>? autofillHints,
-      DateFormat? dateTimeShowFormat});
+  $Res call({
+    FieldType type,
+    Key? key,
+    void Function(List<({String label, T value})>)? onValueChanged,
+    ValueNotifier<List<({String label, T value})>>? selectedValues,
+    ValueNotifier<List<String>>? selectedMultiValues,
+    double tileHeight,
+    int tileShowCount,
+    double dividerHeight,
+    int maxLines,
+    TextCapitalization textCapitalization,
+    TextAlign textAlign,
+    bool autofocus,
+    bool readOnly,
+    bool onTapAlwaysCalled,
+    double cursorWidth,
+    bool obscureText,
+    List<({String label, T value})>? items,
+    String? label,
+    TextStyle? labelStyle,
+    bool? requiredLabel,
+    Key? fieldKey,
+    TextEditingController? controller,
+    String? initialValue,
+    FocusNode? focusNode,
+    InputDecoration? decoration,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    TextStyle? style,
+    StrutStyle? strutStyle,
+    TextDirection? textDirection,
+    TextAlignVertical? textAlignVertical,
+    MaxLengthEnforcement? maxLengthEnforcement,
+    int? minLines,
+    bool? expands,
+    int? maxLength,
+    void Function(String)? onChanged,
+    void Function(PointerDownEvent)? onTapOutside,
+    void Function()? onEditingComplete,
+    void Function(String)? onSubmitted,
+    void Function(String?)? onSaved,
+    void Function()? onTap,
+    String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
+    bool? enabled,
+    double? cursorHeight,
+    Radius? cursorRadius,
+    Color? cursorColor,
+    Color? cursorErrorColor,
+    Brightness? keyboardAppearance,
+    AutovalidateMode? autovalidateMode,
+    DateTime? startTime,
+    DateTime? endTime,
+    BorderRadius? borderRadius,
+    Iterable<String>? autofillHints,
+    DateFormat? dateTimeShowFormat,
+  });
 }
 
 /// @nodoc
@@ -226,228 +229,286 @@ class _$FieldDataCopyWithImpl<T, $Res, $Val extends FieldData<T>>
     Object? autofillHints = freezed,
     Object? dateTimeShowFormat = freezed,
   }) {
-    return _then(_value.copyWith(
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as FieldType,
-      key: freezed == key
-          ? _value.key
-          : key // ignore: cast_nullable_to_non_nullable
-              as Key?,
-      onValueChanged: freezed == onValueChanged
-          ? _value.onValueChanged
-          : onValueChanged // ignore: cast_nullable_to_non_nullable
-              as void Function(List<({String label, T value})>)?,
-      selectedValues: freezed == selectedValues
-          ? _value.selectedValues
-          : selectedValues // ignore: cast_nullable_to_non_nullable
-              as ValueNotifier<List<({String label, T value})>>?,
-      selectedMultiValues: freezed == selectedMultiValues
-          ? _value.selectedMultiValues
-          : selectedMultiValues // ignore: cast_nullable_to_non_nullable
-              as ValueNotifier<List<String>>?,
-      tileHeight: null == tileHeight
-          ? _value.tileHeight
-          : tileHeight // ignore: cast_nullable_to_non_nullable
-              as double,
-      tileShowCount: null == tileShowCount
-          ? _value.tileShowCount
-          : tileShowCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      dividerHeight: null == dividerHeight
-          ? _value.dividerHeight
-          : dividerHeight // ignore: cast_nullable_to_non_nullable
-              as double,
-      maxLines: null == maxLines
-          ? _value.maxLines
-          : maxLines // ignore: cast_nullable_to_non_nullable
-              as int,
-      textCapitalization: null == textCapitalization
-          ? _value.textCapitalization
-          : textCapitalization // ignore: cast_nullable_to_non_nullable
-              as TextCapitalization,
-      textAlign: null == textAlign
-          ? _value.textAlign
-          : textAlign // ignore: cast_nullable_to_non_nullable
-              as TextAlign,
-      autofocus: null == autofocus
-          ? _value.autofocus
-          : autofocus // ignore: cast_nullable_to_non_nullable
-              as bool,
-      readOnly: null == readOnly
-          ? _value.readOnly
-          : readOnly // ignore: cast_nullable_to_non_nullable
-              as bool,
-      onTapAlwaysCalled: null == onTapAlwaysCalled
-          ? _value.onTapAlwaysCalled
-          : onTapAlwaysCalled // ignore: cast_nullable_to_non_nullable
-              as bool,
-      cursorWidth: null == cursorWidth
-          ? _value.cursorWidth
-          : cursorWidth // ignore: cast_nullable_to_non_nullable
-              as double,
-      obscureText: null == obscureText
-          ? _value.obscureText
-          : obscureText // ignore: cast_nullable_to_non_nullable
-              as bool,
-      items: freezed == items
-          ? _value.items
-          : items // ignore: cast_nullable_to_non_nullable
-              as List<({String label, T value})>?,
-      label: freezed == label
-          ? _value.label
-          : label // ignore: cast_nullable_to_non_nullable
-              as String?,
-      labelStyle: freezed == labelStyle
-          ? _value.labelStyle
-          : labelStyle // ignore: cast_nullable_to_non_nullable
-              as TextStyle?,
-      requiredLabel: freezed == requiredLabel
-          ? _value.requiredLabel
-          : requiredLabel // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      fieldKey: freezed == fieldKey
-          ? _value.fieldKey
-          : fieldKey // ignore: cast_nullable_to_non_nullable
-              as Key?,
-      controller: freezed == controller
-          ? _value.controller
-          : controller // ignore: cast_nullable_to_non_nullable
-              as TextEditingController?,
-      initialValue: freezed == initialValue
-          ? _value.initialValue
-          : initialValue // ignore: cast_nullable_to_non_nullable
-              as String?,
-      focusNode: freezed == focusNode
-          ? _value.focusNode
-          : focusNode // ignore: cast_nullable_to_non_nullable
-              as FocusNode?,
-      decoration: freezed == decoration
-          ? _value.decoration
-          : decoration // ignore: cast_nullable_to_non_nullable
-              as InputDecoration?,
-      keyboardType: freezed == keyboardType
-          ? _value.keyboardType
-          : keyboardType // ignore: cast_nullable_to_non_nullable
-              as TextInputType?,
-      textInputAction: freezed == textInputAction
-          ? _value.textInputAction
-          : textInputAction // ignore: cast_nullable_to_non_nullable
-              as TextInputAction?,
-      style: freezed == style
-          ? _value.style
-          : style // ignore: cast_nullable_to_non_nullable
-              as TextStyle?,
-      strutStyle: freezed == strutStyle
-          ? _value.strutStyle
-          : strutStyle // ignore: cast_nullable_to_non_nullable
-              as StrutStyle?,
-      textDirection: freezed == textDirection
-          ? _value.textDirection
-          : textDirection // ignore: cast_nullable_to_non_nullable
-              as TextDirection?,
-      textAlignVertical: freezed == textAlignVertical
-          ? _value.textAlignVertical
-          : textAlignVertical // ignore: cast_nullable_to_non_nullable
-              as TextAlignVertical?,
-      maxLengthEnforcement: freezed == maxLengthEnforcement
-          ? _value.maxLengthEnforcement
-          : maxLengthEnforcement // ignore: cast_nullable_to_non_nullable
-              as MaxLengthEnforcement?,
-      minLines: freezed == minLines
-          ? _value.minLines
-          : minLines // ignore: cast_nullable_to_non_nullable
-              as int?,
-      expands: freezed == expands
-          ? _value.expands
-          : expands // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      maxLength: freezed == maxLength
-          ? _value.maxLength
-          : maxLength // ignore: cast_nullable_to_non_nullable
-              as int?,
-      onChanged: freezed == onChanged
-          ? _value.onChanged
-          : onChanged // ignore: cast_nullable_to_non_nullable
-              as void Function(String)?,
-      onTapOutside: freezed == onTapOutside
-          ? _value.onTapOutside
-          : onTapOutside // ignore: cast_nullable_to_non_nullable
-              as void Function(PointerDownEvent)?,
-      onEditingComplete: freezed == onEditingComplete
-          ? _value.onEditingComplete
-          : onEditingComplete // ignore: cast_nullable_to_non_nullable
-              as void Function()?,
-      onSubmitted: freezed == onSubmitted
-          ? _value.onSubmitted
-          : onSubmitted // ignore: cast_nullable_to_non_nullable
-              as void Function(String)?,
-      onSaved: freezed == onSaved
-          ? _value.onSaved
-          : onSaved // ignore: cast_nullable_to_non_nullable
-              as void Function(String?)?,
-      onTap: freezed == onTap
-          ? _value.onTap
-          : onTap // ignore: cast_nullable_to_non_nullable
-              as void Function()?,
-      validator: freezed == validator
-          ? _value.validator
-          : validator // ignore: cast_nullable_to_non_nullable
-              as String? Function(String?)?,
-      inputFormatters: freezed == inputFormatters
-          ? _value.inputFormatters
-          : inputFormatters // ignore: cast_nullable_to_non_nullable
-              as List<TextInputFormatter>?,
-      enabled: freezed == enabled
-          ? _value.enabled
-          : enabled // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      cursorHeight: freezed == cursorHeight
-          ? _value.cursorHeight
-          : cursorHeight // ignore: cast_nullable_to_non_nullable
-              as double?,
-      cursorRadius: freezed == cursorRadius
-          ? _value.cursorRadius
-          : cursorRadius // ignore: cast_nullable_to_non_nullable
-              as Radius?,
-      cursorColor: freezed == cursorColor
-          ? _value.cursorColor
-          : cursorColor // ignore: cast_nullable_to_non_nullable
-              as Color?,
-      cursorErrorColor: freezed == cursorErrorColor
-          ? _value.cursorErrorColor
-          : cursorErrorColor // ignore: cast_nullable_to_non_nullable
-              as Color?,
-      keyboardAppearance: freezed == keyboardAppearance
-          ? _value.keyboardAppearance
-          : keyboardAppearance // ignore: cast_nullable_to_non_nullable
-              as Brightness?,
-      autovalidateMode: freezed == autovalidateMode
-          ? _value.autovalidateMode
-          : autovalidateMode // ignore: cast_nullable_to_non_nullable
-              as AutovalidateMode?,
-      startTime: freezed == startTime
-          ? _value.startTime
-          : startTime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      endTime: freezed == endTime
-          ? _value.endTime
-          : endTime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      borderRadius: freezed == borderRadius
-          ? _value.borderRadius
-          : borderRadius // ignore: cast_nullable_to_non_nullable
-              as BorderRadius?,
-      autofillHints: freezed == autofillHints
-          ? _value.autofillHints
-          : autofillHints // ignore: cast_nullable_to_non_nullable
-              as Iterable<String>?,
-      dateTimeShowFormat: freezed == dateTimeShowFormat
-          ? _value.dateTimeShowFormat
-          : dateTimeShowFormat // ignore: cast_nullable_to_non_nullable
-              as DateFormat?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            type:
+                null == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as FieldType,
+            key:
+                freezed == key
+                    ? _value.key
+                    : key // ignore: cast_nullable_to_non_nullable
+                        as Key?,
+            onValueChanged:
+                freezed == onValueChanged
+                    ? _value.onValueChanged
+                    : onValueChanged // ignore: cast_nullable_to_non_nullable
+                        as void Function(List<({String label, T value})>)?,
+            selectedValues:
+                freezed == selectedValues
+                    ? _value.selectedValues
+                    : selectedValues // ignore: cast_nullable_to_non_nullable
+                        as ValueNotifier<List<({String label, T value})>>?,
+            selectedMultiValues:
+                freezed == selectedMultiValues
+                    ? _value.selectedMultiValues
+                    : selectedMultiValues // ignore: cast_nullable_to_non_nullable
+                        as ValueNotifier<List<String>>?,
+            tileHeight:
+                null == tileHeight
+                    ? _value.tileHeight
+                    : tileHeight // ignore: cast_nullable_to_non_nullable
+                        as double,
+            tileShowCount:
+                null == tileShowCount
+                    ? _value.tileShowCount
+                    : tileShowCount // ignore: cast_nullable_to_non_nullable
+                        as int,
+            dividerHeight:
+                null == dividerHeight
+                    ? _value.dividerHeight
+                    : dividerHeight // ignore: cast_nullable_to_non_nullable
+                        as double,
+            maxLines:
+                null == maxLines
+                    ? _value.maxLines
+                    : maxLines // ignore: cast_nullable_to_non_nullable
+                        as int,
+            textCapitalization:
+                null == textCapitalization
+                    ? _value.textCapitalization
+                    : textCapitalization // ignore: cast_nullable_to_non_nullable
+                        as TextCapitalization,
+            textAlign:
+                null == textAlign
+                    ? _value.textAlign
+                    : textAlign // ignore: cast_nullable_to_non_nullable
+                        as TextAlign,
+            autofocus:
+                null == autofocus
+                    ? _value.autofocus
+                    : autofocus // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            readOnly:
+                null == readOnly
+                    ? _value.readOnly
+                    : readOnly // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            onTapAlwaysCalled:
+                null == onTapAlwaysCalled
+                    ? _value.onTapAlwaysCalled
+                    : onTapAlwaysCalled // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            cursorWidth:
+                null == cursorWidth
+                    ? _value.cursorWidth
+                    : cursorWidth // ignore: cast_nullable_to_non_nullable
+                        as double,
+            obscureText:
+                null == obscureText
+                    ? _value.obscureText
+                    : obscureText // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            items:
+                freezed == items
+                    ? _value.items
+                    : items // ignore: cast_nullable_to_non_nullable
+                        as List<({String label, T value})>?,
+            label:
+                freezed == label
+                    ? _value.label
+                    : label // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            labelStyle:
+                freezed == labelStyle
+                    ? _value.labelStyle
+                    : labelStyle // ignore: cast_nullable_to_non_nullable
+                        as TextStyle?,
+            requiredLabel:
+                freezed == requiredLabel
+                    ? _value.requiredLabel
+                    : requiredLabel // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            fieldKey:
+                freezed == fieldKey
+                    ? _value.fieldKey
+                    : fieldKey // ignore: cast_nullable_to_non_nullable
+                        as Key?,
+            controller:
+                freezed == controller
+                    ? _value.controller
+                    : controller // ignore: cast_nullable_to_non_nullable
+                        as TextEditingController?,
+            initialValue:
+                freezed == initialValue
+                    ? _value.initialValue
+                    : initialValue // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            focusNode:
+                freezed == focusNode
+                    ? _value.focusNode
+                    : focusNode // ignore: cast_nullable_to_non_nullable
+                        as FocusNode?,
+            decoration:
+                freezed == decoration
+                    ? _value.decoration
+                    : decoration // ignore: cast_nullable_to_non_nullable
+                        as InputDecoration?,
+            keyboardType:
+                freezed == keyboardType
+                    ? _value.keyboardType
+                    : keyboardType // ignore: cast_nullable_to_non_nullable
+                        as TextInputType?,
+            textInputAction:
+                freezed == textInputAction
+                    ? _value.textInputAction
+                    : textInputAction // ignore: cast_nullable_to_non_nullable
+                        as TextInputAction?,
+            style:
+                freezed == style
+                    ? _value.style
+                    : style // ignore: cast_nullable_to_non_nullable
+                        as TextStyle?,
+            strutStyle:
+                freezed == strutStyle
+                    ? _value.strutStyle
+                    : strutStyle // ignore: cast_nullable_to_non_nullable
+                        as StrutStyle?,
+            textDirection:
+                freezed == textDirection
+                    ? _value.textDirection
+                    : textDirection // ignore: cast_nullable_to_non_nullable
+                        as TextDirection?,
+            textAlignVertical:
+                freezed == textAlignVertical
+                    ? _value.textAlignVertical
+                    : textAlignVertical // ignore: cast_nullable_to_non_nullable
+                        as TextAlignVertical?,
+            maxLengthEnforcement:
+                freezed == maxLengthEnforcement
+                    ? _value.maxLengthEnforcement
+                    : maxLengthEnforcement // ignore: cast_nullable_to_non_nullable
+                        as MaxLengthEnforcement?,
+            minLines:
+                freezed == minLines
+                    ? _value.minLines
+                    : minLines // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            expands:
+                freezed == expands
+                    ? _value.expands
+                    : expands // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            maxLength:
+                freezed == maxLength
+                    ? _value.maxLength
+                    : maxLength // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            onChanged:
+                freezed == onChanged
+                    ? _value.onChanged
+                    : onChanged // ignore: cast_nullable_to_non_nullable
+                        as void Function(String)?,
+            onTapOutside:
+                freezed == onTapOutside
+                    ? _value.onTapOutside
+                    : onTapOutside // ignore: cast_nullable_to_non_nullable
+                        as void Function(PointerDownEvent)?,
+            onEditingComplete:
+                freezed == onEditingComplete
+                    ? _value.onEditingComplete
+                    : onEditingComplete // ignore: cast_nullable_to_non_nullable
+                        as void Function()?,
+            onSubmitted:
+                freezed == onSubmitted
+                    ? _value.onSubmitted
+                    : onSubmitted // ignore: cast_nullable_to_non_nullable
+                        as void Function(String)?,
+            onSaved:
+                freezed == onSaved
+                    ? _value.onSaved
+                    : onSaved // ignore: cast_nullable_to_non_nullable
+                        as void Function(String?)?,
+            onTap:
+                freezed == onTap
+                    ? _value.onTap
+                    : onTap // ignore: cast_nullable_to_non_nullable
+                        as void Function()?,
+            validator:
+                freezed == validator
+                    ? _value.validator
+                    : validator // ignore: cast_nullable_to_non_nullable
+                        as String? Function(String?)?,
+            inputFormatters:
+                freezed == inputFormatters
+                    ? _value.inputFormatters
+                    : inputFormatters // ignore: cast_nullable_to_non_nullable
+                        as List<TextInputFormatter>?,
+            enabled:
+                freezed == enabled
+                    ? _value.enabled
+                    : enabled // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            cursorHeight:
+                freezed == cursorHeight
+                    ? _value.cursorHeight
+                    : cursorHeight // ignore: cast_nullable_to_non_nullable
+                        as double?,
+            cursorRadius:
+                freezed == cursorRadius
+                    ? _value.cursorRadius
+                    : cursorRadius // ignore: cast_nullable_to_non_nullable
+                        as Radius?,
+            cursorColor:
+                freezed == cursorColor
+                    ? _value.cursorColor
+                    : cursorColor // ignore: cast_nullable_to_non_nullable
+                        as Color?,
+            cursorErrorColor:
+                freezed == cursorErrorColor
+                    ? _value.cursorErrorColor
+                    : cursorErrorColor // ignore: cast_nullable_to_non_nullable
+                        as Color?,
+            keyboardAppearance:
+                freezed == keyboardAppearance
+                    ? _value.keyboardAppearance
+                    : keyboardAppearance // ignore: cast_nullable_to_non_nullable
+                        as Brightness?,
+            autovalidateMode:
+                freezed == autovalidateMode
+                    ? _value.autovalidateMode
+                    : autovalidateMode // ignore: cast_nullable_to_non_nullable
+                        as AutovalidateMode?,
+            startTime:
+                freezed == startTime
+                    ? _value.startTime
+                    : startTime // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            endTime:
+                freezed == endTime
+                    ? _value.endTime
+                    : endTime // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            borderRadius:
+                freezed == borderRadius
+                    ? _value.borderRadius
+                    : borderRadius // ignore: cast_nullable_to_non_nullable
+                        as BorderRadius?,
+            autofillHints:
+                freezed == autofillHints
+                    ? _value.autofillHints
+                    : autofillHints // ignore: cast_nullable_to_non_nullable
+                        as Iterable<String>?,
+            dateTimeShowFormat:
+                freezed == dateTimeShowFormat
+                    ? _value.dateTimeShowFormat
+                    : dateTimeShowFormat // ignore: cast_nullable_to_non_nullable
+                        as DateFormat?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -455,66 +516,68 @@ class _$FieldDataCopyWithImpl<T, $Res, $Val extends FieldData<T>>
 abstract class _$$FieldDataImplCopyWith<T, $Res>
     implements $FieldDataCopyWith<T, $Res> {
   factory _$$FieldDataImplCopyWith(
-          _$FieldDataImpl<T> value, $Res Function(_$FieldDataImpl<T>) then) =
-      __$$FieldDataImplCopyWithImpl<T, $Res>;
+    _$FieldDataImpl<T> value,
+    $Res Function(_$FieldDataImpl<T>) then,
+  ) = __$$FieldDataImplCopyWithImpl<T, $Res>;
   @override
   @useResult
-  $Res call(
-      {FieldType type,
-      Key? key,
-      void Function(List<({String label, T value})>)? onValueChanged,
-      ValueNotifier<List<({String label, T value})>>? selectedValues,
-      ValueNotifier<List<String>>? selectedMultiValues,
-      double tileHeight,
-      int tileShowCount,
-      double dividerHeight,
-      int maxLines,
-      TextCapitalization textCapitalization,
-      TextAlign textAlign,
-      bool autofocus,
-      bool readOnly,
-      bool onTapAlwaysCalled,
-      double cursorWidth,
-      bool obscureText,
-      List<({String label, T value})>? items,
-      String? label,
-      TextStyle? labelStyle,
-      bool? requiredLabel,
-      Key? fieldKey,
-      TextEditingController? controller,
-      String? initialValue,
-      FocusNode? focusNode,
-      InputDecoration? decoration,
-      TextInputType? keyboardType,
-      TextInputAction? textInputAction,
-      TextStyle? style,
-      StrutStyle? strutStyle,
-      TextDirection? textDirection,
-      TextAlignVertical? textAlignVertical,
-      MaxLengthEnforcement? maxLengthEnforcement,
-      int? minLines,
-      bool? expands,
-      int? maxLength,
-      void Function(String)? onChanged,
-      void Function(PointerDownEvent)? onTapOutside,
-      void Function()? onEditingComplete,
-      void Function(String)? onSubmitted,
-      void Function(String?)? onSaved,
-      void Function()? onTap,
-      String? Function(String?)? validator,
-      List<TextInputFormatter>? inputFormatters,
-      bool? enabled,
-      double? cursorHeight,
-      Radius? cursorRadius,
-      Color? cursorColor,
-      Color? cursorErrorColor,
-      Brightness? keyboardAppearance,
-      AutovalidateMode? autovalidateMode,
-      DateTime? startTime,
-      DateTime? endTime,
-      BorderRadius? borderRadius,
-      Iterable<String>? autofillHints,
-      DateFormat? dateTimeShowFormat});
+  $Res call({
+    FieldType type,
+    Key? key,
+    void Function(List<({String label, T value})>)? onValueChanged,
+    ValueNotifier<List<({String label, T value})>>? selectedValues,
+    ValueNotifier<List<String>>? selectedMultiValues,
+    double tileHeight,
+    int tileShowCount,
+    double dividerHeight,
+    int maxLines,
+    TextCapitalization textCapitalization,
+    TextAlign textAlign,
+    bool autofocus,
+    bool readOnly,
+    bool onTapAlwaysCalled,
+    double cursorWidth,
+    bool obscureText,
+    List<({String label, T value})>? items,
+    String? label,
+    TextStyle? labelStyle,
+    bool? requiredLabel,
+    Key? fieldKey,
+    TextEditingController? controller,
+    String? initialValue,
+    FocusNode? focusNode,
+    InputDecoration? decoration,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    TextStyle? style,
+    StrutStyle? strutStyle,
+    TextDirection? textDirection,
+    TextAlignVertical? textAlignVertical,
+    MaxLengthEnforcement? maxLengthEnforcement,
+    int? minLines,
+    bool? expands,
+    int? maxLength,
+    void Function(String)? onChanged,
+    void Function(PointerDownEvent)? onTapOutside,
+    void Function()? onEditingComplete,
+    void Function(String)? onSubmitted,
+    void Function(String?)? onSaved,
+    void Function()? onTap,
+    String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
+    bool? enabled,
+    double? cursorHeight,
+    Radius? cursorRadius,
+    Color? cursorColor,
+    Color? cursorErrorColor,
+    Brightness? keyboardAppearance,
+    AutovalidateMode? autovalidateMode,
+    DateTime? startTime,
+    DateTime? endTime,
+    BorderRadius? borderRadius,
+    Iterable<String>? autofillHints,
+    DateFormat? dateTimeShowFormat,
+  });
 }
 
 /// @nodoc
@@ -522,8 +585,9 @@ class __$$FieldDataImplCopyWithImpl<T, $Res>
     extends _$FieldDataCopyWithImpl<T, $Res, _$FieldDataImpl<T>>
     implements _$$FieldDataImplCopyWith<T, $Res> {
   __$$FieldDataImplCopyWithImpl(
-      _$FieldDataImpl<T> _value, $Res Function(_$FieldDataImpl<T>) _then)
-      : super(_value, _then);
+    _$FieldDataImpl<T> _value,
+    $Res Function(_$FieldDataImpl<T>) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of FieldData
   /// with the given fields replaced by the non-null parameter values.
@@ -586,292 +650,349 @@ class __$$FieldDataImplCopyWithImpl<T, $Res>
     Object? autofillHints = freezed,
     Object? dateTimeShowFormat = freezed,
   }) {
-    return _then(_$FieldDataImpl<T>(
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as FieldType,
-      key: freezed == key
-          ? _value.key
-          : key // ignore: cast_nullable_to_non_nullable
-              as Key?,
-      onValueChanged: freezed == onValueChanged
-          ? _value.onValueChanged
-          : onValueChanged // ignore: cast_nullable_to_non_nullable
-              as void Function(List<({String label, T value})>)?,
-      selectedValues: freezed == selectedValues
-          ? _value.selectedValues
-          : selectedValues // ignore: cast_nullable_to_non_nullable
-              as ValueNotifier<List<({String label, T value})>>?,
-      selectedMultiValues: freezed == selectedMultiValues
-          ? _value.selectedMultiValues
-          : selectedMultiValues // ignore: cast_nullable_to_non_nullable
-              as ValueNotifier<List<String>>?,
-      tileHeight: null == tileHeight
-          ? _value.tileHeight
-          : tileHeight // ignore: cast_nullable_to_non_nullable
-              as double,
-      tileShowCount: null == tileShowCount
-          ? _value.tileShowCount
-          : tileShowCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      dividerHeight: null == dividerHeight
-          ? _value.dividerHeight
-          : dividerHeight // ignore: cast_nullable_to_non_nullable
-              as double,
-      maxLines: null == maxLines
-          ? _value.maxLines
-          : maxLines // ignore: cast_nullable_to_non_nullable
-              as int,
-      textCapitalization: null == textCapitalization
-          ? _value.textCapitalization
-          : textCapitalization // ignore: cast_nullable_to_non_nullable
-              as TextCapitalization,
-      textAlign: null == textAlign
-          ? _value.textAlign
-          : textAlign // ignore: cast_nullable_to_non_nullable
-              as TextAlign,
-      autofocus: null == autofocus
-          ? _value.autofocus
-          : autofocus // ignore: cast_nullable_to_non_nullable
-              as bool,
-      readOnly: null == readOnly
-          ? _value.readOnly
-          : readOnly // ignore: cast_nullable_to_non_nullable
-              as bool,
-      onTapAlwaysCalled: null == onTapAlwaysCalled
-          ? _value.onTapAlwaysCalled
-          : onTapAlwaysCalled // ignore: cast_nullable_to_non_nullable
-              as bool,
-      cursorWidth: null == cursorWidth
-          ? _value.cursorWidth
-          : cursorWidth // ignore: cast_nullable_to_non_nullable
-              as double,
-      obscureText: null == obscureText
-          ? _value.obscureText
-          : obscureText // ignore: cast_nullable_to_non_nullable
-              as bool,
-      items: freezed == items
-          ? _value._items
-          : items // ignore: cast_nullable_to_non_nullable
-              as List<({String label, T value})>?,
-      label: freezed == label
-          ? _value.label
-          : label // ignore: cast_nullable_to_non_nullable
-              as String?,
-      labelStyle: freezed == labelStyle
-          ? _value.labelStyle
-          : labelStyle // ignore: cast_nullable_to_non_nullable
-              as TextStyle?,
-      requiredLabel: freezed == requiredLabel
-          ? _value.requiredLabel
-          : requiredLabel // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      fieldKey: freezed == fieldKey
-          ? _value.fieldKey
-          : fieldKey // ignore: cast_nullable_to_non_nullable
-              as Key?,
-      controller: freezed == controller
-          ? _value.controller
-          : controller // ignore: cast_nullable_to_non_nullable
-              as TextEditingController?,
-      initialValue: freezed == initialValue
-          ? _value.initialValue
-          : initialValue // ignore: cast_nullable_to_non_nullable
-              as String?,
-      focusNode: freezed == focusNode
-          ? _value.focusNode
-          : focusNode // ignore: cast_nullable_to_non_nullable
-              as FocusNode?,
-      decoration: freezed == decoration
-          ? _value.decoration
-          : decoration // ignore: cast_nullable_to_non_nullable
-              as InputDecoration?,
-      keyboardType: freezed == keyboardType
-          ? _value.keyboardType
-          : keyboardType // ignore: cast_nullable_to_non_nullable
-              as TextInputType?,
-      textInputAction: freezed == textInputAction
-          ? _value.textInputAction
-          : textInputAction // ignore: cast_nullable_to_non_nullable
-              as TextInputAction?,
-      style: freezed == style
-          ? _value.style
-          : style // ignore: cast_nullable_to_non_nullable
-              as TextStyle?,
-      strutStyle: freezed == strutStyle
-          ? _value.strutStyle
-          : strutStyle // ignore: cast_nullable_to_non_nullable
-              as StrutStyle?,
-      textDirection: freezed == textDirection
-          ? _value.textDirection
-          : textDirection // ignore: cast_nullable_to_non_nullable
-              as TextDirection?,
-      textAlignVertical: freezed == textAlignVertical
-          ? _value.textAlignVertical
-          : textAlignVertical // ignore: cast_nullable_to_non_nullable
-              as TextAlignVertical?,
-      maxLengthEnforcement: freezed == maxLengthEnforcement
-          ? _value.maxLengthEnforcement
-          : maxLengthEnforcement // ignore: cast_nullable_to_non_nullable
-              as MaxLengthEnforcement?,
-      minLines: freezed == minLines
-          ? _value.minLines
-          : minLines // ignore: cast_nullable_to_non_nullable
-              as int?,
-      expands: freezed == expands
-          ? _value.expands
-          : expands // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      maxLength: freezed == maxLength
-          ? _value.maxLength
-          : maxLength // ignore: cast_nullable_to_non_nullable
-              as int?,
-      onChanged: freezed == onChanged
-          ? _value.onChanged
-          : onChanged // ignore: cast_nullable_to_non_nullable
-              as void Function(String)?,
-      onTapOutside: freezed == onTapOutside
-          ? _value.onTapOutside
-          : onTapOutside // ignore: cast_nullable_to_non_nullable
-              as void Function(PointerDownEvent)?,
-      onEditingComplete: freezed == onEditingComplete
-          ? _value.onEditingComplete
-          : onEditingComplete // ignore: cast_nullable_to_non_nullable
-              as void Function()?,
-      onSubmitted: freezed == onSubmitted
-          ? _value.onSubmitted
-          : onSubmitted // ignore: cast_nullable_to_non_nullable
-              as void Function(String)?,
-      onSaved: freezed == onSaved
-          ? _value.onSaved
-          : onSaved // ignore: cast_nullable_to_non_nullable
-              as void Function(String?)?,
-      onTap: freezed == onTap
-          ? _value.onTap
-          : onTap // ignore: cast_nullable_to_non_nullable
-              as void Function()?,
-      validator: freezed == validator
-          ? _value.validator
-          : validator // ignore: cast_nullable_to_non_nullable
-              as String? Function(String?)?,
-      inputFormatters: freezed == inputFormatters
-          ? _value._inputFormatters
-          : inputFormatters // ignore: cast_nullable_to_non_nullable
-              as List<TextInputFormatter>?,
-      enabled: freezed == enabled
-          ? _value.enabled
-          : enabled // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      cursorHeight: freezed == cursorHeight
-          ? _value.cursorHeight
-          : cursorHeight // ignore: cast_nullable_to_non_nullable
-              as double?,
-      cursorRadius: freezed == cursorRadius
-          ? _value.cursorRadius
-          : cursorRadius // ignore: cast_nullable_to_non_nullable
-              as Radius?,
-      cursorColor: freezed == cursorColor
-          ? _value.cursorColor
-          : cursorColor // ignore: cast_nullable_to_non_nullable
-              as Color?,
-      cursorErrorColor: freezed == cursorErrorColor
-          ? _value.cursorErrorColor
-          : cursorErrorColor // ignore: cast_nullable_to_non_nullable
-              as Color?,
-      keyboardAppearance: freezed == keyboardAppearance
-          ? _value.keyboardAppearance
-          : keyboardAppearance // ignore: cast_nullable_to_non_nullable
-              as Brightness?,
-      autovalidateMode: freezed == autovalidateMode
-          ? _value.autovalidateMode
-          : autovalidateMode // ignore: cast_nullable_to_non_nullable
-              as AutovalidateMode?,
-      startTime: freezed == startTime
-          ? _value.startTime
-          : startTime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      endTime: freezed == endTime
-          ? _value.endTime
-          : endTime // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      borderRadius: freezed == borderRadius
-          ? _value.borderRadius
-          : borderRadius // ignore: cast_nullable_to_non_nullable
-              as BorderRadius?,
-      autofillHints: freezed == autofillHints
-          ? _value.autofillHints
-          : autofillHints // ignore: cast_nullable_to_non_nullable
-              as Iterable<String>?,
-      dateTimeShowFormat: freezed == dateTimeShowFormat
-          ? _value.dateTimeShowFormat
-          : dateTimeShowFormat // ignore: cast_nullable_to_non_nullable
-              as DateFormat?,
-    ));
+    return _then(
+      _$FieldDataImpl<T>(
+        type:
+            null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as FieldType,
+        key:
+            freezed == key
+                ? _value.key
+                : key // ignore: cast_nullable_to_non_nullable
+                    as Key?,
+        onValueChanged:
+            freezed == onValueChanged
+                ? _value.onValueChanged
+                : onValueChanged // ignore: cast_nullable_to_non_nullable
+                    as void Function(List<({String label, T value})>)?,
+        selectedValues:
+            freezed == selectedValues
+                ? _value.selectedValues
+                : selectedValues // ignore: cast_nullable_to_non_nullable
+                    as ValueNotifier<List<({String label, T value})>>?,
+        selectedMultiValues:
+            freezed == selectedMultiValues
+                ? _value.selectedMultiValues
+                : selectedMultiValues // ignore: cast_nullable_to_non_nullable
+                    as ValueNotifier<List<String>>?,
+        tileHeight:
+            null == tileHeight
+                ? _value.tileHeight
+                : tileHeight // ignore: cast_nullable_to_non_nullable
+                    as double,
+        tileShowCount:
+            null == tileShowCount
+                ? _value.tileShowCount
+                : tileShowCount // ignore: cast_nullable_to_non_nullable
+                    as int,
+        dividerHeight:
+            null == dividerHeight
+                ? _value.dividerHeight
+                : dividerHeight // ignore: cast_nullable_to_non_nullable
+                    as double,
+        maxLines:
+            null == maxLines
+                ? _value.maxLines
+                : maxLines // ignore: cast_nullable_to_non_nullable
+                    as int,
+        textCapitalization:
+            null == textCapitalization
+                ? _value.textCapitalization
+                : textCapitalization // ignore: cast_nullable_to_non_nullable
+                    as TextCapitalization,
+        textAlign:
+            null == textAlign
+                ? _value.textAlign
+                : textAlign // ignore: cast_nullable_to_non_nullable
+                    as TextAlign,
+        autofocus:
+            null == autofocus
+                ? _value.autofocus
+                : autofocus // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        readOnly:
+            null == readOnly
+                ? _value.readOnly
+                : readOnly // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        onTapAlwaysCalled:
+            null == onTapAlwaysCalled
+                ? _value.onTapAlwaysCalled
+                : onTapAlwaysCalled // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        cursorWidth:
+            null == cursorWidth
+                ? _value.cursorWidth
+                : cursorWidth // ignore: cast_nullable_to_non_nullable
+                    as double,
+        obscureText:
+            null == obscureText
+                ? _value.obscureText
+                : obscureText // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        items:
+            freezed == items
+                ? _value._items
+                : items // ignore: cast_nullable_to_non_nullable
+                    as List<({String label, T value})>?,
+        label:
+            freezed == label
+                ? _value.label
+                : label // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        labelStyle:
+            freezed == labelStyle
+                ? _value.labelStyle
+                : labelStyle // ignore: cast_nullable_to_non_nullable
+                    as TextStyle?,
+        requiredLabel:
+            freezed == requiredLabel
+                ? _value.requiredLabel
+                : requiredLabel // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        fieldKey:
+            freezed == fieldKey
+                ? _value.fieldKey
+                : fieldKey // ignore: cast_nullable_to_non_nullable
+                    as Key?,
+        controller:
+            freezed == controller
+                ? _value.controller
+                : controller // ignore: cast_nullable_to_non_nullable
+                    as TextEditingController?,
+        initialValue:
+            freezed == initialValue
+                ? _value.initialValue
+                : initialValue // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        focusNode:
+            freezed == focusNode
+                ? _value.focusNode
+                : focusNode // ignore: cast_nullable_to_non_nullable
+                    as FocusNode?,
+        decoration:
+            freezed == decoration
+                ? _value.decoration
+                : decoration // ignore: cast_nullable_to_non_nullable
+                    as InputDecoration?,
+        keyboardType:
+            freezed == keyboardType
+                ? _value.keyboardType
+                : keyboardType // ignore: cast_nullable_to_non_nullable
+                    as TextInputType?,
+        textInputAction:
+            freezed == textInputAction
+                ? _value.textInputAction
+                : textInputAction // ignore: cast_nullable_to_non_nullable
+                    as TextInputAction?,
+        style:
+            freezed == style
+                ? _value.style
+                : style // ignore: cast_nullable_to_non_nullable
+                    as TextStyle?,
+        strutStyle:
+            freezed == strutStyle
+                ? _value.strutStyle
+                : strutStyle // ignore: cast_nullable_to_non_nullable
+                    as StrutStyle?,
+        textDirection:
+            freezed == textDirection
+                ? _value.textDirection
+                : textDirection // ignore: cast_nullable_to_non_nullable
+                    as TextDirection?,
+        textAlignVertical:
+            freezed == textAlignVertical
+                ? _value.textAlignVertical
+                : textAlignVertical // ignore: cast_nullable_to_non_nullable
+                    as TextAlignVertical?,
+        maxLengthEnforcement:
+            freezed == maxLengthEnforcement
+                ? _value.maxLengthEnforcement
+                : maxLengthEnforcement // ignore: cast_nullable_to_non_nullable
+                    as MaxLengthEnforcement?,
+        minLines:
+            freezed == minLines
+                ? _value.minLines
+                : minLines // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        expands:
+            freezed == expands
+                ? _value.expands
+                : expands // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        maxLength:
+            freezed == maxLength
+                ? _value.maxLength
+                : maxLength // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        onChanged:
+            freezed == onChanged
+                ? _value.onChanged
+                : onChanged // ignore: cast_nullable_to_non_nullable
+                    as void Function(String)?,
+        onTapOutside:
+            freezed == onTapOutside
+                ? _value.onTapOutside
+                : onTapOutside // ignore: cast_nullable_to_non_nullable
+                    as void Function(PointerDownEvent)?,
+        onEditingComplete:
+            freezed == onEditingComplete
+                ? _value.onEditingComplete
+                : onEditingComplete // ignore: cast_nullable_to_non_nullable
+                    as void Function()?,
+        onSubmitted:
+            freezed == onSubmitted
+                ? _value.onSubmitted
+                : onSubmitted // ignore: cast_nullable_to_non_nullable
+                    as void Function(String)?,
+        onSaved:
+            freezed == onSaved
+                ? _value.onSaved
+                : onSaved // ignore: cast_nullable_to_non_nullable
+                    as void Function(String?)?,
+        onTap:
+            freezed == onTap
+                ? _value.onTap
+                : onTap // ignore: cast_nullable_to_non_nullable
+                    as void Function()?,
+        validator:
+            freezed == validator
+                ? _value.validator
+                : validator // ignore: cast_nullable_to_non_nullable
+                    as String? Function(String?)?,
+        inputFormatters:
+            freezed == inputFormatters
+                ? _value._inputFormatters
+                : inputFormatters // ignore: cast_nullable_to_non_nullable
+                    as List<TextInputFormatter>?,
+        enabled:
+            freezed == enabled
+                ? _value.enabled
+                : enabled // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        cursorHeight:
+            freezed == cursorHeight
+                ? _value.cursorHeight
+                : cursorHeight // ignore: cast_nullable_to_non_nullable
+                    as double?,
+        cursorRadius:
+            freezed == cursorRadius
+                ? _value.cursorRadius
+                : cursorRadius // ignore: cast_nullable_to_non_nullable
+                    as Radius?,
+        cursorColor:
+            freezed == cursorColor
+                ? _value.cursorColor
+                : cursorColor // ignore: cast_nullable_to_non_nullable
+                    as Color?,
+        cursorErrorColor:
+            freezed == cursorErrorColor
+                ? _value.cursorErrorColor
+                : cursorErrorColor // ignore: cast_nullable_to_non_nullable
+                    as Color?,
+        keyboardAppearance:
+            freezed == keyboardAppearance
+                ? _value.keyboardAppearance
+                : keyboardAppearance // ignore: cast_nullable_to_non_nullable
+                    as Brightness?,
+        autovalidateMode:
+            freezed == autovalidateMode
+                ? _value.autovalidateMode
+                : autovalidateMode // ignore: cast_nullable_to_non_nullable
+                    as AutovalidateMode?,
+        startTime:
+            freezed == startTime
+                ? _value.startTime
+                : startTime // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        endTime:
+            freezed == endTime
+                ? _value.endTime
+                : endTime // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        borderRadius:
+            freezed == borderRadius
+                ? _value.borderRadius
+                : borderRadius // ignore: cast_nullable_to_non_nullable
+                    as BorderRadius?,
+        autofillHints:
+            freezed == autofillHints
+                ? _value.autofillHints
+                : autofillHints // ignore: cast_nullable_to_non_nullable
+                    as Iterable<String>?,
+        dateTimeShowFormat:
+            freezed == dateTimeShowFormat
+                ? _value.dateTimeShowFormat
+                : dateTimeShowFormat // ignore: cast_nullable_to_non_nullable
+                    as DateFormat?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$FieldDataImpl<T> implements _FieldData<T> {
-  _$FieldDataImpl(
-      {required this.type,
-      this.key = null,
-      this.onValueChanged,
-      this.selectedValues,
-      this.selectedMultiValues,
-      this.tileHeight = 48,
-      this.tileShowCount = 4,
-      this.dividerHeight = 8,
-      this.maxLines = 1,
-      this.textCapitalization = TextCapitalization.none,
-      this.textAlign = TextAlign.start,
-      this.autofocus = false,
-      this.readOnly = false,
-      this.onTapAlwaysCalled = false,
-      this.cursorWidth = 2,
-      this.obscureText = false,
-      final List<({String label, T value})>? items,
-      this.label,
-      this.labelStyle,
-      this.requiredLabel,
-      this.fieldKey,
-      this.controller,
-      this.initialValue,
-      this.focusNode,
-      this.decoration,
-      this.keyboardType,
-      this.textInputAction,
-      this.style,
-      this.strutStyle,
-      this.textDirection,
-      this.textAlignVertical,
-      this.maxLengthEnforcement,
-      this.minLines,
-      this.expands,
-      this.maxLength,
-      this.onChanged,
-      this.onTapOutside,
-      this.onEditingComplete,
-      this.onSubmitted,
-      this.onSaved,
-      this.onTap,
-      this.validator,
-      final List<TextInputFormatter>? inputFormatters,
-      this.enabled,
-      this.cursorHeight,
-      this.cursorRadius,
-      this.cursorColor,
-      this.cursorErrorColor,
-      this.keyboardAppearance,
-      this.autovalidateMode,
-      this.startTime,
-      this.endTime,
-      this.borderRadius,
-      this.autofillHints,
-      this.dateTimeShowFormat})
-      : _items = items,
-        _inputFormatters = inputFormatters;
+  _$FieldDataImpl({
+    required this.type,
+    this.key = null,
+    this.onValueChanged,
+    this.selectedValues,
+    this.selectedMultiValues,
+    this.tileHeight = 48,
+    this.tileShowCount = 4,
+    this.dividerHeight = 8,
+    this.maxLines = 1,
+    this.textCapitalization = TextCapitalization.none,
+    this.textAlign = TextAlign.start,
+    this.autofocus = false,
+    this.readOnly = false,
+    this.onTapAlwaysCalled = false,
+    this.cursorWidth = 2,
+    this.obscureText = false,
+    final List<({String label, T value})>? items,
+    this.label,
+    this.labelStyle,
+    this.requiredLabel,
+    this.fieldKey,
+    this.controller,
+    this.initialValue,
+    this.focusNode,
+    this.decoration,
+    this.keyboardType,
+    this.textInputAction,
+    this.style,
+    this.strutStyle,
+    this.textDirection,
+    this.textAlignVertical,
+    this.maxLengthEnforcement,
+    this.minLines,
+    this.expands,
+    this.maxLength,
+    this.onChanged,
+    this.onTapOutside,
+    this.onEditingComplete,
+    this.onSubmitted,
+    this.onSaved,
+    this.onTap,
+    this.validator,
+    final List<TextInputFormatter>? inputFormatters,
+    this.enabled,
+    this.cursorHeight,
+    this.cursorRadius,
+    this.cursorColor,
+    this.cursorErrorColor,
+    this.keyboardAppearance,
+    this.autovalidateMode,
+    this.startTime,
+    this.endTime,
+    this.borderRadius,
+    this.autofillHints,
+    this.dateTimeShowFormat,
+  }) : _items = items,
+       _inputFormatters = inputFormatters;
 
   @override
   final FieldType type;
@@ -1100,8 +1221,10 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
             (identical(other.onTap, onTap) || other.onTap == onTap) &&
             (identical(other.validator, validator) ||
                 other.validator == validator) &&
-            const DeepCollectionEquality()
-                .equals(other._inputFormatters, _inputFormatters) &&
+            const DeepCollectionEquality().equals(
+              other._inputFormatters,
+              _inputFormatters,
+            ) &&
             (identical(other.enabled, enabled) || other.enabled == enabled) &&
             (identical(other.cursorHeight, cursorHeight) ||
                 other.cursorHeight == cursorHeight) &&
@@ -1120,69 +1243,73 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
             (identical(other.endTime, endTime) || other.endTime == endTime) &&
             (identical(other.borderRadius, borderRadius) ||
                 other.borderRadius == borderRadius) &&
-            const DeepCollectionEquality().equals(other.autofillHints, autofillHints) &&
-            (identical(other.dateTimeShowFormat, dateTimeShowFormat) || other.dateTimeShowFormat == dateTimeShowFormat));
+            const DeepCollectionEquality().equals(
+              other.autofillHints,
+              autofillHints,
+            ) &&
+            (identical(other.dateTimeShowFormat, dateTimeShowFormat) ||
+                other.dateTimeShowFormat == dateTimeShowFormat));
   }
 
   @override
   int get hashCode => Object.hashAll([
-        runtimeType,
-        type,
-        key,
-        onValueChanged,
-        selectedValues,
-        selectedMultiValues,
-        tileHeight,
-        tileShowCount,
-        dividerHeight,
-        maxLines,
-        textCapitalization,
-        textAlign,
-        autofocus,
-        readOnly,
-        onTapAlwaysCalled,
-        cursorWidth,
-        obscureText,
-        const DeepCollectionEquality().hash(_items),
-        label,
-        labelStyle,
-        requiredLabel,
-        fieldKey,
-        controller,
-        initialValue,
-        focusNode,
-        decoration,
-        keyboardType,
-        textInputAction,
-        style,
-        strutStyle,
-        textDirection,
-        textAlignVertical,
-        maxLengthEnforcement,
-        minLines,
-        expands,
-        maxLength,
-        onChanged,
-        onTapOutside,
-        onEditingComplete,
-        onSubmitted,
-        onSaved,
-        onTap,
-        validator,
-        const DeepCollectionEquality().hash(_inputFormatters),
-        enabled,
-        cursorHeight,
-        cursorRadius,
-        cursorColor,
-        cursorErrorColor,
-        keyboardAppearance,
-        autovalidateMode,
-        startTime,
-        endTime,
-        borderRadius,
-        const DeepCollectionEquality().hash(autofillHints),
-        dateTimeShowFormat
-      ]);
+    runtimeType,
+    type,
+    key,
+    onValueChanged,
+    selectedValues,
+    selectedMultiValues,
+    tileHeight,
+    tileShowCount,
+    dividerHeight,
+    maxLines,
+    textCapitalization,
+    textAlign,
+    autofocus,
+    readOnly,
+    onTapAlwaysCalled,
+    cursorWidth,
+    obscureText,
+    const DeepCollectionEquality().hash(_items),
+    label,
+    labelStyle,
+    requiredLabel,
+    fieldKey,
+    controller,
+    initialValue,
+    focusNode,
+    decoration,
+    keyboardType,
+    textInputAction,
+    style,
+    strutStyle,
+    textDirection,
+    textAlignVertical,
+    maxLengthEnforcement,
+    minLines,
+    expands,
+    maxLength,
+    onChanged,
+    onTapOutside,
+    onEditingComplete,
+    onSubmitted,
+    onSaved,
+    onTap,
+    validator,
+    const DeepCollectionEquality().hash(_inputFormatters),
+    enabled,
+    cursorHeight,
+    cursorRadius,
+    cursorColor,
+    cursorErrorColor,
+    keyboardAppearance,
+    autovalidateMode,
+    startTime,
+    endTime,
+    borderRadius,
+    const DeepCollectionEquality().hash(autofillHints),
+    dateTimeShowFormat,
+  ]);
 
   /// Create a copy of FieldData
   /// with the given fields replaced by the non-null parameter values.
@@ -1194,62 +1321,63 @@ class _$FieldDataImpl<T> implements _FieldData<T> {
 }
 
 abstract class _FieldData<T> implements FieldData<T> {
-  factory _FieldData(
-      {required final FieldType type,
-      final Key? key,
-      final void Function(List<({String label, T value})>)? onValueChanged,
-      final ValueNotifier<List<({String label, T value})>>? selectedValues,
-      final ValueNotifier<List<String>>? selectedMultiValues,
-      final double tileHeight,
-      final int tileShowCount,
-      final double dividerHeight,
-      final int maxLines,
-      final TextCapitalization textCapitalization,
-      final TextAlign textAlign,
-      final bool autofocus,
-      final bool readOnly,
-      final bool onTapAlwaysCalled,
-      final double cursorWidth,
-      final bool obscureText,
-      final List<({String label, T value})>? items,
-      final String? label,
-      final TextStyle? labelStyle,
-      final bool? requiredLabel,
-      final Key? fieldKey,
-      final TextEditingController? controller,
-      final String? initialValue,
-      final FocusNode? focusNode,
-      final InputDecoration? decoration,
-      final TextInputType? keyboardType,
-      final TextInputAction? textInputAction,
-      final TextStyle? style,
-      final StrutStyle? strutStyle,
-      final TextDirection? textDirection,
-      final TextAlignVertical? textAlignVertical,
-      final MaxLengthEnforcement? maxLengthEnforcement,
-      final int? minLines,
-      final bool? expands,
-      final int? maxLength,
-      final void Function(String)? onChanged,
-      final void Function(PointerDownEvent)? onTapOutside,
-      final void Function()? onEditingComplete,
-      final void Function(String)? onSubmitted,
-      final void Function(String?)? onSaved,
-      final void Function()? onTap,
-      final String? Function(String?)? validator,
-      final List<TextInputFormatter>? inputFormatters,
-      final bool? enabled,
-      final double? cursorHeight,
-      final Radius? cursorRadius,
-      final Color? cursorColor,
-      final Color? cursorErrorColor,
-      final Brightness? keyboardAppearance,
-      final AutovalidateMode? autovalidateMode,
-      final DateTime? startTime,
-      final DateTime? endTime,
-      final BorderRadius? borderRadius,
-      final Iterable<String>? autofillHints,
-      final DateFormat? dateTimeShowFormat}) = _$FieldDataImpl<T>;
+  factory _FieldData({
+    required final FieldType type,
+    final Key? key,
+    final void Function(List<({String label, T value})>)? onValueChanged,
+    final ValueNotifier<List<({String label, T value})>>? selectedValues,
+    final ValueNotifier<List<String>>? selectedMultiValues,
+    final double tileHeight,
+    final int tileShowCount,
+    final double dividerHeight,
+    final int maxLines,
+    final TextCapitalization textCapitalization,
+    final TextAlign textAlign,
+    final bool autofocus,
+    final bool readOnly,
+    final bool onTapAlwaysCalled,
+    final double cursorWidth,
+    final bool obscureText,
+    final List<({String label, T value})>? items,
+    final String? label,
+    final TextStyle? labelStyle,
+    final bool? requiredLabel,
+    final Key? fieldKey,
+    final TextEditingController? controller,
+    final String? initialValue,
+    final FocusNode? focusNode,
+    final InputDecoration? decoration,
+    final TextInputType? keyboardType,
+    final TextInputAction? textInputAction,
+    final TextStyle? style,
+    final StrutStyle? strutStyle,
+    final TextDirection? textDirection,
+    final TextAlignVertical? textAlignVertical,
+    final MaxLengthEnforcement? maxLengthEnforcement,
+    final int? minLines,
+    final bool? expands,
+    final int? maxLength,
+    final void Function(String)? onChanged,
+    final void Function(PointerDownEvent)? onTapOutside,
+    final void Function()? onEditingComplete,
+    final void Function(String)? onSubmitted,
+    final void Function(String?)? onSaved,
+    final void Function()? onTap,
+    final String? Function(String?)? validator,
+    final List<TextInputFormatter>? inputFormatters,
+    final bool? enabled,
+    final double? cursorHeight,
+    final Radius? cursorRadius,
+    final Color? cursorColor,
+    final Color? cursorErrorColor,
+    final Brightness? keyboardAppearance,
+    final AutovalidateMode? autovalidateMode,
+    final DateTime? startTime,
+    final DateTime? endTime,
+    final BorderRadius? borderRadius,
+    final Iterable<String>? autofillHints,
+    final DateFormat? dateTimeShowFormat,
+  }) = _$FieldDataImpl<T>;
 
   @override
   FieldType get type;
