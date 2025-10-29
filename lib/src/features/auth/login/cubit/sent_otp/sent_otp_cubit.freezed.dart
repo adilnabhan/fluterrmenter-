@@ -12,7 +12,8 @@ part of 'sent_otp_cubit.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$SentOtpState {
@@ -31,12 +32,14 @@ mixin _$SentOtpState {
 /// @nodoc
 abstract class $SentOtpStateCopyWith<$Res> {
   factory $SentOtpStateCopyWith(
-          SentOtpState value, $Res Function(SentOtpState) then) =
-      _$SentOtpStateCopyWithImpl<$Res, SentOtpState>;
+    SentOtpState value,
+    $Res Function(SentOtpState) then,
+  ) = _$SentOtpStateCopyWithImpl<$Res, SentOtpState>;
   @useResult
-  $Res call(
-      {Option<Either<ApiException, SentOtpEntity>>? sentOtp,
-      Option<Either<ApiException, void>>? googleSignIn});
+  $Res call({
+    Option<Either<ApiException, SentOtpEntity>>? sentOtp,
+    Option<Either<ApiException, void>>? googleSignIn,
+  });
 }
 
 /// @nodoc
@@ -53,20 +56,22 @@ class _$SentOtpStateCopyWithImpl<$Res, $Val extends SentOtpState>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? sentOtp = freezed,
-    Object? googleSignIn = freezed,
-  }) {
-    return _then(_value.copyWith(
-      sentOtp: freezed == sentOtp
-          ? _value.sentOtp
-          : sentOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, SentOtpEntity>>?,
-      googleSignIn: freezed == googleSignIn
-          ? _value.googleSignIn
-          : googleSignIn // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, void>>?,
-    ) as $Val);
+  $Res call({Object? sentOtp = freezed, Object? googleSignIn = freezed}) {
+    return _then(
+      _value.copyWith(
+            sentOtp:
+                freezed == sentOtp
+                    ? _value.sentOtp
+                    : sentOtp // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, SentOtpEntity>>?,
+            googleSignIn:
+                freezed == googleSignIn
+                    ? _value.googleSignIn
+                    : googleSignIn // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, void>>?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -74,13 +79,15 @@ class _$SentOtpStateCopyWithImpl<$Res, $Val extends SentOtpState>
 abstract class _$$SentOtpStateImplCopyWith<$Res>
     implements $SentOtpStateCopyWith<$Res> {
   factory _$$SentOtpStateImplCopyWith(
-          _$SentOtpStateImpl value, $Res Function(_$SentOtpStateImpl) then) =
-      __$$SentOtpStateImplCopyWithImpl<$Res>;
+    _$SentOtpStateImpl value,
+    $Res Function(_$SentOtpStateImpl) then,
+  ) = __$$SentOtpStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {Option<Either<ApiException, SentOtpEntity>>? sentOtp,
-      Option<Either<ApiException, void>>? googleSignIn});
+  $Res call({
+    Option<Either<ApiException, SentOtpEntity>>? sentOtp,
+    Option<Either<ApiException, void>>? googleSignIn,
+  });
 }
 
 /// @nodoc
@@ -88,27 +95,29 @@ class __$$SentOtpStateImplCopyWithImpl<$Res>
     extends _$SentOtpStateCopyWithImpl<$Res, _$SentOtpStateImpl>
     implements _$$SentOtpStateImplCopyWith<$Res> {
   __$$SentOtpStateImplCopyWithImpl(
-      _$SentOtpStateImpl _value, $Res Function(_$SentOtpStateImpl) _then)
-      : super(_value, _then);
+    _$SentOtpStateImpl _value,
+    $Res Function(_$SentOtpStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of SentOtpState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? sentOtp = freezed,
-    Object? googleSignIn = freezed,
-  }) {
-    return _then(_$SentOtpStateImpl(
-      sentOtp: freezed == sentOtp
-          ? _value.sentOtp
-          : sentOtp // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, SentOtpEntity>>?,
-      googleSignIn: freezed == googleSignIn
-          ? _value.googleSignIn
-          : googleSignIn // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, void>>?,
-    ));
+  $Res call({Object? sentOtp = freezed, Object? googleSignIn = freezed}) {
+    return _then(
+      _$SentOtpStateImpl(
+        sentOtp:
+            freezed == sentOtp
+                ? _value.sentOtp
+                : sentOtp // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, SentOtpEntity>>?,
+        googleSignIn:
+            freezed == googleSignIn
+                ? _value.googleSignIn
+                : googleSignIn // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, void>>?,
+      ),
+    );
   }
 }
 
@@ -150,10 +159,10 @@ class _$SentOtpStateImpl implements _SentOtpState {
 }
 
 abstract class _SentOtpState implements SentOtpState {
-  const factory _SentOtpState(
-          {final Option<Either<ApiException, SentOtpEntity>>? sentOtp,
-          final Option<Either<ApiException, void>>? googleSignIn}) =
-      _$SentOtpStateImpl;
+  const factory _SentOtpState({
+    final Option<Either<ApiException, SentOtpEntity>>? sentOtp,
+    final Option<Either<ApiException, void>>? googleSignIn,
+  }) = _$SentOtpStateImpl;
 
   @override
   Option<Either<ApiException, SentOtpEntity>>? get sentOtp;

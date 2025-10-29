@@ -12,13 +12,14 @@ part of 'members_and_leads_cubit.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$MembersAndLeadsState {
-//* Members
+  //* Members
   ({Option<Either<ApiException, MembersListingModel>> data, bool isPagination})
-      get members => throw _privateConstructorUsedError;
+  get members => throw _privateConstructorUsedError;
   Option<Either<ApiException, MemberDetailsModel>> get memberDetails =>
       throw _privateConstructorUsedError;
   Option<Either<ApiException, MemberDetailsModel>>? get createOrUpdateMember =>
@@ -26,11 +27,13 @@ mixin _$MembersAndLeadsState {
   bool? get memberOnboardedAnimationCompleted =>
       throw _privateConstructorUsedError; //* Leads
   ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
-      get leads => throw _privateConstructorUsedError;
+  get leads => throw _privateConstructorUsedError;
   Option<Either<ApiException, LeadDetailsModel>> get leadDetails =>
       throw _privateConstructorUsedError;
   Option<Either<ApiException, CreateOrUpdateLeadModel>>?
-      get createOrUpdateLead => throw _privateConstructorUsedError;
+  get createOrUpdateLead => throw _privateConstructorUsedError;
+  Option<Either<ApiException, List<UpComingPayments>?>> get upComingPayments =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.
@@ -41,30 +44,33 @@ mixin _$MembersAndLeadsState {
 
 /// @nodoc
 abstract class $MembersAndLeadsStateCopyWith<$Res> {
-  factory $MembersAndLeadsStateCopyWith(MembersAndLeadsState value,
-          $Res Function(MembersAndLeadsState) then) =
-      _$MembersAndLeadsStateCopyWithImpl<$Res, MembersAndLeadsState>;
+  factory $MembersAndLeadsStateCopyWith(
+    MembersAndLeadsState value,
+    $Res Function(MembersAndLeadsState) then,
+  ) = _$MembersAndLeadsStateCopyWithImpl<$Res, MembersAndLeadsState>;
   @useResult
-  $Res call(
-      {({
-        Option<Either<ApiException, MembersListingModel>> data,
-        bool isPagination
-      }) members,
-      Option<Either<ApiException, MemberDetailsModel>> memberDetails,
-      Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
-      bool? memberOnboardedAnimationCompleted,
-      ({
-        Option<Either<ApiException, LeadsListingModel>> data,
-        bool isPagination
-      }) leads,
-      Option<Either<ApiException, LeadDetailsModel>> leadDetails,
-      Option<Either<ApiException, CreateOrUpdateLeadModel>>?
-          createOrUpdateLead});
+  $Res call({
+    ({
+      Option<Either<ApiException, MembersListingModel>> data,
+      bool isPagination,
+    })
+    members,
+    Option<Either<ApiException, MemberDetailsModel>> memberDetails,
+    Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
+    bool? memberOnboardedAnimationCompleted,
+    ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
+    leads,
+    Option<Either<ApiException, LeadDetailsModel>> leadDetails,
+    Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
+    Option<Either<ApiException, List<UpComingPayments>?>> upComingPayments,
+  });
 }
 
 /// @nodoc
-class _$MembersAndLeadsStateCopyWithImpl<$Res,
-        $Val extends MembersAndLeadsState>
+class _$MembersAndLeadsStateCopyWithImpl<
+  $Res,
+  $Val extends MembersAndLeadsState
+>
     implements $MembersAndLeadsStateCopyWith<$Res> {
   _$MembersAndLeadsStateCopyWithImpl(this._value, this._then);
 
@@ -85,79 +91,101 @@ class _$MembersAndLeadsStateCopyWithImpl<$Res,
     Object? leads = null,
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
+    Object? upComingPayments = null,
   }) {
-    return _then(_value.copyWith(
-      members: null == members
-          ? _value.members
-          : members // ignore: cast_nullable_to_non_nullable
-              as ({
-              Option<Either<ApiException, MembersListingModel>> data,
-              bool isPagination
-            }),
-      memberDetails: null == memberDetails
-          ? _value.memberDetails
-          : memberDetails // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, MemberDetailsModel>>,
-      createOrUpdateMember: freezed == createOrUpdateMember
-          ? _value.createOrUpdateMember
-          : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, MemberDetailsModel>>?,
-      memberOnboardedAnimationCompleted: freezed ==
-              memberOnboardedAnimationCompleted
-          ? _value.memberOnboardedAnimationCompleted
-          : memberOnboardedAnimationCompleted // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      leads: null == leads
-          ? _value.leads
-          : leads // ignore: cast_nullable_to_non_nullable
-              as ({
-              Option<Either<ApiException, LeadsListingModel>> data,
-              bool isPagination
-            }),
-      leadDetails: null == leadDetails
-          ? _value.leadDetails
-          : leadDetails // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LeadDetailsModel>>,
-      createOrUpdateLead: freezed == createOrUpdateLead
-          ? _value.createOrUpdateLead
-          : createOrUpdateLead // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, CreateOrUpdateLeadModel>>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            members:
+                null == members
+                    ? _value.members
+                    : members // ignore: cast_nullable_to_non_nullable
+                        as ({
+                          Option<Either<ApiException, MembersListingModel>>
+                          data,
+                          bool isPagination,
+                        }),
+            memberDetails:
+                null == memberDetails
+                    ? _value.memberDetails
+                    : memberDetails // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, MemberDetailsModel>>,
+            createOrUpdateMember:
+                freezed == createOrUpdateMember
+                    ? _value.createOrUpdateMember
+                    : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, MemberDetailsModel>>?,
+            memberOnboardedAnimationCompleted:
+                freezed == memberOnboardedAnimationCompleted
+                    ? _value.memberOnboardedAnimationCompleted
+                    : memberOnboardedAnimationCompleted // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            leads:
+                null == leads
+                    ? _value.leads
+                    : leads // ignore: cast_nullable_to_non_nullable
+                        as ({
+                          Option<Either<ApiException, LeadsListingModel>> data,
+                          bool isPagination,
+                        }),
+            leadDetails:
+                null == leadDetails
+                    ? _value.leadDetails
+                    : leadDetails // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, LeadDetailsModel>>,
+            createOrUpdateLead:
+                freezed == createOrUpdateLead
+                    ? _value.createOrUpdateLead
+                    : createOrUpdateLead // ignore: cast_nullable_to_non_nullable
+                        as Option<
+                          Either<ApiException, CreateOrUpdateLeadModel>
+                        >?,
+            upComingPayments:
+                null == upComingPayments
+                    ? _value.upComingPayments
+                    : upComingPayments // ignore: cast_nullable_to_non_nullable
+                        as Option<
+                          Either<ApiException, List<UpComingPayments>?>
+                        >,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$MembersAndLeadsStateImplCopyWith<$Res>
     implements $MembersAndLeadsStateCopyWith<$Res> {
-  factory _$$MembersAndLeadsStateImplCopyWith(_$MembersAndLeadsStateImpl value,
-          $Res Function(_$MembersAndLeadsStateImpl) then) =
-      __$$MembersAndLeadsStateImplCopyWithImpl<$Res>;
+  factory _$$MembersAndLeadsStateImplCopyWith(
+    _$MembersAndLeadsStateImpl value,
+    $Res Function(_$MembersAndLeadsStateImpl) then,
+  ) = __$$MembersAndLeadsStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {({
-        Option<Either<ApiException, MembersListingModel>> data,
-        bool isPagination
-      }) members,
-      Option<Either<ApiException, MemberDetailsModel>> memberDetails,
-      Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
-      bool? memberOnboardedAnimationCompleted,
-      ({
-        Option<Either<ApiException, LeadsListingModel>> data,
-        bool isPagination
-      }) leads,
-      Option<Either<ApiException, LeadDetailsModel>> leadDetails,
-      Option<Either<ApiException, CreateOrUpdateLeadModel>>?
-          createOrUpdateLead});
+  $Res call({
+    ({
+      Option<Either<ApiException, MembersListingModel>> data,
+      bool isPagination,
+    })
+    members,
+    Option<Either<ApiException, MemberDetailsModel>> memberDetails,
+    Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
+    bool? memberOnboardedAnimationCompleted,
+    ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
+    leads,
+    Option<Either<ApiException, LeadDetailsModel>> leadDetails,
+    Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
+    Option<Either<ApiException, List<UpComingPayments>?>> upComingPayments,
+  });
 }
 
 /// @nodoc
 class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
     extends _$MembersAndLeadsStateCopyWithImpl<$Res, _$MembersAndLeadsStateImpl>
     implements _$$MembersAndLeadsStateImplCopyWith<$Res> {
-  __$$MembersAndLeadsStateImplCopyWithImpl(_$MembersAndLeadsStateImpl _value,
-      $Res Function(_$MembersAndLeadsStateImpl) _then)
-      : super(_value, _then);
+  __$$MembersAndLeadsStateImplCopyWithImpl(
+    _$MembersAndLeadsStateImpl _value,
+    $Res Function(_$MembersAndLeadsStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.
@@ -171,66 +199,83 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
     Object? leads = null,
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
+    Object? upComingPayments = null,
   }) {
-    return _then(_$MembersAndLeadsStateImpl(
-      members: null == members
-          ? _value.members
-          : members // ignore: cast_nullable_to_non_nullable
-              as ({
-              Option<Either<ApiException, MembersListingModel>> data,
-              bool isPagination
-            }),
-      memberDetails: null == memberDetails
-          ? _value.memberDetails
-          : memberDetails // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, MemberDetailsModel>>,
-      createOrUpdateMember: freezed == createOrUpdateMember
-          ? _value.createOrUpdateMember
-          : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, MemberDetailsModel>>?,
-      memberOnboardedAnimationCompleted: freezed ==
-              memberOnboardedAnimationCompleted
-          ? _value.memberOnboardedAnimationCompleted
-          : memberOnboardedAnimationCompleted // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      leads: null == leads
-          ? _value.leads
-          : leads // ignore: cast_nullable_to_non_nullable
-              as ({
-              Option<Either<ApiException, LeadsListingModel>> data,
-              bool isPagination
-            }),
-      leadDetails: null == leadDetails
-          ? _value.leadDetails
-          : leadDetails // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LeadDetailsModel>>,
-      createOrUpdateLead: freezed == createOrUpdateLead
-          ? _value.createOrUpdateLead
-          : createOrUpdateLead // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, CreateOrUpdateLeadModel>>?,
-    ));
+    return _then(
+      _$MembersAndLeadsStateImpl(
+        members:
+            null == members
+                ? _value.members
+                : members // ignore: cast_nullable_to_non_nullable
+                    as ({
+                      Option<Either<ApiException, MembersListingModel>> data,
+                      bool isPagination,
+                    }),
+        memberDetails:
+            null == memberDetails
+                ? _value.memberDetails
+                : memberDetails // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, MemberDetailsModel>>,
+        createOrUpdateMember:
+            freezed == createOrUpdateMember
+                ? _value.createOrUpdateMember
+                : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, MemberDetailsModel>>?,
+        memberOnboardedAnimationCompleted:
+            freezed == memberOnboardedAnimationCompleted
+                ? _value.memberOnboardedAnimationCompleted
+                : memberOnboardedAnimationCompleted // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        leads:
+            null == leads
+                ? _value.leads
+                : leads // ignore: cast_nullable_to_non_nullable
+                    as ({
+                      Option<Either<ApiException, LeadsListingModel>> data,
+                      bool isPagination,
+                    }),
+        leadDetails:
+            null == leadDetails
+                ? _value.leadDetails
+                : leadDetails // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, LeadDetailsModel>>,
+        createOrUpdateLead:
+            freezed == createOrUpdateLead
+                ? _value.createOrUpdateLead
+                : createOrUpdateLead // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, CreateOrUpdateLeadModel>>?,
+        upComingPayments:
+            null == upComingPayments
+                ? _value.upComingPayments
+                : upComingPayments // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, List<UpComingPayments>?>>,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
-  const _$MembersAndLeadsStateImpl(
-      {this.members = const (data: None(), isPagination: false),
-      this.memberDetails = const None(),
-      this.createOrUpdateMember,
-      this.memberOnboardedAnimationCompleted,
-      this.leads = const (data: None(), isPagination: false),
-      this.leadDetails = const None(),
-      this.createOrUpdateLead});
+  const _$MembersAndLeadsStateImpl({
+    this.members = const (data: None(), isPagination: false),
+    this.memberDetails = const None(),
+    this.createOrUpdateMember,
+    this.memberOnboardedAnimationCompleted,
+    this.leads = const (data: None(), isPagination: false),
+    this.leadDetails = const None(),
+    this.createOrUpdateLead,
+    this.upComingPayments = const None(),
+  });
 
-//* Members
+  //* Members
   @override
   @JsonKey()
   final ({
     Option<Either<ApiException, MembersListingModel>> data,
-    bool isPagination
-  }) members;
+    bool isPagination,
+  })
+  members;
   @override
   @JsonKey()
   final Option<Either<ApiException, MemberDetailsModel>> memberDetails;
@@ -238,23 +283,27 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   final Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember;
   @override
   final bool? memberOnboardedAnimationCompleted;
-//* Leads
+  //* Leads
   @override
   @JsonKey()
   final ({
     Option<Either<ApiException, LeadsListingModel>> data,
-    bool isPagination
-  }) leads;
+    bool isPagination,
+  })
+  leads;
   @override
   @JsonKey()
   final Option<Either<ApiException, LeadDetailsModel>> leadDetails;
   @override
   final Option<Either<ApiException, CreateOrUpdateLeadModel>>?
-      createOrUpdateLead;
+  createOrUpdateLead;
+  @override
+  @JsonKey()
+  final Option<Either<ApiException, List<UpComingPayments>?>> upComingPayments;
 
   @override
   String toString() {
-    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, memberOnboardedAnimationCompleted: $memberOnboardedAnimationCompleted, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead)';
+    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, memberOnboardedAnimationCompleted: $memberOnboardedAnimationCompleted, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead, upComingPayments: $upComingPayments)';
   }
 
   @override
@@ -267,27 +316,33 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
                 other.memberDetails == memberDetails) &&
             (identical(other.createOrUpdateMember, createOrUpdateMember) ||
                 other.createOrUpdateMember == createOrUpdateMember) &&
-            (identical(other.memberOnboardedAnimationCompleted,
-                    memberOnboardedAnimationCompleted) ||
+            (identical(
+                  other.memberOnboardedAnimationCompleted,
+                  memberOnboardedAnimationCompleted,
+                ) ||
                 other.memberOnboardedAnimationCompleted ==
                     memberOnboardedAnimationCompleted) &&
             (identical(other.leads, leads) || other.leads == leads) &&
             (identical(other.leadDetails, leadDetails) ||
                 other.leadDetails == leadDetails) &&
             (identical(other.createOrUpdateLead, createOrUpdateLead) ||
-                other.createOrUpdateLead == createOrUpdateLead));
+                other.createOrUpdateLead == createOrUpdateLead) &&
+            (identical(other.upComingPayments, upComingPayments) ||
+                other.upComingPayments == upComingPayments));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      members,
-      memberDetails,
-      createOrUpdateMember,
-      memberOnboardedAnimationCompleted,
-      leads,
-      leadDetails,
-      createOrUpdateLead);
+    runtimeType,
+    members,
+    memberDetails,
+    createOrUpdateMember,
+    memberOnboardedAnimationCompleted,
+    leads,
+    leadDetails,
+    createOrUpdateLead,
+    upComingPayments,
+  );
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.
@@ -295,33 +350,40 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   @override
   @pragma('vm:prefer-inline')
   _$$MembersAndLeadsStateImplCopyWith<_$MembersAndLeadsStateImpl>
-      get copyWith =>
-          __$$MembersAndLeadsStateImplCopyWithImpl<_$MembersAndLeadsStateImpl>(
-              this, _$identity);
+  get copyWith =>
+      __$$MembersAndLeadsStateImplCopyWithImpl<_$MembersAndLeadsStateImpl>(
+        this,
+        _$identity,
+      );
 }
 
 abstract class _MembersAndLeadsState implements MembersAndLeadsState {
-  const factory _MembersAndLeadsState(
-      {final ({
-        Option<Either<ApiException, MembersListingModel>> data,
-        bool isPagination
-      }) members,
-      final Option<Either<ApiException, MemberDetailsModel>> memberDetails,
-      final Option<Either<ApiException, MemberDetailsModel>>?
-          createOrUpdateMember,
-      final bool? memberOnboardedAnimationCompleted,
-      final ({
-        Option<Either<ApiException, LeadsListingModel>> data,
-        bool isPagination
-      }) leads,
-      final Option<Either<ApiException, LeadDetailsModel>> leadDetails,
-      final Option<Either<ApiException, CreateOrUpdateLeadModel>>?
-          createOrUpdateLead}) = _$MembersAndLeadsStateImpl;
+  const factory _MembersAndLeadsState({
+    final ({
+      Option<Either<ApiException, MembersListingModel>> data,
+      bool isPagination,
+    })
+    members,
+    final Option<Either<ApiException, MemberDetailsModel>> memberDetails,
+    final Option<Either<ApiException, MemberDetailsModel>>?
+    createOrUpdateMember,
+    final bool? memberOnboardedAnimationCompleted,
+    final ({
+      Option<Either<ApiException, LeadsListingModel>> data,
+      bool isPagination,
+    })
+    leads,
+    final Option<Either<ApiException, LeadDetailsModel>> leadDetails,
+    final Option<Either<ApiException, CreateOrUpdateLeadModel>>?
+    createOrUpdateLead,
+    final Option<Either<ApiException, List<UpComingPayments>?>>
+    upComingPayments,
+  }) = _$MembersAndLeadsStateImpl;
 
-//* Members
+  //* Members
   @override
   ({Option<Either<ApiException, MembersListingModel>> data, bool isPagination})
-      get members;
+  get members;
   @override
   Option<Either<ApiException, MemberDetailsModel>> get memberDetails;
   @override
@@ -330,16 +392,18 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
   bool? get memberOnboardedAnimationCompleted; //* Leads
   @override
   ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
-      get leads;
+  get leads;
   @override
   Option<Either<ApiException, LeadDetailsModel>> get leadDetails;
   @override
   Option<Either<ApiException, CreateOrUpdateLeadModel>>? get createOrUpdateLead;
+  @override
+  Option<Either<ApiException, List<UpComingPayments>?>> get upComingPayments;
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MembersAndLeadsStateImplCopyWith<_$MembersAndLeadsStateImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

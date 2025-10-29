@@ -12,7 +12,8 @@ part of 'create_account_cubit.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$CreateAccountState {
@@ -30,12 +31,14 @@ mixin _$CreateAccountState {
 /// @nodoc
 abstract class $CreateAccountStateCopyWith<$Res> {
   factory $CreateAccountStateCopyWith(
-          CreateAccountState value, $Res Function(CreateAccountState) then) =
-      _$CreateAccountStateCopyWithImpl<$Res, CreateAccountState>;
+    CreateAccountState value,
+    $Res Function(CreateAccountState) then,
+  ) = _$CreateAccountStateCopyWithImpl<$Res, CreateAccountState>;
   @useResult
-  $Res call(
-      {SentOtpEntity sentOtpEntity,
-      Option<Either<ApiException, LoginSuccessModel>>? onboardingUser});
+  $Res call({
+    SentOtpEntity sentOtpEntity,
+    Option<Either<ApiException, LoginSuccessModel>>? onboardingUser,
+  });
 
   $SentOtpEntityCopyWith<$Res> get sentOtpEntity;
 }
@@ -54,20 +57,22 @@ class _$CreateAccountStateCopyWithImpl<$Res, $Val extends CreateAccountState>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? sentOtpEntity = null,
-    Object? onboardingUser = freezed,
-  }) {
-    return _then(_value.copyWith(
-      sentOtpEntity: null == sentOtpEntity
-          ? _value.sentOtpEntity
-          : sentOtpEntity // ignore: cast_nullable_to_non_nullable
-              as SentOtpEntity,
-      onboardingUser: freezed == onboardingUser
-          ? _value.onboardingUser
-          : onboardingUser // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LoginSuccessModel>>?,
-    ) as $Val);
+  $Res call({Object? sentOtpEntity = null, Object? onboardingUser = freezed}) {
+    return _then(
+      _value.copyWith(
+            sentOtpEntity:
+                null == sentOtpEntity
+                    ? _value.sentOtpEntity
+                    : sentOtpEntity // ignore: cast_nullable_to_non_nullable
+                        as SentOtpEntity,
+            onboardingUser:
+                freezed == onboardingUser
+                    ? _value.onboardingUser
+                    : onboardingUser // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, LoginSuccessModel>>?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of CreateAccountState
@@ -84,14 +89,16 @@ class _$CreateAccountStateCopyWithImpl<$Res, $Val extends CreateAccountState>
 /// @nodoc
 abstract class _$$CreateAccountStateImplCopyWith<$Res>
     implements $CreateAccountStateCopyWith<$Res> {
-  factory _$$CreateAccountStateImplCopyWith(_$CreateAccountStateImpl value,
-          $Res Function(_$CreateAccountStateImpl) then) =
-      __$$CreateAccountStateImplCopyWithImpl<$Res>;
+  factory _$$CreateAccountStateImplCopyWith(
+    _$CreateAccountStateImpl value,
+    $Res Function(_$CreateAccountStateImpl) then,
+  ) = __$$CreateAccountStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {SentOtpEntity sentOtpEntity,
-      Option<Either<ApiException, LoginSuccessModel>>? onboardingUser});
+  $Res call({
+    SentOtpEntity sentOtpEntity,
+    Option<Either<ApiException, LoginSuccessModel>>? onboardingUser,
+  });
 
   @override
   $SentOtpEntityCopyWith<$Res> get sentOtpEntity;
@@ -101,36 +108,40 @@ abstract class _$$CreateAccountStateImplCopyWith<$Res>
 class __$$CreateAccountStateImplCopyWithImpl<$Res>
     extends _$CreateAccountStateCopyWithImpl<$Res, _$CreateAccountStateImpl>
     implements _$$CreateAccountStateImplCopyWith<$Res> {
-  __$$CreateAccountStateImplCopyWithImpl(_$CreateAccountStateImpl _value,
-      $Res Function(_$CreateAccountStateImpl) _then)
-      : super(_value, _then);
+  __$$CreateAccountStateImplCopyWithImpl(
+    _$CreateAccountStateImpl _value,
+    $Res Function(_$CreateAccountStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of CreateAccountState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? sentOtpEntity = null,
-    Object? onboardingUser = freezed,
-  }) {
-    return _then(_$CreateAccountStateImpl(
-      sentOtpEntity: null == sentOtpEntity
-          ? _value.sentOtpEntity
-          : sentOtpEntity // ignore: cast_nullable_to_non_nullable
-              as SentOtpEntity,
-      onboardingUser: freezed == onboardingUser
-          ? _value.onboardingUser
-          : onboardingUser // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, LoginSuccessModel>>?,
-    ));
+  $Res call({Object? sentOtpEntity = null, Object? onboardingUser = freezed}) {
+    return _then(
+      _$CreateAccountStateImpl(
+        sentOtpEntity:
+            null == sentOtpEntity
+                ? _value.sentOtpEntity
+                : sentOtpEntity // ignore: cast_nullable_to_non_nullable
+                    as SentOtpEntity,
+        onboardingUser:
+            freezed == onboardingUser
+                ? _value.onboardingUser
+                : onboardingUser // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, LoginSuccessModel>>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$CreateAccountStateImpl implements _CreateAccountState {
-  const _$CreateAccountStateImpl(
-      {required this.sentOtpEntity, this.onboardingUser});
+  const _$CreateAccountStateImpl({
+    required this.sentOtpEntity,
+    this.onboardingUser,
+  });
 
   @override
   final SentOtpEntity sentOtpEntity;
@@ -163,14 +174,16 @@ class _$CreateAccountStateImpl implements _CreateAccountState {
   @pragma('vm:prefer-inline')
   _$$CreateAccountStateImplCopyWith<_$CreateAccountStateImpl> get copyWith =>
       __$$CreateAccountStateImplCopyWithImpl<_$CreateAccountStateImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 }
 
 abstract class _CreateAccountState implements CreateAccountState {
-  const factory _CreateAccountState(
-      {required final SentOtpEntity sentOtpEntity,
-      final Option<Either<ApiException, LoginSuccessModel>>?
-          onboardingUser}) = _$CreateAccountStateImpl;
+  const factory _CreateAccountState({
+    required final SentOtpEntity sentOtpEntity,
+    final Option<Either<ApiException, LoginSuccessModel>>? onboardingUser,
+  }) = _$CreateAccountStateImpl;
 
   @override
   SentOtpEntity get sentOtpEntity;

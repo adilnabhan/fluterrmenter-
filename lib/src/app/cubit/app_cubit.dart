@@ -31,7 +31,12 @@ class AppCubit extends HydratedCubit<AppState> {
 
   @override
   AppState? fromJson(Map<String, dynamic> json) {
-    final currentUser = json['currentUser'] != null ? LoginSuccessModel.fromJson(json['currentUser'] as Map<String, dynamic>) : null;
+    final currentUser =
+        json['currentUser'] != null
+            ? LoginSuccessModel.fromJson(
+              json['currentUser'] as Map<String, dynamic>,
+            )
+            : null;
     return AppState(
       themeMode: switch (json['theme_mode']) {
         'dark' => ThemeMode.dark,
@@ -44,6 +49,10 @@ class AppCubit extends HydratedCubit<AppState> {
 
   @override
   Map<String, dynamic>? toJson(AppState state) {
-    return {'theme_mode': state.themeMode.name, 'language_code': state.locale.languageCode, 'currentUser': state.currentUser?.toJson()};
+    return {
+      'theme_mode': state.themeMode.name,
+      'language_code': state.locale.languageCode,
+      'currentUser': state.currentUser?.toJson(),
+    };
   }
 }

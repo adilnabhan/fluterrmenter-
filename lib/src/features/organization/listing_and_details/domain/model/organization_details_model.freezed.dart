@@ -12,10 +12,12 @@ part of 'organization_details_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 OrganizationDetailsModel _$OrganizationDetailsModelFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return _OrganizationDetailsModel.fromJson(json);
 }
 
@@ -74,38 +76,42 @@ mixin _$OrganizationDetailsModel {
 
 /// @nodoc
 abstract class $OrganizationDetailsModelCopyWith<$Res> {
-  factory $OrganizationDetailsModelCopyWith(OrganizationDetailsModel value,
-          $Res Function(OrganizationDetailsModel) then) =
-      _$OrganizationDetailsModelCopyWithImpl<$Res, OrganizationDetailsModel>;
+  factory $OrganizationDetailsModelCopyWith(
+    OrganizationDetailsModel value,
+    $Res Function(OrganizationDetailsModel) then,
+  ) = _$OrganizationDetailsModelCopyWithImpl<$Res, OrganizationDetailsModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'description') String? description,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'logo') String? logo,
-      @JsonKey(name: 'phone_number') String? phoneNumber,
-      @JsonKey(name: 'is_public') bool? isPublic,
-      @JsonKey(name: 'active') bool? active,
-      @JsonKey(name: 'is_subscribed') bool? isSubscribed,
-      @JsonKey(name: 'take_free_trial') bool? takeFreeTrial,
-      @JsonKey(name: 'is_on_free_trial') bool? isOnFreeTrial,
-      @JsonKey(name: 'location') LocationModel? location,
-      @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
-      @JsonKey(name: 'social_media') List<SocialMediaModel>? socialMedia,
-      @JsonKey(name: 'services') List<AmenityModel>? services,
-      @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
-      @JsonKey(name: 'categories') List<AmenityModel>? categories,
-      @JsonKey(name: 'photos') List<PhotoModel>? photos,
-      @JsonKey(name: 'packages') List<dynamic>? packages,
-      @JsonKey(name: 'subscription_details') dynamic subscriptionDetails});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'description') String? description,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'logo') String? logo,
+    @JsonKey(name: 'phone_number') String? phoneNumber,
+    @JsonKey(name: 'is_public') bool? isPublic,
+    @JsonKey(name: 'active') bool? active,
+    @JsonKey(name: 'is_subscribed') bool? isSubscribed,
+    @JsonKey(name: 'take_free_trial') bool? takeFreeTrial,
+    @JsonKey(name: 'is_on_free_trial') bool? isOnFreeTrial,
+    @JsonKey(name: 'location') LocationModel? location,
+    @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
+    @JsonKey(name: 'social_media') List<SocialMediaModel>? socialMedia,
+    @JsonKey(name: 'services') List<AmenityModel>? services,
+    @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
+    @JsonKey(name: 'categories') List<AmenityModel>? categories,
+    @JsonKey(name: 'photos') List<PhotoModel>? photos,
+    @JsonKey(name: 'packages') List<dynamic>? packages,
+    @JsonKey(name: 'subscription_details') dynamic subscriptionDetails,
+  });
 
   $LocationModelCopyWith<$Res>? get location;
 }
 
 /// @nodoc
-class _$OrganizationDetailsModelCopyWithImpl<$Res,
-        $Val extends OrganizationDetailsModel>
+class _$OrganizationDetailsModelCopyWithImpl<
+  $Res,
+  $Val extends OrganizationDetailsModel
+>
     implements $OrganizationDetailsModelCopyWith<$Res> {
   _$OrganizationDetailsModelCopyWithImpl(this._value, this._then);
 
@@ -140,88 +146,111 @@ class _$OrganizationDetailsModelCopyWithImpl<$Res,
     Object? packages = freezed,
     Object? subscriptionDetails = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      logo: freezed == logo
-          ? _value.logo
-          : logo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      phoneNumber: freezed == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isPublic: freezed == isPublic
-          ? _value.isPublic
-          : isPublic // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      active: freezed == active
-          ? _value.active
-          : active // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      isSubscribed: freezed == isSubscribed
-          ? _value.isSubscribed
-          : isSubscribed // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      takeFreeTrial: freezed == takeFreeTrial
-          ? _value.takeFreeTrial
-          : takeFreeTrial // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      isOnFreeTrial: freezed == isOnFreeTrial
-          ? _value.isOnFreeTrial
-          : isOnFreeTrial // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      location: freezed == location
-          ? _value.location
-          : location // ignore: cast_nullable_to_non_nullable
-              as LocationModel?,
-      workingDays: freezed == workingDays
-          ? _value.workingDays
-          : workingDays // ignore: cast_nullable_to_non_nullable
-              as List<WorkingDayModel>?,
-      socialMedia: freezed == socialMedia
-          ? _value.socialMedia
-          : socialMedia // ignore: cast_nullable_to_non_nullable
-              as List<SocialMediaModel>?,
-      services: freezed == services
-          ? _value.services
-          : services // ignore: cast_nullable_to_non_nullable
-              as List<AmenityModel>?,
-      amenities: freezed == amenities
-          ? _value.amenities
-          : amenities // ignore: cast_nullable_to_non_nullable
-              as List<AmenityModel>?,
-      categories: freezed == categories
-          ? _value.categories
-          : categories // ignore: cast_nullable_to_non_nullable
-              as List<AmenityModel>?,
-      photos: freezed == photos
-          ? _value.photos
-          : photos // ignore: cast_nullable_to_non_nullable
-              as List<PhotoModel>?,
-      packages: freezed == packages
-          ? _value.packages
-          : packages // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
-      subscriptionDetails: freezed == subscriptionDetails
-          ? _value.subscriptionDetails
-          : subscriptionDetails // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            description:
+                freezed == description
+                    ? _value.description
+                    : description // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            email:
+                freezed == email
+                    ? _value.email
+                    : email // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            logo:
+                freezed == logo
+                    ? _value.logo
+                    : logo // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            phoneNumber:
+                freezed == phoneNumber
+                    ? _value.phoneNumber
+                    : phoneNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            isPublic:
+                freezed == isPublic
+                    ? _value.isPublic
+                    : isPublic // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            active:
+                freezed == active
+                    ? _value.active
+                    : active // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            isSubscribed:
+                freezed == isSubscribed
+                    ? _value.isSubscribed
+                    : isSubscribed // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            takeFreeTrial:
+                freezed == takeFreeTrial
+                    ? _value.takeFreeTrial
+                    : takeFreeTrial // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            isOnFreeTrial:
+                freezed == isOnFreeTrial
+                    ? _value.isOnFreeTrial
+                    : isOnFreeTrial // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            location:
+                freezed == location
+                    ? _value.location
+                    : location // ignore: cast_nullable_to_non_nullable
+                        as LocationModel?,
+            workingDays:
+                freezed == workingDays
+                    ? _value.workingDays
+                    : workingDays // ignore: cast_nullable_to_non_nullable
+                        as List<WorkingDayModel>?,
+            socialMedia:
+                freezed == socialMedia
+                    ? _value.socialMedia
+                    : socialMedia // ignore: cast_nullable_to_non_nullable
+                        as List<SocialMediaModel>?,
+            services:
+                freezed == services
+                    ? _value.services
+                    : services // ignore: cast_nullable_to_non_nullable
+                        as List<AmenityModel>?,
+            amenities:
+                freezed == amenities
+                    ? _value.amenities
+                    : amenities // ignore: cast_nullable_to_non_nullable
+                        as List<AmenityModel>?,
+            categories:
+                freezed == categories
+                    ? _value.categories
+                    : categories // ignore: cast_nullable_to_non_nullable
+                        as List<AmenityModel>?,
+            photos:
+                freezed == photos
+                    ? _value.photos
+                    : photos // ignore: cast_nullable_to_non_nullable
+                        as List<PhotoModel>?,
+            packages:
+                freezed == packages
+                    ? _value.packages
+                    : packages // ignore: cast_nullable_to_non_nullable
+                        as List<dynamic>?,
+            subscriptionDetails:
+                freezed == subscriptionDetails
+                    ? _value.subscriptionDetails
+                    : subscriptionDetails // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of OrganizationDetailsModel
@@ -243,32 +272,33 @@ class _$OrganizationDetailsModelCopyWithImpl<$Res,
 abstract class _$$OrganizationDetailsModelImplCopyWith<$Res>
     implements $OrganizationDetailsModelCopyWith<$Res> {
   factory _$$OrganizationDetailsModelImplCopyWith(
-          _$OrganizationDetailsModelImpl value,
-          $Res Function(_$OrganizationDetailsModelImpl) then) =
-      __$$OrganizationDetailsModelImplCopyWithImpl<$Res>;
+    _$OrganizationDetailsModelImpl value,
+    $Res Function(_$OrganizationDetailsModelImpl) then,
+  ) = __$$OrganizationDetailsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'description') String? description,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'logo') String? logo,
-      @JsonKey(name: 'phone_number') String? phoneNumber,
-      @JsonKey(name: 'is_public') bool? isPublic,
-      @JsonKey(name: 'active') bool? active,
-      @JsonKey(name: 'is_subscribed') bool? isSubscribed,
-      @JsonKey(name: 'take_free_trial') bool? takeFreeTrial,
-      @JsonKey(name: 'is_on_free_trial') bool? isOnFreeTrial,
-      @JsonKey(name: 'location') LocationModel? location,
-      @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
-      @JsonKey(name: 'social_media') List<SocialMediaModel>? socialMedia,
-      @JsonKey(name: 'services') List<AmenityModel>? services,
-      @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
-      @JsonKey(name: 'categories') List<AmenityModel>? categories,
-      @JsonKey(name: 'photos') List<PhotoModel>? photos,
-      @JsonKey(name: 'packages') List<dynamic>? packages,
-      @JsonKey(name: 'subscription_details') dynamic subscriptionDetails});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'description') String? description,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'logo') String? logo,
+    @JsonKey(name: 'phone_number') String? phoneNumber,
+    @JsonKey(name: 'is_public') bool? isPublic,
+    @JsonKey(name: 'active') bool? active,
+    @JsonKey(name: 'is_subscribed') bool? isSubscribed,
+    @JsonKey(name: 'take_free_trial') bool? takeFreeTrial,
+    @JsonKey(name: 'is_on_free_trial') bool? isOnFreeTrial,
+    @JsonKey(name: 'location') LocationModel? location,
+    @JsonKey(name: 'working_days') List<WorkingDayModel>? workingDays,
+    @JsonKey(name: 'social_media') List<SocialMediaModel>? socialMedia,
+    @JsonKey(name: 'services') List<AmenityModel>? services,
+    @JsonKey(name: 'amenities') List<AmenityModel>? amenities,
+    @JsonKey(name: 'categories') List<AmenityModel>? categories,
+    @JsonKey(name: 'photos') List<PhotoModel>? photos,
+    @JsonKey(name: 'packages') List<dynamic>? packages,
+    @JsonKey(name: 'subscription_details') dynamic subscriptionDetails,
+  });
 
   @override
   $LocationModelCopyWith<$Res>? get location;
@@ -276,13 +306,16 @@ abstract class _$$OrganizationDetailsModelImplCopyWith<$Res>
 
 /// @nodoc
 class __$$OrganizationDetailsModelImplCopyWithImpl<$Res>
-    extends _$OrganizationDetailsModelCopyWithImpl<$Res,
-        _$OrganizationDetailsModelImpl>
+    extends
+        _$OrganizationDetailsModelCopyWithImpl<
+          $Res,
+          _$OrganizationDetailsModelImpl
+        >
     implements _$$OrganizationDetailsModelImplCopyWith<$Res> {
   __$$OrganizationDetailsModelImplCopyWithImpl(
-      _$OrganizationDetailsModelImpl _value,
-      $Res Function(_$OrganizationDetailsModelImpl) _then)
-      : super(_value, _then);
+    _$OrganizationDetailsModelImpl _value,
+    $Res Function(_$OrganizationDetailsModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of OrganizationDetailsModel
   /// with the given fields replaced by the non-null parameter values.
@@ -310,122 +343,144 @@ class __$$OrganizationDetailsModelImplCopyWithImpl<$Res>
     Object? packages = freezed,
     Object? subscriptionDetails = freezed,
   }) {
-    return _then(_$OrganizationDetailsModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      logo: freezed == logo
-          ? _value.logo
-          : logo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      phoneNumber: freezed == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isPublic: freezed == isPublic
-          ? _value.isPublic
-          : isPublic // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      active: freezed == active
-          ? _value.active
-          : active // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      isSubscribed: freezed == isSubscribed
-          ? _value.isSubscribed
-          : isSubscribed // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      takeFreeTrial: freezed == takeFreeTrial
-          ? _value.takeFreeTrial
-          : takeFreeTrial // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      isOnFreeTrial: freezed == isOnFreeTrial
-          ? _value.isOnFreeTrial
-          : isOnFreeTrial // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      location: freezed == location
-          ? _value.location
-          : location // ignore: cast_nullable_to_non_nullable
-              as LocationModel?,
-      workingDays: freezed == workingDays
-          ? _value._workingDays
-          : workingDays // ignore: cast_nullable_to_non_nullable
-              as List<WorkingDayModel>?,
-      socialMedia: freezed == socialMedia
-          ? _value._socialMedia
-          : socialMedia // ignore: cast_nullable_to_non_nullable
-              as List<SocialMediaModel>?,
-      services: freezed == services
-          ? _value._services
-          : services // ignore: cast_nullable_to_non_nullable
-              as List<AmenityModel>?,
-      amenities: freezed == amenities
-          ? _value._amenities
-          : amenities // ignore: cast_nullable_to_non_nullable
-              as List<AmenityModel>?,
-      categories: freezed == categories
-          ? _value._categories
-          : categories // ignore: cast_nullable_to_non_nullable
-              as List<AmenityModel>?,
-      photos: freezed == photos
-          ? _value._photos
-          : photos // ignore: cast_nullable_to_non_nullable
-              as List<PhotoModel>?,
-      packages: freezed == packages
-          ? _value._packages
-          : packages // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>?,
-      subscriptionDetails: freezed == subscriptionDetails
-          ? _value.subscriptionDetails
-          : subscriptionDetails // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-    ));
+    return _then(
+      _$OrganizationDetailsModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        description:
+            freezed == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        email:
+            freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        logo:
+            freezed == logo
+                ? _value.logo
+                : logo // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        phoneNumber:
+            freezed == phoneNumber
+                ? _value.phoneNumber
+                : phoneNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        isPublic:
+            freezed == isPublic
+                ? _value.isPublic
+                : isPublic // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        active:
+            freezed == active
+                ? _value.active
+                : active // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        isSubscribed:
+            freezed == isSubscribed
+                ? _value.isSubscribed
+                : isSubscribed // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        takeFreeTrial:
+            freezed == takeFreeTrial
+                ? _value.takeFreeTrial
+                : takeFreeTrial // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        isOnFreeTrial:
+            freezed == isOnFreeTrial
+                ? _value.isOnFreeTrial
+                : isOnFreeTrial // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        location:
+            freezed == location
+                ? _value.location
+                : location // ignore: cast_nullable_to_non_nullable
+                    as LocationModel?,
+        workingDays:
+            freezed == workingDays
+                ? _value._workingDays
+                : workingDays // ignore: cast_nullable_to_non_nullable
+                    as List<WorkingDayModel>?,
+        socialMedia:
+            freezed == socialMedia
+                ? _value._socialMedia
+                : socialMedia // ignore: cast_nullable_to_non_nullable
+                    as List<SocialMediaModel>?,
+        services:
+            freezed == services
+                ? _value._services
+                : services // ignore: cast_nullable_to_non_nullable
+                    as List<AmenityModel>?,
+        amenities:
+            freezed == amenities
+                ? _value._amenities
+                : amenities // ignore: cast_nullable_to_non_nullable
+                    as List<AmenityModel>?,
+        categories:
+            freezed == categories
+                ? _value._categories
+                : categories // ignore: cast_nullable_to_non_nullable
+                    as List<AmenityModel>?,
+        photos:
+            freezed == photos
+                ? _value._photos
+                : photos // ignore: cast_nullable_to_non_nullable
+                    as List<PhotoModel>?,
+        packages:
+            freezed == packages
+                ? _value._packages
+                : packages // ignore: cast_nullable_to_non_nullable
+                    as List<dynamic>?,
+        subscriptionDetails:
+            freezed == subscriptionDetails
+                ? _value.subscriptionDetails
+                : subscriptionDetails // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
-  const _$OrganizationDetailsModelImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'name') this.name,
-      @JsonKey(name: 'description') this.description,
-      @JsonKey(name: 'email') this.email,
-      @JsonKey(name: 'logo') this.logo,
-      @JsonKey(name: 'phone_number') this.phoneNumber,
-      @JsonKey(name: 'is_public') this.isPublic,
-      @JsonKey(name: 'active') this.active,
-      @JsonKey(name: 'is_subscribed') this.isSubscribed,
-      @JsonKey(name: 'take_free_trial') this.takeFreeTrial,
-      @JsonKey(name: 'is_on_free_trial') this.isOnFreeTrial,
-      @JsonKey(name: 'location') this.location,
-      @JsonKey(name: 'working_days') final List<WorkingDayModel>? workingDays,
-      @JsonKey(name: 'social_media') final List<SocialMediaModel>? socialMedia,
-      @JsonKey(name: 'services') final List<AmenityModel>? services,
-      @JsonKey(name: 'amenities') final List<AmenityModel>? amenities,
-      @JsonKey(name: 'categories') final List<AmenityModel>? categories,
-      @JsonKey(name: 'photos') final List<PhotoModel>? photos,
-      @JsonKey(name: 'packages') final List<dynamic>? packages,
-      @JsonKey(name: 'subscription_details') this.subscriptionDetails})
-      : _workingDays = workingDays,
-        _socialMedia = socialMedia,
-        _services = services,
-        _amenities = amenities,
-        _categories = categories,
-        _photos = photos,
-        _packages = packages;
+  const _$OrganizationDetailsModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'name') this.name,
+    @JsonKey(name: 'description') this.description,
+    @JsonKey(name: 'email') this.email,
+    @JsonKey(name: 'logo') this.logo,
+    @JsonKey(name: 'phone_number') this.phoneNumber,
+    @JsonKey(name: 'is_public') this.isPublic,
+    @JsonKey(name: 'active') this.active,
+    @JsonKey(name: 'is_subscribed') this.isSubscribed,
+    @JsonKey(name: 'take_free_trial') this.takeFreeTrial,
+    @JsonKey(name: 'is_on_free_trial') this.isOnFreeTrial,
+    @JsonKey(name: 'location') this.location,
+    @JsonKey(name: 'working_days') final List<WorkingDayModel>? workingDays,
+    @JsonKey(name: 'social_media') final List<SocialMediaModel>? socialMedia,
+    @JsonKey(name: 'services') final List<AmenityModel>? services,
+    @JsonKey(name: 'amenities') final List<AmenityModel>? amenities,
+    @JsonKey(name: 'categories') final List<AmenityModel>? categories,
+    @JsonKey(name: 'photos') final List<PhotoModel>? photos,
+    @JsonKey(name: 'packages') final List<dynamic>? packages,
+    @JsonKey(name: 'subscription_details') this.subscriptionDetails,
+  }) : _workingDays = workingDays,
+       _socialMedia = socialMedia,
+       _services = services,
+       _amenities = amenities,
+       _categories = categories,
+       _photos = photos,
+       _packages = packages;
 
   factory _$OrganizationDetailsModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$OrganizationDetailsModelImplFromJson(json);
@@ -576,46 +631,56 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
                 other.isOnFreeTrial == isOnFreeTrial) &&
             (identical(other.location, location) ||
                 other.location == location) &&
-            const DeepCollectionEquality()
-                .equals(other._workingDays, _workingDays) &&
-            const DeepCollectionEquality()
-                .equals(other._socialMedia, _socialMedia) &&
+            const DeepCollectionEquality().equals(
+              other._workingDays,
+              _workingDays,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._socialMedia,
+              _socialMedia,
+            ) &&
             const DeepCollectionEquality().equals(other._services, _services) &&
-            const DeepCollectionEquality()
-                .equals(other._amenities, _amenities) &&
-            const DeepCollectionEquality()
-                .equals(other._categories, _categories) &&
+            const DeepCollectionEquality().equals(
+              other._amenities,
+              _amenities,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._categories,
+              _categories,
+            ) &&
             const DeepCollectionEquality().equals(other._photos, _photos) &&
             const DeepCollectionEquality().equals(other._packages, _packages) &&
-            const DeepCollectionEquality()
-                .equals(other.subscriptionDetails, subscriptionDetails));
+            const DeepCollectionEquality().equals(
+              other.subscriptionDetails,
+              subscriptionDetails,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
-        runtimeType,
-        id,
-        name,
-        description,
-        email,
-        logo,
-        phoneNumber,
-        isPublic,
-        active,
-        isSubscribed,
-        takeFreeTrial,
-        isOnFreeTrial,
-        location,
-        const DeepCollectionEquality().hash(_workingDays),
-        const DeepCollectionEquality().hash(_socialMedia),
-        const DeepCollectionEquality().hash(_services),
-        const DeepCollectionEquality().hash(_amenities),
-        const DeepCollectionEquality().hash(_categories),
-        const DeepCollectionEquality().hash(_photos),
-        const DeepCollectionEquality().hash(_packages),
-        const DeepCollectionEquality().hash(subscriptionDetails)
-      ]);
+    runtimeType,
+    id,
+    name,
+    description,
+    email,
+    logo,
+    phoneNumber,
+    isPublic,
+    active,
+    isSubscribed,
+    takeFreeTrial,
+    isOnFreeTrial,
+    location,
+    const DeepCollectionEquality().hash(_workingDays),
+    const DeepCollectionEquality().hash(_socialMedia),
+    const DeepCollectionEquality().hash(_services),
+    const DeepCollectionEquality().hash(_amenities),
+    const DeepCollectionEquality().hash(_categories),
+    const DeepCollectionEquality().hash(_photos),
+    const DeepCollectionEquality().hash(_packages),
+    const DeepCollectionEquality().hash(subscriptionDetails),
+  ]);
 
   /// Create a copy of OrganizationDetailsModel
   /// with the given fields replaced by the non-null parameter values.
@@ -623,40 +688,39 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
   @override
   @pragma('vm:prefer-inline')
   _$$OrganizationDetailsModelImplCopyWith<_$OrganizationDetailsModelImpl>
-      get copyWith => __$$OrganizationDetailsModelImplCopyWithImpl<
-          _$OrganizationDetailsModelImpl>(this, _$identity);
+  get copyWith => __$$OrganizationDetailsModelImplCopyWithImpl<
+    _$OrganizationDetailsModelImpl
+  >(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$OrganizationDetailsModelImplToJson(
-      this,
-    );
+    return _$$OrganizationDetailsModelImplToJson(this);
   }
 }
 
 abstract class _OrganizationDetailsModel implements OrganizationDetailsModel {
-  const factory _OrganizationDetailsModel(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'name') final String? name,
-      @JsonKey(name: 'description') final String? description,
-      @JsonKey(name: 'email') final String? email,
-      @JsonKey(name: 'logo') final String? logo,
-      @JsonKey(name: 'phone_number') final String? phoneNumber,
-      @JsonKey(name: 'is_public') final bool? isPublic,
-      @JsonKey(name: 'active') final bool? active,
-      @JsonKey(name: 'is_subscribed') final bool? isSubscribed,
-      @JsonKey(name: 'take_free_trial') final bool? takeFreeTrial,
-      @JsonKey(name: 'is_on_free_trial') final bool? isOnFreeTrial,
-      @JsonKey(name: 'location') final LocationModel? location,
-      @JsonKey(name: 'working_days') final List<WorkingDayModel>? workingDays,
-      @JsonKey(name: 'social_media') final List<SocialMediaModel>? socialMedia,
-      @JsonKey(name: 'services') final List<AmenityModel>? services,
-      @JsonKey(name: 'amenities') final List<AmenityModel>? amenities,
-      @JsonKey(name: 'categories') final List<AmenityModel>? categories,
-      @JsonKey(name: 'photos') final List<PhotoModel>? photos,
-      @JsonKey(name: 'packages') final List<dynamic>? packages,
-      @JsonKey(name: 'subscription_details')
-      final dynamic subscriptionDetails}) = _$OrganizationDetailsModelImpl;
+  const factory _OrganizationDetailsModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'name') final String? name,
+    @JsonKey(name: 'description') final String? description,
+    @JsonKey(name: 'email') final String? email,
+    @JsonKey(name: 'logo') final String? logo,
+    @JsonKey(name: 'phone_number') final String? phoneNumber,
+    @JsonKey(name: 'is_public') final bool? isPublic,
+    @JsonKey(name: 'active') final bool? active,
+    @JsonKey(name: 'is_subscribed') final bool? isSubscribed,
+    @JsonKey(name: 'take_free_trial') final bool? takeFreeTrial,
+    @JsonKey(name: 'is_on_free_trial') final bool? isOnFreeTrial,
+    @JsonKey(name: 'location') final LocationModel? location,
+    @JsonKey(name: 'working_days') final List<WorkingDayModel>? workingDays,
+    @JsonKey(name: 'social_media') final List<SocialMediaModel>? socialMedia,
+    @JsonKey(name: 'services') final List<AmenityModel>? services,
+    @JsonKey(name: 'amenities') final List<AmenityModel>? amenities,
+    @JsonKey(name: 'categories') final List<AmenityModel>? categories,
+    @JsonKey(name: 'photos') final List<PhotoModel>? photos,
+    @JsonKey(name: 'packages') final List<dynamic>? packages,
+    @JsonKey(name: 'subscription_details') final dynamic subscriptionDetails,
+  }) = _$OrganizationDetailsModelImpl;
 
   factory _OrganizationDetailsModel.fromJson(Map<String, dynamic> json) =
       _$OrganizationDetailsModelImpl.fromJson;
@@ -727,7 +791,7 @@ abstract class _OrganizationDetailsModel implements OrganizationDetailsModel {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OrganizationDetailsModelImplCopyWith<_$OrganizationDetailsModelImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 AmenityModel _$AmenityModelFromJson(Map<String, dynamic> json) {
@@ -754,11 +818,14 @@ mixin _$AmenityModel {
 /// @nodoc
 abstract class $AmenityModelCopyWith<$Res> {
   factory $AmenityModelCopyWith(
-          AmenityModel value, $Res Function(AmenityModel) then) =
-      _$AmenityModelCopyWithImpl<$Res, AmenityModel>;
+    AmenityModel value,
+    $Res Function(AmenityModel) then,
+  ) = _$AmenityModelCopyWithImpl<$Res, AmenityModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id, @JsonKey(name: 'name') String? name});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+  });
 }
 
 /// @nodoc
@@ -775,20 +842,22 @@ class _$AmenityModelCopyWithImpl<$Res, $Val extends AmenityModel>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? id = freezed,
-    Object? name = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? id = freezed, Object? name = freezed}) {
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -796,12 +865,15 @@ class _$AmenityModelCopyWithImpl<$Res, $Val extends AmenityModel>
 abstract class _$$AmenityModelImplCopyWith<$Res>
     implements $AmenityModelCopyWith<$Res> {
   factory _$$AmenityModelImplCopyWith(
-          _$AmenityModelImpl value, $Res Function(_$AmenityModelImpl) then) =
-      __$$AmenityModelImplCopyWithImpl<$Res>;
+    _$AmenityModelImpl value,
+    $Res Function(_$AmenityModelImpl) then,
+  ) = __$$AmenityModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id, @JsonKey(name: 'name') String? name});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+  });
 }
 
 /// @nodoc
@@ -809,35 +881,39 @@ class __$$AmenityModelImplCopyWithImpl<$Res>
     extends _$AmenityModelCopyWithImpl<$Res, _$AmenityModelImpl>
     implements _$$AmenityModelImplCopyWith<$Res> {
   __$$AmenityModelImplCopyWithImpl(
-      _$AmenityModelImpl _value, $Res Function(_$AmenityModelImpl) _then)
-      : super(_value, _then);
+    _$AmenityModelImpl _value,
+    $Res Function(_$AmenityModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of AmenityModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? id = freezed,
-    Object? name = freezed,
-  }) {
-    return _then(_$AmenityModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? id = freezed, Object? name = freezed}) {
+    return _then(
+      _$AmenityModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$AmenityModelImpl implements _AmenityModel {
-  const _$AmenityModelImpl(
-      {@JsonKey(name: 'id') this.id, @JsonKey(name: 'name') this.name});
+  const _$AmenityModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'name') this.name,
+  });
 
   factory _$AmenityModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$AmenityModelImplFromJson(json);
@@ -877,16 +953,15 @@ class _$AmenityModelImpl implements _AmenityModel {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$AmenityModelImplToJson(
-      this,
-    );
+    return _$$AmenityModelImplToJson(this);
   }
 }
 
 abstract class _AmenityModel implements AmenityModel {
-  const factory _AmenityModel(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'name') final String? name}) = _$AmenityModelImpl;
+  const factory _AmenityModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'name') final String? name,
+  }) = _$AmenityModelImpl;
 
   factory _AmenityModel.fromJson(Map<String, dynamic> json) =
       _$AmenityModelImpl.fromJson;
@@ -940,17 +1015,19 @@ mixin _$LocationModel {
 /// @nodoc
 abstract class $LocationModelCopyWith<$Res> {
   factory $LocationModelCopyWith(
-          LocationModel value, $Res Function(LocationModel) then) =
-      _$LocationModelCopyWithImpl<$Res, LocationModel>;
+    LocationModel value,
+    $Res Function(LocationModel) then,
+  ) = _$LocationModelCopyWithImpl<$Res, LocationModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'building_name') String? buildingName,
-      @JsonKey(name: 'street') String? street,
-      @JsonKey(name: 'city') String? city,
-      @JsonKey(name: 'state') String? state,
-      @JsonKey(name: 'pin_code') String? pinCode,
-      @JsonKey(name: 'latitude') dynamic latitude,
-      @JsonKey(name: 'longitude') dynamic longitude});
+  $Res call({
+    @JsonKey(name: 'building_name') String? buildingName,
+    @JsonKey(name: 'street') String? street,
+    @JsonKey(name: 'city') String? city,
+    @JsonKey(name: 'state') String? state,
+    @JsonKey(name: 'pin_code') String? pinCode,
+    @JsonKey(name: 'latitude') dynamic latitude,
+    @JsonKey(name: 'longitude') dynamic longitude,
+  });
 }
 
 /// @nodoc
@@ -976,36 +1053,46 @@ class _$LocationModelCopyWithImpl<$Res, $Val extends LocationModel>
     Object? latitude = freezed,
     Object? longitude = freezed,
   }) {
-    return _then(_value.copyWith(
-      buildingName: freezed == buildingName
-          ? _value.buildingName
-          : buildingName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      street: freezed == street
-          ? _value.street
-          : street // ignore: cast_nullable_to_non_nullable
-              as String?,
-      city: freezed == city
-          ? _value.city
-          : city // ignore: cast_nullable_to_non_nullable
-              as String?,
-      state: freezed == state
-          ? _value.state
-          : state // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pinCode: freezed == pinCode
-          ? _value.pinCode
-          : pinCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      latitude: freezed == latitude
-          ? _value.latitude
-          : latitude // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      longitude: freezed == longitude
-          ? _value.longitude
-          : longitude // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            buildingName:
+                freezed == buildingName
+                    ? _value.buildingName
+                    : buildingName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            street:
+                freezed == street
+                    ? _value.street
+                    : street // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            city:
+                freezed == city
+                    ? _value.city
+                    : city // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            state:
+                freezed == state
+                    ? _value.state
+                    : state // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            pinCode:
+                freezed == pinCode
+                    ? _value.pinCode
+                    : pinCode // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            latitude:
+                freezed == latitude
+                    ? _value.latitude
+                    : latitude // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            longitude:
+                freezed == longitude
+                    ? _value.longitude
+                    : longitude // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -1013,18 +1100,20 @@ class _$LocationModelCopyWithImpl<$Res, $Val extends LocationModel>
 abstract class _$$LocationModelImplCopyWith<$Res>
     implements $LocationModelCopyWith<$Res> {
   factory _$$LocationModelImplCopyWith(
-          _$LocationModelImpl value, $Res Function(_$LocationModelImpl) then) =
-      __$$LocationModelImplCopyWithImpl<$Res>;
+    _$LocationModelImpl value,
+    $Res Function(_$LocationModelImpl) then,
+  ) = __$$LocationModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'building_name') String? buildingName,
-      @JsonKey(name: 'street') String? street,
-      @JsonKey(name: 'city') String? city,
-      @JsonKey(name: 'state') String? state,
-      @JsonKey(name: 'pin_code') String? pinCode,
-      @JsonKey(name: 'latitude') dynamic latitude,
-      @JsonKey(name: 'longitude') dynamic longitude});
+  $Res call({
+    @JsonKey(name: 'building_name') String? buildingName,
+    @JsonKey(name: 'street') String? street,
+    @JsonKey(name: 'city') String? city,
+    @JsonKey(name: 'state') String? state,
+    @JsonKey(name: 'pin_code') String? pinCode,
+    @JsonKey(name: 'latitude') dynamic latitude,
+    @JsonKey(name: 'longitude') dynamic longitude,
+  });
 }
 
 /// @nodoc
@@ -1032,8 +1121,9 @@ class __$$LocationModelImplCopyWithImpl<$Res>
     extends _$LocationModelCopyWithImpl<$Res, _$LocationModelImpl>
     implements _$$LocationModelImplCopyWith<$Res> {
   __$$LocationModelImplCopyWithImpl(
-      _$LocationModelImpl _value, $Res Function(_$LocationModelImpl) _then)
-      : super(_value, _then);
+    _$LocationModelImpl _value,
+    $Res Function(_$LocationModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of LocationModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1048,50 +1138,60 @@ class __$$LocationModelImplCopyWithImpl<$Res>
     Object? latitude = freezed,
     Object? longitude = freezed,
   }) {
-    return _then(_$LocationModelImpl(
-      buildingName: freezed == buildingName
-          ? _value.buildingName
-          : buildingName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      street: freezed == street
-          ? _value.street
-          : street // ignore: cast_nullable_to_non_nullable
-              as String?,
-      city: freezed == city
-          ? _value.city
-          : city // ignore: cast_nullable_to_non_nullable
-              as String?,
-      state: freezed == state
-          ? _value.state
-          : state // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pinCode: freezed == pinCode
-          ? _value.pinCode
-          : pinCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      latitude: freezed == latitude
-          ? _value.latitude
-          : latitude // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      longitude: freezed == longitude
-          ? _value.longitude
-          : longitude // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-    ));
+    return _then(
+      _$LocationModelImpl(
+        buildingName:
+            freezed == buildingName
+                ? _value.buildingName
+                : buildingName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        street:
+            freezed == street
+                ? _value.street
+                : street // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        city:
+            freezed == city
+                ? _value.city
+                : city // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        state:
+            freezed == state
+                ? _value.state
+                : state // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        pinCode:
+            freezed == pinCode
+                ? _value.pinCode
+                : pinCode // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        latitude:
+            freezed == latitude
+                ? _value.latitude
+                : latitude // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        longitude:
+            freezed == longitude
+                ? _value.longitude
+                : longitude // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$LocationModelImpl implements _LocationModel {
-  const _$LocationModelImpl(
-      {@JsonKey(name: 'building_name') this.buildingName,
-      @JsonKey(name: 'street') this.street,
-      @JsonKey(name: 'city') this.city,
-      @JsonKey(name: 'state') this.state,
-      @JsonKey(name: 'pin_code') this.pinCode,
-      @JsonKey(name: 'latitude') this.latitude,
-      @JsonKey(name: 'longitude') this.longitude});
+  const _$LocationModelImpl({
+    @JsonKey(name: 'building_name') this.buildingName,
+    @JsonKey(name: 'street') this.street,
+    @JsonKey(name: 'city') this.city,
+    @JsonKey(name: 'state') this.state,
+    @JsonKey(name: 'pin_code') this.pinCode,
+    @JsonKey(name: 'latitude') this.latitude,
+    @JsonKey(name: 'longitude') this.longitude,
+  });
 
   factory _$LocationModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$LocationModelImplFromJson(json);
@@ -1141,14 +1241,15 @@ class _$LocationModelImpl implements _LocationModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      buildingName,
-      street,
-      city,
-      state,
-      pinCode,
-      const DeepCollectionEquality().hash(latitude),
-      const DeepCollectionEquality().hash(longitude));
+    runtimeType,
+    buildingName,
+    street,
+    city,
+    state,
+    pinCode,
+    const DeepCollectionEquality().hash(latitude),
+    const DeepCollectionEquality().hash(longitude),
+  );
 
   /// Create a copy of LocationModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1160,22 +1261,20 @@ class _$LocationModelImpl implements _LocationModel {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$LocationModelImplToJson(
-      this,
-    );
+    return _$$LocationModelImplToJson(this);
   }
 }
 
 abstract class _LocationModel implements LocationModel {
-  const factory _LocationModel(
-          {@JsonKey(name: 'building_name') final String? buildingName,
-          @JsonKey(name: 'street') final String? street,
-          @JsonKey(name: 'city') final String? city,
-          @JsonKey(name: 'state') final String? state,
-          @JsonKey(name: 'pin_code') final String? pinCode,
-          @JsonKey(name: 'latitude') final dynamic latitude,
-          @JsonKey(name: 'longitude') final dynamic longitude}) =
-      _$LocationModelImpl;
+  const factory _LocationModel({
+    @JsonKey(name: 'building_name') final String? buildingName,
+    @JsonKey(name: 'street') final String? street,
+    @JsonKey(name: 'city') final String? city,
+    @JsonKey(name: 'state') final String? state,
+    @JsonKey(name: 'pin_code') final String? pinCode,
+    @JsonKey(name: 'latitude') final dynamic latitude,
+    @JsonKey(name: 'longitude') final dynamic longitude,
+  }) = _$LocationModelImpl;
 
   factory _LocationModel.fromJson(Map<String, dynamic> json) =
       _$LocationModelImpl.fromJson;
@@ -1238,14 +1337,16 @@ mixin _$PhotoModel {
 /// @nodoc
 abstract class $PhotoModelCopyWith<$Res> {
   factory $PhotoModelCopyWith(
-          PhotoModel value, $Res Function(PhotoModel) then) =
-      _$PhotoModelCopyWithImpl<$Res, PhotoModel>;
+    PhotoModel value,
+    $Res Function(PhotoModel) then,
+  ) = _$PhotoModelCopyWithImpl<$Res, PhotoModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'image') String? image,
-      @JsonKey(name: 'caption') String? caption,
-      @JsonKey(name: 'is_primary') bool? isPrimary});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'image') String? image,
+    @JsonKey(name: 'caption') String? caption,
+    @JsonKey(name: 'is_primary') bool? isPrimary,
+  });
 }
 
 /// @nodoc
@@ -1268,24 +1369,31 @@ class _$PhotoModelCopyWithImpl<$Res, $Val extends PhotoModel>
     Object? caption = freezed,
     Object? isPrimary = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      image: freezed == image
-          ? _value.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as String?,
-      caption: freezed == caption
-          ? _value.caption
-          : caption // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isPrimary: freezed == isPrimary
-          ? _value.isPrimary
-          : isPrimary // ignore: cast_nullable_to_non_nullable
-              as bool?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            image:
+                freezed == image
+                    ? _value.image
+                    : image // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            caption:
+                freezed == caption
+                    ? _value.caption
+                    : caption // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            isPrimary:
+                freezed == isPrimary
+                    ? _value.isPrimary
+                    : isPrimary // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -1293,15 +1401,17 @@ class _$PhotoModelCopyWithImpl<$Res, $Val extends PhotoModel>
 abstract class _$$PhotoModelImplCopyWith<$Res>
     implements $PhotoModelCopyWith<$Res> {
   factory _$$PhotoModelImplCopyWith(
-          _$PhotoModelImpl value, $Res Function(_$PhotoModelImpl) then) =
-      __$$PhotoModelImplCopyWithImpl<$Res>;
+    _$PhotoModelImpl value,
+    $Res Function(_$PhotoModelImpl) then,
+  ) = __$$PhotoModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'image') String? image,
-      @JsonKey(name: 'caption') String? caption,
-      @JsonKey(name: 'is_primary') bool? isPrimary});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'image') String? image,
+    @JsonKey(name: 'caption') String? caption,
+    @JsonKey(name: 'is_primary') bool? isPrimary,
+  });
 }
 
 /// @nodoc
@@ -1309,8 +1419,9 @@ class __$$PhotoModelImplCopyWithImpl<$Res>
     extends _$PhotoModelCopyWithImpl<$Res, _$PhotoModelImpl>
     implements _$$PhotoModelImplCopyWith<$Res> {
   __$$PhotoModelImplCopyWithImpl(
-      _$PhotoModelImpl _value, $Res Function(_$PhotoModelImpl) _then)
-      : super(_value, _then);
+    _$PhotoModelImpl _value,
+    $Res Function(_$PhotoModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of PhotoModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1322,35 +1433,42 @@ class __$$PhotoModelImplCopyWithImpl<$Res>
     Object? caption = freezed,
     Object? isPrimary = freezed,
   }) {
-    return _then(_$PhotoModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      image: freezed == image
-          ? _value.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as String?,
-      caption: freezed == caption
-          ? _value.caption
-          : caption // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isPrimary: freezed == isPrimary
-          ? _value.isPrimary
-          : isPrimary // ignore: cast_nullable_to_non_nullable
-              as bool?,
-    ));
+    return _then(
+      _$PhotoModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        image:
+            freezed == image
+                ? _value.image
+                : image // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        caption:
+            freezed == caption
+                ? _value.caption
+                : caption // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        isPrimary:
+            freezed == isPrimary
+                ? _value.isPrimary
+                : isPrimary // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$PhotoModelImpl implements _PhotoModel {
-  const _$PhotoModelImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'image') this.image,
-      @JsonKey(name: 'caption') this.caption,
-      @JsonKey(name: 'is_primary') this.isPrimary});
+  const _$PhotoModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'image') this.image,
+    @JsonKey(name: 'caption') this.caption,
+    @JsonKey(name: 'is_primary') this.isPrimary,
+  });
 
   factory _$PhotoModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$PhotoModelImplFromJson(json);
@@ -1399,18 +1517,17 @@ class _$PhotoModelImpl implements _PhotoModel {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PhotoModelImplToJson(
-      this,
-    );
+    return _$$PhotoModelImplToJson(this);
   }
 }
 
 abstract class _PhotoModel implements PhotoModel {
-  const factory _PhotoModel(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'image') final String? image,
-      @JsonKey(name: 'caption') final String? caption,
-      @JsonKey(name: 'is_primary') final bool? isPrimary}) = _$PhotoModelImpl;
+  const factory _PhotoModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'image') final String? image,
+    @JsonKey(name: 'caption') final String? caption,
+    @JsonKey(name: 'is_primary') final bool? isPrimary,
+  }) = _$PhotoModelImpl;
 
   factory _PhotoModel.fromJson(Map<String, dynamic> json) =
       _$PhotoModelImpl.fromJson;
@@ -1462,13 +1579,15 @@ mixin _$SocialMediaModel {
 /// @nodoc
 abstract class $SocialMediaModelCopyWith<$Res> {
   factory $SocialMediaModelCopyWith(
-          SocialMediaModel value, $Res Function(SocialMediaModel) then) =
-      _$SocialMediaModelCopyWithImpl<$Res, SocialMediaModel>;
+    SocialMediaModel value,
+    $Res Function(SocialMediaModel) then,
+  ) = _$SocialMediaModelCopyWithImpl<$Res, SocialMediaModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'platform') String? platform,
-      @JsonKey(name: 'url') String? url});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'platform') String? platform,
+    @JsonKey(name: 'url') String? url,
+  });
 }
 
 /// @nodoc
@@ -1490,44 +1609,53 @@ class _$SocialMediaModelCopyWithImpl<$Res, $Val extends SocialMediaModel>
     Object? platform = freezed,
     Object? url = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      platform: freezed == platform
-          ? _value.platform
-          : platform // ignore: cast_nullable_to_non_nullable
-              as String?,
-      url: freezed == url
-          ? _value.url
-          : url // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            platform:
+                freezed == platform
+                    ? _value.platform
+                    : platform // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            url:
+                freezed == url
+                    ? _value.url
+                    : url // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$SocialMediaModelImplCopyWith<$Res>
     implements $SocialMediaModelCopyWith<$Res> {
-  factory _$$SocialMediaModelImplCopyWith(_$SocialMediaModelImpl value,
-          $Res Function(_$SocialMediaModelImpl) then) =
-      __$$SocialMediaModelImplCopyWithImpl<$Res>;
+  factory _$$SocialMediaModelImplCopyWith(
+    _$SocialMediaModelImpl value,
+    $Res Function(_$SocialMediaModelImpl) then,
+  ) = __$$SocialMediaModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'platform') String? platform,
-      @JsonKey(name: 'url') String? url});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'platform') String? platform,
+    @JsonKey(name: 'url') String? url,
+  });
 }
 
 /// @nodoc
 class __$$SocialMediaModelImplCopyWithImpl<$Res>
     extends _$SocialMediaModelCopyWithImpl<$Res, _$SocialMediaModelImpl>
     implements _$$SocialMediaModelImplCopyWith<$Res> {
-  __$$SocialMediaModelImplCopyWithImpl(_$SocialMediaModelImpl _value,
-      $Res Function(_$SocialMediaModelImpl) _then)
-      : super(_value, _then);
+  __$$SocialMediaModelImplCopyWithImpl(
+    _$SocialMediaModelImpl _value,
+    $Res Function(_$SocialMediaModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of SocialMediaModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1538,30 +1666,36 @@ class __$$SocialMediaModelImplCopyWithImpl<$Res>
     Object? platform = freezed,
     Object? url = freezed,
   }) {
-    return _then(_$SocialMediaModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      platform: freezed == platform
-          ? _value.platform
-          : platform // ignore: cast_nullable_to_non_nullable
-              as String?,
-      url: freezed == url
-          ? _value.url
-          : url // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$SocialMediaModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        platform:
+            freezed == platform
+                ? _value.platform
+                : platform // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        url:
+            freezed == url
+                ? _value.url
+                : url // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$SocialMediaModelImpl implements _SocialMediaModel {
-  const _$SocialMediaModelImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'platform') this.platform,
-      @JsonKey(name: 'url') this.url});
+  const _$SocialMediaModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'platform') this.platform,
+    @JsonKey(name: 'url') this.url,
+  });
 
   factory _$SocialMediaModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$SocialMediaModelImplFromJson(json);
@@ -1603,21 +1737,22 @@ class _$SocialMediaModelImpl implements _SocialMediaModel {
   @pragma('vm:prefer-inline')
   _$$SocialMediaModelImplCopyWith<_$SocialMediaModelImpl> get copyWith =>
       __$$SocialMediaModelImplCopyWithImpl<_$SocialMediaModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SocialMediaModelImplToJson(
-      this,
-    );
+    return _$$SocialMediaModelImplToJson(this);
   }
 }
 
 abstract class _SocialMediaModel implements SocialMediaModel {
-  const factory _SocialMediaModel(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'platform') final String? platform,
-      @JsonKey(name: 'url') final String? url}) = _$SocialMediaModelImpl;
+  const factory _SocialMediaModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'platform') final String? platform,
+    @JsonKey(name: 'url') final String? url,
+  }) = _$SocialMediaModelImpl;
 
   factory _SocialMediaModel.fromJson(Map<String, dynamic> json) =
       _$SocialMediaModelImpl.fromJson;
@@ -1672,16 +1807,18 @@ mixin _$WorkingDayModel {
 /// @nodoc
 abstract class $WorkingDayModelCopyWith<$Res> {
   factory $WorkingDayModelCopyWith(
-          WorkingDayModel value, $Res Function(WorkingDayModel) then) =
-      _$WorkingDayModelCopyWithImpl<$Res, WorkingDayModel>;
+    WorkingDayModel value,
+    $Res Function(WorkingDayModel) then,
+  ) = _$WorkingDayModelCopyWithImpl<$Res, WorkingDayModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'day') String? day,
-      @JsonKey(name: 'is_open') bool? isOpen,
-      @JsonKey(name: 'morning_opening_time') String? morningOpeningTime,
-      @JsonKey(name: 'morning_closing_time') String? morningClosingTime,
-      @JsonKey(name: 'evening_opening_time') String? eveningOpeningTime,
-      @JsonKey(name: 'evening_closing_time') String? eveningClosingTime});
+  $Res call({
+    @JsonKey(name: 'day') String? day,
+    @JsonKey(name: 'is_open') bool? isOpen,
+    @JsonKey(name: 'morning_opening_time') String? morningOpeningTime,
+    @JsonKey(name: 'morning_closing_time') String? morningClosingTime,
+    @JsonKey(name: 'evening_opening_time') String? eveningOpeningTime,
+    @JsonKey(name: 'evening_closing_time') String? eveningClosingTime,
+  });
 }
 
 /// @nodoc
@@ -1706,50 +1843,61 @@ class _$WorkingDayModelCopyWithImpl<$Res, $Val extends WorkingDayModel>
     Object? eveningOpeningTime = freezed,
     Object? eveningClosingTime = freezed,
   }) {
-    return _then(_value.copyWith(
-      day: freezed == day
-          ? _value.day
-          : day // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isOpen: freezed == isOpen
-          ? _value.isOpen
-          : isOpen // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      morningOpeningTime: freezed == morningOpeningTime
-          ? _value.morningOpeningTime
-          : morningOpeningTime // ignore: cast_nullable_to_non_nullable
-              as String?,
-      morningClosingTime: freezed == morningClosingTime
-          ? _value.morningClosingTime
-          : morningClosingTime // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eveningOpeningTime: freezed == eveningOpeningTime
-          ? _value.eveningOpeningTime
-          : eveningOpeningTime // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eveningClosingTime: freezed == eveningClosingTime
-          ? _value.eveningClosingTime
-          : eveningClosingTime // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            day:
+                freezed == day
+                    ? _value.day
+                    : day // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            isOpen:
+                freezed == isOpen
+                    ? _value.isOpen
+                    : isOpen // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            morningOpeningTime:
+                freezed == morningOpeningTime
+                    ? _value.morningOpeningTime
+                    : morningOpeningTime // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            morningClosingTime:
+                freezed == morningClosingTime
+                    ? _value.morningClosingTime
+                    : morningClosingTime // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            eveningOpeningTime:
+                freezed == eveningOpeningTime
+                    ? _value.eveningOpeningTime
+                    : eveningOpeningTime // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            eveningClosingTime:
+                freezed == eveningClosingTime
+                    ? _value.eveningClosingTime
+                    : eveningClosingTime // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$WorkingDayModelImplCopyWith<$Res>
     implements $WorkingDayModelCopyWith<$Res> {
-  factory _$$WorkingDayModelImplCopyWith(_$WorkingDayModelImpl value,
-          $Res Function(_$WorkingDayModelImpl) then) =
-      __$$WorkingDayModelImplCopyWithImpl<$Res>;
+  factory _$$WorkingDayModelImplCopyWith(
+    _$WorkingDayModelImpl value,
+    $Res Function(_$WorkingDayModelImpl) then,
+  ) = __$$WorkingDayModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'day') String? day,
-      @JsonKey(name: 'is_open') bool? isOpen,
-      @JsonKey(name: 'morning_opening_time') String? morningOpeningTime,
-      @JsonKey(name: 'morning_closing_time') String? morningClosingTime,
-      @JsonKey(name: 'evening_opening_time') String? eveningOpeningTime,
-      @JsonKey(name: 'evening_closing_time') String? eveningClosingTime});
+  $Res call({
+    @JsonKey(name: 'day') String? day,
+    @JsonKey(name: 'is_open') bool? isOpen,
+    @JsonKey(name: 'morning_opening_time') String? morningOpeningTime,
+    @JsonKey(name: 'morning_closing_time') String? morningClosingTime,
+    @JsonKey(name: 'evening_opening_time') String? eveningOpeningTime,
+    @JsonKey(name: 'evening_closing_time') String? eveningClosingTime,
+  });
 }
 
 /// @nodoc
@@ -1757,8 +1905,9 @@ class __$$WorkingDayModelImplCopyWithImpl<$Res>
     extends _$WorkingDayModelCopyWithImpl<$Res, _$WorkingDayModelImpl>
     implements _$$WorkingDayModelImplCopyWith<$Res> {
   __$$WorkingDayModelImplCopyWithImpl(
-      _$WorkingDayModelImpl _value, $Res Function(_$WorkingDayModelImpl) _then)
-      : super(_value, _then);
+    _$WorkingDayModelImpl _value,
+    $Res Function(_$WorkingDayModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of WorkingDayModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1772,45 +1921,54 @@ class __$$WorkingDayModelImplCopyWithImpl<$Res>
     Object? eveningOpeningTime = freezed,
     Object? eveningClosingTime = freezed,
   }) {
-    return _then(_$WorkingDayModelImpl(
-      day: freezed == day
-          ? _value.day
-          : day // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isOpen: freezed == isOpen
-          ? _value.isOpen
-          : isOpen // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      morningOpeningTime: freezed == morningOpeningTime
-          ? _value.morningOpeningTime
-          : morningOpeningTime // ignore: cast_nullable_to_non_nullable
-              as String?,
-      morningClosingTime: freezed == morningClosingTime
-          ? _value.morningClosingTime
-          : morningClosingTime // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eveningOpeningTime: freezed == eveningOpeningTime
-          ? _value.eveningOpeningTime
-          : eveningOpeningTime // ignore: cast_nullable_to_non_nullable
-              as String?,
-      eveningClosingTime: freezed == eveningClosingTime
-          ? _value.eveningClosingTime
-          : eveningClosingTime // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$WorkingDayModelImpl(
+        day:
+            freezed == day
+                ? _value.day
+                : day // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        isOpen:
+            freezed == isOpen
+                ? _value.isOpen
+                : isOpen // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        morningOpeningTime:
+            freezed == morningOpeningTime
+                ? _value.morningOpeningTime
+                : morningOpeningTime // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        morningClosingTime:
+            freezed == morningClosingTime
+                ? _value.morningClosingTime
+                : morningClosingTime // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        eveningOpeningTime:
+            freezed == eveningOpeningTime
+                ? _value.eveningOpeningTime
+                : eveningOpeningTime // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        eveningClosingTime:
+            freezed == eveningClosingTime
+                ? _value.eveningClosingTime
+                : eveningClosingTime // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$WorkingDayModelImpl implements _WorkingDayModel {
-  const _$WorkingDayModelImpl(
-      {@JsonKey(name: 'day') this.day,
-      @JsonKey(name: 'is_open') this.isOpen,
-      @JsonKey(name: 'morning_opening_time') this.morningOpeningTime,
-      @JsonKey(name: 'morning_closing_time') this.morningClosingTime,
-      @JsonKey(name: 'evening_opening_time') this.eveningOpeningTime,
-      @JsonKey(name: 'evening_closing_time') this.eveningClosingTime});
+  const _$WorkingDayModelImpl({
+    @JsonKey(name: 'day') this.day,
+    @JsonKey(name: 'is_open') this.isOpen,
+    @JsonKey(name: 'morning_opening_time') this.morningOpeningTime,
+    @JsonKey(name: 'morning_closing_time') this.morningClosingTime,
+    @JsonKey(name: 'evening_opening_time') this.eveningOpeningTime,
+    @JsonKey(name: 'evening_closing_time') this.eveningClosingTime,
+  });
 
   factory _$WorkingDayModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$WorkingDayModelImplFromJson(json);
@@ -1858,8 +2016,15 @@ class _$WorkingDayModelImpl implements _WorkingDayModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, day, isOpen, morningOpeningTime,
-      morningClosingTime, eveningOpeningTime, eveningClosingTime);
+  int get hashCode => Object.hash(
+    runtimeType,
+    day,
+    isOpen,
+    morningOpeningTime,
+    morningClosingTime,
+    eveningOpeningTime,
+    eveningClosingTime,
+  );
 
   /// Create a copy of WorkingDayModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1868,25 +2033,25 @@ class _$WorkingDayModelImpl implements _WorkingDayModel {
   @pragma('vm:prefer-inline')
   _$$WorkingDayModelImplCopyWith<_$WorkingDayModelImpl> get copyWith =>
       __$$WorkingDayModelImplCopyWithImpl<_$WorkingDayModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$WorkingDayModelImplToJson(
-      this,
-    );
+    return _$$WorkingDayModelImplToJson(this);
   }
 }
 
 abstract class _WorkingDayModel implements WorkingDayModel {
-  const factory _WorkingDayModel(
-      {@JsonKey(name: 'day') final String? day,
-      @JsonKey(name: 'is_open') final bool? isOpen,
-      @JsonKey(name: 'morning_opening_time') final String? morningOpeningTime,
-      @JsonKey(name: 'morning_closing_time') final String? morningClosingTime,
-      @JsonKey(name: 'evening_opening_time') final String? eveningOpeningTime,
-      @JsonKey(name: 'evening_closing_time')
-      final String? eveningClosingTime}) = _$WorkingDayModelImpl;
+  const factory _WorkingDayModel({
+    @JsonKey(name: 'day') final String? day,
+    @JsonKey(name: 'is_open') final bool? isOpen,
+    @JsonKey(name: 'morning_opening_time') final String? morningOpeningTime,
+    @JsonKey(name: 'morning_closing_time') final String? morningClosingTime,
+    @JsonKey(name: 'evening_opening_time') final String? eveningOpeningTime,
+    @JsonKey(name: 'evening_closing_time') final String? eveningClosingTime,
+  }) = _$WorkingDayModelImpl;
 
   factory _WorkingDayModel.fromJson(Map<String, dynamic> json) =
       _$WorkingDayModelImpl.fromJson;

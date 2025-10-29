@@ -37,6 +37,96 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
     await _cubit.fetchMembershipPackages();
   }
 
+  Future<void> _onDeletePackage({int? id}) async {
+    if (id == null) return;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return BlocBuilder<MembershipCubit, MembershipState>(
+          bloc: _cubit,
+          builder: (context, state) {
+            final isLoading = state.isDeleting;
+
+            return PopScope(
+              canPop: !isLoading,
+              child: AlertDialog(
+                title: const Text('Delete Package'),
+                content: const Text(
+                  'Are you sure you want to delete this package?',
+                ),
+                actions: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                    ),
+                    onPressed:
+                        isLoading ? null : () => Navigator.of(context).pop(),
+                    child: Text(
+                      'Cancel',
+                      style: AppStyles.text14Px.poppins.w500.dark,
+                    ),
+                  ),
+
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                    ),
+                    onPressed:
+                        isLoading
+                            ? null
+                            : () async {
+                              await _cubit.deleteMembershipPackage(id: id);
+                              if (!mounted) return;
+                              Navigator.of(
+                                context,
+                              ).pop(); // close dialog after deletion
+                              _fetch();
+                            },
+                    child:
+                        isLoading
+                            ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Deleting...',
+                                  style: AppStyles.text14Px.poppins.w500
+                                      .copyWith(color: Colors.white),
+                                ),
+                              ],
+                            )
+                            : Text(
+                              'Delete',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<MembershipCubit, MembershipState>(
@@ -133,19 +223,22 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        // mainAxisAlignment:
+                                        //     MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(
-                                            membership?.name ?? '',
-                                            style:
-                                                AppStyles
-                                                    .text14Px
-                                                    .poppins
-                                                    .w600
-                                                    .dark,
+                                          Expanded(
+                                            child: Text(
+                                              membership?.name ?? '',
+                                              style:
+                                                  AppStyles
+                                                      .text14Px
+                                                      .poppins
+                                                      .w600
+                                                      .dark,
+                                            ),
                                           ),
-                                          TextButton(
+                                          IconButton(
+                                            icon: const Icon(Icons.edit),
                                             onPressed: () {
                                               if (widget.orgDetails.id ==
                                                   null) {
@@ -169,7 +262,28 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                             style: TextButton.styleFrom(
                                               foregroundColor: Colors.red,
                                             ),
-                                            child: const Text('Edit'),
+                                          ).pOnly(left: 8),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete),
+                                            onPressed: () {
+                                              if (widget.orgDetails.id ==
+                                                  null) {
+                                                Dialogs.showSnack(
+                                                  msg:
+                                                      'Organization is not available',
+                                                );
+                                                return;
+                                              }
+                                              _onDeletePackage(
+                                                id: data.results?[index].id,
+                                              );
+                                              // _cubit.deleteMembershipPackage(
+                                              //   id: data.results?[index].id,
+                                              // );
+                                            },
+                                            style: TextButton.styleFrom(
+                                              foregroundColor: Colors.red,
+                                            ),
                                           ).pOnly(left: 8),
                                         ],
                                       ),
@@ -222,7 +336,8 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                                     .dark,
                                           ),
                                           Text(
-                                            '${(membership?.durationDays ?? 0) ~/ 30} months',
+                                            // '${(membership?.durationDays ?? 0) ~/ 30} months',
+                                            '${membership?.durationDays ?? 0} days',
                                             style:
                                                 AppStyles
                                                     .text14Px
@@ -237,7 +352,8 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            'Actual Price',
+                                            // 'Actual Price',
+                                            'Amount',
                                             style:
                                                 AppStyles
                                                     .text13Px

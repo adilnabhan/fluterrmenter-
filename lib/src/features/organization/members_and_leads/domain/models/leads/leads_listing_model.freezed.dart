@@ -12,7 +12,8 @@ part of 'leads_listing_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 LeadsListingModel _$LeadsListingModelFromJson(Map<String, dynamic> json) {
   return _LeadsListingModel.fromJson(json);
@@ -42,14 +43,16 @@ mixin _$LeadsListingModel {
 /// @nodoc
 abstract class $LeadsListingModelCopyWith<$Res> {
   factory $LeadsListingModelCopyWith(
-          LeadsListingModel value, $Res Function(LeadsListingModel) then) =
-      _$LeadsListingModelCopyWithImpl<$Res, LeadsListingModel>;
+    LeadsListingModel value,
+    $Res Function(LeadsListingModel) then,
+  ) = _$LeadsListingModelCopyWithImpl<$Res, LeadsListingModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'count') int? count,
-      @JsonKey(name: 'next') String? next,
-      @JsonKey(name: 'previous') String? previous,
-      @JsonKey(name: 'results') List<Result>? results});
+  $Res call({
+    @JsonKey(name: 'count') int? count,
+    @JsonKey(name: 'next') String? next,
+    @JsonKey(name: 'previous') String? previous,
+    @JsonKey(name: 'results') List<Result>? results,
+  });
 }
 
 /// @nodoc
@@ -72,49 +75,59 @@ class _$LeadsListingModelCopyWithImpl<$Res, $Val extends LeadsListingModel>
     Object? previous = freezed,
     Object? results = freezed,
   }) {
-    return _then(_value.copyWith(
-      count: freezed == count
-          ? _value.count
-          : count // ignore: cast_nullable_to_non_nullable
-              as int?,
-      next: freezed == next
-          ? _value.next
-          : next // ignore: cast_nullable_to_non_nullable
-              as String?,
-      previous: freezed == previous
-          ? _value.previous
-          : previous // ignore: cast_nullable_to_non_nullable
-              as String?,
-      results: freezed == results
-          ? _value.results
-          : results // ignore: cast_nullable_to_non_nullable
-              as List<Result>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            count:
+                freezed == count
+                    ? _value.count
+                    : count // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            next:
+                freezed == next
+                    ? _value.next
+                    : next // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            previous:
+                freezed == previous
+                    ? _value.previous
+                    : previous // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            results:
+                freezed == results
+                    ? _value.results
+                    : results // ignore: cast_nullable_to_non_nullable
+                        as List<Result>?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$LeadsListingModelImplCopyWith<$Res>
     implements $LeadsListingModelCopyWith<$Res> {
-  factory _$$LeadsListingModelImplCopyWith(_$LeadsListingModelImpl value,
-          $Res Function(_$LeadsListingModelImpl) then) =
-      __$$LeadsListingModelImplCopyWithImpl<$Res>;
+  factory _$$LeadsListingModelImplCopyWith(
+    _$LeadsListingModelImpl value,
+    $Res Function(_$LeadsListingModelImpl) then,
+  ) = __$$LeadsListingModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'count') int? count,
-      @JsonKey(name: 'next') String? next,
-      @JsonKey(name: 'previous') String? previous,
-      @JsonKey(name: 'results') List<Result>? results});
+  $Res call({
+    @JsonKey(name: 'count') int? count,
+    @JsonKey(name: 'next') String? next,
+    @JsonKey(name: 'previous') String? previous,
+    @JsonKey(name: 'results') List<Result>? results,
+  });
 }
 
 /// @nodoc
 class __$$LeadsListingModelImplCopyWithImpl<$Res>
     extends _$LeadsListingModelCopyWithImpl<$Res, _$LeadsListingModelImpl>
     implements _$$LeadsListingModelImplCopyWith<$Res> {
-  __$$LeadsListingModelImplCopyWithImpl(_$LeadsListingModelImpl _value,
-      $Res Function(_$LeadsListingModelImpl) _then)
-      : super(_value, _then);
+  __$$LeadsListingModelImplCopyWithImpl(
+    _$LeadsListingModelImpl _value,
+    $Res Function(_$LeadsListingModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of LeadsListingModel
   /// with the given fields replaced by the non-null parameter values.
@@ -126,36 +139,42 @@ class __$$LeadsListingModelImplCopyWithImpl<$Res>
     Object? previous = freezed,
     Object? results = freezed,
   }) {
-    return _then(_$LeadsListingModelImpl(
-      count: freezed == count
-          ? _value.count
-          : count // ignore: cast_nullable_to_non_nullable
-              as int?,
-      next: freezed == next
-          ? _value.next
-          : next // ignore: cast_nullable_to_non_nullable
-              as String?,
-      previous: freezed == previous
-          ? _value.previous
-          : previous // ignore: cast_nullable_to_non_nullable
-              as String?,
-      results: freezed == results
-          ? _value._results
-          : results // ignore: cast_nullable_to_non_nullable
-              as List<Result>?,
-    ));
+    return _then(
+      _$LeadsListingModelImpl(
+        count:
+            freezed == count
+                ? _value.count
+                : count // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        next:
+            freezed == next
+                ? _value.next
+                : next // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        previous:
+            freezed == previous
+                ? _value.previous
+                : previous // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        results:
+            freezed == results
+                ? _value._results
+                : results // ignore: cast_nullable_to_non_nullable
+                    as List<Result>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$LeadsListingModelImpl implements _LeadsListingModel {
-  const _$LeadsListingModelImpl(
-      {@JsonKey(name: 'count') this.count,
-      @JsonKey(name: 'next') this.next,
-      @JsonKey(name: 'previous') this.previous,
-      @JsonKey(name: 'results') final List<Result>? results})
-      : _results = results;
+  const _$LeadsListingModelImpl({
+    @JsonKey(name: 'count') this.count,
+    @JsonKey(name: 'next') this.next,
+    @JsonKey(name: 'previous') this.previous,
+    @JsonKey(name: 'results') final List<Result>? results,
+  }) : _results = results;
 
   factory _$LeadsListingModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$LeadsListingModelImplFromJson(json);
@@ -199,8 +218,13 @@ class _$LeadsListingModelImpl implements _LeadsListingModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, count, next, previous,
-      const DeepCollectionEquality().hash(_results));
+  int get hashCode => Object.hash(
+    runtimeType,
+    count,
+    next,
+    previous,
+    const DeepCollectionEquality().hash(_results),
+  );
 
   /// Create a copy of LeadsListingModel
   /// with the given fields replaced by the non-null parameter values.
@@ -209,23 +233,23 @@ class _$LeadsListingModelImpl implements _LeadsListingModel {
   @pragma('vm:prefer-inline')
   _$$LeadsListingModelImplCopyWith<_$LeadsListingModelImpl> get copyWith =>
       __$$LeadsListingModelImplCopyWithImpl<_$LeadsListingModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$LeadsListingModelImplToJson(
-      this,
-    );
+    return _$$LeadsListingModelImplToJson(this);
   }
 }
 
 abstract class _LeadsListingModel implements LeadsListingModel {
-  const factory _LeadsListingModel(
-          {@JsonKey(name: 'count') final int? count,
-          @JsonKey(name: 'next') final String? next,
-          @JsonKey(name: 'previous') final String? previous,
-          @JsonKey(name: 'results') final List<Result>? results}) =
-      _$LeadsListingModelImpl;
+  const factory _LeadsListingModel({
+    @JsonKey(name: 'count') final int? count,
+    @JsonKey(name: 'next') final String? next,
+    @JsonKey(name: 'previous') final String? previous,
+    @JsonKey(name: 'results') final List<Result>? results,
+  }) = _$LeadsListingModelImpl;
 
   factory _LeadsListingModel.fromJson(Map<String, dynamic> json) =
       _$LeadsListingModelImpl.fromJson;
@@ -290,16 +314,17 @@ abstract class $ResultCopyWith<$Res> {
   factory $ResultCopyWith(Result value, $Res Function(Result) then) =
       _$ResultCopyWithImpl<$Res, Result>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'user_id') String? userId,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'designation') String? designation,
-      @JsonKey(name: 'created') DateTime? created,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture,
-      @JsonKey(name: 'categories') List<String>? categories});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'user_id') String? userId,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'designation') String? designation,
+    @JsonKey(name: 'created') DateTime? created,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+    @JsonKey(name: 'categories') List<String>? categories,
+  });
 }
 
 /// @nodoc
@@ -327,64 +352,78 @@ class _$ResultCopyWithImpl<$Res, $Val extends Result>
     Object? profilePicture = freezed,
     Object? categories = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      userId: freezed == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      designation: freezed == designation
-          ? _value.designation
-          : designation // ignore: cast_nullable_to_non_nullable
-              as String?,
-      created: freezed == created
-          ? _value.created
-          : created // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      categories: freezed == categories
-          ? _value.categories
-          : categories // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            userId:
+                freezed == userId
+                    ? _value.userId
+                    : userId // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            mobileNumber:
+                freezed == mobileNumber
+                    ? _value.mobileNumber
+                    : mobileNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            email:
+                freezed == email
+                    ? _value.email
+                    : email // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            designation:
+                freezed == designation
+                    ? _value.designation
+                    : designation // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            created:
+                freezed == created
+                    ? _value.created
+                    : created // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            profilePicture:
+                freezed == profilePicture
+                    ? _value.profilePicture
+                    : profilePicture // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            categories:
+                freezed == categories
+                    ? _value.categories
+                    : categories // ignore: cast_nullable_to_non_nullable
+                        as List<String>?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$ResultImplCopyWith<$Res> implements $ResultCopyWith<$Res> {
   factory _$$ResultImplCopyWith(
-          _$ResultImpl value, $Res Function(_$ResultImpl) then) =
-      __$$ResultImplCopyWithImpl<$Res>;
+    _$ResultImpl value,
+    $Res Function(_$ResultImpl) then,
+  ) = __$$ResultImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'user_id') String? userId,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'designation') String? designation,
-      @JsonKey(name: 'created') DateTime? created,
-      @JsonKey(name: 'profile_picture') dynamic profilePicture,
-      @JsonKey(name: 'categories') List<String>? categories});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'user_id') String? userId,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'designation') String? designation,
+    @JsonKey(name: 'created') DateTime? created,
+    @JsonKey(name: 'profile_picture') dynamic profilePicture,
+    @JsonKey(name: 'categories') List<String>? categories,
+  });
 }
 
 /// @nodoc
@@ -392,8 +431,9 @@ class __$$ResultImplCopyWithImpl<$Res>
     extends _$ResultCopyWithImpl<$Res, _$ResultImpl>
     implements _$$ResultImplCopyWith<$Res> {
   __$$ResultImplCopyWithImpl(
-      _$ResultImpl _value, $Res Function(_$ResultImpl) _then)
-      : super(_value, _then);
+    _$ResultImpl _value,
+    $Res Function(_$ResultImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Result
   /// with the given fields replaced by the non-null parameter values.
@@ -410,61 +450,72 @@ class __$$ResultImplCopyWithImpl<$Res>
     Object? profilePicture = freezed,
     Object? categories = freezed,
   }) {
-    return _then(_$ResultImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      userId: freezed == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      designation: freezed == designation
-          ? _value.designation
-          : designation // ignore: cast_nullable_to_non_nullable
-              as String?,
-      created: freezed == created
-          ? _value.created
-          : created // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      categories: freezed == categories
-          ? _value._categories
-          : categories // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-    ));
+    return _then(
+      _$ResultImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        userId:
+            freezed == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        mobileNumber:
+            freezed == mobileNumber
+                ? _value.mobileNumber
+                : mobileNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        email:
+            freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        designation:
+            freezed == designation
+                ? _value.designation
+                : designation // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        created:
+            freezed == created
+                ? _value.created
+                : created // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        profilePicture:
+            freezed == profilePicture
+                ? _value.profilePicture
+                : profilePicture // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        categories:
+            freezed == categories
+                ? _value._categories
+                : categories // ignore: cast_nullable_to_non_nullable
+                    as List<String>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ResultImpl implements _Result {
-  const _$ResultImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'user_id') this.userId,
-      @JsonKey(name: 'name') this.name,
-      @JsonKey(name: 'mobile_number') this.mobileNumber,
-      @JsonKey(name: 'email') this.email,
-      @JsonKey(name: 'designation') this.designation,
-      @JsonKey(name: 'created') this.created,
-      @JsonKey(name: 'profile_picture') this.profilePicture,
-      @JsonKey(name: 'categories') final List<String>? categories})
-      : _categories = categories;
+  const _$ResultImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'user_id') this.userId,
+    @JsonKey(name: 'name') this.name,
+    @JsonKey(name: 'mobile_number') this.mobileNumber,
+    @JsonKey(name: 'email') this.email,
+    @JsonKey(name: 'designation') this.designation,
+    @JsonKey(name: 'created') this.created,
+    @JsonKey(name: 'profile_picture') this.profilePicture,
+    @JsonKey(name: 'categories') final List<String>? categories,
+  }) : _categories = categories;
 
   factory _$ResultImpl.fromJson(Map<String, dynamic> json) =>
       _$$ResultImplFromJson(json);
@@ -523,25 +574,30 @@ class _$ResultImpl implements _Result {
             (identical(other.designation, designation) ||
                 other.designation == designation) &&
             (identical(other.created, created) || other.created == created) &&
-            const DeepCollectionEquality()
-                .equals(other.profilePicture, profilePicture) &&
-            const DeepCollectionEquality()
-                .equals(other._categories, _categories));
+            const DeepCollectionEquality().equals(
+              other.profilePicture,
+              profilePicture,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._categories,
+              _categories,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      userId,
-      name,
-      mobileNumber,
-      email,
-      designation,
-      created,
-      const DeepCollectionEquality().hash(profilePicture),
-      const DeepCollectionEquality().hash(_categories));
+    runtimeType,
+    id,
+    userId,
+    name,
+    mobileNumber,
+    email,
+    designation,
+    created,
+    const DeepCollectionEquality().hash(profilePicture),
+    const DeepCollectionEquality().hash(_categories),
+  );
 
   /// Create a copy of Result
   /// with the given fields replaced by the non-null parameter values.
@@ -553,24 +609,22 @@ class _$ResultImpl implements _Result {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ResultImplToJson(
-      this,
-    );
+    return _$$ResultImplToJson(this);
   }
 }
 
 abstract class _Result implements Result {
-  const factory _Result(
-          {@JsonKey(name: 'id') final int? id,
-          @JsonKey(name: 'user_id') final String? userId,
-          @JsonKey(name: 'name') final String? name,
-          @JsonKey(name: 'mobile_number') final String? mobileNumber,
-          @JsonKey(name: 'email') final String? email,
-          @JsonKey(name: 'designation') final String? designation,
-          @JsonKey(name: 'created') final DateTime? created,
-          @JsonKey(name: 'profile_picture') final dynamic profilePicture,
-          @JsonKey(name: 'categories') final List<String>? categories}) =
-      _$ResultImpl;
+  const factory _Result({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'user_id') final String? userId,
+    @JsonKey(name: 'name') final String? name,
+    @JsonKey(name: 'mobile_number') final String? mobileNumber,
+    @JsonKey(name: 'email') final String? email,
+    @JsonKey(name: 'designation') final String? designation,
+    @JsonKey(name: 'created') final DateTime? created,
+    @JsonKey(name: 'profile_picture') final dynamic profilePicture,
+    @JsonKey(name: 'categories') final List<String>? categories,
+  }) = _$ResultImpl;
 
   factory _Result.fromJson(Map<String, dynamic> json) = _$ResultImpl.fromJson;
 

@@ -12,10 +12,12 @@ part of 'multi_select_data_entity.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 MultiSelectDataEntity _$MultiSelectDataEntityFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return _MultiSelectDataEntity.fromJson(json);
 }
 
@@ -37,17 +39,21 @@ mixin _$MultiSelectDataEntity {
 
 /// @nodoc
 abstract class $MultiSelectDataEntityCopyWith<$Res> {
-  factory $MultiSelectDataEntityCopyWith(MultiSelectDataEntity value,
-          $Res Function(MultiSelectDataEntity) then) =
-      _$MultiSelectDataEntityCopyWithImpl<$Res, MultiSelectDataEntity>;
+  factory $MultiSelectDataEntityCopyWith(
+    MultiSelectDataEntity value,
+    $Res Function(MultiSelectDataEntity) then,
+  ) = _$MultiSelectDataEntityCopyWithImpl<$Res, MultiSelectDataEntity>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'results') List<MultiSelectSingleDataEntity>? results});
+  $Res call({
+    @JsonKey(name: 'results') List<MultiSelectSingleDataEntity>? results,
+  });
 }
 
 /// @nodoc
-class _$MultiSelectDataEntityCopyWithImpl<$Res,
-        $Val extends MultiSelectDataEntity>
+class _$MultiSelectDataEntityCopyWithImpl<
+  $Res,
+  $Val extends MultiSelectDataEntity
+>
     implements $MultiSelectDataEntityCopyWith<$Res> {
   _$MultiSelectDataEntityCopyWithImpl(this._value, this._then);
 
@@ -60,15 +66,17 @@ class _$MultiSelectDataEntityCopyWithImpl<$Res,
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? results = freezed,
-  }) {
-    return _then(_value.copyWith(
-      results: freezed == results
-          ? _value.results
-          : results // ignore: cast_nullable_to_non_nullable
-              as List<MultiSelectSingleDataEntity>?,
-    ) as $Val);
+  $Res call({Object? results = freezed}) {
+    return _then(
+      _value.copyWith(
+            results:
+                freezed == results
+                    ? _value.results
+                    : results // ignore: cast_nullable_to_non_nullable
+                        as List<MultiSelectSingleDataEntity>?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -76,47 +84,49 @@ class _$MultiSelectDataEntityCopyWithImpl<$Res,
 abstract class _$$MultiSelectDataEntityImplCopyWith<$Res>
     implements $MultiSelectDataEntityCopyWith<$Res> {
   factory _$$MultiSelectDataEntityImplCopyWith(
-          _$MultiSelectDataEntityImpl value,
-          $Res Function(_$MultiSelectDataEntityImpl) then) =
-      __$$MultiSelectDataEntityImplCopyWithImpl<$Res>;
+    _$MultiSelectDataEntityImpl value,
+    $Res Function(_$MultiSelectDataEntityImpl) then,
+  ) = __$$MultiSelectDataEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'results') List<MultiSelectSingleDataEntity>? results});
+  $Res call({
+    @JsonKey(name: 'results') List<MultiSelectSingleDataEntity>? results,
+  });
 }
 
 /// @nodoc
 class __$$MultiSelectDataEntityImplCopyWithImpl<$Res>
-    extends _$MultiSelectDataEntityCopyWithImpl<$Res,
-        _$MultiSelectDataEntityImpl>
+    extends
+        _$MultiSelectDataEntityCopyWithImpl<$Res, _$MultiSelectDataEntityImpl>
     implements _$$MultiSelectDataEntityImplCopyWith<$Res> {
-  __$$MultiSelectDataEntityImplCopyWithImpl(_$MultiSelectDataEntityImpl _value,
-      $Res Function(_$MultiSelectDataEntityImpl) _then)
-      : super(_value, _then);
+  __$$MultiSelectDataEntityImplCopyWithImpl(
+    _$MultiSelectDataEntityImpl _value,
+    $Res Function(_$MultiSelectDataEntityImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of MultiSelectDataEntity
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? results = freezed,
-  }) {
-    return _then(_$MultiSelectDataEntityImpl(
-      results: freezed == results
-          ? _value._results
-          : results // ignore: cast_nullable_to_non_nullable
-              as List<MultiSelectSingleDataEntity>?,
-    ));
+  $Res call({Object? results = freezed}) {
+    return _then(
+      _$MultiSelectDataEntityImpl(
+        results:
+            freezed == results
+                ? _value._results
+                : results // ignore: cast_nullable_to_non_nullable
+                    as List<MultiSelectSingleDataEntity>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MultiSelectDataEntityImpl implements _MultiSelectDataEntity {
-  const _$MultiSelectDataEntityImpl(
-      {@JsonKey(name: 'results')
-      final List<MultiSelectSingleDataEntity>? results})
-      : _results = results;
+  const _$MultiSelectDataEntityImpl({
+    @JsonKey(name: 'results') final List<MultiSelectSingleDataEntity>? results,
+  }) : _results = results;
 
   factory _$MultiSelectDataEntityImpl.fromJson(Map<String, dynamic> json) =>
       _$$MultiSelectDataEntityImplFromJson(json);
@@ -156,22 +166,22 @@ class _$MultiSelectDataEntityImpl implements _MultiSelectDataEntity {
   @override
   @pragma('vm:prefer-inline')
   _$$MultiSelectDataEntityImplCopyWith<_$MultiSelectDataEntityImpl>
-      get copyWith => __$$MultiSelectDataEntityImplCopyWithImpl<
-          _$MultiSelectDataEntityImpl>(this, _$identity);
+  get copyWith =>
+      __$$MultiSelectDataEntityImplCopyWithImpl<_$MultiSelectDataEntityImpl>(
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MultiSelectDataEntityImplToJson(
-      this,
-    );
+    return _$$MultiSelectDataEntityImplToJson(this);
   }
 }
 
 abstract class _MultiSelectDataEntity implements MultiSelectDataEntity {
-  const factory _MultiSelectDataEntity(
-          {@JsonKey(name: 'results')
-          final List<MultiSelectSingleDataEntity>? results}) =
-      _$MultiSelectDataEntityImpl;
+  const factory _MultiSelectDataEntity({
+    @JsonKey(name: 'results') final List<MultiSelectSingleDataEntity>? results,
+  }) = _$MultiSelectDataEntityImpl;
 
   factory _MultiSelectDataEntity.fromJson(Map<String, dynamic> json) =
       _$MultiSelectDataEntityImpl.fromJson;
@@ -185,11 +195,12 @@ abstract class _MultiSelectDataEntity implements MultiSelectDataEntity {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MultiSelectDataEntityImplCopyWith<_$MultiSelectDataEntityImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 MultiSelectSingleDataEntity _$MultiSelectSingleDataEntityFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return _MultiSelectSingleDataEntity.fromJson(json);
 }
 
@@ -211,27 +222,33 @@ mixin _$MultiSelectSingleDataEntity {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   $MultiSelectSingleDataEntityCopyWith<MultiSelectSingleDataEntity>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $MultiSelectSingleDataEntityCopyWith<$Res> {
   factory $MultiSelectSingleDataEntityCopyWith(
-          MultiSelectSingleDataEntity value,
-          $Res Function(MultiSelectSingleDataEntity) then) =
-      _$MultiSelectSingleDataEntityCopyWithImpl<$Res,
-          MultiSelectSingleDataEntity>;
+    MultiSelectSingleDataEntity value,
+    $Res Function(MultiSelectSingleDataEntity) then,
+  ) =
+      _$MultiSelectSingleDataEntityCopyWithImpl<
+        $Res,
+        MultiSelectSingleDataEntity
+      >;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'logo') String? logo,
-      @JsonKey(name: 'status_string') String? statusString});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'logo') String? logo,
+    @JsonKey(name: 'status_string') String? statusString,
+  });
 }
 
 /// @nodoc
-class _$MultiSelectSingleDataEntityCopyWithImpl<$Res,
-        $Val extends MultiSelectSingleDataEntity>
+class _$MultiSelectSingleDataEntityCopyWithImpl<
+  $Res,
+  $Val extends MultiSelectSingleDataEntity
+>
     implements $MultiSelectSingleDataEntityCopyWith<$Res> {
   _$MultiSelectSingleDataEntityCopyWithImpl(this._value, this._then);
 
@@ -250,24 +267,31 @@ class _$MultiSelectSingleDataEntityCopyWithImpl<$Res,
     Object? logo = freezed,
     Object? statusString = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      logo: freezed == logo
-          ? _value.logo
-          : logo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      statusString: freezed == statusString
-          ? _value.statusString
-          : statusString // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            logo:
+                freezed == logo
+                    ? _value.logo
+                    : logo // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            statusString:
+                freezed == statusString
+                    ? _value.statusString
+                    : statusString // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -275,27 +299,31 @@ class _$MultiSelectSingleDataEntityCopyWithImpl<$Res,
 abstract class _$$MultiSelectSingleDataEntityImplCopyWith<$Res>
     implements $MultiSelectSingleDataEntityCopyWith<$Res> {
   factory _$$MultiSelectSingleDataEntityImplCopyWith(
-          _$MultiSelectSingleDataEntityImpl value,
-          $Res Function(_$MultiSelectSingleDataEntityImpl) then) =
-      __$$MultiSelectSingleDataEntityImplCopyWithImpl<$Res>;
+    _$MultiSelectSingleDataEntityImpl value,
+    $Res Function(_$MultiSelectSingleDataEntityImpl) then,
+  ) = __$$MultiSelectSingleDataEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'logo') String? logo,
-      @JsonKey(name: 'status_string') String? statusString});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'logo') String? logo,
+    @JsonKey(name: 'status_string') String? statusString,
+  });
 }
 
 /// @nodoc
 class __$$MultiSelectSingleDataEntityImplCopyWithImpl<$Res>
-    extends _$MultiSelectSingleDataEntityCopyWithImpl<$Res,
-        _$MultiSelectSingleDataEntityImpl>
+    extends
+        _$MultiSelectSingleDataEntityCopyWithImpl<
+          $Res,
+          _$MultiSelectSingleDataEntityImpl
+        >
     implements _$$MultiSelectSingleDataEntityImplCopyWith<$Res> {
   __$$MultiSelectSingleDataEntityImplCopyWithImpl(
-      _$MultiSelectSingleDataEntityImpl _value,
-      $Res Function(_$MultiSelectSingleDataEntityImpl) _then)
-      : super(_value, _then);
+    _$MultiSelectSingleDataEntityImpl _value,
+    $Res Function(_$MultiSelectSingleDataEntityImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of MultiSelectSingleDataEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -307,24 +335,30 @@ class __$$MultiSelectSingleDataEntityImplCopyWithImpl<$Res>
     Object? logo = freezed,
     Object? statusString = freezed,
   }) {
-    return _then(_$MultiSelectSingleDataEntityImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      logo: freezed == logo
-          ? _value.logo
-          : logo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      statusString: freezed == statusString
-          ? _value.statusString
-          : statusString // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$MultiSelectSingleDataEntityImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        logo:
+            freezed == logo
+                ? _value.logo
+                : logo // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        statusString:
+            freezed == statusString
+                ? _value.statusString
+                : statusString // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -332,15 +366,16 @@ class __$$MultiSelectSingleDataEntityImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$MultiSelectSingleDataEntityImpl
     implements _MultiSelectSingleDataEntity {
-  const _$MultiSelectSingleDataEntityImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'name') this.name,
-      @JsonKey(name: 'logo') this.logo,
-      @JsonKey(name: 'status_string') this.statusString});
+  const _$MultiSelectSingleDataEntityImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'name') this.name,
+    @JsonKey(name: 'logo') this.logo,
+    @JsonKey(name: 'status_string') this.statusString,
+  });
 
   factory _$MultiSelectSingleDataEntityImpl.fromJson(
-          Map<String, dynamic> json) =>
-      _$$MultiSelectSingleDataEntityImplFromJson(json);
+    Map<String, dynamic> json,
+  ) => _$$MultiSelectSingleDataEntityImplFromJson(json);
 
   @override
   @JsonKey(name: 'id')
@@ -382,25 +417,24 @@ class _$MultiSelectSingleDataEntityImpl
   @override
   @pragma('vm:prefer-inline')
   _$$MultiSelectSingleDataEntityImplCopyWith<_$MultiSelectSingleDataEntityImpl>
-      get copyWith => __$$MultiSelectSingleDataEntityImplCopyWithImpl<
-          _$MultiSelectSingleDataEntityImpl>(this, _$identity);
+  get copyWith => __$$MultiSelectSingleDataEntityImplCopyWithImpl<
+    _$MultiSelectSingleDataEntityImpl
+  >(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MultiSelectSingleDataEntityImplToJson(
-      this,
-    );
+    return _$$MultiSelectSingleDataEntityImplToJson(this);
   }
 }
 
 abstract class _MultiSelectSingleDataEntity
     implements MultiSelectSingleDataEntity {
-  const factory _MultiSelectSingleDataEntity(
-          {@JsonKey(name: 'id') final int? id,
-          @JsonKey(name: 'name') final String? name,
-          @JsonKey(name: 'logo') final String? logo,
-          @JsonKey(name: 'status_string') final String? statusString}) =
-      _$MultiSelectSingleDataEntityImpl;
+  const factory _MultiSelectSingleDataEntity({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'name') final String? name,
+    @JsonKey(name: 'logo') final String? logo,
+    @JsonKey(name: 'status_string') final String? statusString,
+  }) = _$MultiSelectSingleDataEntityImpl;
 
   factory _MultiSelectSingleDataEntity.fromJson(Map<String, dynamic> json) =
       _$MultiSelectSingleDataEntityImpl.fromJson;
@@ -423,5 +457,5 @@ abstract class _MultiSelectSingleDataEntity
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MultiSelectSingleDataEntityImplCopyWith<_$MultiSelectSingleDataEntityImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

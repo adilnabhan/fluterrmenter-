@@ -12,7 +12,8 @@ part of 'member_details_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 MemberDetailsModel _$MemberDetailsModelFromJson(Map<String, dynamic> json) {
   return _MemberDetailsModel.fromJson(json);
@@ -77,32 +78,33 @@ mixin _$MemberDetailsModel {
 /// @nodoc
 abstract class $MemberDetailsModelCopyWith<$Res> {
   factory $MemberDetailsModelCopyWith(
-          MemberDetailsModel value, $Res Function(MemberDetailsModel) then) =
-      _$MemberDetailsModelCopyWithImpl<$Res, MemberDetailsModel>;
+    MemberDetailsModel value,
+    $Res Function(MemberDetailsModel) then,
+  ) = _$MemberDetailsModelCopyWithImpl<$Res, MemberDetailsModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'profile_picture') String? profilePicture,
-      @JsonKey(name: 'emergency_contact_name') String? emergencyContactName,
-      @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
-      @JsonKey(name: 'height') String? height,
-      @JsonKey(name: 'weight') String? weight,
-      @JsonKey(name: 'profession') String? profession,
-      @JsonKey(name: 'is_active_member') bool? isActiveMember,
-      @JsonKey(name: 'memberships') List<MembershipDataModel>? memberships,
-      @JsonKey(name: 'full_name') String? fullName,
-      @JsonKey(name: 'created') DateTime? created,
-      @JsonKey(name: 'modified') DateTime? modified,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
-      @JsonKey(name: 'gender') String? gender,
-      @JsonKey(name: 'blood_group') String? bloodGroup,
-      @JsonKey(name: 'user_role') String? userRole,
-      @JsonKey(name: 'hash_of_user_phone_number')
-      String? hashOfUserPhoneNumber});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'profile_picture') String? profilePicture,
+    @JsonKey(name: 'emergency_contact_name') String? emergencyContactName,
+    @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
+    @JsonKey(name: 'height') String? height,
+    @JsonKey(name: 'weight') String? weight,
+    @JsonKey(name: 'profession') String? profession,
+    @JsonKey(name: 'is_active_member') bool? isActiveMember,
+    @JsonKey(name: 'memberships') List<MembershipDataModel>? memberships,
+    @JsonKey(name: 'full_name') String? fullName,
+    @JsonKey(name: 'created') DateTime? created,
+    @JsonKey(name: 'modified') DateTime? modified,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'blood_group') String? bloodGroup,
+    @JsonKey(name: 'user_role') String? userRole,
+    @JsonKey(name: 'hash_of_user_phone_number') String? hashOfUserPhoneNumber,
+  });
 }
 
 /// @nodoc
@@ -142,135 +144,161 @@ class _$MemberDetailsModelCopyWithImpl<$Res, $Val extends MemberDetailsModel>
     Object? userRole = freezed,
     Object? hashOfUserPhoneNumber = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as String?,
-      emergencyContactName: freezed == emergencyContactName
-          ? _value.emergencyContactName
-          : emergencyContactName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      emergencyContactNumber: freezed == emergencyContactNumber
-          ? _value.emergencyContactNumber
-          : emergencyContactNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      height: freezed == height
-          ? _value.height
-          : height // ignore: cast_nullable_to_non_nullable
-              as String?,
-      weight: freezed == weight
-          ? _value.weight
-          : weight // ignore: cast_nullable_to_non_nullable
-              as String?,
-      profession: freezed == profession
-          ? _value.profession
-          : profession // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isActiveMember: freezed == isActiveMember
-          ? _value.isActiveMember
-          : isActiveMember // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      memberships: freezed == memberships
-          ? _value.memberships
-          : memberships // ignore: cast_nullable_to_non_nullable
-              as List<MembershipDataModel>?,
-      fullName: freezed == fullName
-          ? _value.fullName
-          : fullName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      created: freezed == created
-          ? _value.created
-          : created // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      modified: freezed == modified
-          ? _value.modified
-          : modified // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dateOfBirth: freezed == dateOfBirth
-          ? _value.dateOfBirth
-          : dateOfBirth // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      gender: freezed == gender
-          ? _value.gender
-          : gender // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bloodGroup: freezed == bloodGroup
-          ? _value.bloodGroup
-          : bloodGroup // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userRole: freezed == userRole
-          ? _value.userRole
-          : userRole // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hashOfUserPhoneNumber: freezed == hashOfUserPhoneNumber
-          ? _value.hashOfUserPhoneNumber
-          : hashOfUserPhoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            profilePicture:
+                freezed == profilePicture
+                    ? _value.profilePicture
+                    : profilePicture // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            emergencyContactName:
+                freezed == emergencyContactName
+                    ? _value.emergencyContactName
+                    : emergencyContactName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            emergencyContactNumber:
+                freezed == emergencyContactNumber
+                    ? _value.emergencyContactNumber
+                    : emergencyContactNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            height:
+                freezed == height
+                    ? _value.height
+                    : height // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            weight:
+                freezed == weight
+                    ? _value.weight
+                    : weight // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            profession:
+                freezed == profession
+                    ? _value.profession
+                    : profession // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            isActiveMember:
+                freezed == isActiveMember
+                    ? _value.isActiveMember
+                    : isActiveMember // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            memberships:
+                freezed == memberships
+                    ? _value.memberships
+                    : memberships // ignore: cast_nullable_to_non_nullable
+                        as List<MembershipDataModel>?,
+            fullName:
+                freezed == fullName
+                    ? _value.fullName
+                    : fullName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            created:
+                freezed == created
+                    ? _value.created
+                    : created // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            modified:
+                freezed == modified
+                    ? _value.modified
+                    : modified // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            mobileNumber:
+                freezed == mobileNumber
+                    ? _value.mobileNumber
+                    : mobileNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            firstName:
+                freezed == firstName
+                    ? _value.firstName
+                    : firstName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            lastName:
+                freezed == lastName
+                    ? _value.lastName
+                    : lastName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            email:
+                freezed == email
+                    ? _value.email
+                    : email // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            dateOfBirth:
+                freezed == dateOfBirth
+                    ? _value.dateOfBirth
+                    : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            gender:
+                freezed == gender
+                    ? _value.gender
+                    : gender // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            bloodGroup:
+                freezed == bloodGroup
+                    ? _value.bloodGroup
+                    : bloodGroup // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            userRole:
+                freezed == userRole
+                    ? _value.userRole
+                    : userRole // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            hashOfUserPhoneNumber:
+                freezed == hashOfUserPhoneNumber
+                    ? _value.hashOfUserPhoneNumber
+                    : hashOfUserPhoneNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$MemberDetailsModelImplCopyWith<$Res>
     implements $MemberDetailsModelCopyWith<$Res> {
-  factory _$$MemberDetailsModelImplCopyWith(_$MemberDetailsModelImpl value,
-          $Res Function(_$MemberDetailsModelImpl) then) =
-      __$$MemberDetailsModelImplCopyWithImpl<$Res>;
+  factory _$$MemberDetailsModelImplCopyWith(
+    _$MemberDetailsModelImpl value,
+    $Res Function(_$MemberDetailsModelImpl) then,
+  ) = __$$MemberDetailsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'profile_picture') String? profilePicture,
-      @JsonKey(name: 'emergency_contact_name') String? emergencyContactName,
-      @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
-      @JsonKey(name: 'height') String? height,
-      @JsonKey(name: 'weight') String? weight,
-      @JsonKey(name: 'profession') String? profession,
-      @JsonKey(name: 'is_active_member') bool? isActiveMember,
-      @JsonKey(name: 'memberships') List<MembershipDataModel>? memberships,
-      @JsonKey(name: 'full_name') String? fullName,
-      @JsonKey(name: 'created') DateTime? created,
-      @JsonKey(name: 'modified') DateTime? modified,
-      @JsonKey(name: 'mobile_number') String? mobileNumber,
-      @JsonKey(name: 'first_name') String? firstName,
-      @JsonKey(name: 'last_name') String? lastName,
-      @JsonKey(name: 'email') String? email,
-      @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
-      @JsonKey(name: 'gender') String? gender,
-      @JsonKey(name: 'blood_group') String? bloodGroup,
-      @JsonKey(name: 'user_role') String? userRole,
-      @JsonKey(name: 'hash_of_user_phone_number')
-      String? hashOfUserPhoneNumber});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'profile_picture') String? profilePicture,
+    @JsonKey(name: 'emergency_contact_name') String? emergencyContactName,
+    @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
+    @JsonKey(name: 'height') String? height,
+    @JsonKey(name: 'weight') String? weight,
+    @JsonKey(name: 'profession') String? profession,
+    @JsonKey(name: 'is_active_member') bool? isActiveMember,
+    @JsonKey(name: 'memberships') List<MembershipDataModel>? memberships,
+    @JsonKey(name: 'full_name') String? fullName,
+    @JsonKey(name: 'created') DateTime? created,
+    @JsonKey(name: 'modified') DateTime? modified,
+    @JsonKey(name: 'mobile_number') String? mobileNumber,
+    @JsonKey(name: 'first_name') String? firstName,
+    @JsonKey(name: 'last_name') String? lastName,
+    @JsonKey(name: 'email') String? email,
+    @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'blood_group') String? bloodGroup,
+    @JsonKey(name: 'user_role') String? userRole,
+    @JsonKey(name: 'hash_of_user_phone_number') String? hashOfUserPhoneNumber,
+  });
 }
 
 /// @nodoc
 class __$$MemberDetailsModelImplCopyWithImpl<$Res>
     extends _$MemberDetailsModelCopyWithImpl<$Res, _$MemberDetailsModelImpl>
     implements _$$MemberDetailsModelImplCopyWith<$Res> {
-  __$$MemberDetailsModelImplCopyWithImpl(_$MemberDetailsModelImpl _value,
-      $Res Function(_$MemberDetailsModelImpl) _then)
-      : super(_value, _then);
+  __$$MemberDetailsModelImplCopyWithImpl(
+    _$MemberDetailsModelImpl _value,
+    $Res Function(_$MemberDetailsModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of MemberDetailsModel
   /// with the given fields replaced by the non-null parameter values.
@@ -299,122 +327,144 @@ class __$$MemberDetailsModelImplCopyWithImpl<$Res>
     Object? userRole = freezed,
     Object? hashOfUserPhoneNumber = freezed,
   }) {
-    return _then(_$MemberDetailsModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      profilePicture: freezed == profilePicture
-          ? _value.profilePicture
-          : profilePicture // ignore: cast_nullable_to_non_nullable
-              as String?,
-      emergencyContactName: freezed == emergencyContactName
-          ? _value.emergencyContactName
-          : emergencyContactName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      emergencyContactNumber: freezed == emergencyContactNumber
-          ? _value.emergencyContactNumber
-          : emergencyContactNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      height: freezed == height
-          ? _value.height
-          : height // ignore: cast_nullable_to_non_nullable
-              as String?,
-      weight: freezed == weight
-          ? _value.weight
-          : weight // ignore: cast_nullable_to_non_nullable
-              as String?,
-      profession: freezed == profession
-          ? _value.profession
-          : profession // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isActiveMember: freezed == isActiveMember
-          ? _value.isActiveMember
-          : isActiveMember // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      memberships: freezed == memberships
-          ? _value._memberships
-          : memberships // ignore: cast_nullable_to_non_nullable
-              as List<MembershipDataModel>?,
-      fullName: freezed == fullName
-          ? _value.fullName
-          : fullName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      created: freezed == created
-          ? _value.created
-          : created // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      modified: freezed == modified
-          ? _value.modified
-          : modified // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      mobileNumber: freezed == mobileNumber
-          ? _value.mobileNumber
-          : mobileNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      firstName: freezed == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastName: freezed == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dateOfBirth: freezed == dateOfBirth
-          ? _value.dateOfBirth
-          : dateOfBirth // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      gender: freezed == gender
-          ? _value.gender
-          : gender // ignore: cast_nullable_to_non_nullable
-              as String?,
-      bloodGroup: freezed == bloodGroup
-          ? _value.bloodGroup
-          : bloodGroup // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userRole: freezed == userRole
-          ? _value.userRole
-          : userRole // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hashOfUserPhoneNumber: freezed == hashOfUserPhoneNumber
-          ? _value.hashOfUserPhoneNumber
-          : hashOfUserPhoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$MemberDetailsModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        profilePicture:
+            freezed == profilePicture
+                ? _value.profilePicture
+                : profilePicture // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        emergencyContactName:
+            freezed == emergencyContactName
+                ? _value.emergencyContactName
+                : emergencyContactName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        emergencyContactNumber:
+            freezed == emergencyContactNumber
+                ? _value.emergencyContactNumber
+                : emergencyContactNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        height:
+            freezed == height
+                ? _value.height
+                : height // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        weight:
+            freezed == weight
+                ? _value.weight
+                : weight // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        profession:
+            freezed == profession
+                ? _value.profession
+                : profession // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        isActiveMember:
+            freezed == isActiveMember
+                ? _value.isActiveMember
+                : isActiveMember // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        memberships:
+            freezed == memberships
+                ? _value._memberships
+                : memberships // ignore: cast_nullable_to_non_nullable
+                    as List<MembershipDataModel>?,
+        fullName:
+            freezed == fullName
+                ? _value.fullName
+                : fullName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        created:
+            freezed == created
+                ? _value.created
+                : created // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        modified:
+            freezed == modified
+                ? _value.modified
+                : modified // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        mobileNumber:
+            freezed == mobileNumber
+                ? _value.mobileNumber
+                : mobileNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        firstName:
+            freezed == firstName
+                ? _value.firstName
+                : firstName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        lastName:
+            freezed == lastName
+                ? _value.lastName
+                : lastName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        email:
+            freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        dateOfBirth:
+            freezed == dateOfBirth
+                ? _value.dateOfBirth
+                : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        gender:
+            freezed == gender
+                ? _value.gender
+                : gender // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        bloodGroup:
+            freezed == bloodGroup
+                ? _value.bloodGroup
+                : bloodGroup // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        userRole:
+            freezed == userRole
+                ? _value.userRole
+                : userRole // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        hashOfUserPhoneNumber:
+            freezed == hashOfUserPhoneNumber
+                ? _value.hashOfUserPhoneNumber
+                : hashOfUserPhoneNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MemberDetailsModelImpl implements _MemberDetailsModel {
-  const _$MemberDetailsModelImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'profile_picture') this.profilePicture,
-      @JsonKey(name: 'emergency_contact_name') this.emergencyContactName,
-      @JsonKey(name: 'emergency_contact_number') this.emergencyContactNumber,
-      @JsonKey(name: 'height') this.height,
-      @JsonKey(name: 'weight') this.weight,
-      @JsonKey(name: 'profession') this.profession,
-      @JsonKey(name: 'is_active_member') this.isActiveMember,
-      @JsonKey(name: 'memberships')
-      final List<MembershipDataModel>? memberships,
-      @JsonKey(name: 'full_name') this.fullName,
-      @JsonKey(name: 'created') this.created,
-      @JsonKey(name: 'modified') this.modified,
-      @JsonKey(name: 'mobile_number') this.mobileNumber,
-      @JsonKey(name: 'first_name') this.firstName,
-      @JsonKey(name: 'last_name') this.lastName,
-      @JsonKey(name: 'email') this.email,
-      @JsonKey(name: 'date_of_birth') this.dateOfBirth,
-      @JsonKey(name: 'gender') this.gender,
-      @JsonKey(name: 'blood_group') this.bloodGroup,
-      @JsonKey(name: 'user_role') this.userRole,
-      @JsonKey(name: 'hash_of_user_phone_number') this.hashOfUserPhoneNumber})
-      : _memberships = memberships;
+  const _$MemberDetailsModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'profile_picture') this.profilePicture,
+    @JsonKey(name: 'emergency_contact_name') this.emergencyContactName,
+    @JsonKey(name: 'emergency_contact_number') this.emergencyContactNumber,
+    @JsonKey(name: 'height') this.height,
+    @JsonKey(name: 'weight') this.weight,
+    @JsonKey(name: 'profession') this.profession,
+    @JsonKey(name: 'is_active_member') this.isActiveMember,
+    @JsonKey(name: 'memberships') final List<MembershipDataModel>? memberships,
+    @JsonKey(name: 'full_name') this.fullName,
+    @JsonKey(name: 'created') this.created,
+    @JsonKey(name: 'modified') this.modified,
+    @JsonKey(name: 'mobile_number') this.mobileNumber,
+    @JsonKey(name: 'first_name') this.firstName,
+    @JsonKey(name: 'last_name') this.lastName,
+    @JsonKey(name: 'email') this.email,
+    @JsonKey(name: 'date_of_birth') this.dateOfBirth,
+    @JsonKey(name: 'gender') this.gender,
+    @JsonKey(name: 'blood_group') this.bloodGroup,
+    @JsonKey(name: 'user_role') this.userRole,
+    @JsonKey(name: 'hash_of_user_phone_number') this.hashOfUserPhoneNumber,
+  }) : _memberships = memberships;
 
   factory _$MemberDetailsModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$MemberDetailsModelImplFromJson(json);
@@ -514,8 +564,10 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
                 other.profession == profession) &&
             (identical(other.isActiveMember, isActiveMember) ||
                 other.isActiveMember == isActiveMember) &&
-            const DeepCollectionEquality()
-                .equals(other._memberships, _memberships) &&
+            const DeepCollectionEquality().equals(
+              other._memberships,
+              _memberships,
+            ) &&
             (identical(other.fullName, fullName) ||
                 other.fullName == fullName) &&
             (identical(other.created, created) || other.created == created) &&
@@ -542,29 +594,29 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
-        runtimeType,
-        id,
-        profilePicture,
-        emergencyContactName,
-        emergencyContactNumber,
-        height,
-        weight,
-        profession,
-        isActiveMember,
-        const DeepCollectionEquality().hash(_memberships),
-        fullName,
-        created,
-        modified,
-        mobileNumber,
-        firstName,
-        lastName,
-        email,
-        dateOfBirth,
-        gender,
-        bloodGroup,
-        userRole,
-        hashOfUserPhoneNumber
-      ]);
+    runtimeType,
+    id,
+    profilePicture,
+    emergencyContactName,
+    emergencyContactNumber,
+    height,
+    weight,
+    profession,
+    isActiveMember,
+    const DeepCollectionEquality().hash(_memberships),
+    fullName,
+    created,
+    modified,
+    mobileNumber,
+    firstName,
+    lastName,
+    email,
+    dateOfBirth,
+    gender,
+    bloodGroup,
+    userRole,
+    hashOfUserPhoneNumber,
+  ]);
 
   /// Create a copy of MemberDetailsModel
   /// with the given fields replaced by the non-null parameter values.
@@ -573,43 +625,42 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
   @pragma('vm:prefer-inline')
   _$$MemberDetailsModelImplCopyWith<_$MemberDetailsModelImpl> get copyWith =>
       __$$MemberDetailsModelImplCopyWithImpl<_$MemberDetailsModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MemberDetailsModelImplToJson(
-      this,
-    );
+    return _$$MemberDetailsModelImplToJson(this);
   }
 }
 
 abstract class _MemberDetailsModel implements MemberDetailsModel {
-  const factory _MemberDetailsModel(
-      {@JsonKey(name: 'id') final int? id,
-      @JsonKey(name: 'profile_picture') final String? profilePicture,
-      @JsonKey(name: 'emergency_contact_name')
-      final String? emergencyContactName,
-      @JsonKey(name: 'emergency_contact_number')
-      final String? emergencyContactNumber,
-      @JsonKey(name: 'height') final String? height,
-      @JsonKey(name: 'weight') final String? weight,
-      @JsonKey(name: 'profession') final String? profession,
-      @JsonKey(name: 'is_active_member') final bool? isActiveMember,
-      @JsonKey(name: 'memberships')
-      final List<MembershipDataModel>? memberships,
-      @JsonKey(name: 'full_name') final String? fullName,
-      @JsonKey(name: 'created') final DateTime? created,
-      @JsonKey(name: 'modified') final DateTime? modified,
-      @JsonKey(name: 'mobile_number') final String? mobileNumber,
-      @JsonKey(name: 'first_name') final String? firstName,
-      @JsonKey(name: 'last_name') final String? lastName,
-      @JsonKey(name: 'email') final String? email,
-      @JsonKey(name: 'date_of_birth') final DateTime? dateOfBirth,
-      @JsonKey(name: 'gender') final String? gender,
-      @JsonKey(name: 'blood_group') final String? bloodGroup,
-      @JsonKey(name: 'user_role') final String? userRole,
-      @JsonKey(name: 'hash_of_user_phone_number')
-      final String? hashOfUserPhoneNumber}) = _$MemberDetailsModelImpl;
+  const factory _MemberDetailsModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'profile_picture') final String? profilePicture,
+    @JsonKey(name: 'emergency_contact_name') final String? emergencyContactName,
+    @JsonKey(name: 'emergency_contact_number')
+    final String? emergencyContactNumber,
+    @JsonKey(name: 'height') final String? height,
+    @JsonKey(name: 'weight') final String? weight,
+    @JsonKey(name: 'profession') final String? profession,
+    @JsonKey(name: 'is_active_member') final bool? isActiveMember,
+    @JsonKey(name: 'memberships') final List<MembershipDataModel>? memberships,
+    @JsonKey(name: 'full_name') final String? fullName,
+    @JsonKey(name: 'created') final DateTime? created,
+    @JsonKey(name: 'modified') final DateTime? modified,
+    @JsonKey(name: 'mobile_number') final String? mobileNumber,
+    @JsonKey(name: 'first_name') final String? firstName,
+    @JsonKey(name: 'last_name') final String? lastName,
+    @JsonKey(name: 'email') final String? email,
+    @JsonKey(name: 'date_of_birth') final DateTime? dateOfBirth,
+    @JsonKey(name: 'gender') final String? gender,
+    @JsonKey(name: 'blood_group') final String? bloodGroup,
+    @JsonKey(name: 'user_role') final String? userRole,
+    @JsonKey(name: 'hash_of_user_phone_number')
+    final String? hashOfUserPhoneNumber,
+  }) = _$MemberDetailsModelImpl;
 
   factory _MemberDetailsModel.fromJson(Map<String, dynamic> json) =
       _$MemberDetailsModelImpl.fromJson;
@@ -736,25 +787,27 @@ mixin _$MembershipDataModel {
 /// @nodoc
 abstract class $MembershipDataModelCopyWith<$Res> {
   factory $MembershipDataModelCopyWith(
-          MembershipDataModel value, $Res Function(MembershipDataModel) then) =
-      _$MembershipDataModelCopyWithImpl<$Res, MembershipDataModel>;
+    MembershipDataModel value,
+    $Res Function(MembershipDataModel) then,
+  ) = _$MembershipDataModelCopyWithImpl<$Res, MembershipDataModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'membership') int? membership,
-      @JsonKey(name: 'membership_name') String? membershipName,
-      @JsonKey(name: 'start_date') DateTime? startDate,
-      @JsonKey(name: 'end_date') DateTime? endDate,
-      @JsonKey(name: 'status') String? status,
-      @JsonKey(name: 'amount') String? amount,
-      @JsonKey(name: 'assign_free') bool? assignFree,
-      @JsonKey(name: 'is_trial') bool? isTrial,
-      @JsonKey(name: 'payment_status') String? paymentStatus,
-      @JsonKey(name: 'is_active') bool? isActive,
-      @JsonKey(name: 'trial_start_at') DateTime? trialStartAt,
-      @JsonKey(name: 'trial_end_at') DateTime? trialEndAt,
-      @JsonKey(name: 'created_at') DateTime? createdAt,
-      @JsonKey(name: 'updated_at') DateTime? updatedAt});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'membership') int? membership,
+    @JsonKey(name: 'membership_name') String? membershipName,
+    @JsonKey(name: 'start_date') DateTime? startDate,
+    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(name: 'status') String? status,
+    @JsonKey(name: 'amount') String? amount,
+    @JsonKey(name: 'assign_free') bool? assignFree,
+    @JsonKey(name: 'is_trial') bool? isTrial,
+    @JsonKey(name: 'payment_status') String? paymentStatus,
+    @JsonKey(name: 'is_active') bool? isActive,
+    @JsonKey(name: 'trial_start_at') DateTime? trialStartAt,
+    @JsonKey(name: 'trial_end_at') DateTime? trialEndAt,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+    @JsonKey(name: 'updated_at') DateTime? updatedAt,
+  });
 }
 
 /// @nodoc
@@ -788,104 +841,125 @@ class _$MembershipDataModelCopyWithImpl<$Res, $Val extends MembershipDataModel>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      membership: freezed == membership
-          ? _value.membership
-          : membership // ignore: cast_nullable_to_non_nullable
-              as int?,
-      membershipName: freezed == membershipName
-          ? _value.membershipName
-          : membershipName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      startDate: freezed == startDate
-          ? _value.startDate
-          : startDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      endDate: freezed == endDate
-          ? _value.endDate
-          : endDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      status: freezed == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String?,
-      amount: freezed == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as String?,
-      assignFree: freezed == assignFree
-          ? _value.assignFree
-          : assignFree // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      isTrial: freezed == isTrial
-          ? _value.isTrial
-          : isTrial // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      paymentStatus: freezed == paymentStatus
-          ? _value.paymentStatus
-          : paymentStatus // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isActive: freezed == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      trialStartAt: freezed == trialStartAt
-          ? _value.trialStartAt
-          : trialStartAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      trialEndAt: freezed == trialEndAt
-          ? _value.trialEndAt
-          : trialEndAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            membership:
+                freezed == membership
+                    ? _value.membership
+                    : membership // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            membershipName:
+                freezed == membershipName
+                    ? _value.membershipName
+                    : membershipName // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            startDate:
+                freezed == startDate
+                    ? _value.startDate
+                    : startDate // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            endDate:
+                freezed == endDate
+                    ? _value.endDate
+                    : endDate // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            status:
+                freezed == status
+                    ? _value.status
+                    : status // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            amount:
+                freezed == amount
+                    ? _value.amount
+                    : amount // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            assignFree:
+                freezed == assignFree
+                    ? _value.assignFree
+                    : assignFree // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            isTrial:
+                freezed == isTrial
+                    ? _value.isTrial
+                    : isTrial // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            paymentStatus:
+                freezed == paymentStatus
+                    ? _value.paymentStatus
+                    : paymentStatus // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            isActive:
+                freezed == isActive
+                    ? _value.isActive
+                    : isActive // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            trialStartAt:
+                freezed == trialStartAt
+                    ? _value.trialStartAt
+                    : trialStartAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            trialEndAt:
+                freezed == trialEndAt
+                    ? _value.trialEndAt
+                    : trialEndAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            createdAt:
+                freezed == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            updatedAt:
+                freezed == updatedAt
+                    ? _value.updatedAt
+                    : updatedAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$MembershipDataModelImplCopyWith<$Res>
     implements $MembershipDataModelCopyWith<$Res> {
-  factory _$$MembershipDataModelImplCopyWith(_$MembershipDataModelImpl value,
-          $Res Function(_$MembershipDataModelImpl) then) =
-      __$$MembershipDataModelImplCopyWithImpl<$Res>;
+  factory _$$MembershipDataModelImplCopyWith(
+    _$MembershipDataModelImpl value,
+    $Res Function(_$MembershipDataModelImpl) then,
+  ) = __$$MembershipDataModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'id') int? id,
-      @JsonKey(name: 'membership') int? membership,
-      @JsonKey(name: 'membership_name') String? membershipName,
-      @JsonKey(name: 'start_date') DateTime? startDate,
-      @JsonKey(name: 'end_date') DateTime? endDate,
-      @JsonKey(name: 'status') String? status,
-      @JsonKey(name: 'amount') String? amount,
-      @JsonKey(name: 'assign_free') bool? assignFree,
-      @JsonKey(name: 'is_trial') bool? isTrial,
-      @JsonKey(name: 'payment_status') String? paymentStatus,
-      @JsonKey(name: 'is_active') bool? isActive,
-      @JsonKey(name: 'trial_start_at') DateTime? trialStartAt,
-      @JsonKey(name: 'trial_end_at') DateTime? trialEndAt,
-      @JsonKey(name: 'created_at') DateTime? createdAt,
-      @JsonKey(name: 'updated_at') DateTime? updatedAt});
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'membership') int? membership,
+    @JsonKey(name: 'membership_name') String? membershipName,
+    @JsonKey(name: 'start_date') DateTime? startDate,
+    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(name: 'status') String? status,
+    @JsonKey(name: 'amount') String? amount,
+    @JsonKey(name: 'assign_free') bool? assignFree,
+    @JsonKey(name: 'is_trial') bool? isTrial,
+    @JsonKey(name: 'payment_status') String? paymentStatus,
+    @JsonKey(name: 'is_active') bool? isActive,
+    @JsonKey(name: 'trial_start_at') DateTime? trialStartAt,
+    @JsonKey(name: 'trial_end_at') DateTime? trialEndAt,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+    @JsonKey(name: 'updated_at') DateTime? updatedAt,
+  });
 }
 
 /// @nodoc
 class __$$MembershipDataModelImplCopyWithImpl<$Res>
     extends _$MembershipDataModelCopyWithImpl<$Res, _$MembershipDataModelImpl>
     implements _$$MembershipDataModelImplCopyWith<$Res> {
-  __$$MembershipDataModelImplCopyWithImpl(_$MembershipDataModelImpl _value,
-      $Res Function(_$MembershipDataModelImpl) _then)
-      : super(_value, _then);
+  __$$MembershipDataModelImplCopyWithImpl(
+    _$MembershipDataModelImpl _value,
+    $Res Function(_$MembershipDataModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of MembershipDataModel
   /// with the given fields replaced by the non-null parameter values.
@@ -908,90 +982,108 @@ class __$$MembershipDataModelImplCopyWithImpl<$Res>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(_$MembershipDataModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      membership: freezed == membership
-          ? _value.membership
-          : membership // ignore: cast_nullable_to_non_nullable
-              as int?,
-      membershipName: freezed == membershipName
-          ? _value.membershipName
-          : membershipName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      startDate: freezed == startDate
-          ? _value.startDate
-          : startDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      endDate: freezed == endDate
-          ? _value.endDate
-          : endDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      status: freezed == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String?,
-      amount: freezed == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as String?,
-      assignFree: freezed == assignFree
-          ? _value.assignFree
-          : assignFree // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      isTrial: freezed == isTrial
-          ? _value.isTrial
-          : isTrial // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      paymentStatus: freezed == paymentStatus
-          ? _value.paymentStatus
-          : paymentStatus // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isActive: freezed == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      trialStartAt: freezed == trialStartAt
-          ? _value.trialStartAt
-          : trialStartAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      trialEndAt: freezed == trialEndAt
-          ? _value.trialEndAt
-          : trialEndAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
+    return _then(
+      _$MembershipDataModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        membership:
+            freezed == membership
+                ? _value.membership
+                : membership // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        membershipName:
+            freezed == membershipName
+                ? _value.membershipName
+                : membershipName // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        startDate:
+            freezed == startDate
+                ? _value.startDate
+                : startDate // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        endDate:
+            freezed == endDate
+                ? _value.endDate
+                : endDate // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        status:
+            freezed == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        amount:
+            freezed == amount
+                ? _value.amount
+                : amount // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        assignFree:
+            freezed == assignFree
+                ? _value.assignFree
+                : assignFree // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        isTrial:
+            freezed == isTrial
+                ? _value.isTrial
+                : isTrial // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        paymentStatus:
+            freezed == paymentStatus
+                ? _value.paymentStatus
+                : paymentStatus // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        isActive:
+            freezed == isActive
+                ? _value.isActive
+                : isActive // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        trialStartAt:
+            freezed == trialStartAt
+                ? _value.trialStartAt
+                : trialStartAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        trialEndAt:
+            freezed == trialEndAt
+                ? _value.trialEndAt
+                : trialEndAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        createdAt:
+            freezed == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        updatedAt:
+            freezed == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MembershipDataModelImpl implements _MembershipDataModel {
-  const _$MembershipDataModelImpl(
-      {@JsonKey(name: 'id') this.id,
-      @JsonKey(name: 'membership') this.membership,
-      @JsonKey(name: 'membership_name') this.membershipName,
-      @JsonKey(name: 'start_date') this.startDate,
-      @JsonKey(name: 'end_date') this.endDate,
-      @JsonKey(name: 'status') this.status,
-      @JsonKey(name: 'amount') this.amount,
-      @JsonKey(name: 'assign_free') this.assignFree,
-      @JsonKey(name: 'is_trial') this.isTrial,
-      @JsonKey(name: 'payment_status') this.paymentStatus,
-      @JsonKey(name: 'is_active') this.isActive,
-      @JsonKey(name: 'trial_start_at') this.trialStartAt,
-      @JsonKey(name: 'trial_end_at') this.trialEndAt,
-      @JsonKey(name: 'created_at') this.createdAt,
-      @JsonKey(name: 'updated_at') this.updatedAt});
+  const _$MembershipDataModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'membership') this.membership,
+    @JsonKey(name: 'membership_name') this.membershipName,
+    @JsonKey(name: 'start_date') this.startDate,
+    @JsonKey(name: 'end_date') this.endDate,
+    @JsonKey(name: 'status') this.status,
+    @JsonKey(name: 'amount') this.amount,
+    @JsonKey(name: 'assign_free') this.assignFree,
+    @JsonKey(name: 'is_trial') this.isTrial,
+    @JsonKey(name: 'payment_status') this.paymentStatus,
+    @JsonKey(name: 'is_active') this.isActive,
+    @JsonKey(name: 'trial_start_at') this.trialStartAt,
+    @JsonKey(name: 'trial_end_at') this.trialEndAt,
+    @JsonKey(name: 'created_at') this.createdAt,
+    @JsonKey(name: 'updated_at') this.updatedAt,
+  });
 
   factory _$MembershipDataModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$MembershipDataModelImplFromJson(json);
@@ -1082,22 +1174,23 @@ class _$MembershipDataModelImpl implements _MembershipDataModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      membership,
-      membershipName,
-      startDate,
-      endDate,
-      status,
-      amount,
-      assignFree,
-      isTrial,
-      paymentStatus,
-      isActive,
-      trialStartAt,
-      trialEndAt,
-      createdAt,
-      updatedAt);
+    runtimeType,
+    id,
+    membership,
+    membershipName,
+    startDate,
+    endDate,
+    status,
+    amount,
+    assignFree,
+    isTrial,
+    paymentStatus,
+    isActive,
+    trialStartAt,
+    trialEndAt,
+    createdAt,
+    updatedAt,
+  );
 
   /// Create a copy of MembershipDataModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1106,34 +1199,34 @@ class _$MembershipDataModelImpl implements _MembershipDataModel {
   @pragma('vm:prefer-inline')
   _$$MembershipDataModelImplCopyWith<_$MembershipDataModelImpl> get copyWith =>
       __$$MembershipDataModelImplCopyWithImpl<_$MembershipDataModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MembershipDataModelImplToJson(
-      this,
-    );
+    return _$$MembershipDataModelImplToJson(this);
   }
 }
 
 abstract class _MembershipDataModel implements MembershipDataModel {
-  const factory _MembershipDataModel(
-          {@JsonKey(name: 'id') final int? id,
-          @JsonKey(name: 'membership') final int? membership,
-          @JsonKey(name: 'membership_name') final String? membershipName,
-          @JsonKey(name: 'start_date') final DateTime? startDate,
-          @JsonKey(name: 'end_date') final DateTime? endDate,
-          @JsonKey(name: 'status') final String? status,
-          @JsonKey(name: 'amount') final String? amount,
-          @JsonKey(name: 'assign_free') final bool? assignFree,
-          @JsonKey(name: 'is_trial') final bool? isTrial,
-          @JsonKey(name: 'payment_status') final String? paymentStatus,
-          @JsonKey(name: 'is_active') final bool? isActive,
-          @JsonKey(name: 'trial_start_at') final DateTime? trialStartAt,
-          @JsonKey(name: 'trial_end_at') final DateTime? trialEndAt,
-          @JsonKey(name: 'created_at') final DateTime? createdAt,
-          @JsonKey(name: 'updated_at') final DateTime? updatedAt}) =
-      _$MembershipDataModelImpl;
+  const factory _MembershipDataModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'membership') final int? membership,
+    @JsonKey(name: 'membership_name') final String? membershipName,
+    @JsonKey(name: 'start_date') final DateTime? startDate,
+    @JsonKey(name: 'end_date') final DateTime? endDate,
+    @JsonKey(name: 'status') final String? status,
+    @JsonKey(name: 'amount') final String? amount,
+    @JsonKey(name: 'assign_free') final bool? assignFree,
+    @JsonKey(name: 'is_trial') final bool? isTrial,
+    @JsonKey(name: 'payment_status') final String? paymentStatus,
+    @JsonKey(name: 'is_active') final bool? isActive,
+    @JsonKey(name: 'trial_start_at') final DateTime? trialStartAt,
+    @JsonKey(name: 'trial_end_at') final DateTime? trialEndAt,
+    @JsonKey(name: 'created_at') final DateTime? createdAt,
+    @JsonKey(name: 'updated_at') final DateTime? updatedAt,
+  }) = _$MembershipDataModelImpl;
 
   factory _MembershipDataModel.fromJson(Map<String, dynamic> json) =
       _$MembershipDataModelImpl.fromJson;

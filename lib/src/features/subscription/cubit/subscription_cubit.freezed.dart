@@ -12,7 +12,8 @@ part of 'subscription_cubit.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$SubscriptionState {
@@ -33,13 +34,15 @@ mixin _$SubscriptionState {
 /// @nodoc
 abstract class $SubscriptionStateCopyWith<$Res> {
   factory $SubscriptionStateCopyWith(
-          SubscriptionState value, $Res Function(SubscriptionState) then) =
-      _$SubscriptionStateCopyWithImpl<$Res, SubscriptionState>;
+    SubscriptionState value,
+    $Res Function(SubscriptionState) then,
+  ) = _$SubscriptionStateCopyWithImpl<$Res, SubscriptionState>;
   @useResult
-  $Res call(
-      {Option<Either<ApiException, PlansModel>> plans,
-      SubscriptionPlanModel? selectedSubscriptionModel,
-      Option<Either<ApiException, PaymentSuccessResponse>>? payment});
+  $Res call({
+    Option<Either<ApiException, PlansModel>> plans,
+    SubscriptionPlanModel? selectedSubscriptionModel,
+    Option<Either<ApiException, PaymentSuccessResponse>>? payment,
+  });
 
   $SubscriptionPlanModelCopyWith<$Res>? get selectedSubscriptionModel;
 }
@@ -63,20 +66,28 @@ class _$SubscriptionStateCopyWithImpl<$Res, $Val extends SubscriptionState>
     Object? selectedSubscriptionModel = freezed,
     Object? payment = freezed,
   }) {
-    return _then(_value.copyWith(
-      plans: null == plans
-          ? _value.plans
-          : plans // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, PlansModel>>,
-      selectedSubscriptionModel: freezed == selectedSubscriptionModel
-          ? _value.selectedSubscriptionModel
-          : selectedSubscriptionModel // ignore: cast_nullable_to_non_nullable
-              as SubscriptionPlanModel?,
-      payment: freezed == payment
-          ? _value.payment
-          : payment // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, PaymentSuccessResponse>>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            plans:
+                null == plans
+                    ? _value.plans
+                    : plans // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, PlansModel>>,
+            selectedSubscriptionModel:
+                freezed == selectedSubscriptionModel
+                    ? _value.selectedSubscriptionModel
+                    : selectedSubscriptionModel // ignore: cast_nullable_to_non_nullable
+                        as SubscriptionPlanModel?,
+            payment:
+                freezed == payment
+                    ? _value.payment
+                    : payment // ignore: cast_nullable_to_non_nullable
+                        as Option<
+                          Either<ApiException, PaymentSuccessResponse>
+                        >?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of SubscriptionState
@@ -89,24 +100,28 @@ class _$SubscriptionStateCopyWithImpl<$Res, $Val extends SubscriptionState>
     }
 
     return $SubscriptionPlanModelCopyWith<$Res>(
-        _value.selectedSubscriptionModel!, (value) {
-      return _then(_value.copyWith(selectedSubscriptionModel: value) as $Val);
-    });
+      _value.selectedSubscriptionModel!,
+      (value) {
+        return _then(_value.copyWith(selectedSubscriptionModel: value) as $Val);
+      },
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$SubscriptionStateImplCopyWith<$Res>
     implements $SubscriptionStateCopyWith<$Res> {
-  factory _$$SubscriptionStateImplCopyWith(_$SubscriptionStateImpl value,
-          $Res Function(_$SubscriptionStateImpl) then) =
-      __$$SubscriptionStateImplCopyWithImpl<$Res>;
+  factory _$$SubscriptionStateImplCopyWith(
+    _$SubscriptionStateImpl value,
+    $Res Function(_$SubscriptionStateImpl) then,
+  ) = __$$SubscriptionStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {Option<Either<ApiException, PlansModel>> plans,
-      SubscriptionPlanModel? selectedSubscriptionModel,
-      Option<Either<ApiException, PaymentSuccessResponse>>? payment});
+  $Res call({
+    Option<Either<ApiException, PlansModel>> plans,
+    SubscriptionPlanModel? selectedSubscriptionModel,
+    Option<Either<ApiException, PaymentSuccessResponse>>? payment,
+  });
 
   @override
   $SubscriptionPlanModelCopyWith<$Res>? get selectedSubscriptionModel;
@@ -116,9 +131,10 @@ abstract class _$$SubscriptionStateImplCopyWith<$Res>
 class __$$SubscriptionStateImplCopyWithImpl<$Res>
     extends _$SubscriptionStateCopyWithImpl<$Res, _$SubscriptionStateImpl>
     implements _$$SubscriptionStateImplCopyWith<$Res> {
-  __$$SubscriptionStateImplCopyWithImpl(_$SubscriptionStateImpl _value,
-      $Res Function(_$SubscriptionStateImpl) _then)
-      : super(_value, _then);
+  __$$SubscriptionStateImplCopyWithImpl(
+    _$SubscriptionStateImpl _value,
+    $Res Function(_$SubscriptionStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of SubscriptionState
   /// with the given fields replaced by the non-null parameter values.
@@ -129,30 +145,36 @@ class __$$SubscriptionStateImplCopyWithImpl<$Res>
     Object? selectedSubscriptionModel = freezed,
     Object? payment = freezed,
   }) {
-    return _then(_$SubscriptionStateImpl(
-      plans: null == plans
-          ? _value.plans
-          : plans // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, PlansModel>>,
-      selectedSubscriptionModel: freezed == selectedSubscriptionModel
-          ? _value.selectedSubscriptionModel
-          : selectedSubscriptionModel // ignore: cast_nullable_to_non_nullable
-              as SubscriptionPlanModel?,
-      payment: freezed == payment
-          ? _value.payment
-          : payment // ignore: cast_nullable_to_non_nullable
-              as Option<Either<ApiException, PaymentSuccessResponse>>?,
-    ));
+    return _then(
+      _$SubscriptionStateImpl(
+        plans:
+            null == plans
+                ? _value.plans
+                : plans // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, PlansModel>>,
+        selectedSubscriptionModel:
+            freezed == selectedSubscriptionModel
+                ? _value.selectedSubscriptionModel
+                : selectedSubscriptionModel // ignore: cast_nullable_to_non_nullable
+                    as SubscriptionPlanModel?,
+        payment:
+            freezed == payment
+                ? _value.payment
+                : payment // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, PaymentSuccessResponse>>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$SubscriptionStateImpl implements _SubscriptionState {
-  const _$SubscriptionStateImpl(
-      {this.plans = const None(),
-      this.selectedSubscriptionModel,
-      this.payment});
+  const _$SubscriptionStateImpl({
+    this.plans = const None(),
+    this.selectedSubscriptionModel,
+    this.payment,
+  });
 
   @override
   @JsonKey()
@@ -173,8 +195,10 @@ class _$SubscriptionStateImpl implements _SubscriptionState {
         (other.runtimeType == runtimeType &&
             other is _$SubscriptionStateImpl &&
             (identical(other.plans, plans) || other.plans == plans) &&
-            (identical(other.selectedSubscriptionModel,
-                    selectedSubscriptionModel) ||
+            (identical(
+                  other.selectedSubscriptionModel,
+                  selectedSubscriptionModel,
+                ) ||
                 other.selectedSubscriptionModel == selectedSubscriptionModel) &&
             (identical(other.payment, payment) || other.payment == payment));
   }
@@ -190,15 +214,17 @@ class _$SubscriptionStateImpl implements _SubscriptionState {
   @pragma('vm:prefer-inline')
   _$$SubscriptionStateImplCopyWith<_$SubscriptionStateImpl> get copyWith =>
       __$$SubscriptionStateImplCopyWithImpl<_$SubscriptionStateImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 }
 
 abstract class _SubscriptionState implements SubscriptionState {
-  const factory _SubscriptionState(
-      {final Option<Either<ApiException, PlansModel>> plans,
-      final SubscriptionPlanModel? selectedSubscriptionModel,
-      final Option<Either<ApiException, PaymentSuccessResponse>>?
-          payment}) = _$SubscriptionStateImpl;
+  const factory _SubscriptionState({
+    final Option<Either<ApiException, PlansModel>> plans,
+    final SubscriptionPlanModel? selectedSubscriptionModel,
+    final Option<Either<ApiException, PaymentSuccessResponse>>? payment,
+  }) = _$SubscriptionStateImpl;
 
   @override
   Option<Either<ApiException, PlansModel>> get plans;

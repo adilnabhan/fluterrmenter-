@@ -33,7 +33,8 @@ class MembershipCubit extends Cubit<MembershipState> {
     emit(state.copyWith(createOrUpdatePackage: none()));
     final body = {
       'organization': orgId,
-      'package_type': packageType,
+      // 'package_type': packageType,
+      'duration_days': packageType,
       'name': name,
       'description': description,
       'actual_price': actualPrice,
@@ -49,5 +50,44 @@ class MembershipCubit extends Cubit<MembershipState> {
             ? await MembershipRepository().update(id: membershipId, body: body)
             : await MembershipRepository().create(body: body));
     emit(state.copyWith(createOrUpdatePackage: some(res)));
+  }
+
+  Future<void> deleteMembershipPackage({required int? id}) async {
+    if (id == null) return;
+    emit(state.copyWith(isDeleting: true));
+    final result = await MembershipRepository().delete(id: id);
+    emit(
+      state.copyWith(isDeleting: false, createOrUpdatePackage: some(result)),
+    );
+  }
+
+  Future<void> fetchBankAccountList() async {
+    emit(state.copyWith(bankDetails: none(), isLoading: true,));
+    final res = await MembershipRepository().fetchBankDetails(id: orgId);
+    emit(state.copyWith(bankDetails: some(res), isLoading: false,));
+  }
+
+  Future<void> createOrUpdateBankDetails({
+    String? holderName,
+    required String accountNumber,
+    required String ifsc,
+    required String bankName,
+    required String branchName,
+    int? detailsId,
+  }) async {
+    emit(state.copyWith(createOrUpdateBank: none(), isLoading: true));
+    final body = {
+      'account_holder_name': holderName,
+      'account_number': accountNumber,
+      'ifsc_code': ifsc,
+      'bank_name': bankName,
+      'branch_name': branchName,
+      'organization_id': orgId,
+    };
+    final res =
+        (detailsId != null
+            ? await MembershipRepository().updateBankDetails(body: body)
+            : await MembershipRepository().createBankDetails(body: body));
+    emit(state.copyWith(createOrUpdateBank: some(res), isLoading: false));
   }
 }

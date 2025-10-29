@@ -21,10 +21,14 @@ final class ApiUris {
   ///============================= Organization =============================\\\
   static const createOrg = '${_v1}fitnesscenter/organization/create/';
   static const listOrganizations = '${_v1}fitnesscenter/organization/list/';
-  static String orgDetails(int orgId) => '${_v1}fitnesscenter/organization/$orgId/';
-  static String fetchHomeData(int orgId) => '${_v1}fitnesscenter/home/?organization_id=$orgId';
-  static String updateOrg(int orgId) => '${_v1}fitnesscenter/organization/$orgId/update/';
-  static String deletePhoto(int orgId, int photoId) => '${_v1}fitnesscenter/organization/$orgId/photos/$photoId/';
+  static String orgDetails(int orgId) =>
+      '${_v1}fitnesscenter/organization/$orgId/';
+  static String fetchHomeData(int orgId) =>
+      '${_v1}fitnesscenter/home/?organization_id=$orgId';
+  static String updateOrg(int orgId) =>
+      '${_v1}fitnesscenter/organization/$orgId/update/';
+  static String deletePhoto(int orgId, int photoId) =>
+      '${_v1}fitnesscenter/organization/$orgId/photos/$photoId/delete';
 
   ///============================= Subscription =============================\\\
   static const plans = '${_v1}subscription/discipl-subscription-plans/';
@@ -44,8 +48,17 @@ final class ApiUris {
   static String leadDetails(String id) => '${_v1}mentor/trainers/$id/';
 
   ///============================= Membership =============================\\\
-  static const createMembershipPackage = '${_v1}fitnesscenter/membership-plans/';
+  static const createMembershipPackage =
+      '${_v1}fitnesscenter/membership-plans/';
   static const listMembershipPackages = '${_v1}fitnesscenter/membership-plans/';
-  static String updateMembershipPackage(int id) => '${_v1}fitnesscenter/membership-plans/$id/';
-  static String deleteMembershipPackage(int id) => '${_v1}fitnesscenter/membership-plans/$id/';
+  static const expiringMembershipPackages =
+      '${_v1}fitnesscenter/expiring-memberships/';
+  static String updateMembershipPackage(int id) =>
+      '${_v1}fitnesscenter/membership-plans/$id/';
+  static String deleteMembershipPackage(int id) =>
+      '${_v1}fitnesscenter/membership-plans/$id/';
+
+  ///============================= bank =============================\\\
+  static String bankDetails(String id) => '${_v1}fitnesscenter/bank-details/$id';
+  static const addBankDetails = '${_v1}fitnesscenter/bank-details/';
 }

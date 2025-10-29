@@ -7,24 +7,44 @@ class SentOtpCubit extends Cubit<SentOtpState> {
   SentOtpCubit() : super(const SentOtpState());
 
   Future<void> sentOtp({required String phone}) async {
-    if ((state.sentOtp?.isNone() ?? false) || (state.googleSignIn?.isNone() ?? false)) {
+    if ((state.sentOtp?.isNone() ?? false) ||
+        (state.googleSignIn?.isNone() ?? false)) {
       return;
     }
     if (phone.isEmpty) {
-      emit(state.copyWith(sentOtp: some(left(const ApiException.notFound(msg: 'Phone number is required!')))));
+      emit(
+        state.copyWith(
+          sentOtp: some(
+            left(const ApiException.notFound(msg: 'Phone number is required!')),
+          ),
+        ),
+      );
       return;
     }
     if (phone.length < 10) {
-      emit(state.copyWith(sentOtp: some(left(const ApiException.notFound(msg: 'Phone number is invalid!')))));
+      emit(
+        state.copyWith(
+          sentOtp: some(
+            left(const ApiException.notFound(msg: 'Phone number is invalid!')),
+          ),
+        ),
+      );
       return;
     }
     emit(state.copyWith(sentOtp: none()));
-    final response = await AuthRepository().sentOtp(body: {'mobile_number': '+91$phone', 'process': 'login', 'source': platformSource});
+    final response = await AuthRepository().sentOtp(
+      body: {
+        'mobile_number': '+91$phone',
+        'process': 'login',
+        'source': platformSource,
+      },
+    );
     emit(state.copyWith(sentOtp: some(response)));
   }
 
   Future<void> googleSignIn() async {
-    if ((state.sentOtp?.isNone() ?? false) || (state.googleSignIn?.isNone() ?? false)) {
+    if ((state.sentOtp?.isNone() ?? false) ||
+        (state.googleSignIn?.isNone() ?? false)) {
       return;
     }
     emit(state.copyWith(googleSignIn: none()));

@@ -7,75 +7,78 @@ part of 'list_membership_package_model.dart';
 // **************************************************************************
 
 _$ListMembershipPackagesModelImpl _$$ListMembershipPackagesModelImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ListMembershipPackagesModelImpl(
-      count: (json['count'] as num?)?.toInt(),
-      next: json['next'],
-      previous: json['previous'],
-      results: (json['results'] as List<dynamic>?)
+  Map<String, dynamic> json,
+) => _$ListMembershipPackagesModelImpl(
+  count: (json['count'] as num?)?.toInt(),
+  next: json['next'],
+  previous: json['previous'],
+  results:
+      (json['results'] as List<dynamic>?)
           ?.map(
-              (e) => MembershipPackageModel.fromJson(e as Map<String, dynamic>))
+            (e) => MembershipPackageModel.fromJson(e as Map<String, dynamic>),
+          )
           .toList(),
-    );
+);
 
 Map<String, dynamic> _$$ListMembershipPackagesModelImplToJson(
-        _$ListMembershipPackagesModelImpl instance) =>
-    <String, dynamic>{
-      'count': instance.count,
-      'next': instance.next,
-      'previous': instance.previous,
-      'results': instance.results,
-    };
+  _$ListMembershipPackagesModelImpl instance,
+) => <String, dynamic>{
+  'count': instance.count,
+  'next': instance.next,
+  'previous': instance.previous,
+  'results': instance.results,
+};
 
 _$MembershipPackageModelImpl _$$MembershipPackageModelImplFromJson(
-        Map<String, dynamic> json) =>
-    _$MembershipPackageModelImpl(
-      id: (json['id'] as num?)?.toInt(),
-      organization: (json['organization'] as num?)?.toInt(),
-      packageType: json['package_type'] as String?,
-      name: json['name'] as String?,
-      description: json['description'] as String?,
-      actualPrice: json['actual_price'] as String?,
-      offerPrice: json['offer_price'] as String?,
-      durationDays: (json['duration_days'] as num?)?.toInt(),
-      features: (json['features'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-      isActive: json['is_active'] as bool?,
-      isEmiAvailable: json['is_emi_available'] as bool?,
-      emiPlans: (json['emi_plans'] as List<dynamic>?)
-              ?.map((e) => EmiPlansModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-    );
+  Map<String, dynamic> json,
+) => _$MembershipPackageModelImpl(
+  id: (json['id'] as num?)?.toInt(),
+  organization: (json['organization'] as num?)?.toInt(),
+  packageType: json['package_type'] as String?,
+  name: json['name'] as String?,
+  description: json['description'] as String?,
+  actualPrice: json['actual_price'] as String?,
+  offerPrice: json['offer_price'] as String?,
+  durationDays: (json['duration_days'] as num?)?.toInt(),
+  features:
+      (json['features'] as List<dynamic>?)?.map((e) => e as String).toList(),
+  isActive: json['is_active'] as bool?,
+  isEmiAvailable: json['is_emi_available'] as bool?,
+  emiPlans:
+      (json['emi_plans'] as List<dynamic>?)
+          ?.map((e) => EmiPlansModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+);
 
 Map<String, dynamic> _$$MembershipPackageModelImplToJson(
-        _$MembershipPackageModelImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'organization': instance.organization,
-      'package_type': instance.packageType,
-      'name': instance.name,
-      'description': instance.description,
-      'actual_price': instance.actualPrice,
-      'offer_price': instance.offerPrice,
-      'duration_days': instance.durationDays,
-      'features': instance.features,
-      'is_active': instance.isActive,
-      'is_emi_available': instance.isEmiAvailable,
-      'emi_plans': instance.emiPlans,
-    };
+  _$MembershipPackageModelImpl instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'organization': instance.organization,
+  'package_type': instance.packageType,
+  'name': instance.name,
+  'description': instance.description,
+  'actual_price': instance.actualPrice,
+  'offer_price': instance.offerPrice,
+  'duration_days': instance.durationDays,
+  'features': instance.features,
+  'is_active': instance.isActive,
+  'is_emi_available': instance.isEmiAvailable,
+  'emi_plans': instance.emiPlans,
+};
 
 _$EmiPlansModelImpl _$$EmiPlansModelImplFromJson(Map<String, dynamic> json) =>
     _$EmiPlansModelImpl(
       month: (json['number_of_installments'] as num).toInt(),
-      price:
-          StringToDoubleConverter.fromJsonStatic(json['emi_amount_per_cycle']),
+      price: StringToDoubleConverter.fromJsonStatic(
+        json['emi_amount_per_cycle'],
+      ),
     );
 
-Map<String, dynamic> _$$EmiPlansModelImplToJson(_$EmiPlansModelImpl instance) =>
-    <String, dynamic>{
-      'number_of_installments': instance.month,
-      'emi_amount_per_cycle':
-          StringToDoubleConverter.toJsonStatic(instance.price),
-    };
+Map<String, dynamic> _$$EmiPlansModelImplToJson(
+  _$EmiPlansModelImpl instance,
+) => <String, dynamic>{
+  'number_of_installments': instance.month,
+  'emi_amount_per_cycle': StringToDoubleConverter.toJsonStatic(instance.price),
+};

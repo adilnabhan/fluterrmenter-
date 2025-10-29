@@ -6,7 +6,13 @@ class MembershipState with _$MembershipState {
     @Default(None())
     Option<Either<ApiException, ListMembershipPackagesModel>>
     membershipPackages,
+    @Default(None())
+    Option<Either<ApiException, BankDetailsModel>>
+    bankDetails,
     Option<Either<ApiException, void>>? createOrUpdatePackage,
+    Option<Either<ApiException, void>>? createOrUpdateBank,
+    @Default(false) bool isDeleting,
+    @Default(false) bool isLoading,
   }) = _MembershipState;
 }
 

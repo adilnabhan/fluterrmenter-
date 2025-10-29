@@ -8,6 +8,7 @@ abstract class AppColors {
   //*Theme primary color
   //
   static const Color primary = Color(0xffCF0B10);
+  static const Color successGreen = Colors.green;
   static const Color lightPrimary = Color(0xffFFD0D0);
   static const Color light = Colors.white;
   static const Color dark = Colors.black;

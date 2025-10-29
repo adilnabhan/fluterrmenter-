@@ -12,7 +12,8 @@ part of 'emi_options_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 EmiOptionsModel _$EmiOptionsModelFromJson(Map<String, dynamic> json) {
   return _EmiOptionsModel.fromJson(json);
@@ -38,12 +39,14 @@ mixin _$EmiOptionsModel {
 /// @nodoc
 abstract class $EmiOptionsModelCopyWith<$Res> {
   factory $EmiOptionsModelCopyWith(
-          EmiOptionsModel value, $Res Function(EmiOptionsModel) then) =
-      _$EmiOptionsModelCopyWithImpl<$Res, EmiOptionsModel>;
+    EmiOptionsModel value,
+    $Res Function(EmiOptionsModel) then,
+  ) = _$EmiOptionsModelCopyWithImpl<$Res, EmiOptionsModel>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'number_of_installments') int month,
-      @JsonKey(name: 'emi_amount_per_cycle') double price});
+  $Res call({
+    @JsonKey(name: 'number_of_installments') int month,
+    @JsonKey(name: 'emi_amount_per_cycle') double price,
+  });
 }
 
 /// @nodoc
@@ -60,34 +63,38 @@ class _$EmiOptionsModelCopyWithImpl<$Res, $Val extends EmiOptionsModel>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? month = null,
-    Object? price = null,
-  }) {
-    return _then(_value.copyWith(
-      month: null == month
-          ? _value.month
-          : month // ignore: cast_nullable_to_non_nullable
-              as int,
-      price: null == price
-          ? _value.price
-          : price // ignore: cast_nullable_to_non_nullable
-              as double,
-    ) as $Val);
+  $Res call({Object? month = null, Object? price = null}) {
+    return _then(
+      _value.copyWith(
+            month:
+                null == month
+                    ? _value.month
+                    : month // ignore: cast_nullable_to_non_nullable
+                        as int,
+            price:
+                null == price
+                    ? _value.price
+                    : price // ignore: cast_nullable_to_non_nullable
+                        as double,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$EmiOptionsModelImplCopyWith<$Res>
     implements $EmiOptionsModelCopyWith<$Res> {
-  factory _$$EmiOptionsModelImplCopyWith(_$EmiOptionsModelImpl value,
-          $Res Function(_$EmiOptionsModelImpl) then) =
-      __$$EmiOptionsModelImplCopyWithImpl<$Res>;
+  factory _$$EmiOptionsModelImplCopyWith(
+    _$EmiOptionsModelImpl value,
+    $Res Function(_$EmiOptionsModelImpl) then,
+  ) = __$$EmiOptionsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'number_of_installments') int month,
-      @JsonKey(name: 'emi_amount_per_cycle') double price});
+  $Res call({
+    @JsonKey(name: 'number_of_installments') int month,
+    @JsonKey(name: 'emi_amount_per_cycle') double price,
+  });
 }
 
 /// @nodoc
@@ -95,36 +102,39 @@ class __$$EmiOptionsModelImplCopyWithImpl<$Res>
     extends _$EmiOptionsModelCopyWithImpl<$Res, _$EmiOptionsModelImpl>
     implements _$$EmiOptionsModelImplCopyWith<$Res> {
   __$$EmiOptionsModelImplCopyWithImpl(
-      _$EmiOptionsModelImpl _value, $Res Function(_$EmiOptionsModelImpl) _then)
-      : super(_value, _then);
+    _$EmiOptionsModelImpl _value,
+    $Res Function(_$EmiOptionsModelImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of EmiOptionsModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? month = null,
-    Object? price = null,
-  }) {
-    return _then(_$EmiOptionsModelImpl(
-      month: null == month
-          ? _value.month
-          : month // ignore: cast_nullable_to_non_nullable
-              as int,
-      price: null == price
-          ? _value.price
-          : price // ignore: cast_nullable_to_non_nullable
-              as double,
-    ));
+  $Res call({Object? month = null, Object? price = null}) {
+    return _then(
+      _$EmiOptionsModelImpl(
+        month:
+            null == month
+                ? _value.month
+                : month // ignore: cast_nullable_to_non_nullable
+                    as int,
+        price:
+            null == price
+                ? _value.price
+                : price // ignore: cast_nullable_to_non_nullable
+                    as double,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$EmiOptionsModelImpl implements _EmiOptionsModel {
-  const _$EmiOptionsModelImpl(
-      {@JsonKey(name: 'number_of_installments') required this.month,
-      @JsonKey(name: 'emi_amount_per_cycle') required this.price});
+  const _$EmiOptionsModelImpl({
+    @JsonKey(name: 'number_of_installments') required this.month,
+    @JsonKey(name: 'emi_amount_per_cycle') required this.price,
+  });
 
   factory _$EmiOptionsModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$EmiOptionsModelImplFromJson(json);
@@ -161,21 +171,21 @@ class _$EmiOptionsModelImpl implements _EmiOptionsModel {
   @pragma('vm:prefer-inline')
   _$$EmiOptionsModelImplCopyWith<_$EmiOptionsModelImpl> get copyWith =>
       __$$EmiOptionsModelImplCopyWithImpl<_$EmiOptionsModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$EmiOptionsModelImplToJson(
-      this,
-    );
+    return _$$EmiOptionsModelImplToJson(this);
   }
 }
 
 abstract class _EmiOptionsModel implements EmiOptionsModel {
-  const factory _EmiOptionsModel(
-          {@JsonKey(name: 'number_of_installments') required final int month,
-          @JsonKey(name: 'emi_amount_per_cycle') required final double price}) =
-      _$EmiOptionsModelImpl;
+  const factory _EmiOptionsModel({
+    @JsonKey(name: 'number_of_installments') required final int month,
+    @JsonKey(name: 'emi_amount_per_cycle') required final double price,
+  }) = _$EmiOptionsModelImpl;
 
   factory _EmiOptionsModel.fromJson(Map<String, dynamic> json) =
       _$EmiOptionsModelImpl.fromJson;

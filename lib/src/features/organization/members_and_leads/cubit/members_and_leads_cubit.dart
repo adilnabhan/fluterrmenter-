@@ -4,35 +4,68 @@ part 'members_and_leads_state.dart';
 part 'members_and_leads_cubit.freezed.dart';
 
 class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
-  MembersAndLeadsCubit({required this.orgId}) : super(const MembersAndLeadsState());
+  MembersAndLeadsCubit({required this.orgId})
+    : super(const MembersAndLeadsState());
 
   final int orgId;
 
   ///============================= Members =============================\\\
 
-  Future<void> fetchMembers({required MemberStatus? status, required ListingSort? sort, bool isPagination = false, String? searchQuery}) async {
-    final members = state.members.data.fold(() => null, (t) => t.fold((l) => null, (r) => r));
+  Future<void> fetchMembers({
+    required MemberStatus? status,
+    required ListingSort? sort,
+    bool isPagination = false,
+    String? searchQuery,
+  }) async {
+    final members = state.members.data.fold(
+      () => null,
+      (t) => t.fold((l) => null, (r) => r),
+    );
     if (isPagination && (members?.next?.isEmpty ?? true)) {
       return;
     }
-    emit(state.copyWith(members: (data: isPagination ? state.members.data : none(), isPagination: isPagination)));
+    emit(
+      state.copyWith(
+        members: (
+          data: isPagination ? state.members.data : none(),
+          isPagination: isPagination,
+        ),
+      ),
+    );
     final res = await MembersRepository().membersListing(
-      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, 'organization_id': orgId, if (searchQuery?.trim().isNotEmpty ?? false) 'search': searchQuery},
+      queryParameters: {
+        if (status != null) 'status': status.name,
+        if (sort != null) 'sort': sort.name,
+        'organization_id': orgId,
+        if (searchQuery?.trim().isNotEmpty ?? false) 'search': searchQuery,
+      },
       nextUrl: isPagination ? members?.next : null,
     );
     if (isPagination) {
       await res.fold(
         (l) {
-          emit(state.copyWith(members: (data: state.members.data, isPagination: false)));
+          emit(
+            state.copyWith(
+              members: (data: state.members.data, isPagination: false),
+            ),
+          );
           return Dialogs.showSnack(msg: l.msg);
         },
         (r) {
-          final data = r.copyWith(results: [...?members?.results, ...?r.results]);
-          emit(state.copyWith(members: (data: some(right(data)), isPagination: false)));
+          final data = r.copyWith(
+            results: [...?members?.results, ...?r.results],
+          );
+          emit(
+            state.copyWith(
+              members: (data: some(right(data)), isPagination: false),
+            ),
+          );
         },
       );
     } else {
-      emit(state.copyWith(members: (data: some(res), isPagination: isPagination)));
+      emit(
+        state.copyWith(members: (data: some(res), isPagination: isPagination)),
+      );
     }
   }
 
@@ -42,8 +75,16 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     emit(state.copyWith(memberDetails: some(res)));
   }
 
-  Future<void> cerateOrUpdateMemberDetails({required MemberDetailsModel memeberDetails, required MembershipPackageModel membershipPackageModel}) async {
-    emit(state.copyWith(createOrUpdateMember: none(), memberOnboardedAnimationCompleted: null));
+  Future<void> cerateOrUpdateMemberDetails({
+    required MemberDetailsModel memeberDetails,
+    required MembershipPackageModel membershipPackageModel,
+  }) async {
+    emit(
+      state.copyWith(
+        createOrUpdateMember: none(),
+        memberOnboardedAnimationCompleted: null,
+      ),
+    );
     final res = await MembersRepository().createOrUpdateMember(
       memberId: null,
       body: FormData.fromMap({
@@ -57,12 +98,16 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         'user_role': 45,
         'organization_id': orgId,
         // 'emergency_contact_name': emergencyContactName,
-        'emergency_contact_number': '+91${memeberDetails.emergencyContactNumber}',
+        'emergency_contact_number':
+            '+91${memeberDetails.emergencyContactNumber}',
         'height': memeberDetails.height,
         'weight': memeberDetails.weight,
         'profession': memeberDetails.profession,
         'membership_plan_id': membershipPackageModel.id,
-        if (memeberDetails.profilePicture?.isNotEmpty ?? false) 'profile_picture': await MultipartFile.fromFile(memeberDetails.profilePicture ?? ''),
+        if (memeberDetails.profilePicture?.isNotEmpty ?? false)
+          'profile_picture': await MultipartFile.fromFile(
+            memeberDetails.profilePicture ?? '',
+          ),
       }),
     );
     emit(state.copyWith(createOrUpdateMember: some(res)));
@@ -75,29 +120,59 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
 
   ///============================= Leads =============================\\\
 
-  Future<void> fetchLeads({required MemberStatus? status, required ListingSort? sort, bool isPagination = false, String? searchQuery}) async {
-    final leads = state.leads.data.fold(() => null, (t) => t.fold((l) => null, (r) => r));
+  Future<void> fetchLeads({
+    required MemberStatus? status,
+    required ListingSort? sort,
+    bool isPagination = false,
+    String? searchQuery,
+  }) async {
+    final leads = state.leads.data.fold(
+      () => null,
+      (t) => t.fold((l) => null, (r) => r),
+    );
     if (isPagination && (leads?.next?.isEmpty ?? true)) {
       return;
     }
-    emit(state.copyWith(leads: (data: isPagination ? state.leads.data : none(), isPagination: isPagination)));
+    emit(
+      state.copyWith(
+        leads: (
+          data: isPagination ? state.leads.data : none(),
+          isPagination: isPagination,
+        ),
+      ),
+    );
     final res = await LeadsRepository().leadsListing(
-      queryParameters: {if (status != null) 'status': status.name, if (sort != null) 'sort': sort.name, if (searchQuery?.trim().isNotEmpty ?? false) 'search': searchQuery, 'organization_id': orgId},
+      queryParameters: {
+        if (status != null) 'status': status.name,
+        if (sort != null) 'sort': sort.name,
+        if (searchQuery?.trim().isNotEmpty ?? false) 'search': searchQuery,
+        'organization_id': orgId,
+      },
       nextUrl: isPagination ? leads?.next : null,
     );
     if (isPagination) {
       await res.fold(
         (l) {
-          emit(state.copyWith(leads: (data: state.leads.data, isPagination: false)));
+          emit(
+            state.copyWith(
+              leads: (data: state.leads.data, isPagination: false),
+            ),
+          );
           return Dialogs.showSnack(msg: l.msg);
         },
         (r) {
           final data = r.copyWith(results: [...?leads?.results, ...?r.results]);
-          emit(state.copyWith(leads: (data: some(right(data)), isPagination: false)));
+          emit(
+            state.copyWith(
+              leads: (data: some(right(data)), isPagination: false),
+            ),
+          );
         },
       );
     } else {
-      emit(state.copyWith(leads: (data: some(res), isPagination: isPagination)));
+      emit(
+        state.copyWith(leads: (data: some(res), isPagination: isPagination)),
+      );
     }
   }
 
@@ -124,34 +199,102 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
   }) async {
     emit(state.copyWith(createOrUpdateLead: none()));
     if (fullName?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Full name is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Full name is required')),
+          ),
+        ),
+      );
       return;
     } else if (mobileNumber?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Mobile number is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Mobile number is required')),
+          ),
+        ),
+      );
       return;
     } else if (email?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Email is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Email is required')),
+          ),
+        ),
+      );
       return;
     } else if (dateOfBirth?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Date of birth is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Date of birth is required')),
+          ),
+        ),
+      );
       return;
     } else if (gender?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Gender is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Gender is required')),
+          ),
+        ),
+      );
       return;
     } else if (bloodGroup?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Blood group is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Blood group is required')),
+          ),
+        ),
+      );
       return;
     } else if (emergencyContactNumber?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Emergency contact number is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(
+              const ApiException.notFound(
+                msg: 'Emergency contact number is required',
+              ),
+            ),
+          ),
+        ),
+      );
       return;
     } else if (experience == null) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Experience is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Experience is required')),
+          ),
+        ),
+      );
       return;
     } else if (addressProof?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Address proof is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Address proof is required')),
+          ),
+        ),
+      );
       return;
     } else if (trainerCertificates?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Trainer certificates are required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(
+              const ApiException.notFound(
+                msg: 'Trainer certificates are required',
+              ),
+            ),
+          ),
+        ),
+      );
       return;
     }
     // else if (profilePicture?.isEmpty ?? true) {
@@ -178,19 +321,31 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
 
     // Add address proof file if provided
     if (addressProof?.isNotEmpty ?? false) {
-      formData.files.add(MapEntry('address_proof', await MultipartFile.fromFile(addressProof!)));
+      formData.files.add(
+        MapEntry('address_proof', await MultipartFile.fromFile(addressProof!)),
+      );
     }
 
     // Add trainer certificates if provided
     if (trainerCertificates?.isNotEmpty ?? false) {
       for (var i = 0; i < trainerCertificates!.length; i++) {
-        formData.files.add(MapEntry('trainer_certificates[$i]', await MultipartFile.fromFile(trainerCertificates[i])));
+        formData.files.add(
+          MapEntry(
+            'trainer_certificates[$i]',
+            await MultipartFile.fromFile(trainerCertificates[i]),
+          ),
+        );
       }
     }
 
     // Add profile picture if provided
     if (profilePicture?.isNotEmpty ?? false) {
-      formData.files.add(MapEntry('profile_picture', await MultipartFile.fromFile(profilePicture!)));
+      formData.files.add(
+        MapEntry(
+          'profile_picture',
+          await MultipartFile.fromFile(profilePicture!),
+        ),
+      );
     }
 
     // // Add categories if provided
@@ -199,7 +354,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     //     formData.fields.add(MapEntry('categories[${category.key}]', category.value.toString()));
     //   }
     // }
-    final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: formData);
+    final res = await LeadsRepository().createOrupdateLead(
+      leadId: leadId,
+      body: formData,
+    );
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
 
@@ -213,16 +371,40 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
   }) async {
     emit(state.copyWith(createOrUpdateLead: none()));
     if (fullName?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Full name is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Full name is required')),
+          ),
+        ),
+      );
       return;
     } else if (mobileNumber?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Mobile number is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Mobile number is required')),
+          ),
+        ),
+      );
       return;
     } else if (email?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Email is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Email is required')),
+          ),
+        ),
+      );
       return;
     } else if (gender?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Gender is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Gender is required')),
+          ),
+        ),
+      );
       return;
     }
     final formData = FormData.fromMap({
@@ -237,9 +419,17 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     });
     // Add profile picture if provided
     if (profilePicture?.isNotEmpty ?? false) {
-      formData.files.add(MapEntry('profile_picture', await MultipartFile.fromFile(profilePicture!)));
+      formData.files.add(
+        MapEntry(
+          'profile_picture',
+          await MultipartFile.fromFile(profilePicture!),
+        ),
+      );
     }
-    final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: formData);
+    final res = await LeadsRepository().createOrupdateLead(
+      leadId: leadId,
+      body: formData,
+    );
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
 
@@ -253,16 +443,40 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
   }) async {
     emit(state.copyWith(createOrUpdateMember: none()));
     if (fullName?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Full name is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateMember: some(
+            left(const ApiException.notFound(msg: 'Full name is required')),
+          ),
+        ),
+      );
       return;
     } else if (mobileNumber?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Mobile number is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateMember: some(
+            left(const ApiException.notFound(msg: 'Mobile number is required')),
+          ),
+        ),
+      );
       return;
     } else if (email?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Email is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateMember: some(
+            left(const ApiException.notFound(msg: 'Email is required')),
+          ),
+        ),
+      );
       return;
     } else if (gender?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Gender is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateMember: some(
+            left(const ApiException.notFound(msg: 'Gender is required')),
+          ),
+        ),
+      );
       return;
     }
     final formData = FormData.fromMap({
@@ -277,59 +491,136 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     });
     // Add profile picture if provided
     if (profilePicture?.isNotEmpty ?? false) {
-      formData.files.add(MapEntry('profile_picture', await MultipartFile.fromFile(profilePicture!)));
+      formData.files.add(
+        MapEntry(
+          'profile_picture',
+          await MultipartFile.fromFile(profilePicture!),
+        ),
+      );
     }
-    final res = await MembersRepository().createOrUpdateMember(memberId: memberId, body: formData);
+    final res = await MembersRepository().createOrUpdateMember(
+      memberId: memberId,
+      body: formData,
+    );
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
-  Future<void> updateMemberDob({required int memberId, required String? dob}) async {
+  Future<void> updateMemberDob({
+    required int memberId,
+    required String? dob,
+  }) async {
     emit(state.copyWith(createOrUpdateMember: none()));
     if (dob?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Date of birth is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateMember: some(
+            left(const ApiException.notFound(msg: 'Date of birth is required')),
+          ),
+        ),
+      );
       return;
     }
-    final res = await MembersRepository().createOrUpdateMember(memberId: memberId, body: {'date_of_birth': dob, 'organization_id': orgId});
+    final res = await MembersRepository().createOrUpdateMember(
+      memberId: memberId,
+      body: {'date_of_birth': dob, 'organization_id': orgId},
+    );
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
-  Future<void> updateMemberHeight({required int memberId, required String? height}) async {
+  Future<void> updateMemberHeight({
+    required int memberId,
+    required String? height,
+  }) async {
     emit(state.copyWith(createOrUpdateMember: none()));
     if (height?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Height is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateMember: some(
+            left(const ApiException.notFound(msg: 'Height is required')),
+          ),
+        ),
+      );
       return;
     }
-    final res = await MembersRepository().createOrUpdateMember(memberId: memberId, body: {'height': height, 'organization_id': orgId});
+    final res = await MembersRepository().createOrUpdateMember(
+      memberId: memberId,
+      body: {'height': height, 'organization_id': orgId},
+    );
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
-  Future<void> updateMemberWeight({required int memberId, required String? weight}) async {
+  Future<void> updateMemberWeight({
+    required int memberId,
+    required String? weight,
+  }) async {
     emit(state.copyWith(createOrUpdateMember: none()));
     if (weight?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateMember: some(left(const ApiException.notFound(msg: 'Weight is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateMember: some(
+            left(const ApiException.notFound(msg: 'Weight is required')),
+          ),
+        ),
+      );
       return;
     }
-    final res = await MembersRepository().createOrUpdateMember(memberId: memberId, body: {'weight': weight, 'organization_id': orgId});
+    final res = await MembersRepository().createOrUpdateMember(
+      memberId: memberId,
+      body: {'weight': weight, 'organization_id': orgId},
+    );
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
-  Future<void> updateLeadDob({required int leadId, required String? dob}) async {
+  Future<void> updateLeadDob({
+    required int leadId,
+    required String? dob,
+  }) async {
     emit(state.copyWith(createOrUpdateLead: none()));
     if (dob?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Date of birth is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Date of birth is required')),
+          ),
+        ),
+      );
       return;
     }
-    final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: {'date_of_birth': dob, 'organization_id': orgId});
+    final res = await LeadsRepository().createOrupdateLead(
+      leadId: leadId,
+      body: {'date_of_birth': dob, 'organization_id': orgId},
+    );
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
 
-  Future<void> updateLeadExperience({required int leadId, required String? experience}) async {
+  Future<void> updateLeadExperience({
+    required int leadId,
+    required String? experience,
+  }) async {
     emit(state.copyWith(createOrUpdateLead: none()));
     if (experience?.isEmpty ?? true) {
-      emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Experience is required')))));
+      emit(
+        state.copyWith(
+          createOrUpdateLead: some(
+            left(const ApiException.notFound(msg: 'Experience is required')),
+          ),
+        ),
+      );
       return;
     }
-    final res = await LeadsRepository().createOrupdateLead(leadId: leadId, body: {'experience': experience, 'organization_id': orgId});
+    final res = await LeadsRepository().createOrupdateLead(
+      leadId: leadId,
+      body: {'experience': experience, 'organization_id': orgId},
+    );
     emit(state.copyWith(createOrUpdateLead: some(res)));
+  }
+
+
+  Future<void> fetchExpiringMemberShip() async {
+    emit(state.copyWith(upComingPayments: none(),));
+    final res = await MembershipRepository().listExpiringMembership(
+      queryParameters: {'organization_id': orgId},
+    );
+    emit(state.copyWith(upComingPayments: some(res)));
   }
 }

@@ -7,7 +7,13 @@ enum SnackType { success, error, warning }
 ///
 abstract class Dialogs {
   ///Show snackbar withoud context
-  static Future<void> showSnack({String? msg, Widget? action, Duration? duration, SnackType type = SnackType.success, bool showIcon = false}) async {
+  static Future<void> showSnack({
+    String? msg,
+    Widget? action,
+    Duration? duration,
+    SnackType type = SnackType.success,
+    bool showIcon = false,
+  }) async {
     if (Platform.isAndroid || Platform.isIOS) {
       await Fluttertoast.showToast(
         msg: msg ?? 'Something went wrong! Please try again later.',
@@ -30,8 +36,21 @@ abstract class Dialogs {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(child: Text(msg ?? 'Something went wrong! Please try again later.', textAlign: TextAlign.center, style: AppStyles.text14Px.w400.light)),
-                    if (showIcon) CircleAvatar(radius: 12, backgroundColor: AppColors.light, child: SvgPicture.asset('assets/images/icons/tick_icon.svg')).pOnly(left: 8),
+                    Flexible(
+                      child: Text(
+                        msg ?? 'Something went wrong! Please try again later.',
+                        textAlign: TextAlign.center,
+                        style: AppStyles.text14Px.w400.light,
+                      ),
+                    ),
+                    if (showIcon)
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundColor: AppColors.light,
+                        child: SvgPicture.asset(
+                          'assets/images/icons/tick_icon.svg',
+                        ),
+                      ).pOnly(left: 8),
                   ],
                 ).pxy(x: 16, y: 12),
               ),

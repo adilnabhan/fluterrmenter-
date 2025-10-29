@@ -16,7 +16,8 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
   final _formKey = GlobalKey<FormState>();
   String _selectedPriceType = 'Monthly Price';
   late final FieldData<String> _membershipNameField;
-  late final FieldData<String> _packageTypeField;
+  late final FieldData<String> _daysField;
+  // late final FieldData<String> _packageTypeField;
   PackageType? _selectedPackageType;
   late final FieldData<dynamic> _actualPriceField;
   late final FieldData<dynamic> _offerPriceField;
@@ -210,36 +211,25 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
         ),
       ),
     );
-    _packageTypeField = FieldData<String>(
-      type: FieldType.radio,
+    _daysField = FieldData<String>(
+      type: FieldType.word,
       textInputAction: TextInputAction.done,
-      label: 'Package Type',
+      label: 'Duration Days',
       requiredLabel: true,
-      controller: TextEditingController(text: _selectedPackageType?.label),
-      items:
-          PackageType.values
-              .map((e) => (label: e.label, value: e.name))
-              .toList(),
+      keyboardType: TextInputType.number,
+      controller: TextEditingController(
+        text: widget.membershipPackage?.durationDays.toString() ?? '',
+      ),
       validator: (value) {
         if (value?.isEmpty ?? true) {
-          return 'Package type must be selected';
+          return 'Duration Days is required!';
         }
         return null;
       },
-      onValueChanged: (value) {
-        setState(() {
-          _selectedPackageType = PackageType.fromLabel(value.first.label);
-
-          _isEmi = false;
-          for (final emi in _emiOptions) {
-            emi.month.controller?.dispose();
-            emi.price.controller?.dispose();
-          }
-          _emiOptions.clear();
-        });
-      },
+      onValueChanged: (p0) {},
+      onSubmitted: (value) {},
       decoration: InputDecoration(
-        hintText: 'Select Package Type',
+        hintText: 'Enter Duration Days',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -247,10 +237,48 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
         ),
       ),
     );
+    // _packageTypeField = FieldData<String>(
+    //   type: FieldType.radio,
+    //   textInputAction: TextInputAction.done,
+    //   label: 'Package Type',
+    //   requiredLabel: true,
+    //   controller: TextEditingController(text: _selectedPackageType?.label),
+    //   items:
+    //       PackageType.values
+    //           .map((e) => (label: e.label, value: e.name))
+    //           .toList(),
+    //   validator: (value) {
+    //     if (value?.isEmpty ?? true) {
+    //       return 'Package type must be selected';
+    //     }
+    //     return null;
+    //   },
+    //   onValueChanged: (value) {
+    //     setState(() {
+    //       _selectedPackageType = PackageType.fromLabel(value.first.label);
+    //
+    //       _isEmi = false;
+    //       for (final emi in _emiOptions) {
+    //         emi.month.controller?.dispose();
+    //         emi.price.controller?.dispose();
+    //       }
+    //       _emiOptions.clear();
+    //     });
+    //   },
+    //   decoration: InputDecoration(
+    //     hintText: 'Select Package Type',
+    //     hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+    //     border: const OutlineInputBorder(
+    //       borderRadius: BorderRadius.all(Radius.circular(8)),
+    //       borderSide: BorderSide(color: AppColors.borderGrey),
+    //     ),
+    //   ),
+    // );
     _actualPriceField = FieldData<String>(
       type: FieldType.word,
       textInputAction: TextInputAction.done,
-      label: 'Actual Price',
+      // label: 'Actual Price',
+      label: 'Amount',
       requiredLabel: true,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
@@ -261,14 +289,14 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       ),
       validator: (value) {
         if (value?.isEmpty ?? true) {
-          return 'Actual price is required!';
+          return 'Amount is required!';
         }
         return null;
       },
       onValueChanged: (p0) {},
       onSubmitted: (value) {},
       decoration: InputDecoration(
-        hintText: 'Enter actual price',
+        hintText: 'Enter Amount',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -311,7 +339,8 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
   @override
   void dispose() {
     _membershipNameField.controller?.dispose();
-    _packageTypeField.controller?.dispose();
+    _daysField.controller?.dispose();
+    // _packageTypeField.controller?.dispose();
     _actualPriceField.controller?.dispose();
     _offerPriceField.controller?.dispose();
     for (final emi in _emiOptions) {
@@ -357,7 +386,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                   spacing: 16,
                   children: [
                     Field(data: _membershipNameField),
-                    Field(data: _packageTypeField),
+                    Field(data: _daysField),
                   ],
                 ),
               ),
@@ -374,33 +403,33 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                         ],
                       ).pOnly(bottom: 32),
                     Field(data: _actualPriceField),
-                    if (_showOfferPrice)
-                      Field(data: _offerPriceField).pOnly(top: 16),
-                    const SizedBox(height: 16),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.only(
-                          top: 8,
-                          bottom: 8,
-                          right: 8,
-                        ),
-                        backgroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.transparent),
-                        shape: const StadiumBorder(),
-                        foregroundColor: const Color(0xff3262DD),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _showOfferPrice = !_showOfferPrice;
-                        });
-                      },
-                      label: Text(
-                        _showOfferPrice
-                            ? 'Remove Offer Price'
-                            : 'Add Offer Price',
-                      ),
-                      icon: Icon(_showOfferPrice ? Icons.close : Icons.add),
-                    ),
+                    // if (_showOfferPrice)
+                    //   Field(data: _offerPriceField).pOnly(top: 16),
+                    // const SizedBox(height: 16),
+                    // OutlinedButton.icon(
+                    //   style: OutlinedButton.styleFrom(
+                    //     padding: const EdgeInsets.only(
+                    //       top: 8,
+                    //       bottom: 8,
+                    //       right: 8,
+                    //     ),
+                    //     backgroundColor: Colors.white,
+                    //     side: const BorderSide(color: Colors.transparent),
+                    //     shape: const StadiumBorder(),
+                    //     foregroundColor: const Color(0xff3262DD),
+                    //   ),
+                    //   onPressed: () {
+                    //     setState(() {
+                    //       _showOfferPrice = !_showOfferPrice;
+                    //     });
+                    //   },
+                    //   label: Text(
+                    //     _showOfferPrice
+                    //         ? 'Remove Offer Price'
+                    //         : 'Add Offer Price',
+                    //   ),
+                    //   icon: Icon(_showOfferPrice ? Icons.close : Icons.add),
+                    // ),
                   ],
                 ),
               ),
@@ -597,7 +626,8 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                     _membershipNameField.controller!.text.trim();
                 final actualPrice = _actualPriceField.controller!.text.trim();
                 final offerPrice = _offerPriceField.controller!.text.trim();
-                final packageType = _selectedPackageType!.label;
+                // final packageType = _selectedPackageType!.label;
+                final packageType = _daysField.controller?.text.trim();
                 if (_showOfferPrice) {
                   final actualPriceValue = double.tryParse(actualPrice);
                   final offerPriceValue = double.tryParse(offerPrice);
@@ -612,7 +642,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                 }
                 _cubit.createOrUpdateMembershipPackage(
                   membershipId: widget.membershipPackage?.id,
-                  packageType: packageType,
+                  packageType: packageType!,
                   name: membershipName,
                   description: 'Package for $membershipName',
                   actualPrice: actualPrice,

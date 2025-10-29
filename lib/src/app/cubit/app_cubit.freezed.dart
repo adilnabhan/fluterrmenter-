@@ -12,7 +12,8 @@ part of 'app_cubit.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$AppState {
@@ -32,8 +33,11 @@ abstract class $AppStateCopyWith<$Res> {
   factory $AppStateCopyWith(AppState value, $Res Function(AppState) then) =
       _$AppStateCopyWithImpl<$Res, AppState>;
   @useResult
-  $Res call(
-      {ThemeMode themeMode, Locale locale, LoginSuccessModel? currentUser});
+  $Res call({
+    ThemeMode themeMode,
+    Locale locale,
+    LoginSuccessModel? currentUser,
+  });
 
   $LoginSuccessModelCopyWith<$Res>? get currentUser;
 }
@@ -57,20 +61,26 @@ class _$AppStateCopyWithImpl<$Res, $Val extends AppState>
     Object? locale = null,
     Object? currentUser = freezed,
   }) {
-    return _then(_value.copyWith(
-      themeMode: null == themeMode
-          ? _value.themeMode
-          : themeMode // ignore: cast_nullable_to_non_nullable
-              as ThemeMode,
-      locale: null == locale
-          ? _value.locale
-          : locale // ignore: cast_nullable_to_non_nullable
-              as Locale,
-      currentUser: freezed == currentUser
-          ? _value.currentUser
-          : currentUser // ignore: cast_nullable_to_non_nullable
-              as LoginSuccessModel?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            themeMode:
+                null == themeMode
+                    ? _value.themeMode
+                    : themeMode // ignore: cast_nullable_to_non_nullable
+                        as ThemeMode,
+            locale:
+                null == locale
+                    ? _value.locale
+                    : locale // ignore: cast_nullable_to_non_nullable
+                        as Locale,
+            currentUser:
+                freezed == currentUser
+                    ? _value.currentUser
+                    : currentUser // ignore: cast_nullable_to_non_nullable
+                        as LoginSuccessModel?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of AppState
@@ -92,12 +102,16 @@ class _$AppStateCopyWithImpl<$Res, $Val extends AppState>
 abstract class _$$AppStateImplCopyWith<$Res>
     implements $AppStateCopyWith<$Res> {
   factory _$$AppStateImplCopyWith(
-          _$AppStateImpl value, $Res Function(_$AppStateImpl) then) =
-      __$$AppStateImplCopyWithImpl<$Res>;
+    _$AppStateImpl value,
+    $Res Function(_$AppStateImpl) then,
+  ) = __$$AppStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {ThemeMode themeMode, Locale locale, LoginSuccessModel? currentUser});
+  $Res call({
+    ThemeMode themeMode,
+    Locale locale,
+    LoginSuccessModel? currentUser,
+  });
 
   @override
   $LoginSuccessModelCopyWith<$Res>? get currentUser;
@@ -108,8 +122,9 @@ class __$$AppStateImplCopyWithImpl<$Res>
     extends _$AppStateCopyWithImpl<$Res, _$AppStateImpl>
     implements _$$AppStateImplCopyWith<$Res> {
   __$$AppStateImplCopyWithImpl(
-      _$AppStateImpl _value, $Res Function(_$AppStateImpl) _then)
-      : super(_value, _then);
+    _$AppStateImpl _value,
+    $Res Function(_$AppStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of AppState
   /// with the given fields replaced by the non-null parameter values.
@@ -120,30 +135,36 @@ class __$$AppStateImplCopyWithImpl<$Res>
     Object? locale = null,
     Object? currentUser = freezed,
   }) {
-    return _then(_$AppStateImpl(
-      themeMode: null == themeMode
-          ? _value.themeMode
-          : themeMode // ignore: cast_nullable_to_non_nullable
-              as ThemeMode,
-      locale: null == locale
-          ? _value.locale
-          : locale // ignore: cast_nullable_to_non_nullable
-              as Locale,
-      currentUser: freezed == currentUser
-          ? _value.currentUser
-          : currentUser // ignore: cast_nullable_to_non_nullable
-              as LoginSuccessModel?,
-    ));
+    return _then(
+      _$AppStateImpl(
+        themeMode:
+            null == themeMode
+                ? _value.themeMode
+                : themeMode // ignore: cast_nullable_to_non_nullable
+                    as ThemeMode,
+        locale:
+            null == locale
+                ? _value.locale
+                : locale // ignore: cast_nullable_to_non_nullable
+                    as Locale,
+        currentUser:
+            freezed == currentUser
+                ? _value.currentUser
+                : currentUser // ignore: cast_nullable_to_non_nullable
+                    as LoginSuccessModel?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$AppStateImpl implements _AppState {
-  const _$AppStateImpl(
-      {this.themeMode = ThemeMode.light,
-      this.locale = const Locale('en'),
-      this.currentUser});
+  const _$AppStateImpl({
+    this.themeMode = ThemeMode.light,
+    this.locale = const Locale('en'),
+    this.currentUser,
+  });
 
   @override
   @JsonKey()
@@ -184,10 +205,11 @@ class _$AppStateImpl implements _AppState {
 }
 
 abstract class _AppState implements AppState {
-  const factory _AppState(
-      {final ThemeMode themeMode,
-      final Locale locale,
-      final LoginSuccessModel? currentUser}) = _$AppStateImpl;
+  const factory _AppState({
+    final ThemeMode themeMode,
+    final Locale locale,
+    final LoginSuccessModel? currentUser,
+  }) = _$AppStateImpl;
 
   @override
   ThemeMode get themeMode;
