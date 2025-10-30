@@ -38,7 +38,7 @@ class MembershipCubit extends Cubit<MembershipState> {
       'name': name,
       'description': description,
       'actual_price': actualPrice,
-      'offer_price': offerPrice,
+      // 'offer_price': offerPrice,
       'features': features,
       'is_emi_available': isEmiAvailable,
       'is_active': true,
