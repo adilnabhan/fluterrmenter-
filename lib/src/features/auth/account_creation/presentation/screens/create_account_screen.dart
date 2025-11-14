@@ -7,7 +7,10 @@ class CreateAccountScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => CreateAccountCubit(sentOtp: sentOtpEntity), child: const _CreateAccountScreen());
+    return BlocProvider(
+      create: (context) => CreateAccountCubit(sentOtp: sentOtpEntity),
+      child: const _CreateAccountScreen(),
+    );
   }
 }
 
@@ -44,7 +47,10 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
         decoration: InputDecoration(
           hintText: 'Enter your first name',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
       FieldData(
@@ -66,7 +72,10 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
         decoration: InputDecoration(
           hintText: 'Enter your last name',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
       FieldData(
@@ -77,7 +86,9 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
         focusNode: FocusNode(),
         validator: (value) {
           if (value?.isNotEmpty ?? false) {
-            if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value!)) {
+            if (!RegExp(
+              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+            ).hasMatch(value!)) {
               return 'Invalid email address!';
             }
           }
@@ -90,7 +101,10 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
         decoration: InputDecoration(
           hintText: 'Enter your email address',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
     ];
@@ -114,7 +128,11 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
       final firstName = _basicDetails[0].controller?.text;
       final lastName = _basicDetails[1].controller?.text;
       final email = _basicDetails[2].controller?.text;
-      context.read<CreateAccountCubit>().onboardUser(firstName: firstName ?? '', lastName: lastName ?? '', email: email ?? '');
+      context.read<CreateAccountCubit>().onboardUser(
+        firstName: firstName ?? '',
+        lastName: lastName ?? '',
+        email: email ?? '',
+      );
     } else {
       Dialogs.showSnack(msg: 'Please fill all the fields');
     }
@@ -145,8 +163,15 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
               const SizedBox(height: 22),
-              Text('Create Account', style: AppStyles.text22Px.poppins.w600.dark, textAlign: TextAlign.center),
-              SvgPicture.asset('assets/images/svg/vectors/create_account.svg', height: 162),
+              Text(
+                'Create Account',
+                style: AppStyles.text22Px.poppins.w600.dark,
+                textAlign: TextAlign.center,
+              ),
+              SvgPicture.asset(
+                'assets/images/svg/vectors/create_account.svg',
+                height: 162,
+              ),
               ListView.separated(
                 itemCount: _basicDetails.length,
                 shrinkWrap: true,
@@ -164,7 +189,11 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
                   return p.onboardingUser != c.onboardingUser;
                 },
                 builder: (context, state) {
-                  return Button.filled(title: 'Continue', ontap: _onContinue, isLoading: state.onboardingUser?.isNone() ?? false);
+                  return Button.filled(
+                    title: 'Continue',
+                    ontap: _onContinue,
+                    isLoading: state.onboardingUser?.isNone() ?? false,
+                  );
                 },
               ),
             ],

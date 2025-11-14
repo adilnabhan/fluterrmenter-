@@ -32,7 +32,7 @@ mixin _$MembersAndLeadsState {
       throw _privateConstructorUsedError;
   Option<Either<ApiException, CreateOrUpdateLeadModel>>?
   get createOrUpdateLead => throw _privateConstructorUsedError;
-  Option<Either<ApiException, List<UpComingPayments>?>> get upComingPayments =>
+  Option<Either<ApiException, UpComingPayments?>> get upComingPayments =>
       throw _privateConstructorUsedError;
 
   /// Create a copy of MembersAndLeadsState
@@ -62,7 +62,7 @@ abstract class $MembersAndLeadsStateCopyWith<$Res> {
     leads,
     Option<Either<ApiException, LeadDetailsModel>> leadDetails,
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
-    Option<Either<ApiException, List<UpComingPayments>?>> upComingPayments,
+    Option<Either<ApiException, UpComingPayments?>> upComingPayments,
   });
 }
 
@@ -143,9 +143,7 @@ class _$MembersAndLeadsStateCopyWithImpl<
                 null == upComingPayments
                     ? _value.upComingPayments
                     : upComingPayments // ignore: cast_nullable_to_non_nullable
-                        as Option<
-                          Either<ApiException, List<UpComingPayments>?>
-                        >,
+                        as Option<Either<ApiException, UpComingPayments?>>,
           )
           as $Val,
     );
@@ -174,7 +172,7 @@ abstract class _$$MembersAndLeadsStateImplCopyWith<$Res>
     leads,
     Option<Either<ApiException, LeadDetailsModel>> leadDetails,
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
-    Option<Either<ApiException, List<UpComingPayments>?>> upComingPayments,
+    Option<Either<ApiException, UpComingPayments?>> upComingPayments,
   });
 }
 
@@ -248,7 +246,7 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
             null == upComingPayments
                 ? _value.upComingPayments
                 : upComingPayments // ignore: cast_nullable_to_non_nullable
-                    as Option<Either<ApiException, List<UpComingPayments>?>>,
+                    as Option<Either<ApiException, UpComingPayments?>>,
       ),
     );
   }
@@ -299,7 +297,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   createOrUpdateLead;
   @override
   @JsonKey()
-  final Option<Either<ApiException, List<UpComingPayments>?>> upComingPayments;
+  final Option<Either<ApiException, UpComingPayments?>> upComingPayments;
 
   @override
   String toString() {
@@ -376,8 +374,7 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
     final Option<Either<ApiException, LeadDetailsModel>> leadDetails,
     final Option<Either<ApiException, CreateOrUpdateLeadModel>>?
     createOrUpdateLead,
-    final Option<Either<ApiException, List<UpComingPayments>?>>
-    upComingPayments,
+    final Option<Either<ApiException, UpComingPayments?>> upComingPayments,
   }) = _$MembersAndLeadsStateImpl;
 
   //* Members
@@ -398,7 +395,7 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
   @override
   Option<Either<ApiException, CreateOrUpdateLeadModel>>? get createOrUpdateLead;
   @override
-  Option<Either<ApiException, List<UpComingPayments>?>> get upComingPayments;
+  Option<Either<ApiException, UpComingPayments?>> get upComingPayments;
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.

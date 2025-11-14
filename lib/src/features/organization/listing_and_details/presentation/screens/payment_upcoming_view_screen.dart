@@ -43,7 +43,7 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
         elevation: 0,
         leading: const PopButton().center,
         title: Text(
-          'Upcoming Payments',
+          'Upcoming EMIs',
           style: AppStyles.text16Px.poppins.w600.copyWith(
             color: Colors.black87,
           ),
@@ -61,7 +61,7 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                 orElse: () => ErrorUi.server(onTap: _fetch),
               ),
               (data) {
-                if (data == null) {
+                if (data == null || data.results.isEmpty) {
                   return ErrorUi.empty().center;
                 }
                 return Padding(
@@ -73,20 +73,20 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       /// 🔸 Filter chip row
-                      Text(
-                        'Showing ${data.length} members',
-                        style: AppStyles.text12Px.copyWith(
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
+                      // Text(
+                      //   'Showing ${data.results} members',
+                      //   style: AppStyles.text12Px.copyWith(
+                      //     color: Colors.grey.shade600,
+                      //   ),
+                      // ),
                       const SizedBox(height: 10),
 
                       /// 🔸 Members list
                       Expanded(
                         child: ListView.builder(
-                          itemCount: data.length??0,
+                          itemCount: data.results.length ?? 0,
                           itemBuilder: (context, index) {
-                            final member = data[index];
+                            final member = data.results[index];
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(12),
@@ -101,7 +101,8 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                                   CircleAvatar(
                                     radius: 24,
                                     backgroundImage: NetworkImage(
-                                      member.customerDetails.image??'',
+                                      member.customerDetails.profilePicture ??
+                                          '',
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -111,7 +112,7 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          member.customerDetails.fullName,
+                                          member.customerDetails.name,
                                           style: AppStyles.text14Px.poppins.w600
                                               .copyWith(color: Colors.black87),
                                         ),
@@ -123,7 +124,10 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          member.planDetails.name,
+                                          member
+                                              .customerDetails
+                                              .activePlans
+                                              .planName,
                                           style: AppStyles.text12Px.copyWith(
                                             color: Colors.grey.shade600,
                                           ),
@@ -155,8 +159,7 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                                         ),
                                         const SizedBox(width: 5),
                                         Text(
-                                          'Expiring in ${member.daysUntilExpire} days'
-                                          ,
+                                          'Expiring in ${member.daysUntilExpire} days',
                                           style: AppStyles.text12Px.poppins.w500
                                               .copyWith(
                                                 color: Colors.orange.shade800,

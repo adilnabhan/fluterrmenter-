@@ -1,5 +1,6 @@
 import 'dart:developer' as log;
 
+import 'package:dio/dio.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
@@ -121,29 +122,76 @@ final class AuthRepository {
    @apiName onboarding
    @apiGroup Auth
    */
+  // Future<Either<ApiException, LoginSuccessModel>> onboarding({
+  //   required Map<String, dynamic> body,
+  // }) async {
+  //   try {
+  //     return await Feggy.async(
+  //       call: _dio.post<dynamic>(
+  //         ApiUris.onboarding,
+  //         data: body,
+  //         options: Options(headers: {'X-Platform': platformSource}),
+  //       ),
+  //       onSuccess: (res) {
+  //         if ([200, 201].contains(res.statusCode) &&
+  //             res.data != null &&
+  //             res.data is Map) {
+  //           return right(
+  //             LoginSuccessModel.fromJson(res.data as Map<String, dynamic>),
+  //           );
+  //         }
+  //         return left(const ApiException.unknown());
+  //       },
+  //     );
+  //   } on ApiException catch (e) {
+  //     return left(e);
+  //   } catch (e) {
+  //     return left(const ApiException.unknown());
+  //   }
+  // }
+
   Future<Either<ApiException, LoginSuccessModel>> onboarding({
     required Map<String, dynamic> body,
   }) async {
     try {
-      return await Feggy.async(
-        call: _dio.post<dynamic>(
-          ApiUris.onboarding,
-          data: body,
-          options: Options(headers: {'X-Platform': platformSource}),
-        ),
-        onSuccess: (res) {
-          if ([200, 201].contains(res.statusCode) &&
-              res.data != null &&
-              res.data is Map) {
-            return right(
-              LoginSuccessModel.fromJson(res.data as Map<String, dynamic>),
-            );
-          }
-          return left(const ApiException.unknown());
-        },
+      final response = await _dio.post<dynamic>(
+        ApiUris.onboarding,
+        data: body,
+        options: Options(headers: {'X-Platform': platformSource}),
       );
-    } on ApiException catch (e) {
-      return left(e);
+
+      // ✅ Safely check status code
+      final statusCode = response.statusCode ?? 0;
+
+      if ((statusCode == 200 || statusCode == 201) &&
+          response.data != null &&
+          response.data is Map<String, dynamic>) {
+        return right(
+          LoginSuccessModel.fromJson(response.data as Map<String, dynamic>),
+        );
+      }
+
+      // ❌ Handle unexpected non-success response
+      return left(
+        ApiException.unknown(msg: 'Unexpected response from server.'),
+      );
+    } on DioError catch (e) {
+      // ✅ Extract message from backend error
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.isNotEmpty) {
+          // Example: {"email": ["This email is already in used for default."]}
+          final firstKey = data.keys.first;
+          // final message = (data[firstKey] is List && data[firstKey].isNotEmpty)
+          //     ? data[firstKey][0].toString()
+          //     : data[firstKey].toString();
+          return left(ApiException.unknown(msg: data.toString()));
+        }
+      }
+
+      return left(
+        ApiException.unknown(msg: e.message ?? 'Something went wrong.'),
+      );
     } catch (e) {
       return left(const ApiException.unknown());
     }

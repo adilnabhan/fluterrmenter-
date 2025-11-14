@@ -140,33 +140,33 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
         label: 'Mobile',
         value: widget.orgDetails.phoneNumber?.replaceAll('+91', '') ?? '',
         onTap: () {
-          context.push(
-            GymDetailsUpdateTemplateScreen(
-              title: 'Add Mobile',
-              questionText: 'Enter your gym number?',
-              label: 'Mobile',
-              hintText: 'Enter Number',
-              onSave: (value) {
-                setState(() {
-                  _basicDetails[3] = copyBasicDetails(value, 3);
-                });
-              },
-              keyboardType: TextInputType.phone,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-              ],
-              initialValue: _basicDetails[3].value,
-              validator: (value) {
-                if (value?.trim().isEmpty ?? true) {
-                  return 'Mobile number is required';
-                } else if (value?.length != 10) {
-                  return 'Mobile number must be 10 digits';
-                }
-                return null;
-              },
-            ),
-          );
+          // context.push(
+          //   GymDetailsUpdateTemplateScreen(
+          //     title: 'Add Mobile',
+          //     questionText: 'Enter your gym number?',
+          //     label: 'Mobile',
+          //     hintText: 'Enter Number',
+          //     onSave: (value) {
+          //       setState(() {
+          //         _basicDetails[3] = copyBasicDetails(value, 3);
+          //       });
+          //     },
+          //     keyboardType: TextInputType.phone,
+          //     inputFormatters: [
+          //       FilteringTextInputFormatter.digitsOnly,
+          //       LengthLimitingTextInputFormatter(10),
+          //     ],
+          //     initialValue: _basicDetails[3].value,
+          //     validator: (value) {
+          //       if (value?.trim().isEmpty ?? true) {
+          //         return 'Mobile number is required';
+          //       } else if (value?.length != 10) {
+          //         return 'Mobile number must be 10 digits';
+          //       }
+          //       return null;
+          //     },
+          //   ),
+          // );
         },
       ),
     ];
