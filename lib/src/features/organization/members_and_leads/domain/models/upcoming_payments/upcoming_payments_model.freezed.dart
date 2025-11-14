@@ -21,16 +21,14 @@ UpComingPayments _$UpComingPaymentsFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$UpComingPayments {
-  @JsonKey(name: "id")
-  int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: "customer_details")
-  CustomerDetails get customerDetails => throw _privateConstructorUsedError;
-  @JsonKey(name: "plan_details")
-  PlanDetails get planDetails => throw _privateConstructorUsedError;
-  @JsonKey(name: "end_date")
-  DateTime get endDate => throw _privateConstructorUsedError;
-  @JsonKey(name: "days_until_expire")
-  int get daysUntilExpire => throw _privateConstructorUsedError;
+  @JsonKey(name: "count")
+  int get count => throw _privateConstructorUsedError;
+  @JsonKey(name: "next")
+  dynamic get next => throw _privateConstructorUsedError;
+  @JsonKey(name: "previous")
+  dynamic get previous => throw _privateConstructorUsedError;
+  @JsonKey(name: "results")
+  List<UpComingPaymentsList> get results => throw _privateConstructorUsedError;
 
   /// Serializes this UpComingPayments to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -50,15 +48,11 @@ abstract class $UpComingPaymentsCopyWith<$Res> {
   ) = _$UpComingPaymentsCopyWithImpl<$Res, UpComingPayments>;
   @useResult
   $Res call({
-    @JsonKey(name: "id") int id,
-    @JsonKey(name: "customer_details") CustomerDetails customerDetails,
-    @JsonKey(name: "plan_details") PlanDetails planDetails,
-    @JsonKey(name: "end_date") DateTime endDate,
-    @JsonKey(name: "days_until_expire") int daysUntilExpire,
+    @JsonKey(name: "count") int count,
+    @JsonKey(name: "next") dynamic next,
+    @JsonKey(name: "previous") dynamic previous,
+    @JsonKey(name: "results") List<UpComingPaymentsList> results,
   });
-
-  $CustomerDetailsCopyWith<$Res> get customerDetails;
-  $PlanDetailsCopyWith<$Res> get planDetails;
 }
 
 /// @nodoc
@@ -76,62 +70,36 @@ class _$UpComingPaymentsCopyWithImpl<$Res, $Val extends UpComingPayments>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? customerDetails = null,
-    Object? planDetails = null,
-    Object? endDate = null,
-    Object? daysUntilExpire = null,
+    Object? count = null,
+    Object? next = freezed,
+    Object? previous = freezed,
+    Object? results = null,
   }) {
     return _then(
       _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
+            count:
+                null == count
+                    ? _value.count
+                    : count // ignore: cast_nullable_to_non_nullable
                         as int,
-            customerDetails:
-                null == customerDetails
-                    ? _value.customerDetails
-                    : customerDetails // ignore: cast_nullable_to_non_nullable
-                        as CustomerDetails,
-            planDetails:
-                null == planDetails
-                    ? _value.planDetails
-                    : planDetails // ignore: cast_nullable_to_non_nullable
-                        as PlanDetails,
-            endDate:
-                null == endDate
-                    ? _value.endDate
-                    : endDate // ignore: cast_nullable_to_non_nullable
-                        as DateTime,
-            daysUntilExpire:
-                null == daysUntilExpire
-                    ? _value.daysUntilExpire
-                    : daysUntilExpire // ignore: cast_nullable_to_non_nullable
-                        as int,
+            next:
+                freezed == next
+                    ? _value.next
+                    : next // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            previous:
+                freezed == previous
+                    ? _value.previous
+                    : previous // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            results:
+                null == results
+                    ? _value.results
+                    : results // ignore: cast_nullable_to_non_nullable
+                        as List<UpComingPaymentsList>,
           )
           as $Val,
     );
-  }
-
-  /// Create a copy of UpComingPayments
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $CustomerDetailsCopyWith<$Res> get customerDetails {
-    return $CustomerDetailsCopyWith<$Res>(_value.customerDetails, (value) {
-      return _then(_value.copyWith(customerDetails: value) as $Val);
-    });
-  }
-
-  /// Create a copy of UpComingPayments
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $PlanDetailsCopyWith<$Res> get planDetails {
-    return $PlanDetailsCopyWith<$Res>(_value.planDetails, (value) {
-      return _then(_value.copyWith(planDetails: value) as $Val);
-    });
   }
 }
 
@@ -145,17 +113,11 @@ abstract class _$$UpComingPaymentsImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    @JsonKey(name: "id") int id,
-    @JsonKey(name: "customer_details") CustomerDetails customerDetails,
-    @JsonKey(name: "plan_details") PlanDetails planDetails,
-    @JsonKey(name: "end_date") DateTime endDate,
-    @JsonKey(name: "days_until_expire") int daysUntilExpire,
+    @JsonKey(name: "count") int count,
+    @JsonKey(name: "next") dynamic next,
+    @JsonKey(name: "previous") dynamic previous,
+    @JsonKey(name: "results") List<UpComingPaymentsList> results,
   });
-
-  @override
-  $CustomerDetailsCopyWith<$Res> get customerDetails;
-  @override
-  $PlanDetailsCopyWith<$Res> get planDetails;
 }
 
 /// @nodoc
@@ -172,39 +134,33 @@ class __$$UpComingPaymentsImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? customerDetails = null,
-    Object? planDetails = null,
-    Object? endDate = null,
-    Object? daysUntilExpire = null,
+    Object? count = null,
+    Object? next = freezed,
+    Object? previous = freezed,
+    Object? results = null,
   }) {
     return _then(
       _$UpComingPaymentsImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
+        count:
+            null == count
+                ? _value.count
+                : count // ignore: cast_nullable_to_non_nullable
                     as int,
-        customerDetails:
-            null == customerDetails
-                ? _value.customerDetails
-                : customerDetails // ignore: cast_nullable_to_non_nullable
-                    as CustomerDetails,
-        planDetails:
-            null == planDetails
-                ? _value.planDetails
-                : planDetails // ignore: cast_nullable_to_non_nullable
-                    as PlanDetails,
-        endDate:
-            null == endDate
-                ? _value.endDate
-                : endDate // ignore: cast_nullable_to_non_nullable
-                    as DateTime,
-        daysUntilExpire:
-            null == daysUntilExpire
-                ? _value.daysUntilExpire
-                : daysUntilExpire // ignore: cast_nullable_to_non_nullable
-                    as int,
+        next:
+            freezed == next
+                ? _value.next
+                : next // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        previous:
+            freezed == previous
+                ? _value.previous
+                : previous // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        results:
+            null == results
+                ? _value._results
+                : results // ignore: cast_nullable_to_non_nullable
+                    as List<UpComingPaymentsList>,
       ),
     );
   }
@@ -214,35 +170,36 @@ class __$$UpComingPaymentsImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UpComingPaymentsImpl implements _UpComingPayments {
   const _$UpComingPaymentsImpl({
-    @JsonKey(name: "id") required this.id,
-    @JsonKey(name: "customer_details") required this.customerDetails,
-    @JsonKey(name: "plan_details") required this.planDetails,
-    @JsonKey(name: "end_date") required this.endDate,
-    @JsonKey(name: "days_until_expire") required this.daysUntilExpire,
-  });
+    @JsonKey(name: "count") required this.count,
+    @JsonKey(name: "next") this.next,
+    @JsonKey(name: "previous") this.previous,
+    @JsonKey(name: "results") required final List<UpComingPaymentsList> results,
+  }) : _results = results;
 
   factory _$UpComingPaymentsImpl.fromJson(Map<String, dynamic> json) =>
       _$$UpComingPaymentsImplFromJson(json);
 
   @override
-  @JsonKey(name: "id")
-  final int id;
+  @JsonKey(name: "count")
+  final int count;
   @override
-  @JsonKey(name: "customer_details")
-  final CustomerDetails customerDetails;
+  @JsonKey(name: "next")
+  final dynamic next;
   @override
-  @JsonKey(name: "plan_details")
-  final PlanDetails planDetails;
+  @JsonKey(name: "previous")
+  final dynamic previous;
+  final List<UpComingPaymentsList> _results;
   @override
-  @JsonKey(name: "end_date")
-  final DateTime endDate;
-  @override
-  @JsonKey(name: "days_until_expire")
-  final int daysUntilExpire;
+  @JsonKey(name: "results")
+  List<UpComingPaymentsList> get results {
+    if (_results is EqualUnmodifiableListView) return _results;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_results);
+  }
 
   @override
   String toString() {
-    return 'UpComingPayments(id: $id, customerDetails: $customerDetails, planDetails: $planDetails, endDate: $endDate, daysUntilExpire: $daysUntilExpire)';
+    return 'UpComingPayments(count: $count, next: $next, previous: $previous, results: $results)';
   }
 
   @override
@@ -250,25 +207,20 @@ class _$UpComingPaymentsImpl implements _UpComingPayments {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$UpComingPaymentsImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.customerDetails, customerDetails) ||
-                other.customerDetails == customerDetails) &&
-            (identical(other.planDetails, planDetails) ||
-                other.planDetails == planDetails) &&
-            (identical(other.endDate, endDate) || other.endDate == endDate) &&
-            (identical(other.daysUntilExpire, daysUntilExpire) ||
-                other.daysUntilExpire == daysUntilExpire));
+            (identical(other.count, count) || other.count == count) &&
+            const DeepCollectionEquality().equals(other.next, next) &&
+            const DeepCollectionEquality().equals(other.previous, previous) &&
+            const DeepCollectionEquality().equals(other._results, _results));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    id,
-    customerDetails,
-    planDetails,
-    endDate,
-    daysUntilExpire,
+    count,
+    const DeepCollectionEquality().hash(next),
+    const DeepCollectionEquality().hash(previous),
+    const DeepCollectionEquality().hash(_results),
   );
 
   /// Create a copy of UpComingPayments
@@ -290,32 +242,27 @@ class _$UpComingPaymentsImpl implements _UpComingPayments {
 
 abstract class _UpComingPayments implements UpComingPayments {
   const factory _UpComingPayments({
-    @JsonKey(name: "id") required final int id,
-    @JsonKey(name: "customer_details")
-    required final CustomerDetails customerDetails,
-    @JsonKey(name: "plan_details") required final PlanDetails planDetails,
-    @JsonKey(name: "end_date") required final DateTime endDate,
-    @JsonKey(name: "days_until_expire") required final int daysUntilExpire,
+    @JsonKey(name: "count") required final int count,
+    @JsonKey(name: "next") final dynamic next,
+    @JsonKey(name: "previous") final dynamic previous,
+    @JsonKey(name: "results") required final List<UpComingPaymentsList> results,
   }) = _$UpComingPaymentsImpl;
 
   factory _UpComingPayments.fromJson(Map<String, dynamic> json) =
       _$UpComingPaymentsImpl.fromJson;
 
   @override
-  @JsonKey(name: "id")
-  int get id;
+  @JsonKey(name: "count")
+  int get count;
   @override
-  @JsonKey(name: "customer_details")
-  CustomerDetails get customerDetails;
+  @JsonKey(name: "next")
+  dynamic get next;
   @override
-  @JsonKey(name: "plan_details")
-  PlanDetails get planDetails;
+  @JsonKey(name: "previous")
+  dynamic get previous;
   @override
-  @JsonKey(name: "end_date")
-  DateTime get endDate;
-  @override
-  @JsonKey(name: "days_until_expire")
-  int get daysUntilExpire;
+  @JsonKey(name: "results")
+  List<UpComingPaymentsList> get results;
 
   /// Create a copy of UpComingPayments
   /// with the given fields replaced by the non-null parameter values.
@@ -325,20 +272,293 @@ abstract class _UpComingPayments implements UpComingPayments {
       throw _privateConstructorUsedError;
 }
 
+UpComingPaymentsList _$UpComingPaymentsListFromJson(Map<String, dynamic> json) {
+  return _UpComingPaymentsList.fromJson(json);
+}
+
+/// @nodoc
+mixin _$UpComingPaymentsList {
+  @JsonKey(name: "id")
+  int get id => throw _privateConstructorUsedError;
+  @JsonKey(name: "customer_details")
+  CustomerDetails get customerDetails => throw _privateConstructorUsedError;
+  @JsonKey(name: "end_date")
+  DateTime get endDate => throw _privateConstructorUsedError;
+  @JsonKey(name: "days_until_expire")
+  int get daysUntilExpire => throw _privateConstructorUsedError;
+
+  /// Serializes this UpComingPaymentsList to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of UpComingPaymentsList
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $UpComingPaymentsListCopyWith<UpComingPaymentsList> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $UpComingPaymentsListCopyWith<$Res> {
+  factory $UpComingPaymentsListCopyWith(
+    UpComingPaymentsList value,
+    $Res Function(UpComingPaymentsList) then,
+  ) = _$UpComingPaymentsListCopyWithImpl<$Res, UpComingPaymentsList>;
+  @useResult
+  $Res call({
+    @JsonKey(name: "id") int id,
+    @JsonKey(name: "customer_details") CustomerDetails customerDetails,
+    @JsonKey(name: "end_date") DateTime endDate,
+    @JsonKey(name: "days_until_expire") int daysUntilExpire,
+  });
+
+  $CustomerDetailsCopyWith<$Res> get customerDetails;
+}
+
+/// @nodoc
+class _$UpComingPaymentsListCopyWithImpl<
+  $Res,
+  $Val extends UpComingPaymentsList
+>
+    implements $UpComingPaymentsListCopyWith<$Res> {
+  _$UpComingPaymentsListCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of UpComingPaymentsList
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? customerDetails = null,
+    Object? endDate = null,
+    Object? daysUntilExpire = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            id:
+                null == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int,
+            customerDetails:
+                null == customerDetails
+                    ? _value.customerDetails
+                    : customerDetails // ignore: cast_nullable_to_non_nullable
+                        as CustomerDetails,
+            endDate:
+                null == endDate
+                    ? _value.endDate
+                    : endDate // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+            daysUntilExpire:
+                null == daysUntilExpire
+                    ? _value.daysUntilExpire
+                    : daysUntilExpire // ignore: cast_nullable_to_non_nullable
+                        as int,
+          )
+          as $Val,
+    );
+  }
+
+  /// Create a copy of UpComingPaymentsList
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $CustomerDetailsCopyWith<$Res> get customerDetails {
+    return $CustomerDetailsCopyWith<$Res>(_value.customerDetails, (value) {
+      return _then(_value.copyWith(customerDetails: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$UpComingPaymentsListImplCopyWith<$Res>
+    implements $UpComingPaymentsListCopyWith<$Res> {
+  factory _$$UpComingPaymentsListImplCopyWith(
+    _$UpComingPaymentsListImpl value,
+    $Res Function(_$UpComingPaymentsListImpl) then,
+  ) = __$$UpComingPaymentsListImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(name: "id") int id,
+    @JsonKey(name: "customer_details") CustomerDetails customerDetails,
+    @JsonKey(name: "end_date") DateTime endDate,
+    @JsonKey(name: "days_until_expire") int daysUntilExpire,
+  });
+
+  @override
+  $CustomerDetailsCopyWith<$Res> get customerDetails;
+}
+
+/// @nodoc
+class __$$UpComingPaymentsListImplCopyWithImpl<$Res>
+    extends _$UpComingPaymentsListCopyWithImpl<$Res, _$UpComingPaymentsListImpl>
+    implements _$$UpComingPaymentsListImplCopyWith<$Res> {
+  __$$UpComingPaymentsListImplCopyWithImpl(
+    _$UpComingPaymentsListImpl _value,
+    $Res Function(_$UpComingPaymentsListImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of UpComingPaymentsList
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? customerDetails = null,
+    Object? endDate = null,
+    Object? daysUntilExpire = null,
+  }) {
+    return _then(
+      _$UpComingPaymentsListImpl(
+        id:
+            null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int,
+        customerDetails:
+            null == customerDetails
+                ? _value.customerDetails
+                : customerDetails // ignore: cast_nullable_to_non_nullable
+                    as CustomerDetails,
+        endDate:
+            null == endDate
+                ? _value.endDate
+                : endDate // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+        daysUntilExpire:
+            null == daysUntilExpire
+                ? _value.daysUntilExpire
+                : daysUntilExpire // ignore: cast_nullable_to_non_nullable
+                    as int,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$UpComingPaymentsListImpl implements _UpComingPaymentsList {
+  const _$UpComingPaymentsListImpl({
+    @JsonKey(name: "id") required this.id,
+    @JsonKey(name: "customer_details") required this.customerDetails,
+    @JsonKey(name: "end_date") required this.endDate,
+    @JsonKey(name: "days_until_expire") required this.daysUntilExpire,
+  });
+
+  factory _$UpComingPaymentsListImpl.fromJson(Map<String, dynamic> json) =>
+      _$$UpComingPaymentsListImplFromJson(json);
+
+  @override
+  @JsonKey(name: "id")
+  final int id;
+  @override
+  @JsonKey(name: "customer_details")
+  final CustomerDetails customerDetails;
+  @override
+  @JsonKey(name: "end_date")
+  final DateTime endDate;
+  @override
+  @JsonKey(name: "days_until_expire")
+  final int daysUntilExpire;
+
+  @override
+  String toString() {
+    return 'UpComingPaymentsList(id: $id, customerDetails: $customerDetails, endDate: $endDate, daysUntilExpire: $daysUntilExpire)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$UpComingPaymentsListImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.customerDetails, customerDetails) ||
+                other.customerDetails == customerDetails) &&
+            (identical(other.endDate, endDate) || other.endDate == endDate) &&
+            (identical(other.daysUntilExpire, daysUntilExpire) ||
+                other.daysUntilExpire == daysUntilExpire));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, id, customerDetails, endDate, daysUntilExpire);
+
+  /// Create a copy of UpComingPaymentsList
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$UpComingPaymentsListImplCopyWith<_$UpComingPaymentsListImpl>
+  get copyWith =>
+      __$$UpComingPaymentsListImplCopyWithImpl<_$UpComingPaymentsListImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$UpComingPaymentsListImplToJson(this);
+  }
+}
+
+abstract class _UpComingPaymentsList implements UpComingPaymentsList {
+  const factory _UpComingPaymentsList({
+    @JsonKey(name: "id") required final int id,
+    @JsonKey(name: "customer_details")
+    required final CustomerDetails customerDetails,
+    @JsonKey(name: "end_date") required final DateTime endDate,
+    @JsonKey(name: "days_until_expire") required final int daysUntilExpire,
+  }) = _$UpComingPaymentsListImpl;
+
+  factory _UpComingPaymentsList.fromJson(Map<String, dynamic> json) =
+      _$UpComingPaymentsListImpl.fromJson;
+
+  @override
+  @JsonKey(name: "id")
+  int get id;
+  @override
+  @JsonKey(name: "customer_details")
+  CustomerDetails get customerDetails;
+  @override
+  @JsonKey(name: "end_date")
+  DateTime get endDate;
+  @override
+  @JsonKey(name: "days_until_expire")
+  int get daysUntilExpire;
+
+  /// Create a copy of UpComingPaymentsList
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$UpComingPaymentsListImplCopyWith<_$UpComingPaymentsListImpl>
+  get copyWith => throw _privateConstructorUsedError;
+}
+
 CustomerDetails _$CustomerDetailsFromJson(Map<String, dynamic> json) {
   return _CustomerDetails.fromJson(json);
 }
 
 /// @nodoc
 mixin _$CustomerDetails {
-  @JsonKey(name: "full_name")
-  String get fullName => throw _privateConstructorUsedError;
-  @JsonKey(name: "email")
-  String get email => throw _privateConstructorUsedError;
+  @JsonKey(name: "id")
+  int get id => throw _privateConstructorUsedError;
+  @JsonKey(name: "name")
+  String get name => throw _privateConstructorUsedError;
   @JsonKey(name: "mobile_number")
   String get mobileNumber => throw _privateConstructorUsedError;
-  @JsonKey(name: "image")
-  String? get image => throw _privateConstructorUsedError;
+  @JsonKey(name: "profile_picture")
+  String? get profilePicture => throw _privateConstructorUsedError;
+  @JsonKey(name: "joined_date")
+  String get joinedDate => throw _privateConstructorUsedError;
+  @JsonKey(name: "active_plan")
+  ActivePlans get activePlans => throw _privateConstructorUsedError;
 
   /// Serializes this CustomerDetails to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -358,11 +578,15 @@ abstract class $CustomerDetailsCopyWith<$Res> {
   ) = _$CustomerDetailsCopyWithImpl<$Res, CustomerDetails>;
   @useResult
   $Res call({
-    @JsonKey(name: "full_name") String fullName,
-    @JsonKey(name: "email") String email,
+    @JsonKey(name: "id") int id,
+    @JsonKey(name: "name") String name,
     @JsonKey(name: "mobile_number") String mobileNumber,
-    @JsonKey(name: "image") String? image,
+    @JsonKey(name: "profile_picture") String? profilePicture,
+    @JsonKey(name: "joined_date") String joinedDate,
+    @JsonKey(name: "active_plan") ActivePlans activePlans,
   });
+
+  $ActivePlansCopyWith<$Res> get activePlans;
 }
 
 /// @nodoc
@@ -380,36 +604,58 @@ class _$CustomerDetailsCopyWithImpl<$Res, $Val extends CustomerDetails>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? fullName = null,
-    Object? email = null,
+    Object? id = null,
+    Object? name = null,
     Object? mobileNumber = null,
-    Object? image = freezed,
+    Object? profilePicture = freezed,
+    Object? joinedDate = null,
+    Object? activePlans = null,
   }) {
     return _then(
       _value.copyWith(
-            fullName:
-                null == fullName
-                    ? _value.fullName
-                    : fullName // ignore: cast_nullable_to_non_nullable
-                        as String,
-            email:
-                null == email
-                    ? _value.email
-                    : email // ignore: cast_nullable_to_non_nullable
+            id:
+                null == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int,
+            name:
+                null == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
                         as String,
             mobileNumber:
                 null == mobileNumber
                     ? _value.mobileNumber
                     : mobileNumber // ignore: cast_nullable_to_non_nullable
                         as String,
-            image:
-                freezed == image
-                    ? _value.image
-                    : image // ignore: cast_nullable_to_non_nullable
+            profilePicture:
+                freezed == profilePicture
+                    ? _value.profilePicture
+                    : profilePicture // ignore: cast_nullable_to_non_nullable
                         as String?,
+            joinedDate:
+                null == joinedDate
+                    ? _value.joinedDate
+                    : joinedDate // ignore: cast_nullable_to_non_nullable
+                        as String,
+            activePlans:
+                null == activePlans
+                    ? _value.activePlans
+                    : activePlans // ignore: cast_nullable_to_non_nullable
+                        as ActivePlans,
           )
           as $Val,
     );
+  }
+
+  /// Create a copy of CustomerDetails
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ActivePlansCopyWith<$Res> get activePlans {
+    return $ActivePlansCopyWith<$Res>(_value.activePlans, (value) {
+      return _then(_value.copyWith(activePlans: value) as $Val);
+    });
   }
 }
 
@@ -423,11 +669,16 @@ abstract class _$$CustomerDetailsImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    @JsonKey(name: "full_name") String fullName,
-    @JsonKey(name: "email") String email,
+    @JsonKey(name: "id") int id,
+    @JsonKey(name: "name") String name,
     @JsonKey(name: "mobile_number") String mobileNumber,
-    @JsonKey(name: "image") String? image,
+    @JsonKey(name: "profile_picture") String? profilePicture,
+    @JsonKey(name: "joined_date") String joinedDate,
+    @JsonKey(name: "active_plan") ActivePlans activePlans,
   });
+
+  @override
+  $ActivePlansCopyWith<$Res> get activePlans;
 }
 
 /// @nodoc
@@ -444,33 +695,45 @@ class __$$CustomerDetailsImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? fullName = null,
-    Object? email = null,
+    Object? id = null,
+    Object? name = null,
     Object? mobileNumber = null,
-    Object? image = freezed,
+    Object? profilePicture = freezed,
+    Object? joinedDate = null,
+    Object? activePlans = null,
   }) {
     return _then(
       _$CustomerDetailsImpl(
-        fullName:
-            null == fullName
-                ? _value.fullName
-                : fullName // ignore: cast_nullable_to_non_nullable
-                    as String,
-        email:
-            null == email
-                ? _value.email
-                : email // ignore: cast_nullable_to_non_nullable
+        id:
+            null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int,
+        name:
+            null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
                     as String,
         mobileNumber:
             null == mobileNumber
                 ? _value.mobileNumber
                 : mobileNumber // ignore: cast_nullable_to_non_nullable
                     as String,
-        image:
-            freezed == image
-                ? _value.image
-                : image // ignore: cast_nullable_to_non_nullable
+        profilePicture:
+            freezed == profilePicture
+                ? _value.profilePicture
+                : profilePicture // ignore: cast_nullable_to_non_nullable
                     as String?,
+        joinedDate:
+            null == joinedDate
+                ? _value.joinedDate
+                : joinedDate // ignore: cast_nullable_to_non_nullable
+                    as String,
+        activePlans:
+            null == activePlans
+                ? _value.activePlans
+                : activePlans // ignore: cast_nullable_to_non_nullable
+                    as ActivePlans,
       ),
     );
   }
@@ -480,31 +743,39 @@ class __$$CustomerDetailsImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$CustomerDetailsImpl implements _CustomerDetails {
   const _$CustomerDetailsImpl({
-    @JsonKey(name: "full_name") required this.fullName,
-    @JsonKey(name: "email") required this.email,
+    @JsonKey(name: "id") required this.id,
+    @JsonKey(name: "name") required this.name,
     @JsonKey(name: "mobile_number") required this.mobileNumber,
-    @JsonKey(name: "image") this.image,
+    @JsonKey(name: "profile_picture") this.profilePicture,
+    @JsonKey(name: "joined_date") required this.joinedDate,
+    @JsonKey(name: "active_plan") required this.activePlans,
   });
 
   factory _$CustomerDetailsImpl.fromJson(Map<String, dynamic> json) =>
       _$$CustomerDetailsImplFromJson(json);
 
   @override
-  @JsonKey(name: "full_name")
-  final String fullName;
+  @JsonKey(name: "id")
+  final int id;
   @override
-  @JsonKey(name: "email")
-  final String email;
+  @JsonKey(name: "name")
+  final String name;
   @override
   @JsonKey(name: "mobile_number")
   final String mobileNumber;
   @override
-  @JsonKey(name: "image")
-  final String? image;
+  @JsonKey(name: "profile_picture")
+  final String? profilePicture;
+  @override
+  @JsonKey(name: "joined_date")
+  final String joinedDate;
+  @override
+  @JsonKey(name: "active_plan")
+  final ActivePlans activePlans;
 
   @override
   String toString() {
-    return 'CustomerDetails(fullName: $fullName, email: $email, mobileNumber: $mobileNumber, image: $image)';
+    return 'CustomerDetails(id: $id, name: $name, mobileNumber: $mobileNumber, profilePicture: $profilePicture, joinedDate: $joinedDate, activePlans: $activePlans)';
   }
 
   @override
@@ -512,18 +783,29 @@ class _$CustomerDetailsImpl implements _CustomerDetails {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$CustomerDetailsImpl &&
-            (identical(other.fullName, fullName) ||
-                other.fullName == fullName) &&
-            (identical(other.email, email) || other.email == email) &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name) &&
             (identical(other.mobileNumber, mobileNumber) ||
                 other.mobileNumber == mobileNumber) &&
-            (identical(other.image, image) || other.image == image));
+            (identical(other.profilePicture, profilePicture) ||
+                other.profilePicture == profilePicture) &&
+            (identical(other.joinedDate, joinedDate) ||
+                other.joinedDate == joinedDate) &&
+            (identical(other.activePlans, activePlans) ||
+                other.activePlans == activePlans));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, fullName, email, mobileNumber, image);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    name,
+    mobileNumber,
+    profilePicture,
+    joinedDate,
+    activePlans,
+  );
 
   /// Create a copy of CustomerDetails
   /// with the given fields replaced by the non-null parameter values.
@@ -544,27 +826,35 @@ class _$CustomerDetailsImpl implements _CustomerDetails {
 
 abstract class _CustomerDetails implements CustomerDetails {
   const factory _CustomerDetails({
-    @JsonKey(name: "full_name") required final String fullName,
-    @JsonKey(name: "email") required final String email,
+    @JsonKey(name: "id") required final int id,
+    @JsonKey(name: "name") required final String name,
     @JsonKey(name: "mobile_number") required final String mobileNumber,
-    @JsonKey(name: "image") final String? image,
+    @JsonKey(name: "profile_picture") final String? profilePicture,
+    @JsonKey(name: "joined_date") required final String joinedDate,
+    @JsonKey(name: "active_plan") required final ActivePlans activePlans,
   }) = _$CustomerDetailsImpl;
 
   factory _CustomerDetails.fromJson(Map<String, dynamic> json) =
       _$CustomerDetailsImpl.fromJson;
 
   @override
-  @JsonKey(name: "full_name")
-  String get fullName;
+  @JsonKey(name: "id")
+  int get id;
   @override
-  @JsonKey(name: "email")
-  String get email;
+  @JsonKey(name: "name")
+  String get name;
   @override
   @JsonKey(name: "mobile_number")
   String get mobileNumber;
   @override
-  @JsonKey(name: "image")
-  String? get image;
+  @JsonKey(name: "profile_picture")
+  String? get profilePicture;
+  @override
+  @JsonKey(name: "joined_date")
+  String get joinedDate;
+  @override
+  @JsonKey(name: "active_plan")
+  ActivePlans get activePlans;
 
   /// Create a copy of CustomerDetails
   /// with the given fields replaced by the non-null parameter values.
@@ -574,66 +864,96 @@ abstract class _CustomerDetails implements CustomerDetails {
       throw _privateConstructorUsedError;
 }
 
-PlanDetails _$PlanDetailsFromJson(Map<String, dynamic> json) {
-  return _PlanDetails.fromJson(json);
+ActivePlans _$ActivePlansFromJson(Map<String, dynamic> json) {
+  return _ActivePlans.fromJson(json);
 }
 
 /// @nodoc
-mixin _$PlanDetails {
-  @JsonKey(name: "name")
-  String get name => throw _privateConstructorUsedError;
-  @JsonKey(name: "package_type")
-  String get packageType => throw _privateConstructorUsedError;
+mixin _$ActivePlans {
+  @JsonKey(name: "id")
+  int get id => throw _privateConstructorUsedError;
+  @JsonKey(name: "plan_name")
+  String get planName => throw _privateConstructorUsedError;
+  @JsonKey(name: "start_date")
+  DateTime get startDate => throw _privateConstructorUsedError;
+  @JsonKey(name: "end_date")
+  DateTime get endDate => throw _privateConstructorUsedError;
+  @JsonKey(name: "status")
+  String get status => throw _privateConstructorUsedError;
 
-  /// Serializes this PlanDetails to a JSON map.
+  /// Serializes this ActivePlans to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of PlanDetails
+  /// Create a copy of ActivePlans
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $PlanDetailsCopyWith<PlanDetails> get copyWith =>
+  $ActivePlansCopyWith<ActivePlans> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $PlanDetailsCopyWith<$Res> {
-  factory $PlanDetailsCopyWith(
-    PlanDetails value,
-    $Res Function(PlanDetails) then,
-  ) = _$PlanDetailsCopyWithImpl<$Res, PlanDetails>;
+abstract class $ActivePlansCopyWith<$Res> {
+  factory $ActivePlansCopyWith(
+    ActivePlans value,
+    $Res Function(ActivePlans) then,
+  ) = _$ActivePlansCopyWithImpl<$Res, ActivePlans>;
   @useResult
   $Res call({
-    @JsonKey(name: "name") String name,
-    @JsonKey(name: "package_type") String packageType,
+    @JsonKey(name: "id") int id,
+    @JsonKey(name: "plan_name") String planName,
+    @JsonKey(name: "start_date") DateTime startDate,
+    @JsonKey(name: "end_date") DateTime endDate,
+    @JsonKey(name: "status") String status,
   });
 }
 
 /// @nodoc
-class _$PlanDetailsCopyWithImpl<$Res, $Val extends PlanDetails>
-    implements $PlanDetailsCopyWith<$Res> {
-  _$PlanDetailsCopyWithImpl(this._value, this._then);
+class _$ActivePlansCopyWithImpl<$Res, $Val extends ActivePlans>
+    implements $ActivePlansCopyWith<$Res> {
+  _$ActivePlansCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of PlanDetails
+  /// Create a copy of ActivePlans
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? name = null, Object? packageType = null}) {
+  $Res call({
+    Object? id = null,
+    Object? planName = null,
+    Object? startDate = null,
+    Object? endDate = null,
+    Object? status = null,
+  }) {
     return _then(
       _value.copyWith(
-            name:
-                null == name
-                    ? _value.name
-                    : name // ignore: cast_nullable_to_non_nullable
+            id:
+                null == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int,
+            planName:
+                null == planName
+                    ? _value.planName
+                    : planName // ignore: cast_nullable_to_non_nullable
                         as String,
-            packageType:
-                null == packageType
-                    ? _value.packageType
-                    : packageType // ignore: cast_nullable_to_non_nullable
+            startDate:
+                null == startDate
+                    ? _value.startDate
+                    : startDate // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+            endDate:
+                null == endDate
+                    ? _value.endDate
+                    : endDate // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+            status:
+                null == status
+                    ? _value.status
+                    : status // ignore: cast_nullable_to_non_nullable
                         as String,
           )
           as $Val,
@@ -642,45 +962,69 @@ class _$PlanDetailsCopyWithImpl<$Res, $Val extends PlanDetails>
 }
 
 /// @nodoc
-abstract class _$$PlanDetailsImplCopyWith<$Res>
-    implements $PlanDetailsCopyWith<$Res> {
-  factory _$$PlanDetailsImplCopyWith(
-    _$PlanDetailsImpl value,
-    $Res Function(_$PlanDetailsImpl) then,
-  ) = __$$PlanDetailsImplCopyWithImpl<$Res>;
+abstract class _$$ActivePlansImplCopyWith<$Res>
+    implements $ActivePlansCopyWith<$Res> {
+  factory _$$ActivePlansImplCopyWith(
+    _$ActivePlansImpl value,
+    $Res Function(_$ActivePlansImpl) then,
+  ) = __$$ActivePlansImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
-    @JsonKey(name: "name") String name,
-    @JsonKey(name: "package_type") String packageType,
+    @JsonKey(name: "id") int id,
+    @JsonKey(name: "plan_name") String planName,
+    @JsonKey(name: "start_date") DateTime startDate,
+    @JsonKey(name: "end_date") DateTime endDate,
+    @JsonKey(name: "status") String status,
   });
 }
 
 /// @nodoc
-class __$$PlanDetailsImplCopyWithImpl<$Res>
-    extends _$PlanDetailsCopyWithImpl<$Res, _$PlanDetailsImpl>
-    implements _$$PlanDetailsImplCopyWith<$Res> {
-  __$$PlanDetailsImplCopyWithImpl(
-    _$PlanDetailsImpl _value,
-    $Res Function(_$PlanDetailsImpl) _then,
+class __$$ActivePlansImplCopyWithImpl<$Res>
+    extends _$ActivePlansCopyWithImpl<$Res, _$ActivePlansImpl>
+    implements _$$ActivePlansImplCopyWith<$Res> {
+  __$$ActivePlansImplCopyWithImpl(
+    _$ActivePlansImpl _value,
+    $Res Function(_$ActivePlansImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of PlanDetails
+  /// Create a copy of ActivePlans
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? name = null, Object? packageType = null}) {
+  $Res call({
+    Object? id = null,
+    Object? planName = null,
+    Object? startDate = null,
+    Object? endDate = null,
+    Object? status = null,
+  }) {
     return _then(
-      _$PlanDetailsImpl(
-        name:
-            null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
+      _$ActivePlansImpl(
+        id:
+            null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int,
+        planName:
+            null == planName
+                ? _value.planName
+                : planName // ignore: cast_nullable_to_non_nullable
                     as String,
-        packageType:
-            null == packageType
-                ? _value.packageType
-                : packageType // ignore: cast_nullable_to_non_nullable
+        startDate:
+            null == startDate
+                ? _value.startDate
+                : startDate // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+        endDate:
+            null == endDate
+                ? _value.endDate
+                : endDate // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+        status:
+            null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
                     as String,
       ),
     );
@@ -689,75 +1033,104 @@ class __$$PlanDetailsImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PlanDetailsImpl implements _PlanDetails {
-  const _$PlanDetailsImpl({
-    @JsonKey(name: "name") required this.name,
-    @JsonKey(name: "package_type") required this.packageType,
+class _$ActivePlansImpl implements _ActivePlans {
+  const _$ActivePlansImpl({
+    @JsonKey(name: "id") required this.id,
+    @JsonKey(name: "plan_name") required this.planName,
+    @JsonKey(name: "start_date") required this.startDate,
+    @JsonKey(name: "end_date") required this.endDate,
+    @JsonKey(name: "status") required this.status,
   });
 
-  factory _$PlanDetailsImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PlanDetailsImplFromJson(json);
+  factory _$ActivePlansImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ActivePlansImplFromJson(json);
 
   @override
-  @JsonKey(name: "name")
-  final String name;
+  @JsonKey(name: "id")
+  final int id;
   @override
-  @JsonKey(name: "package_type")
-  final String packageType;
+  @JsonKey(name: "plan_name")
+  final String planName;
+  @override
+  @JsonKey(name: "start_date")
+  final DateTime startDate;
+  @override
+  @JsonKey(name: "end_date")
+  final DateTime endDate;
+  @override
+  @JsonKey(name: "status")
+  final String status;
 
   @override
   String toString() {
-    return 'PlanDetails(name: $name, packageType: $packageType)';
+    return 'ActivePlans(id: $id, planName: $planName, startDate: $startDate, endDate: $endDate, status: $status)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PlanDetailsImpl &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.packageType, packageType) ||
-                other.packageType == packageType));
+            other is _$ActivePlansImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.planName, planName) ||
+                other.planName == planName) &&
+            (identical(other.startDate, startDate) ||
+                other.startDate == startDate) &&
+            (identical(other.endDate, endDate) || other.endDate == endDate) &&
+            (identical(other.status, status) || other.status == status));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, name, packageType);
+  int get hashCode =>
+      Object.hash(runtimeType, id, planName, startDate, endDate, status);
 
-  /// Create a copy of PlanDetails
+  /// Create a copy of ActivePlans
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$PlanDetailsImplCopyWith<_$PlanDetailsImpl> get copyWith =>
-      __$$PlanDetailsImplCopyWithImpl<_$PlanDetailsImpl>(this, _$identity);
+  _$$ActivePlansImplCopyWith<_$ActivePlansImpl> get copyWith =>
+      __$$ActivePlansImplCopyWithImpl<_$ActivePlansImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PlanDetailsImplToJson(this);
+    return _$$ActivePlansImplToJson(this);
   }
 }
 
-abstract class _PlanDetails implements PlanDetails {
-  const factory _PlanDetails({
-    @JsonKey(name: "name") required final String name,
-    @JsonKey(name: "package_type") required final String packageType,
-  }) = _$PlanDetailsImpl;
+abstract class _ActivePlans implements ActivePlans {
+  const factory _ActivePlans({
+    @JsonKey(name: "id") required final int id,
+    @JsonKey(name: "plan_name") required final String planName,
+    @JsonKey(name: "start_date") required final DateTime startDate,
+    @JsonKey(name: "end_date") required final DateTime endDate,
+    @JsonKey(name: "status") required final String status,
+  }) = _$ActivePlansImpl;
 
-  factory _PlanDetails.fromJson(Map<String, dynamic> json) =
-      _$PlanDetailsImpl.fromJson;
+  factory _ActivePlans.fromJson(Map<String, dynamic> json) =
+      _$ActivePlansImpl.fromJson;
 
   @override
-  @JsonKey(name: "name")
-  String get name;
+  @JsonKey(name: "id")
+  int get id;
   @override
-  @JsonKey(name: "package_type")
-  String get packageType;
+  @JsonKey(name: "plan_name")
+  String get planName;
+  @override
+  @JsonKey(name: "start_date")
+  DateTime get startDate;
+  @override
+  @JsonKey(name: "end_date")
+  DateTime get endDate;
+  @override
+  @JsonKey(name: "status")
+  String get status;
 
-  /// Create a copy of PlanDetails
+  /// Create a copy of ActivePlans
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PlanDetailsImplCopyWith<_$PlanDetailsImpl> get copyWith =>
+  _$$ActivePlansImplCopyWith<_$ActivePlansImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

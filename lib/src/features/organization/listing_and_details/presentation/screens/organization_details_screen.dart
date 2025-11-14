@@ -152,7 +152,7 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                               ),
                             );
                           }),
-                          _buildProfileListItem('Services', () {
+                          _buildProfileListItem('Amenities', () {
                             context.push(
                               BlocProvider.value(
                                 value: _cubit,
@@ -176,7 +176,7 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                             context.push(
                               BlocProvider.value(
                                 value: _cubit,
-                                child:  BankListingViewScreen(
+                                child: BankListingViewScreen(
                                   orgDetails: orgDetails,
                                 ),
                               ),

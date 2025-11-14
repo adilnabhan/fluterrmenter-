@@ -63,22 +63,25 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
           ),
         );
       },
-      child: Scaffold(
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            AppBar(
-              toolbarHeight: context.height * .3,
-              title: SvgPicture.asset(
-                'assets/images/svg/vectors/logo.svg',
-                height: 40,
-                width: 40,
+      child: SafeArea(
+        top: false,
+        child: Scaffold(
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              AppBar(
+                toolbarHeight: context.height * .3,
+                title: SvgPicture.asset(
+                  'assets/images/svg/vectors/logo.svg',
+                  height: 40,
+                  width: 40,
+                ),
               ),
-            ),
-            Container(color: AppColors.dark.withAlpha(50)),
-          ],
+              Container(color: AppColors.dark.withAlpha(50)),
+            ],
+          ),
+          bottomSheet: _buildBottomSheet(),
         ),
-        bottomSheet: _buildBottomSheet(),
       ),
     );
   }

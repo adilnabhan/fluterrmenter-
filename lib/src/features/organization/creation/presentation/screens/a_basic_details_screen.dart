@@ -5,7 +5,10 @@ class CreateOrganizationBasicDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => OrganizationCreationCubit(), child: const _GymProfileCreationScreen());
+    return BlocProvider(
+      create: (context) => OrganizationCreationCubit(),
+      child: const _GymProfileCreationScreen(),
+    );
   }
 }
 
@@ -13,7 +16,8 @@ class _GymProfileCreationScreen extends StatefulWidget {
   const _GymProfileCreationScreen();
 
   @override
-  State<_GymProfileCreationScreen> createState() => _GymProfileCreationScreenState();
+  State<_GymProfileCreationScreen> createState() =>
+      _GymProfileCreationScreenState();
 }
 
 class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
@@ -47,7 +51,10 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
       decoration: InputDecoration(
         hintText: 'Enter your brand name',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
       ),
     );
     _brandCategory = FieldData<String>(
@@ -71,7 +78,10 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
       decoration: InputDecoration(
         hintText: 'Select your brand category',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
       ),
     );
     _brandDescription = FieldData(
@@ -94,7 +104,10 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
       decoration: InputDecoration(
         hintText: 'Highlight key features in a sentence or two',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
       ),
     );
     super.initState();
@@ -113,14 +126,26 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
   void _onContinue() {
     _formKey.currentState?.validate();
     final brandName = _brandName.controller?.text;
-    final brandCategory = _brandCategory.selectedValues?.value.map((e) => e.value).toList() ?? <String>[];
+    final brandCategory =
+        _brandCategory.selectedValues?.value.map((e) => e.value).toList() ??
+        <String>[];
     final brandDescription = _brandDescription.controller?.text;
-    final error = _gymCreationCubit.addBrandDetails(brandName: brandName, brandCategory: brandCategory, brandDescription: brandDescription, brandLogo: _selectedBrandLogo?.path);
+    final error = _gymCreationCubit.addBrandDetails(
+      brandName: brandName,
+      brandCategory: brandCategory,
+      brandDescription: brandDescription,
+      brandLogo: _selectedBrandLogo?.path,
+    );
     if (error != null) {
       Dialogs.showSnack(msg: error);
       return;
     } else {
-      context.push(BlocProvider.value(value: _gymCreationCubit, child: const CreateOrganizationLocationDetailsScreen()));
+      context.push(
+        BlocProvider.value(
+          value: _gymCreationCubit,
+          child: const CreateOrganizationLocationDetailsScreen(),
+        ),
+      );
     }
   }
 
@@ -146,7 +171,8 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
                 data: _brandCategory.copyWith(
                   onTap: () {
                     AddCategorySheet(
-                      selectedValues: _brandCategory.selectedValues?.value ?? [],
+                      selectedValues:
+                          _brandCategory.selectedValues?.value ?? [],
                       onSubmit: (values) {
                         _brandCategory.selectedValues?.value = [...values];
                       },

@@ -236,7 +236,7 @@ class _OrganizationListingAndDetailsScreenState
                             },
                           ),
                           (
-                            title: 'Upcoming Payments',
+                            title: 'Upcoming EMIs',
                             color: const Color(0xff486CC2),
                             count: orgHomeData.upcomingPaymentCount ?? 0,
                             onTap: () {
@@ -248,7 +248,7 @@ class _OrganizationListingAndDetailsScreenState
                                 );
                               } else {
                                 Dialogs.showSnack(
-                                  msg: 'Upcoming Payments not found',
+                                  msg: 'Upcoming EMIs not found',
                                 );
                               }
                             },

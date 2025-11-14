@@ -4,23 +4,46 @@ part 'create_account_state.dart';
 part 'create_account_cubit.freezed.dart';
 
 class CreateAccountCubit extends Cubit<CreateAccountState> {
-  CreateAccountCubit({required SentOtpEntity sentOtp}) : super(CreateAccountState(sentOtpEntity: sentOtp));
+  CreateAccountCubit({required SentOtpEntity sentOtp})
+    : super(CreateAccountState(sentOtpEntity: sentOtp));
 
-  Future<void> onboardUser({required String firstName, required String lastName, required String email}) async {
+  Future<void> onboardUser({
+    required String firstName,
+    required String lastName,
+    required String email,
+  }) async {
     if (state.onboardingUser?.isNone() ?? false) {
       return;
     }
     emit(state.copyWith(onboardingUser: none()));
     if (firstName.isEmpty) {
-      emit(state.copyWith(onboardingUser: some(left(const ApiException.notFound(msg: 'First name is required!')))));
+      emit(
+        state.copyWith(
+          onboardingUser: some(
+            left(const ApiException.notFound(msg: 'First name is required!')),
+          ),
+        ),
+      );
       return;
     }
     if (lastName.isEmpty) {
-      emit(state.copyWith(onboardingUser: some(left(const ApiException.notFound(msg: 'Last name is required!')))));
+      emit(
+        state.copyWith(
+          onboardingUser: some(
+            left(const ApiException.notFound(msg: 'Last name is required!')),
+          ),
+        ),
+      );
       return;
     }
     if (email.isEmpty) {
-      emit(state.copyWith(onboardingUser: some(left(const ApiException.notFound(msg: 'Email is required!')))));
+      emit(
+        state.copyWith(
+          onboardingUser: some(
+            left(const ApiException.notFound(msg: 'Email is required!')),
+          ),
+        ),
+      );
       return;
     }
     final result = await AuthRepository().onboarding(

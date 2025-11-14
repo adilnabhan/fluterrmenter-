@@ -184,7 +184,7 @@ final class MembershipRepository {
   //   }
   // }
 
-  Future<Either<ApiException, List<UpComingPayments>>> listExpiringMembership({
+  Future<Either<ApiException, UpComingPayments>> listExpiringMembership({
     required Map<String, dynamic> queryParameters,
   }) async {
     try {
@@ -196,19 +196,7 @@ final class MembershipRepository {
         ),
         onSuccess: (res) {
           final data = res.data;
-
-          if (data is List) {
-            final payments =
-                data
-                    .map(
-                      (e) =>
-                          UpComingPayments.fromJson(e as Map<String, dynamic>),
-                    )
-                    .toList();
-            return right(payments);
-          } else {
-            return left(const ApiException.unknown());
-          }
+          return right(UpComingPayments.fromJson(data as Map<String, dynamic>));
         },
       );
     } on ApiException catch (e) {

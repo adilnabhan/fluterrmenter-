@@ -26,6 +26,12 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
   bool _isEmi = false;
   int _calculatedMonths = 0;
 
+  // 🔹 Added variables for commission display
+  double _razorpayCommissionPercent = 4.0;
+  double _calculatedCommission = 0.0;
+  double _creditedAmount = 0.0;
+  String _commissionMessage = '';
+
   /// 🧩 Helper: builds month FieldData with existing controller
   FieldData<String> _buildMonthFieldWithController(
     TextEditingController controller, {
@@ -190,6 +196,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       }
     });
 
+    // ---------- Actual price field ----------------
     _actualPriceField = FieldData<String>(
       type: FieldType.word,
       textInputAction: TextInputAction.done,
@@ -200,6 +207,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       ],
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       controller: TextEditingController(
+        // set initial text from package (if any)
         text: widget.membershipPackage?.actualPrice ?? '',
       ),
       validator:
@@ -216,6 +224,15 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       ),
     );
 
+    // 1) Attach listener to controller (calls helper below)
+    _actualPriceField.controller!.addListener(_calculateCommission);
+
+    // 2) Trigger calculation once after first frame so initial value is processed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _calculateCommission();
+    });
+
+    // ---------------- Offer price + EMI init below (unchanged) ----------------
     _offerPriceField = FieldData<String>(
       type: FieldType.word,
       textInputAction: TextInputAction.done,
@@ -256,7 +273,17 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
         final priceController = TextEditingController(
           text: plan.price.toString(),
         );
+
+        // 🔥 FIX: Add listeners so UI updates when editing
+        monthController.addListener(() {
+          if (mounted) setState(() {});
+        });
+        priceController.addListener(() {
+          if (mounted) setState(() {});
+        });
+
         final monthField = _buildMonthFieldWithController(monthController);
+
         final priceField = FieldData<String>(
           type: FieldType.word,
           textInputAction: TextInputAction.done,
@@ -267,10 +294,8 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
             FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
           ],
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          validator:
-              (value) => value?.isEmpty ?? true ? 'Price is required!' : null,
-          onValueChanged: (p0) {},
-          onSubmitted: (value) {},
+          validator: (value) =>
+          value?.isEmpty ?? true ? 'Price is required!' : null,
           decoration: InputDecoration(
             hintText: 'Enter price',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
@@ -280,14 +305,40 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
             ),
           ),
         );
+
         _emiOptions.add((month: monthField, price: priceField));
       }
+
       _isEmi = true;
     }
   }
 
+  /// Helper that computes commission & credited amount and updates message
+  void _calculateCommission() {
+    final text = _actualPriceField.controller?.text.trim() ?? '';
+    final amount = double.tryParse(text) ?? 0.0;
+
+    if (!mounted) return;
+
+    setState(() {
+      _calculatedCommission = amount * (_razorpayCommissionPercent / 100);
+      _creditedAmount = amount - _calculatedCommission;
+
+      _commissionMessage =
+          amount > 0
+              ? 'After $_razorpayCommissionPercent% payment gateway charges (₹${_calculatedCommission.toStringAsFixed(2)}), '
+                  '₹${_creditedAmount.toStringAsFixed(2)} will be credited to your account.'
+              : '';
+    });
+  }
+
   @override
   void dispose() {
+    // Remove listener before disposing to avoid memory leaks
+    try {
+      _actualPriceField.controller?.removeListener(_calculateCommission);
+    } catch (_) {}
+
     _membershipNameField.controller?.dispose();
     _daysField.controller?.dispose();
     _actualPriceField.controller?.dispose();
@@ -341,7 +392,18 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
               _ShadowCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Field(data: _actualPriceField)],
+                  children: [
+                    Field(data: _actualPriceField),
+                    if (_commissionMessage.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _commissionMessage,
+                        style: AppStyles.text13Px.poppins.w400.copyWith(
+                          color: AppColors.error,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               const _Divider(),
@@ -400,27 +462,30 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                                   Expanded(child: Field(data: emi.month)),
                                   const SizedBox(width: 16),
                                   Expanded(child: Field(data: emi.price)),
-                                  IconButton.filled(
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: AppColors.lightPrimary,
-                                      foregroundColor: Colors.red,
-                                      shape: const CircleBorder(),
-                                    ),
-                                    icon: const Icon(
-                                      Icons.close,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        emi.month.controller?.dispose();
-                                        emi.price.controller?.dispose();
-                                        _emiOptions.removeAt(i);
-                                        if (_emiOptions.isEmpty) {
-                                          _isEmi = false;
-                                        }
-                                      });
-                                    },
-                                  ).pOnly(top: 24, left: 8),
+                                  if (isLast == true)
+                                    IconButton.filled(
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: AppColors.lightPrimary,
+                                        foregroundColor: Colors.red,
+                                        shape: const CircleBorder(),
+                                      ),
+                                      icon: const Icon(
+                                        Icons.close,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          emi.month.controller?.dispose();
+                                          emi.price.controller?.dispose();
+                                          _emiOptions.removeAt(i);
+                                          if (_emiOptions.isEmpty) {
+                                            _isEmi = false;
+                                          }
+                                        });
+                                      },
+                                    ).pOnly(top: 24, left: 8)
+                                  else
+                                    SizedBox(),
                                   if (showAdd)
                                     IconButton.filled(
                                       style: IconButton.styleFrom(
@@ -439,6 +504,14 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                                     ).pOnly(top: 24, left: 8),
                                 ],
                               ),
+                              if (emi.price.controller!.text.isNotEmpty)
+                                Text(
+                                  _emiCommissionMessage(
+                                    emi.price.controller!.text,
+                                  ),
+                                  style: AppStyles.text13Px.poppins.w400
+                                      .copyWith(color: AppColors.error),
+                                ),
                               Padding(
                                 padding: const EdgeInsets.only(top: 5),
                                 child: Text(
@@ -524,6 +597,19 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
     final price = double.tryParse(priceText) ?? 0.0;
     return month * price;
   }
+}
+
+String _emiCommissionMessage(String priceText) {
+  final price = double.tryParse(priceText.trim()) ?? 0.0;
+
+  if (price <= 0) return '';
+
+  final commission = price * (4.0 / 100);
+  final credited = price - commission;
+
+  return 'After ${4.0}% payment gateway charges '
+      '(₹${commission.toStringAsFixed(2)}), '
+      '₹${credited.toStringAsFixed(2)} will be credited to your account.';
 }
 
 class _Divider extends StatelessWidget {

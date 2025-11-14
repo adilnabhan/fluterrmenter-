@@ -1,13 +1,20 @@
 class GooglePlaceDetailsEntity {
-  GooglePlaceDetailsEntity({
-    this.htmlAttributions,
-    this.result,
-    this.status,
-  });
+  GooglePlaceDetailsEntity({this.htmlAttributions, this.result, this.status});
 
-  factory GooglePlaceDetailsEntity.fromJson(Map<String, dynamic> json) => GooglePlaceDetailsEntity(
-        htmlAttributions: json['html_attributions'] == null ? [] : List<dynamic>.from(json['html_attributions'] as Iterable<dynamic>),
-        result: json['result'] == null ? null : GoogleResultEntity.fromJson(json['result'] as Map<String, dynamic>),
+  factory GooglePlaceDetailsEntity.fromJson(Map<String, dynamic> json) =>
+      GooglePlaceDetailsEntity(
+        htmlAttributions:
+            json['html_attributions'] == null
+                ? []
+                : List<dynamic>.from(
+                  json['html_attributions'] as Iterable<dynamic>,
+                ),
+        result:
+            json['result'] == null
+                ? null
+                : GoogleResultEntity.fromJson(
+                  json['result'] as Map<String, dynamic>,
+                ),
         status: json['status'] as String?,
       );
   final List<dynamic>? htmlAttributions;
@@ -42,32 +49,66 @@ class GoogleResultEntity {
     this.wheelchairAccessibleEntrance,
   });
 
-  factory GoogleResultEntity.fromJson(Map<String, dynamic> json) => GoogleResultEntity(
-        addressComponents: json['address_components'] == null
-            ? []
-            : List<GoogleAddressComponentEntity>.from((json['address_components'] as Iterable<dynamic>).map((dynamic x) => GoogleAddressComponentEntity.fromJson(x as Map<String, dynamic>))),
+  factory GoogleResultEntity.fromJson(Map<String, dynamic> json) =>
+      GoogleResultEntity(
+        addressComponents:
+            json['address_components'] == null
+                ? []
+                : List<GoogleAddressComponentEntity>.from(
+                  (json['address_components'] as Iterable<dynamic>).map(
+                    (dynamic x) => GoogleAddressComponentEntity.fromJson(
+                      x as Map<String, dynamic>,
+                    ),
+                  ),
+                ),
         adrAddress: json['adr_address'] as String?,
         businessStatus: json['business_status'] as String?,
         formattedAddress: json['formatted_address'] as String?,
         formattedPhoneNumber: json['formatted_phone_number'] as String?,
-        geometry: json['geometry'] == null ? null : GoogleGeometryEntity.fromJson(json['geometry'] as Map<String, dynamic>),
+        geometry:
+            json['geometry'] == null
+                ? null
+                : GoogleGeometryEntity.fromJson(
+                  json['geometry'] as Map<String, dynamic>,
+                ),
         icon: json['icon'] as String?,
         iconBackgroundColor: json['icon_background_color'] as String?,
         iconMaskBaseUri: json['icon_mask_base_uri'] as String?,
         internationalPhoneNumber: json['international_phone_number'] as String?,
         name: json['name'] as String?,
-        photos: json['photos'] == null ? [] : List<Photo>.from((json['photos'] as List).map((x) => Photo.fromJson(x as Map<String, dynamic>))),
+        photos:
+            json['photos'] == null
+                ? []
+                : List<Photo>.from(
+                  (json['photos'] as List).map(
+                    (x) => Photo.fromJson(x as Map<String, dynamic>),
+                  ),
+                ),
         placeId: json['place_id'] as String?,
         rating: (json['rating'] as num?)?.toDouble(),
         reference: json['reference'] as String?,
-        reviews: json['reviews'] == null ? [] : List<GoogleReviewEntity>.from((json['reviews'] as List).map((x) => GoogleReviewEntity.fromJson(x as Map<String, dynamic>))),
-        types: json['types'] == null ? [] : List<String>.from((json['types'] as List).map((x) => x as String)),
+        reviews:
+            json['reviews'] == null
+                ? []
+                : List<GoogleReviewEntity>.from(
+                  (json['reviews'] as List).map(
+                    (x) =>
+                        GoogleReviewEntity.fromJson(x as Map<String, dynamic>),
+                  ),
+                ),
+        types:
+            json['types'] == null
+                ? []
+                : List<String>.from(
+                  (json['types'] as List).map((x) => x as String),
+                ),
         url: json['url'] as String?,
         userRatingsTotal: json['user_ratings_total'] as int?,
         utcOffset: json['utc_offset'] as int?,
         vicinity: json['vicinity'] as String?,
         website: json['website'] as String?,
-        wheelchairAccessibleEntrance: json['wheelchair_accessible_entrance'] as bool?,
+        wheelchairAccessibleEntrance:
+            json['wheelchair_accessible_entrance'] as bool?,
       );
   final List<GoogleAddressComponentEntity>? addressComponents;
   final String? adrAddress;
@@ -95,16 +136,20 @@ class GoogleResultEntity {
 }
 
 class GoogleAddressComponentEntity {
-  GoogleAddressComponentEntity({
-    this.longName,
-    this.shortName,
-    this.types,
-  });
+  GoogleAddressComponentEntity({this.longName, this.shortName, this.types});
 
-  factory GoogleAddressComponentEntity.fromJson(Map<String, dynamic> json) => GoogleAddressComponentEntity(
+  factory GoogleAddressComponentEntity.fromJson(Map<String, dynamic> json) =>
+      GoogleAddressComponentEntity(
         longName: json['long_name'] as String?,
         shortName: json['short_name'] as String?,
-        types: json['types'] == null ? [] : List<String>.from((json['types'] as List<dynamic>).map((dynamic x) => x as String)),
+        types:
+            json['types'] == null
+                ? []
+                : List<String>.from(
+                  (json['types'] as List<dynamic>).map(
+                    (dynamic x) => x as String,
+                  ),
+                ),
       );
   final String? longName;
   final String? shortName;
@@ -112,26 +157,32 @@ class GoogleAddressComponentEntity {
 }
 
 class GoogleGeometryEntity {
-  GoogleGeometryEntity({
-    this.location,
-    this.viewport,
-  });
+  GoogleGeometryEntity({this.location, this.viewport});
 
-  factory GoogleGeometryEntity.fromJson(Map<String, dynamic> json) => GoogleGeometryEntity(
-        location: json['location'] == null ? null : GoogleLocationEntity.fromJson(json['location'] as Map<String, dynamic>),
-        viewport: json['viewport'] == null ? null : GoogleViewportEntity.fromJson(json['viewport'] as Map<String, dynamic>),
+  factory GoogleGeometryEntity.fromJson(Map<String, dynamic> json) =>
+      GoogleGeometryEntity(
+        location:
+            json['location'] == null
+                ? null
+                : GoogleLocationEntity.fromJson(
+                  json['location'] as Map<String, dynamic>,
+                ),
+        viewport:
+            json['viewport'] == null
+                ? null
+                : GoogleViewportEntity.fromJson(
+                  json['viewport'] as Map<String, dynamic>,
+                ),
       );
   final GoogleLocationEntity? location;
   final GoogleViewportEntity? viewport;
 }
 
 class GoogleLocationEntity {
-  GoogleLocationEntity({
-    this.lat,
-    this.lng,
-  });
+  GoogleLocationEntity({this.lat, this.lng});
 
-  factory GoogleLocationEntity.fromJson(Map<String, dynamic> json) => GoogleLocationEntity(
+  factory GoogleLocationEntity.fromJson(Map<String, dynamic> json) =>
+      GoogleLocationEntity(
         lat: (json['lat'] as num?)?.toDouble(),
         lng: (json['lng'] as num?)?.toDouble(),
       );
@@ -140,33 +191,43 @@ class GoogleLocationEntity {
 }
 
 class GoogleViewportEntity {
-  GoogleViewportEntity({
-    this.northeast,
-    this.southwest,
-  });
+  GoogleViewportEntity({this.northeast, this.southwest});
 
-  factory GoogleViewportEntity.fromJson(Map<String, dynamic> json) => GoogleViewportEntity(
-        northeast: json['northeast'] == null ? null : GoogleLocationEntity.fromJson(json['northeast'] as Map<String, dynamic>),
-        southwest: json['southwest'] == null ? null : GoogleLocationEntity.fromJson(json['southwest'] as Map<String, dynamic>),
+  factory GoogleViewportEntity.fromJson(Map<String, dynamic> json) =>
+      GoogleViewportEntity(
+        northeast:
+            json['northeast'] == null
+                ? null
+                : GoogleLocationEntity.fromJson(
+                  json['northeast'] as Map<String, dynamic>,
+                ),
+        southwest:
+            json['southwest'] == null
+                ? null
+                : GoogleLocationEntity.fromJson(
+                  json['southwest'] as Map<String, dynamic>,
+                ),
       );
   final GoogleLocationEntity? northeast;
   final GoogleLocationEntity? southwest;
 }
 
 class Photo {
-  Photo({
-    this.height,
-    this.htmlAttributions,
-    this.photoReference,
-    this.width,
-  });
+  Photo({this.height, this.htmlAttributions, this.photoReference, this.width});
 
   factory Photo.fromJson(Map<String, dynamic> json) => Photo(
-        height: json['height'] as int?,
-        htmlAttributions: json['html_attributions'] == null ? [] : List<String>.from((json['html_attributions'] as List<dynamic>).map((dynamic x) => x as String)),
-        photoReference: json['photo_reference'] as String?,
-        width: json['width'] as int?,
-      );
+    height: json['height'] as int?,
+    htmlAttributions:
+        json['html_attributions'] == null
+            ? []
+            : List<String>.from(
+              (json['html_attributions'] as List<dynamic>).map(
+                (dynamic x) => x as String,
+              ),
+            ),
+    photoReference: json['photo_reference'] as String?,
+    width: json['width'] as int?,
+  );
   final int? height;
   final List<String>? htmlAttributions;
   final String? photoReference;
@@ -188,7 +249,8 @@ class GoogleReviewEntity {
     this.translated,
   });
 
-  factory GoogleReviewEntity.fromJson(Map<String, dynamic> json) => GoogleReviewEntity(
+  factory GoogleReviewEntity.fromJson(Map<String, dynamic> json) =>
+      GoogleReviewEntity(
         authorName: json['author_name'] as String?,
         authorUrl: json['author_url'] as String?,
         language: json['language'] as String?,

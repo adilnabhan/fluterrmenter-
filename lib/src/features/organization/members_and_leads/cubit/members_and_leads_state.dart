@@ -22,7 +22,7 @@ class MembersAndLeadsState with _$MembersAndLeadsState {
     @Default(None()) Option<Either<ApiException, LeadDetailsModel>> leadDetails,
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
     @Default(None())
-    Option<Either<ApiException, List<UpComingPayments>?>> upComingPayments,
+    Option<Either<ApiException, UpComingPayments?>> upComingPayments,
   }) = _MembersAndLeadsState;
 }
 
