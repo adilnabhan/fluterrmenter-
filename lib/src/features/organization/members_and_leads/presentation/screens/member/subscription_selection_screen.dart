@@ -74,7 +74,7 @@ class __SubscriptionSelectionScreenState
                     msg: 'Trainer details updated successfully',
                   );
                 } else {
-                  Dialogs.showSnack(msg: 'Trainer added successfully');
+                  Dialogs.showSnack(msg: 'member added successfully');
                 }
                 context.push(
                   BlocProvider.value(

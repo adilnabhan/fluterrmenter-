@@ -13,6 +13,7 @@ class InitiateRazorpayPaymentModel with _$InitiateRazorpayPaymentModel {
     @JsonKey(name: 'organization') String? organization,
     @JsonKey(name: 'discipl_plan') DisciplPlan? disciplPlan,
     @JsonKey(name: 'amount') String? amount,
+    @JsonKey(name: 'is_free_plan') bool? isFreePlan,
   }) = _InitiateRazorpayPaymentModel;
 
   factory InitiateRazorpayPaymentModel.fromJson(Map<String, dynamic> json) => _$InitiateRazorpayPaymentModelFromJson(json);

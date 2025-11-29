@@ -1,7 +1,11 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class AddOrEditMemeberScreen extends StatefulWidget {
-  const AddOrEditMemeberScreen({required this.orgId, this.memberDetails, super.key});
+  const AddOrEditMemeberScreen({
+    required this.orgId,
+    this.memberDetails,
+    super.key,
+  });
 
   final MemberDetailsModel? memberDetails;
   final int orgId;
@@ -19,7 +23,11 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
   @override
   void initState() {
     _cubit = context.read<MembersAndLeadsCubit>();
+
     _fields = [
+      // ---------------------------------------------------------
+      // 0 — FULL NAME
+      // ---------------------------------------------------------
       FieldData(
         type: FieldType.word,
         textInputAction: TextInputAction.next,
@@ -40,19 +48,28 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         decoration: InputDecoration(
           hintText: 'Enter Name',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
+
+      // ---------------------------------------------------------
+      // 1 — EMAIL
+      // ---------------------------------------------------------
       FieldData(
         type: FieldType.word,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Email Address',
-        requiredLabel: true,
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         validator: (value) {
           if (value?.isNotEmpty ?? false) {
-            if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value!)) {
+            if (!RegExp(
+              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+            ).hasMatch(value!)) {
               return 'Invalid email address!';
             }
           }
@@ -65,19 +82,29 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         decoration: InputDecoration(
           hintText: 'Enter your email address',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
+
+      // ---------------------------------------------------------
+      // 2 — MOBILE NUMBER
+      // ---------------------------------------------------------
       FieldData(
         type: FieldType.word,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Mobile Number',
         requiredLabel: true,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         keyboardType: TextInputType.phone,
         maxLength: 10,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(10),
+        ],
         validator: (value) {
           if (value?.trim().length != 10) {
             return 'Mobile number must be 10 digits';
@@ -85,19 +112,57 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _fields[3].focusNode?.requestFocus();
+          _fields[3].focusNode?.requestFocus(); // ADDRESS
         },
         decoration: InputDecoration(
           hintText: 'Enter Mobile Number',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
+
+      // ---------------------------------------------------------
+      // 3 — ADDRESS (NEW FIELD)
+      // ---------------------------------------------------------
+      FieldData(
+        type: FieldType.word,
+        textInputAction: TextInputAction.next,
+        label: 'Address',
+        requiredLabel: false,
+        controller: TextEditingController(),
+        focusNode: FocusNode(),
+        maxLines: 3,
+        keyboardType: TextInputType.streetAddress,
+        // validator: (value) {
+        //   if (value?.trim().isEmpty ?? true) {
+        //     return 'Address is required';
+        //   }
+        //   return null;
+        // },
+        onSubmitted: (value) {
+          _fields[4].focusNode?.requestFocus(); // BLOOD GROUP
+        },
+        decoration: InputDecoration(
+          hintText: 'Enter Address',
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
+        ),
+      ),
+
+      // ---------------------------------------------------------
+      // 4 — BLOOD GROUP
+      // ---------------------------------------------------------
       FieldData(
         type: FieldType.radio,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Blood Group',
-        requiredLabel: true,
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         items: [
@@ -110,179 +175,199 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           (label: 'O+', value: 'O+'),
           (label: 'O-', value: 'O-'),
         ],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Blood Group must be selected';
-          }
-          return null;
-        },
-        onValueChanged: (p0) {
-          _fields[4].focusNode?.requestFocus();
-        },
         onSubmitted: (value) {
-          _fields[4].focusNode?.requestFocus();
+          _fields[5].focusNode?.requestFocus(); // GENDER
         },
         decoration: InputDecoration(
           hintText: 'Select Blood Group',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
+
+      // ---------------------------------------------------------
+      // 5 — GENDER
+      // ---------------------------------------------------------
       FieldData(
         type: FieldType.radio,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Gender',
-        requiredLabel: true,
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
-        items: [(label: 'Male', value: 'male'), (label: 'Female', value: 'female'), (label: 'Other', value: 'other')],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Geneder must be selected';
-          }
-          return null;
-        },
-        onValueChanged: (p0) {
-          _fields[5].key;
-          _fields[5].requestToFocus();
-        },
+        items: [
+          (label: 'Male', value: 'male'),
+          (label: 'Female', value: 'female'),
+          (label: 'Other', value: 'other'),
+        ],
         onSubmitted: (value) {
-          _fields[5].requestToFocus();
+          _fields[6].focusNode?.requestFocus(); // DOB
         },
         decoration: InputDecoration(
           hintText: 'Select Gender',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
+
+      // ---------------------------------------------------------
+      // 6 — DOB
+      // ---------------------------------------------------------
       FieldData(
         type: FieldType.date,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Date of Birth',
+        requiredLabel: false,
         dateTimeShowFormat: DateFormat('dd MMM yyyy'),
-        requiredLabel: true,
         controller: TextEditingController(),
         focusNode: FocusNode(),
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Date of Birth must be selected';
-          }
-          return null;
-        },
-        onChanged: (p0) {
-          _fields[6].focusNode?.requestFocus();
+        onChanged: (value) {
+          _fields[7].focusNode?.requestFocus(); // EMERGENCY CONTACT
         },
         decoration: InputDecoration(
           hintText: 'Select Date of Birth',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
+
+      // ---------------------------------------------------------
+      // 7 — EMERGENCY CONTACT
+      // ---------------------------------------------------------
       FieldData(
         type: FieldType.word,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Emergency Contact',
-        requiredLabel: true,
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         keyboardType: TextInputType.phone,
         maxLength: 10,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Emergency Contact is required';
-          }
-          return null;
-        },
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(10),
+        ],
         onSubmitted: (value) {
-          _fields[7].focusNode?.requestFocus();
+          _fields[8].focusNode?.requestFocus(); // HEIGHT
         },
         decoration: InputDecoration(
           hintText: 'Enter Mobile Number',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
-      FieldData(
-        type: FieldType.word,
-        textInputAction: TextInputAction.done,
-        label: 'Height',
-        requiredLabel: true,
-        controller: TextEditingController(),
-        focusNode: FocusNode(),
-        keyboardType: TextInputType.number,
-        maxLength: 3,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Height is required';
-          }
-          return null;
-        },
-        onSubmitted: (value) {
-          _fields[8].focusNode?.requestFocus();
-        },
-        decoration: InputDecoration(
-          hintText: '0',
-          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          suffixIcon: SizedBox.square(dimension: 22, child: Center(child: Text('CM', style: AppStyles.text14Px.poppins.w400.dark))),
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-        ),
-      ),
-      FieldData(
-        type: FieldType.word,
-        textInputAction: TextInputAction.done,
-        label: 'Weight',
-        requiredLabel: true,
-        controller: TextEditingController(),
-        focusNode: FocusNode(),
-        keyboardType: TextInputType.number,
-        maxLength: 3,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Weight is required';
-          }
-          return null;
-        },
-        onSubmitted: (value) {
-          _fields[9].focusNode?.requestFocus();
-        },
-        decoration: InputDecoration(
-          hintText: '0',
-          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          suffixIcon: SizedBox.square(dimension: 22, child: Center(child: Text('KG', style: AppStyles.text14Px.poppins.w400.dark))),
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-        ),
-      ),
+
+      // ---------------------------------------------------------
+      // 8 — HEIGHT
+      // ---------------------------------------------------------
       FieldData(
         type: FieldType.word,
         textInputAction: TextInputAction.next,
-        label: 'Profession',
-        requiredLabel: true,
-        validator: (value) {
-          if (value?.trim().isEmpty ?? true) {
-            return 'Profession is required';
-          }
-          return null;
-        },
+        label: 'Height',
+        requiredLabel: false,
+        controller: TextEditingController(),
+        focusNode: FocusNode(),
+        keyboardType: TextInputType.number,
+        maxLength: 3,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(3),
+        ],
         onSubmitted: (value) {
-          _fields[8].focusNode?.unfocus();
-          _onContinue();
+          _fields[9].focusNode?.requestFocus(); // WEIGHT
         },
+        decoration: InputDecoration(
+          hintText: '0',
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          suffixIcon: SizedBox.square(
+            dimension: 22,
+            child: Center(
+              child: Text('CM', style: AppStyles.text14Px.poppins.w400.dark),
+            ),
+          ),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
+        ),
+      ),
+
+      // ---------------------------------------------------------
+      // 9 — WEIGHT
+      // ---------------------------------------------------------
+      FieldData(
+        type: FieldType.word,
+        textInputAction: TextInputAction.next,
+        label: 'Weight',
+        requiredLabel: false,
+        controller: TextEditingController(),
+        focusNode: FocusNode(),
+        keyboardType: TextInputType.number,
+        maxLength: 3,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(3),
+        ],
+        onSubmitted: (value) {
+          _fields[10].focusNode?.requestFocus(); // PROFESSION
+        },
+        decoration: InputDecoration(
+          hintText: '0',
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          suffixIcon: SizedBox.square(
+            dimension: 22,
+            child: Center(
+              child: Text('KG', style: AppStyles.text14Px.poppins.w400.dark),
+            ),
+          ),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
+        ),
+      ),
+
+      // ---------------------------------------------------------
+      // 10 — PROFESSION (LAST FIELD)
+      // ---------------------------------------------------------
+      FieldData(
+        type: FieldType.word,
+        textInputAction: TextInputAction.done,
+        label: 'Profession',
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         keyboardType: TextInputType.name,
+        onSubmitted: (value) {
+          _onContinue();
+        },
         decoration: InputDecoration(
           hintText: 'Enter Profession',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
         ),
       ),
     ];
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_fields[0].focusNode);
     });
+
     super.initState();
   }
 
@@ -300,21 +385,25 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
       Dialogs.showSnack(msg: 'Please wait');
       return;
     }
+
     if (_formKey.currentState?.validate() ?? false) {
       final fullName = _fields[0].controller?.text;
       final email = _fields[1].controller?.text;
       final mobileNumber = _fields[2].controller?.text;
-      final bloodGroup = _fields[3].controller?.text;
-      final gender = _fields[4].controller?.text.toLowerCase();
-      final dateOfBirth = _fields[5].selectedDateTime;
-      final emergencyContactNumber = _fields[6].controller?.text;
-      final height = _fields[7].controller?.text;
-      final weight = _fields[8].controller?.text;
-      final profession = _fields[9].controller?.text;
+      final address = _fields[3].controller?.text;
+      final bloodGroup = _fields[4].controller?.text;
+      final gender = _fields[5].controller?.text.toLowerCase();
+      final dateOfBirth = _fields[6].selectedDateTime;
+      final emergencyContactNumber = _fields[7].controller?.text;
+      final height = _fields[8].controller?.text;
+      final weight = _fields[9].controller?.text;
+      final profession = _fields[10].controller?.text;
+
       final memberDetails = MemberDetailsModel(
         fullName: fullName,
         email: email,
         mobileNumber: mobileNumber,
+        address: address,
         bloodGroup: bloodGroup,
         gender: gender,
         dateOfBirth: dateOfBirth,
@@ -324,7 +413,16 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         profession: profession,
         profilePicture: _profilePicture?.path,
       );
-      context.push(BlocProvider.value(value: _cubit, child: SubscriptionSelectionScreen(orgId: widget.orgId, memberDetails: memberDetails)));
+      print('member is---$memberDetails');
+      context.push(
+        BlocProvider.value(
+          value: _cubit,
+          child: SubscriptionSelectionScreen(
+            orgId: widget.orgId,
+            memberDetails: memberDetails,
+          ),
+        ),
+      );
     } else {
       Dialogs.showSnack(msg: 'Please fill all the fields');
     }
@@ -333,7 +431,10 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
-      listenWhen: (p, c) => p.memberOnboardedAnimationCompleted != c.memberOnboardedAnimationCompleted,
+      listenWhen:
+          (p, c) =>
+              p.memberOnboardedAnimationCompleted !=
+              c.memberOnboardedAnimationCompleted,
       listener: (context, state) {
         if (state.memberOnboardedAnimationCompleted ?? false) {
           context.pop();
@@ -359,13 +460,21 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
           });
         },
         child: Scaffold(
-          appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Member')),
+          appBar: AppBar(
+            leading: const PopButton().center,
+            titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
+            title: const Text('Add Member'),
+          ),
           body: Form(
             key: _formKey,
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                ProfileImage(isEdit: true, onChanged: (image) => _profilePicture = image, radius: 80).pOnly(bottom: 16),
+                ProfileImage(
+                  isEdit: true,
+                  onChanged: (image) => _profilePicture = image,
+                  radius: 80,
+                ).pOnly(bottom: 16),
                 ListView.separated(
                   itemCount: _fields.length,
                   shrinkWrap: true,
@@ -378,11 +487,28 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
                       data: _fields[index].copyWith(
                         decoration: _fields[index].decoration?.copyWith(
                           filled: false,
-                          border: OutlineInputBorder(borderSide: const BorderSide(color: AppColors.borderGrey), borderRadius: BorderRadius.circular(8)),
-                          focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                          enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                          errorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.error)),
-                          focusedErrorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: AppColors.borderGrey,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                            borderSide: BorderSide(color: AppColors.borderGrey),
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                            borderSide: BorderSide(color: AppColors.borderGrey),
+                          ),
+                          errorBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                            borderSide: BorderSide(color: AppColors.error),
+                          ),
+                          focusedErrorBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                            borderSide: BorderSide(color: AppColors.borderGrey),
+                          ),
                         ),
                       ),
                     );
@@ -391,12 +517,19 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
               ],
             ),
           ),
-          bottomNavigationBar: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
-            buildWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
-            builder: (context, state) {
-              return Button.filled(title: 'Continue', isLoading: state.createOrUpdateMember?.isNone() ?? false, buttonColor: AppColors.primary, ontap: _onContinue);
-            },
-          ).pad(16).pxy(y: 16),
+          bottomNavigationBar:
+              BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+                buildWhen:
+                    (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
+                builder: (context, state) {
+                  return Button.filled(
+                    title: 'Continue',
+                    isLoading: state.createOrUpdateMember?.isNone() ?? false,
+                    buttonColor: AppColors.primary,
+                    ontap: _onContinue,
+                  );
+                },
+              ).pad(16).pxy(y: 16),
         ),
       ),
     );

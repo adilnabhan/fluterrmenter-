@@ -37,7 +37,10 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
       child: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
         buildWhen: (p, c) => p.leadDetails != c.leadDetails,
         builder: (context, state) {
-          final data = state.leadDetails.fold(() => null, (either) => either.fold((l) => null, (r) => r));
+          final data = state.leadDetails.fold(
+            () => null,
+            (either) => either.fold((l) => null, (r) => r),
+          );
           return Scaffold(
             appBar: AppBar(
               leading: const PopButton().center,
@@ -61,9 +64,14 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
             body: state.leadDetails.fold(
               _buildShimmerLoading,
               (either) => either.fold(
-                (error) => error.maybeWhen(network: (e) => ErrorUi.network(onTap: _fetch), notFound: (e) => ErrorUi.notFound(onTap: _fetch), orElse: () => ErrorUi.server(onTap: _fetch)),
+                (error) => error.maybeWhen(
+                  network: (e) => ErrorUi.network(onTap: _fetch),
+                  notFound: (e) => ErrorUi.notFound(onTap: _fetch),
+                  orElse: () => ErrorUi.server(onTap: _fetch),
+                ),
                 (data) {
-                  final hasCategories = data.mentorProfile?.categories?.isNotEmpty ?? false;
+                  final hasCategories =
+                      data.mentorProfile?.categories?.isNotEmpty ?? false;
                   return RefreshIndicator(
                     onRefresh: _fetch,
                     child: ListView(
@@ -76,32 +84,77 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                             children: [
                               InkWell(
                                 onTap: () {
-                                  context.push(BlocProvider.value(value: _cubit, child: UpdateBasicDetailsScreen(details: Left(data))));
+                                  context.push(
+                                    BlocProvider.value(
+                                      value: _cubit,
+                                      child: UpdateBasicDetailsScreen(
+                                        details: Left(data),
+                                      ),
+                                    ),
+                                  );
                                 },
                                 child: Row(
                                   children: [
-                                    AbsorbPointer(child: ProfileImage(isEdit: true, onChanged: (image) {}, radius: 80.w, url: '${data.profilePicture ?? ''}')),
+                                    AbsorbPointer(
+                                      child: ProfileImage(
+                                        isEdit: true,
+                                        onChanged: (image) {},
+                                        radius: 80.w,
+                                        url: '${data.profilePicture ?? ''}',
+                                      ),
+                                    ),
                                     const SizedBox(width: 16),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text('${data.firstName ?? ''} ${data.lastName ?? ''}', style: AppStyles.text14Px.poppins.w500),
+                                        Text(
+                                          '${data.firstName ?? ''} ${data.lastName ?? ''}',
+                                          style:
+                                              AppStyles.text14Px.poppins.w500,
+                                        ),
                                         const SizedBox(height: 4),
-                                        Text('#${data.id}', style: AppStyles.text12Px.poppins.w400),
-                                        const Divider(thickness: 1, color: Color(0xffDDDDDD)),
+                                        Text(
+                                          '#${data.id}',
+                                          style:
+                                              AppStyles.text12Px.poppins.w400,
+                                        ),
+                                        const Divider(
+                                          thickness: 1,
+                                          color: Color(0xffDDDDDD),
+                                        ),
                                       ],
                                     ),
                                     const Spacer(),
-                                    const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.dark).pOnly(left: 8),
+                                    const Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 14,
+                                      color: AppColors.dark,
+                                    ).pOnly(left: 8),
                                   ],
                                 ),
                               ),
-                              const Divider(thickness: 1, color: Color(0xffDDDDDD)).pxy(y: 8),
+                              const Divider(
+                                thickness: 1,
+                                color: Color(0xffDDDDDD),
+                              ).pxy(y: 8),
                               RichText(
                                 text: TextSpan(
                                   children: [
-                                    TextSpan(text: 'Mobile : ', style: AppStyles.text14Px.poppins.w400.textGrey),
-                                    TextSpan(text: data.mobileNumber ?? 'N/A', style: AppStyles.text13Px.poppins.w500.dark),
+                                    TextSpan(
+                                      text: 'Mobile : ',
+                                      style:
+                                          AppStyles
+                                              .text14Px
+                                              .poppins
+                                              .w400
+                                              .textGrey,
+                                    ),
+                                    TextSpan(
+                                      text: data.mobileNumber ?? 'N/A',
+                                      style:
+                                          AppStyles.text13Px.poppins.w500.dark,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -109,8 +162,20 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                               RichText(
                                 text: TextSpan(
                                   children: [
-                                    TextSpan(text: 'Email : ', style: AppStyles.text14Px.poppins.w400.textGrey),
-                                    TextSpan(text: data.email ?? 'N/A', style: AppStyles.text13Px.poppins.w500.dark),
+                                    TextSpan(
+                                      text: 'Email : ',
+                                      style:
+                                          AppStyles
+                                              .text14Px
+                                              .poppins
+                                              .w400
+                                              .textGrey,
+                                    ),
+                                    TextSpan(
+                                      text: data.email ?? 'N/A',
+                                      style:
+                                          AppStyles.text13Px.poppins.w500.dark,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -119,24 +184,60 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                 spacing: 8,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                    decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
                                     child: Row(
                                       children: [
-                                        CircleAvatar(backgroundColor: Colors.green.shade700, radius: 3).pOnly(right: 8),
-                                        Text('Active', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.green.shade700)),
+                                        CircleAvatar(
+                                          backgroundColor:
+                                              Colors.green.shade700,
+                                          radius: 3,
+                                        ).pOnly(right: 8),
+                                        Text(
+                                          'Active',
+                                          style: AppStyles.text14Px.poppins.w500
+                                              .copyWith(
+                                                color: Colors.green.shade700,
+                                              ),
+                                        ),
                                       ],
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                    decoration: BoxDecoration(color: AppColors.grey, borderRadius: BorderRadius.circular(16)),
-                                    child: Text(data.gender ?? 'N/A', style: AppStyles.text14Px.poppins.w400.dark),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.grey,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      data.gender ?? 'N/A',
+                                      style:
+                                          AppStyles.text14Px.poppins.w400.dark,
+                                    ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                    decoration: BoxDecoration(color: AppColors.grey, borderRadius: BorderRadius.circular(16)),
-                                    child: Text(data.bloodGroup ?? 'N/A', style: AppStyles.text14Px.poppins.w400.dark),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.grey,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      data.bloodGroup ?? 'N/A',
+                                      style:
+                                          AppStyles.text14Px.poppins.w400.dark,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -150,23 +251,62 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                               ...[
                                 (
                                   label: 'Experience',
-                                  value: '${data.mentorProfile?.experience ?? 0} years',
-                                  onTap: () => context.push(BlocProvider.value(value: _cubit, child: UpdateExperienceScreen(details: data))),
+                                  value:
+                                      '${data.mentorProfile?.experience ?? 0} years',
+                                  onTap:
+                                      () => context.push(
+                                        BlocProvider.value(
+                                          value: _cubit,
+                                          child: UpdateExperienceScreen(
+                                            details: data,
+                                          ),
+                                        ),
+                                      ),
                                 ),
                                 (
                                   label: 'Date of Birth',
-                                  value: data.dateOfBirth?.format('dd MMM yyyy') ?? '',
-                                  onTap: () => context.push(BlocProvider.value(value: _cubit, child: UpdateDOBScreen(details: left(data)))),
+                                  value:
+                                      data.dateOfBirth?.format('dd MMM yyyy') ??
+                                      '',
+                                  onTap:
+                                      () => context.push(
+                                        BlocProvider.value(
+                                          value: _cubit,
+                                          child: UpdateDOBScreen(
+                                            details: left(data),
+                                          ),
+                                        ),
+                                      ),
                                 ),
                               ].map((e) {
                                 return InkWell(
                                   onTap: e.onTap,
                                   child: Row(
                                     children: [
-                                      Text(e.label, style: AppStyles.text14Px.poppins.w400.textGrey),
+                                      Text(
+                                        e.label,
+                                        style:
+                                            AppStyles
+                                                .text14Px
+                                                .poppins
+                                                .w400
+                                                .textGrey,
+                                      ),
                                       const Spacer(),
-                                      Text(e.value, style: AppStyles.text14Px.poppins.w500.dark),
-                                      const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.dark).pOnly(left: 8),
+                                      Text(
+                                        e.value,
+                                        style:
+                                            AppStyles
+                                                .text14Px
+                                                .poppins
+                                                .w500
+                                                .dark,
+                                      ),
+                                      const Icon(
+                                        Icons.arrow_forward_ios,
+                                        size: 12,
+                                        color: AppColors.dark,
+                                      ).pOnly(left: 8),
                                     ],
                                   ).pxy(y: 12),
                                 );
@@ -180,9 +320,25 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                       data.mentorProfile!.categories!
                                           .map(
                                             (category) => Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                              decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(16)),
-                                              child: Text(category.name ?? '', style: AppStyles.text14Px.poppins.w400.dark),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 6,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey.shade200,
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                              child: Text(
+                                                category.name ?? '',
+                                                style:
+                                                    AppStyles
+                                                        .text14Px
+                                                        .poppins
+                                                        .w400
+                                                        .dark,
+                                              ),
                                             ),
                                           )
                                           .toList(),
@@ -204,11 +360,27 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
   }
 
   Widget _card({required Widget child}) {
-    return Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.light, borderRadius: BorderRadius.circular(16)), child: child);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.light,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: child,
+    );
   }
 
   Widget _buildShimmerLoading() {
-    return RefreshIndicator(onRefresh: _fetch, child: ListView(padding: const EdgeInsets.all(16), children: [_buildProfileSectionShimmer(), _buildDetailsSectionShimmer()]));
+    return RefreshIndicator(
+      onRefresh: _fetch,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildProfileSectionShimmer(),
+          _buildDetailsSectionShimmer(),
+        ],
+      ),
+    );
   }
 
   Widget _buildProfileSectionShimmer() {
@@ -240,14 +412,33 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
           const Divider(thickness: 1, color: Color(0xffDDDDDD)).pxy(y: 8),
 
           // Contact details shimmer
-          Row(children: [KShimmer.text(width: 60, height: 14, radius: 4), const SizedBox(width: 8), KShimmer.text(width: 120, height: 14, radius: 4)]),
+          Row(
+            children: [
+              KShimmer.text(width: 60, height: 14, radius: 4),
+              const SizedBox(width: 8),
+              KShimmer.text(width: 120, height: 14, radius: 4),
+            ],
+          ),
           const SizedBox(height: 8),
-          Row(children: [KShimmer.text(width: 50, height: 14, radius: 4), const SizedBox(width: 8), KShimmer.text(width: 150, height: 14, radius: 4)]),
+          Row(
+            children: [
+              KShimmer.text(width: 50, height: 14, radius: 4),
+              const SizedBox(width: 8),
+              KShimmer.text(width: 150, height: 14, radius: 4),
+            ],
+          ),
 
           const SizedBox(height: 16),
 
           // Status badges shimmer
-          Row(spacing: 8, children: [KShimmer(height: 24, width: 60, radius: 12), KShimmer(height: 24, width: 50, radius: 12), KShimmer(height: 24, width: 60, radius: 12)]),
+          Row(
+            spacing: 8,
+            children: [
+              KShimmer(height: 24, width: 60, radius: 12),
+              KShimmer(height: 24, width: 50, radius: 12),
+              KShimmer(height: 24, width: 60, radius: 12),
+            ],
+          ),
         ],
       ),
     ).pOnly(bottom: 16);

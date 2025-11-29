@@ -25,14 +25,23 @@ final class MembersRepository {
 
   /// @apiSuccess {MembersListingModel} response Success response
 
-  Future<Either<ApiException, MembersListingModel>> membersListing({required Map<String, dynamic> queryParameters, String? nextUrl}) async {
+  Future<Either<ApiException, MembersListingModel>> membersListing({
+    required Map<String, dynamic> queryParameters,
+    String? nextUrl,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(nextUrl ?? ApiUris.membersListing, queryParameters: queryParameters, options: Options(headers: {'X-Platform': platformSource}).token),
+        call: Dio().get<dynamic>(
+          nextUrl ?? ApiUris.membersListing,
+          queryParameters: queryParameters,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {
-              return right(MembersListingModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                MembersListingModel.fromJson(res.data as Map<String, dynamic>),
+              );
             }
           }
           return left(const ApiException.unknown());
@@ -74,26 +83,111 @@ final class MembersRepository {
 
   /// @apiSuccess {CreateMemberModel} response Success response
 
-  Future<Either<ApiException, MemberDetailsModel>> createOrUpdateMember({required int? memberId, required dynamic body}) async {
+  // Future<Either<ApiException, MemberDetailsModel>> createOrUpdateMember({
+  //   required int? memberId,
+  //   required dynamic body,
+  // }) async {
+  //   try {
+  //     return await Feggy.async(
+  //       call: switch (memberId == null) {
+  //         true => Dio().post<dynamic>(
+  //           ApiUris.createMember,
+  //           data: body,
+  //           options: Options(headers: {'X-Platform': platformSource}).token,
+  //         ),
+  //         false => Dio().patch<dynamic>(
+  //           ApiUris.updateMember(memberId!),
+  //           data: body,
+  //           options: Options(headers: {'X-Platform': platformSource}).token,
+  //         ),
+  //       },
+  //       onSuccess: (res) {
+  //         if (res.statusCode == 200 || res.statusCode == 201) {
+  //           if (res.data != null && res.data is Map) {
+  //             return right(
+  //               MemberDetailsModel.fromJson(res.data as Map<String, dynamic>),
+  //             );
+  //           }
+  //         }
+  //         return left(const ApiException.unknown());
+  //       },
+  //     );
+  //   } on ApiException {
+  //     return left(const ApiException.unknown());
+  //   } catch (e) {
+  //     return left(const ApiException.unknown());
+  //   }
+  // }
+
+  Future<Either<ApiException, MemberDetailsModel>> createOrUpdateMember({
+    required int? memberId,
+    required dynamic body,
+  }) async {
     try {
-      return await Feggy.async(
-        call: switch (memberId == null) {
-          true => Dio().post<dynamic>(ApiUris.createMember, data: body, options: Options(headers: {'X-Platform': platformSource}).token),
-          false => Dio().patch<dynamic>(ApiUris.updateMember(memberId!), data: body, options: Options(headers: {'X-Platform': platformSource}).token),
-        },
-        onSuccess: (res) {
-          if (res.statusCode == 200 || res.statusCode == 201) {
-            if (res.data != null && res.data is Map) {
-              return right(MemberDetailsModel.fromJson(res.data as Map<String, dynamic>));
-            }
-          }
-          return left(const ApiException.unknown());
-        },
+      final bool isCreate = memberId == null;
+      final response = await Dio().request<dynamic>(
+        isCreate ? ApiUris.createMember : ApiUris.updateMember(memberId),
+        data: body,
+        options:
+            Options(
+              method: isCreate ? 'POST' : 'PATCH',
+              headers: {
+                'X-Platform': platformSource,
+                'Content-Type': 'application/json',
+              },
+            ).token,
       );
-    } on ApiException {
-      return left(const ApiException.unknown());
+
+      print(' status code is--${response.statusCode}');
+      final statusCode = response.statusCode ?? 0;
+      if ((statusCode == 200 || statusCode == 201) &&
+          response.data != null &&
+          response.data is Map<String, dynamic>) {
+        try {
+          final model = MemberDetailsModel.fromJson(
+            response.data as Map<String, dynamic>,
+          );
+          return right(model);
+        } catch (e) {
+          return left(
+            ApiException.unknown(
+              msg: 'Failed to parse member details: ${e.toString()}',
+            ),
+          );
+        }
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: 'Unexpected response from server. Code: $statusCode',
+        ),
+      );
+    } on DioException catch (e) {
+      print('rtkejs---$e');
+      // API returned structured error
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+
+        if (data is Map && data.isNotEmpty) {
+          // Take first key
+          final firstKey = data.keys.first;
+
+          // Take first error message
+          final firstMessage = data[firstKey][0];
+
+          return left(ApiException.unknown(msg: firstMessage.toString()));
+        }
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: e.message ?? 'Something went wrong during request.',
+        ),
+      );
     } catch (e) {
-      return left(const ApiException.unknown());
+      return left(
+        ApiException.unknown(msg: 'Unexpected error: ${e.toString()}'),
+      );
     }
   }
 
@@ -126,14 +220,21 @@ final class MembersRepository {
 
   /// @apiSuccess {UpdateMemberModel} response Success response
 
-  Future<Either<ApiException, MemberDetailsModel>> memberDetails({required int id}) async {
+  Future<Either<ApiException, MemberDetailsModel>> memberDetails({
+    required int id,
+  }) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(ApiUris.memberDetails(id), options: Options(headers: {'X-Platform': platformSource}).token),
+        call: Dio().get<dynamic>(
+          ApiUris.memberDetails(id),
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
         onSuccess: (res) {
           if (res.statusCode == 200) {
             if (res.data != null && res.data is Map) {
-              return right(MemberDetailsModel.fromJson(res.data as Map<String, dynamic>));
+              return right(
+                MemberDetailsModel.fromJson(res.data as Map<String, dynamic>),
+              );
             }
           }
           return left(const ApiException.unknown());

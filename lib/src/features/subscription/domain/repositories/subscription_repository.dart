@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 @immutable
@@ -60,32 +61,81 @@ final class SubscriptionRepository {
 
   /// @apiSuccess {InitiateRazorpayPaymentModel} response Success response
 
+  // Future<Either<ApiException, InitiateRazorpayPaymentModel>>
+  // initiateRazorpayPayment({required Map<String, dynamic> body}) async {
+  //   try {
+  //     return await Feggy.async(
+  //       call: Dio().post<dynamic>(
+  //         ApiUris.initiateRazorpayPayment,
+  //         data: body,
+  //         options: Options(headers: {'X-Platform': platformSource}).token,
+  //       ),
+  //       onSuccess: (res) {
+  //         if ([200, 201].contains(res.statusCode)) {
+  //           if (res.data != null && res.data is Map) {
+  //             return right(
+  //               InitiateRazorpayPaymentModel.fromJson(
+  //                 res.data as Map<String, dynamic>,
+  //               ),
+  //             );
+  //           }
+  //         }
+  //         return left(const ApiException.unknown());
+  //       },
+  //     );
+  //   } on ApiException {
+  //     return left(const ApiException.unknown());
+  //   } catch (e) {
+  //     return left(const ApiException.unknown());
+  //   }
+  // }
+
   Future<Either<ApiException, InitiateRazorpayPaymentModel>>
   initiateRazorpayPayment({required Map<String, dynamic> body}) async {
     try {
-      return await Feggy.async(
-        call: Dio().post<dynamic>(
-          ApiUris.initiateRazorpayPayment,
-          data: body,
-          options: Options(headers: {'X-Platform': platformSource}).token,
-        ),
-        onSuccess: (res) {
-          if ([200, 201].contains(res.statusCode)) {
-            if (res.data != null && res.data is Map) {
-              return right(
-                InitiateRazorpayPaymentModel.fromJson(
-                  res.data as Map<String, dynamic>,
-                ),
-              );
-            }
-          }
-          return left(const ApiException.unknown());
-        },
+      final dio = Dio();
+      final response = await dio.post<dynamic>(
+        ApiUris.initiateRazorpayPayment,
+        data: body,
+        options: Options(headers: {'X-Platform': platformSource}).token,
       );
-    } on ApiException {
-      return left(const ApiException.unknown());
+
+      final statusCode = response.statusCode ?? 0;
+
+      if ((statusCode == 200 || statusCode == 201) &&
+          response.data != null &&
+          response.data is Map<String, dynamic>) {
+        return right(
+          InitiateRazorpayPaymentModel.fromJson(
+            response.data as Map<String, dynamic>,
+          ),
+        );
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: 'Unexpected response from server. Code: $statusCode',
+        ),
+      );
+    } on DioError catch (e) {
+      // API errors (400/404/500 etc.)
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        print('the error is--${e.response?.statusCode}---${data.toString()}');
+        if (data is Map && data.isNotEmpty) {
+          return left(ApiException.unknown(msg: data.toString()));
+        }
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: e.message ?? 'Something went wrong during payment request.',
+        ),
+      );
     } catch (e) {
-      return left(const ApiException.unknown());
+      return left(
+        ApiException.unknown(msg: 'Unexpected error: ${e.toString()}'),
+      );
     }
   }
 

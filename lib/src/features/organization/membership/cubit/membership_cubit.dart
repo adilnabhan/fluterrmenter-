@@ -31,19 +31,33 @@ class MembershipCubit extends Cubit<MembershipState> {
     List<EmiOptionsModel>? emiOptions,
   }) async {
     emit(state.copyWith(createOrUpdatePackage: none()));
+    // final body = {
+    //   'organization': orgId,
+    //   // 'package_type': packageType,
+    //   'duration_days': packageType,
+    //   'name': name,
+    //   'description': description,
+    //   'actual_price': actualPrice,
+    //   'offer_price': actualPrice,
+    //   'features': features,
+    //   'is_emi_available': isEmiAvailable,
+    //   'is_active': true,
+    //   'emi_plans': emiOptions?.map((e) => e.toJson()).toList(),
+    // };
     final body = {
       'organization': orgId,
-      // 'package_type': packageType,
       'duration_days': packageType,
-      'name': name,
-      'description': description,
+      if (name.isNotEmpty) 'name': name,
+      if (description.isNotEmpty) 'description': description,
       'actual_price': actualPrice,
-      // 'offer_price': offerPrice,
-      'features': features,
+      'offer_price': actualPrice,
+      'features': features,// always []
       'is_emi_available': isEmiAvailable,
-      'is_active': true,
-      'emi_plans': emiOptions?.map((e) => e.toJson()).toList(),
+      'is_active': true, // always included
+      if (emiOptions!.isNotEmpty)
+        'emi_plans': emiOptions.map((e) => e.toJson()).toList(),
     };
+    print('body is----$body');
 
     final res =
         (membershipId != null
@@ -62,9 +76,9 @@ class MembershipCubit extends Cubit<MembershipState> {
   }
 
   Future<void> fetchBankAccountList() async {
-    emit(state.copyWith(bankDetails: none(), isLoading: true,));
+    emit(state.copyWith(bankDetails: none(), isLoading: true));
     final res = await MembershipRepository().fetchBankDetails(id: orgId);
-    emit(state.copyWith(bankDetails: some(res), isLoading: false,));
+    emit(state.copyWith(bankDetails: some(res), isLoading: false));
   }
 
   Future<void> createOrUpdateBankDetails({

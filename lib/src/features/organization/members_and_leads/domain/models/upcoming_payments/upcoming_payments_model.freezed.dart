@@ -23,10 +23,10 @@ UpComingPayments _$UpComingPaymentsFromJson(Map<String, dynamic> json) {
 mixin _$UpComingPayments {
   @JsonKey(name: "count")
   int get count => throw _privateConstructorUsedError;
-  @JsonKey(name: "next")
-  dynamic get next => throw _privateConstructorUsedError;
-  @JsonKey(name: "previous")
-  dynamic get previous => throw _privateConstructorUsedError;
+  @JsonKey(name: 'next')
+  String? get next => throw _privateConstructorUsedError;
+  @JsonKey(name: 'previous')
+  String? get previous => throw _privateConstructorUsedError;
   @JsonKey(name: "results")
   List<UpComingPaymentsList> get results => throw _privateConstructorUsedError;
 
@@ -49,8 +49,8 @@ abstract class $UpComingPaymentsCopyWith<$Res> {
   @useResult
   $Res call({
     @JsonKey(name: "count") int count,
-    @JsonKey(name: "next") dynamic next,
-    @JsonKey(name: "previous") dynamic previous,
+    @JsonKey(name: 'next') String? next,
+    @JsonKey(name: 'previous') String? previous,
     @JsonKey(name: "results") List<UpComingPaymentsList> results,
   });
 }
@@ -86,12 +86,12 @@ class _$UpComingPaymentsCopyWithImpl<$Res, $Val extends UpComingPayments>
                 freezed == next
                     ? _value.next
                     : next // ignore: cast_nullable_to_non_nullable
-                        as dynamic,
+                        as String?,
             previous:
                 freezed == previous
                     ? _value.previous
                     : previous // ignore: cast_nullable_to_non_nullable
-                        as dynamic,
+                        as String?,
             results:
                 null == results
                     ? _value.results
@@ -114,8 +114,8 @@ abstract class _$$UpComingPaymentsImplCopyWith<$Res>
   @useResult
   $Res call({
     @JsonKey(name: "count") int count,
-    @JsonKey(name: "next") dynamic next,
-    @JsonKey(name: "previous") dynamic previous,
+    @JsonKey(name: 'next') String? next,
+    @JsonKey(name: 'previous') String? previous,
     @JsonKey(name: "results") List<UpComingPaymentsList> results,
   });
 }
@@ -150,12 +150,12 @@ class __$$UpComingPaymentsImplCopyWithImpl<$Res>
             freezed == next
                 ? _value.next
                 : next // ignore: cast_nullable_to_non_nullable
-                    as dynamic,
+                    as String?,
         previous:
             freezed == previous
                 ? _value.previous
                 : previous // ignore: cast_nullable_to_non_nullable
-                    as dynamic,
+                    as String?,
         results:
             null == results
                 ? _value._results
@@ -171,8 +171,8 @@ class __$$UpComingPaymentsImplCopyWithImpl<$Res>
 class _$UpComingPaymentsImpl implements _UpComingPayments {
   const _$UpComingPaymentsImpl({
     @JsonKey(name: "count") required this.count,
-    @JsonKey(name: "next") this.next,
-    @JsonKey(name: "previous") this.previous,
+    @JsonKey(name: 'next') this.next,
+    @JsonKey(name: 'previous') this.previous,
     @JsonKey(name: "results") required final List<UpComingPaymentsList> results,
   }) : _results = results;
 
@@ -183,11 +183,11 @@ class _$UpComingPaymentsImpl implements _UpComingPayments {
   @JsonKey(name: "count")
   final int count;
   @override
-  @JsonKey(name: "next")
-  final dynamic next;
+  @JsonKey(name: 'next')
+  final String? next;
   @override
-  @JsonKey(name: "previous")
-  final dynamic previous;
+  @JsonKey(name: 'previous')
+  final String? previous;
   final List<UpComingPaymentsList> _results;
   @override
   @JsonKey(name: "results")
@@ -208,8 +208,9 @@ class _$UpComingPaymentsImpl implements _UpComingPayments {
         (other.runtimeType == runtimeType &&
             other is _$UpComingPaymentsImpl &&
             (identical(other.count, count) || other.count == count) &&
-            const DeepCollectionEquality().equals(other.next, next) &&
-            const DeepCollectionEquality().equals(other.previous, previous) &&
+            (identical(other.next, next) || other.next == next) &&
+            (identical(other.previous, previous) ||
+                other.previous == previous) &&
             const DeepCollectionEquality().equals(other._results, _results));
   }
 
@@ -218,8 +219,8 @@ class _$UpComingPaymentsImpl implements _UpComingPayments {
   int get hashCode => Object.hash(
     runtimeType,
     count,
-    const DeepCollectionEquality().hash(next),
-    const DeepCollectionEquality().hash(previous),
+    next,
+    previous,
     const DeepCollectionEquality().hash(_results),
   );
 
@@ -243,8 +244,8 @@ class _$UpComingPaymentsImpl implements _UpComingPayments {
 abstract class _UpComingPayments implements UpComingPayments {
   const factory _UpComingPayments({
     @JsonKey(name: "count") required final int count,
-    @JsonKey(name: "next") final dynamic next,
-    @JsonKey(name: "previous") final dynamic previous,
+    @JsonKey(name: 'next') final String? next,
+    @JsonKey(name: 'previous') final String? previous,
     @JsonKey(name: "results") required final List<UpComingPaymentsList> results,
   }) = _$UpComingPaymentsImpl;
 
@@ -255,11 +256,11 @@ abstract class _UpComingPayments implements UpComingPayments {
   @JsonKey(name: "count")
   int get count;
   @override
-  @JsonKey(name: "next")
-  dynamic get next;
+  @JsonKey(name: 'next')
+  String? get next;
   @override
-  @JsonKey(name: "previous")
-  dynamic get previous;
+  @JsonKey(name: 'previous')
+  String? get previous;
   @override
   @JsonKey(name: "results")
   List<UpComingPaymentsList> get results;

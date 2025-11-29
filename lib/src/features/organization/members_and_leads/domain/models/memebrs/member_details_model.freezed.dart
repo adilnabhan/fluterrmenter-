@@ -33,6 +33,8 @@ mixin _$MemberDetailsModel {
   String? get height => throw _privateConstructorUsedError;
   @JsonKey(name: 'weight')
   String? get weight => throw _privateConstructorUsedError;
+  @JsonKey(name: 'address')
+  String? get address => throw _privateConstructorUsedError;
   @JsonKey(name: 'profession')
   String? get profession => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_active_member')
@@ -89,6 +91,7 @@ abstract class $MemberDetailsModelCopyWith<$Res> {
     @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
     @JsonKey(name: 'height') String? height,
     @JsonKey(name: 'weight') String? weight,
+    @JsonKey(name: 'address') String? address,
     @JsonKey(name: 'profession') String? profession,
     @JsonKey(name: 'is_active_member') bool? isActiveMember,
     @JsonKey(name: 'memberships') List<MembershipDataModel>? memberships,
@@ -128,6 +131,7 @@ class _$MemberDetailsModelCopyWithImpl<$Res, $Val extends MemberDetailsModel>
     Object? emergencyContactNumber = freezed,
     Object? height = freezed,
     Object? weight = freezed,
+    Object? address = freezed,
     Object? profession = freezed,
     Object? isActiveMember = freezed,
     Object? memberships = freezed,
@@ -175,6 +179,11 @@ class _$MemberDetailsModelCopyWithImpl<$Res, $Val extends MemberDetailsModel>
                 freezed == weight
                     ? _value.weight
                     : weight // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            address:
+                freezed == address
+                    ? _value.address
+                    : address // ignore: cast_nullable_to_non_nullable
                         as String?,
             profession:
                 freezed == profession
@@ -273,6 +282,7 @@ abstract class _$$MemberDetailsModelImplCopyWith<$Res>
     @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
     @JsonKey(name: 'height') String? height,
     @JsonKey(name: 'weight') String? weight,
+    @JsonKey(name: 'address') String? address,
     @JsonKey(name: 'profession') String? profession,
     @JsonKey(name: 'is_active_member') bool? isActiveMember,
     @JsonKey(name: 'memberships') List<MembershipDataModel>? memberships,
@@ -311,6 +321,7 @@ class __$$MemberDetailsModelImplCopyWithImpl<$Res>
     Object? emergencyContactNumber = freezed,
     Object? height = freezed,
     Object? weight = freezed,
+    Object? address = freezed,
     Object? profession = freezed,
     Object? isActiveMember = freezed,
     Object? memberships = freezed,
@@ -358,6 +369,11 @@ class __$$MemberDetailsModelImplCopyWithImpl<$Res>
             freezed == weight
                 ? _value.weight
                 : weight // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        address:
+            freezed == address
+                ? _value.address
+                : address // ignore: cast_nullable_to_non_nullable
                     as String?,
         profession:
             freezed == profession
@@ -449,6 +465,7 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
     @JsonKey(name: 'emergency_contact_number') this.emergencyContactNumber,
     @JsonKey(name: 'height') this.height,
     @JsonKey(name: 'weight') this.weight,
+    @JsonKey(name: 'address') this.address,
     @JsonKey(name: 'profession') this.profession,
     @JsonKey(name: 'is_active_member') this.isActiveMember,
     @JsonKey(name: 'memberships') final List<MembershipDataModel>? memberships,
@@ -487,6 +504,9 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
   @override
   @JsonKey(name: 'weight')
   final String? weight;
+  @override
+  @JsonKey(name: 'address')
+  final String? address;
   @override
   @JsonKey(name: 'profession')
   final String? profession;
@@ -543,7 +563,7 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
 
   @override
   String toString() {
-    return 'MemberDetailsModel(id: $id, profilePicture: $profilePicture, emergencyContactName: $emergencyContactName, emergencyContactNumber: $emergencyContactNumber, height: $height, weight: $weight, profession: $profession, isActiveMember: $isActiveMember, memberships: $memberships, fullName: $fullName, created: $created, modified: $modified, mobileNumber: $mobileNumber, firstName: $firstName, lastName: $lastName, email: $email, dateOfBirth: $dateOfBirth, gender: $gender, bloodGroup: $bloodGroup, userRole: $userRole, hashOfUserPhoneNumber: $hashOfUserPhoneNumber)';
+    return 'MemberDetailsModel(id: $id, profilePicture: $profilePicture, emergencyContactName: $emergencyContactName, emergencyContactNumber: $emergencyContactNumber, height: $height, weight: $weight, address: $address, profession: $profession, isActiveMember: $isActiveMember, memberships: $memberships, fullName: $fullName, created: $created, modified: $modified, mobileNumber: $mobileNumber, firstName: $firstName, lastName: $lastName, email: $email, dateOfBirth: $dateOfBirth, gender: $gender, bloodGroup: $bloodGroup, userRole: $userRole, hashOfUserPhoneNumber: $hashOfUserPhoneNumber)';
   }
 
   @override
@@ -560,6 +580,7 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
                 other.emergencyContactNumber == emergencyContactNumber) &&
             (identical(other.height, height) || other.height == height) &&
             (identical(other.weight, weight) || other.weight == weight) &&
+            (identical(other.address, address) || other.address == address) &&
             (identical(other.profession, profession) ||
                 other.profession == profession) &&
             (identical(other.isActiveMember, isActiveMember) ||
@@ -601,6 +622,7 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
     emergencyContactNumber,
     height,
     weight,
+    address,
     profession,
     isActiveMember,
     const DeepCollectionEquality().hash(_memberships),
@@ -644,6 +666,7 @@ abstract class _MemberDetailsModel implements MemberDetailsModel {
     final String? emergencyContactNumber,
     @JsonKey(name: 'height') final String? height,
     @JsonKey(name: 'weight') final String? weight,
+    @JsonKey(name: 'address') final String? address,
     @JsonKey(name: 'profession') final String? profession,
     @JsonKey(name: 'is_active_member') final bool? isActiveMember,
     @JsonKey(name: 'memberships') final List<MembershipDataModel>? memberships,
@@ -683,6 +706,9 @@ abstract class _MemberDetailsModel implements MemberDetailsModel {
   @override
   @JsonKey(name: 'weight')
   String? get weight;
+  @override
+  @JsonKey(name: 'address')
+  String? get address;
   @override
   @JsonKey(name: 'profession')
   String? get profession;

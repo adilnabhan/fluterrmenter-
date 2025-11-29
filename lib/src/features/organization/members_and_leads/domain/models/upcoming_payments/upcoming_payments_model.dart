@@ -8,8 +8,8 @@ part 'upcoming_payments_model.g.dart';
 class UpComingPayments with _$UpComingPayments {
   const factory UpComingPayments({
     @JsonKey(name: "count") required int count,
-    @JsonKey(name: "next") dynamic next,
-    @JsonKey(name: "previous") dynamic previous,
+    @JsonKey(name: 'next') String? next,
+    @JsonKey(name: 'previous') String? previous,
     @JsonKey(name: "results") required List<UpComingPaymentsList> results,
   }) = _UpComingPayments;
 

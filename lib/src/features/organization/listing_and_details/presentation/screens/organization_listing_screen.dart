@@ -161,7 +161,7 @@ class _OrganizationListingAndDetailsScreenState
                       (either) => either.fold(_onError, (orgHomeData) {
                         final cards = [
                           (
-                            title: 'Active Members',
+                            title: 'Active Memberships',
                             color: const Color(0xff486CC2),
                             count: orgHomeData.activeCustomersCount ?? 0,
                             onTap: () {
@@ -179,7 +179,7 @@ class _OrganizationListingAndDetailsScreenState
                             },
                           ),
                           (
-                            title: 'Total Trainers & Members',
+                            title: 'Total Members & Trainers',
                             color: const Color(0xff9C51BF),
                             count:
                                 (orgHomeData.trainerCount ?? 0) +
@@ -200,7 +200,7 @@ class _OrganizationListingAndDetailsScreenState
                             },
                           ),
                           (
-                            title: 'Expired Members',
+                            title: 'Expired Memberships',
                             color: const Color(0xff527F50),
                             count: orgHomeData.expiredCustomersCount ?? 0,
                             onTap: () {

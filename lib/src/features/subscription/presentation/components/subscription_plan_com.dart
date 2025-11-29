@@ -240,26 +240,26 @@ class __SubscriptionPlanChooseComState
                               );
                             },
                           ),
-                          const SizedBox(height: 20),
-                          Center(
-                            child: InkWell(
-                              onTap: () {
-                                _parentCubit.skipSubscriptionCheck();
-                              },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Skip',
-                                  style: AppStyles.text14Px.poppins.w600
-                                      .copyWith(
-                                    color: AppColors.dark.withOpacity(0.7),
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          // const SizedBox(height: 20),
+                          // Center(
+                          //   child: InkWell(
+                          //     onTap: () {
+                          //       _parentCubit.skipSubscriptionCheck();
+                          //     },
+                          //     borderRadius: BorderRadius.circular(12),
+                          //     child: Padding(
+                          //       padding: const EdgeInsets.all(8.0),
+                          //       child: Text(
+                          //         'Skip',
+                          //         style: AppStyles.text14Px.poppins.w600
+                          //             .copyWith(
+                          //           color: AppColors.dark.withOpacity(0.7),
+                          //           decoration: TextDecoration.underline,
+                          //         ),
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
                           const Spacer(),
                         ],
                       ),

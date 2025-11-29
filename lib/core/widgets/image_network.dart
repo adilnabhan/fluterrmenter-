@@ -3,7 +3,15 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 ///
 class ImageNetwork extends StatelessWidget {
   ///
-  const ImageNetwork(this.imageUrl, {super.key, this.placeholderWidget, this.errorWidget, this.width, this.height, this.fit = BoxFit.cover});
+  const ImageNetwork(
+    this.imageUrl, {
+    super.key,
+    this.placeholderWidget,
+    this.errorWidget,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+  });
 
   ///image url to load image
   final String? imageUrl;
@@ -35,7 +43,20 @@ class ImageNetwork extends StatelessWidget {
       fit: fit,
       placeholder: (_, __) {
         return placeholderWidget ??
-            Shimmer.fromColors(baseColor: Colors.white, highlightColor: Colors.grey[300]!, child: ColoredBox(color: Colors.grey[300]!, child: SizedBox(width: width, height: height)));
+            Shimmer.fromColors(
+              baseColor: Colors.white,
+              highlightColor: Colors.grey[300]!,
+              child: Container(
+                width: width,
+                height: height,
+                color: Colors.grey[300],
+              ),
+
+              // ColoredBox(
+              //   color: Colors.grey[300]!,
+              //   child: SizedBox(width: width, height: height),
+              // ),
+            );
       },
       errorWidget: (_, __, error) {
         return errorWidget ?? Center(child: empty);
@@ -49,6 +70,11 @@ class ImageNetwork extends StatelessWidget {
     height: height,
     width: width,
     color: Colors.grey.shade400,
-    child: Icon(Icons.image, color: Colors.white, size: height ?? 50, semanticLabel: 'Image not found'),
+    child: Icon(
+      Icons.image,
+      color: Colors.white,
+      size: height ?? 50,
+      semanticLabel: 'Image not found',
+    ),
   );
 }

@@ -15,6 +15,7 @@ _$MemberDetailsModelImpl _$$MemberDetailsModelImplFromJson(
   emergencyContactNumber: json['emergency_contact_number'] as String?,
   height: json['height'] as String?,
   weight: json['weight'] as String?,
+  address: json['address'] as String?,
   profession: json['profession'] as String?,
   isActiveMember: json['is_active_member'] as bool?,
   memberships:
@@ -53,6 +54,7 @@ Map<String, dynamic> _$$MemberDetailsModelImplToJson(
   'emergency_contact_number': instance.emergencyContactNumber,
   'height': instance.height,
   'weight': instance.weight,
+  'address': instance.address,
   'profession': instance.profession,
   'is_active_member': instance.isActiveMember,
   'memberships': instance.memberships,
