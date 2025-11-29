@@ -35,6 +35,8 @@ mixin _$InitiateRazorpayPaymentModel {
   DisciplPlan? get disciplPlan => throw _privateConstructorUsedError;
   @JsonKey(name: 'amount')
   String? get amount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'is_free_plan')
+  bool? get isFreePlan => throw _privateConstructorUsedError;
 
   /// Serializes this InitiateRazorpayPaymentModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -64,6 +66,7 @@ abstract class $InitiateRazorpayPaymentModelCopyWith<$Res> {
     @JsonKey(name: 'organization') String? organization,
     @JsonKey(name: 'discipl_plan') DisciplPlan? disciplPlan,
     @JsonKey(name: 'amount') String? amount,
+    @JsonKey(name: 'is_free_plan') bool? isFreePlan,
   });
 
   $UserCopyWith<$Res>? get user;
@@ -94,6 +97,7 @@ class _$InitiateRazorpayPaymentModelCopyWithImpl<
     Object? organization = freezed,
     Object? disciplPlan = freezed,
     Object? amount = freezed,
+    Object? isFreePlan = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -127,6 +131,11 @@ class _$InitiateRazorpayPaymentModelCopyWithImpl<
                     ? _value.amount
                     : amount // ignore: cast_nullable_to_non_nullable
                         as String?,
+            isFreePlan:
+                freezed == isFreePlan
+                    ? _value.isFreePlan
+                    : isFreePlan // ignore: cast_nullable_to_non_nullable
+                        as bool?,
           )
           as $Val,
     );
@@ -177,6 +186,7 @@ abstract class _$$InitiateRazorpayPaymentModelImplCopyWith<$Res>
     @JsonKey(name: 'organization') String? organization,
     @JsonKey(name: 'discipl_plan') DisciplPlan? disciplPlan,
     @JsonKey(name: 'amount') String? amount,
+    @JsonKey(name: 'is_free_plan') bool? isFreePlan,
   });
 
   @override
@@ -209,6 +219,7 @@ class __$$InitiateRazorpayPaymentModelImplCopyWithImpl<$Res>
     Object? organization = freezed,
     Object? disciplPlan = freezed,
     Object? amount = freezed,
+    Object? isFreePlan = freezed,
   }) {
     return _then(
       _$InitiateRazorpayPaymentModelImpl(
@@ -242,6 +253,11 @@ class __$$InitiateRazorpayPaymentModelImplCopyWithImpl<$Res>
                 ? _value.amount
                 : amount // ignore: cast_nullable_to_non_nullable
                     as String?,
+        isFreePlan:
+            freezed == isFreePlan
+                ? _value.isFreePlan
+                : isFreePlan // ignore: cast_nullable_to_non_nullable
+                    as bool?,
       ),
     );
   }
@@ -258,6 +274,7 @@ class _$InitiateRazorpayPaymentModelImpl
     @JsonKey(name: 'organization') this.organization,
     @JsonKey(name: 'discipl_plan') this.disciplPlan,
     @JsonKey(name: 'amount') this.amount,
+    @JsonKey(name: 'is_free_plan') this.isFreePlan,
   });
 
   factory _$InitiateRazorpayPaymentModelImpl.fromJson(
@@ -282,10 +299,13 @@ class _$InitiateRazorpayPaymentModelImpl
   @override
   @JsonKey(name: 'amount')
   final String? amount;
+  @override
+  @JsonKey(name: 'is_free_plan')
+  final bool? isFreePlan;
 
   @override
   String toString() {
-    return 'InitiateRazorpayPaymentModel(id: $id, orderId: $orderId, user: $user, organization: $organization, disciplPlan: $disciplPlan, amount: $amount)';
+    return 'InitiateRazorpayPaymentModel(id: $id, orderId: $orderId, user: $user, organization: $organization, disciplPlan: $disciplPlan, amount: $amount, isFreePlan: $isFreePlan)';
   }
 
   @override
@@ -300,7 +320,9 @@ class _$InitiateRazorpayPaymentModelImpl
                 other.organization == organization) &&
             (identical(other.disciplPlan, disciplPlan) ||
                 other.disciplPlan == disciplPlan) &&
-            (identical(other.amount, amount) || other.amount == amount));
+            (identical(other.amount, amount) || other.amount == amount) &&
+            (identical(other.isFreePlan, isFreePlan) ||
+                other.isFreePlan == isFreePlan));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -313,6 +335,7 @@ class _$InitiateRazorpayPaymentModelImpl
     organization,
     disciplPlan,
     amount,
+    isFreePlan,
   );
 
   /// Create a copy of InitiateRazorpayPaymentModel
@@ -342,6 +365,7 @@ abstract class _InitiateRazorpayPaymentModel
     @JsonKey(name: 'organization') final String? organization,
     @JsonKey(name: 'discipl_plan') final DisciplPlan? disciplPlan,
     @JsonKey(name: 'amount') final String? amount,
+    @JsonKey(name: 'is_free_plan') final bool? isFreePlan,
   }) = _$InitiateRazorpayPaymentModelImpl;
 
   factory _InitiateRazorpayPaymentModel.fromJson(Map<String, dynamic> json) =
@@ -365,6 +389,9 @@ abstract class _InitiateRazorpayPaymentModel
   @override
   @JsonKey(name: 'amount')
   String? get amount;
+  @override
+  @JsonKey(name: 'is_free_plan')
+  bool? get isFreePlan;
 
   /// Create a copy of InitiateRazorpayPaymentModel
   /// with the given fields replaced by the non-null parameter values.

@@ -21,6 +21,7 @@ _$InitiateRazorpayPaymentModelImpl _$$InitiateRazorpayPaymentModelImplFromJson(
           ? null
           : DisciplPlan.fromJson(json['discipl_plan'] as Map<String, dynamic>),
   amount: json['amount'] as String?,
+  isFreePlan: json['is_free_plan'] as bool?,
 );
 
 Map<String, dynamic> _$$InitiateRazorpayPaymentModelImplToJson(
@@ -32,6 +33,7 @@ Map<String, dynamic> _$$InitiateRazorpayPaymentModelImplToJson(
   'organization': instance.organization,
   'discipl_plan': instance.disciplPlan,
   'amount': instance.amount,
+  'is_free_plan': instance.isFreePlan,
 };
 
 _$DisciplPlanImpl _$$DisciplPlanImplFromJson(Map<String, dynamic> json) =>

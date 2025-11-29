@@ -50,21 +50,78 @@ final class MembershipRepository {
   /// ```
   ///
   /// @apiSuccess {MembershipPackageModel} response Success response
+  ///
+  // Future<Either<ApiException, MembershipPackageModel>> create({
+  //   required Map<String, dynamic> body,
+  // }) async {
+  //   try {
+  //     return await Feggy.async(
+  //       call: _dio.post<dynamic>(
+  //         ApiUris.createMembershipPackage,
+  //         data: body,
+  //         options: Options(headers: {'X-Platform': platformSource}).token,
+  //       ),
+  //       onSuccess:
+  //           (res) => _handleResponse(res, MembershipPackageModel.fromJson),
+  //     );
+  //   } catch (e) {
+  //     return left(ApiException.unknown(msg: e.toString()));
+  //   }
+  // }
+
   Future<Either<ApiException, MembershipPackageModel>> create({
     required Map<String, dynamic> body,
   }) async {
     try {
-      return await Feggy.async(
-        call: _dio.post<dynamic>(
-          ApiUris.createMembershipPackage,
-          data: body,
-          options: Options(headers: {'X-Platform': platformSource}).token,
+      final response = await _dio.post<dynamic>(
+        ApiUris.createMembershipPackage,
+        data: body,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      final statusCode = response.statusCode ?? 0;
+
+      if ((statusCode == 200 || statusCode == 201) &&
+          response.data != null &&
+          response.data is Map<String, dynamic>) {
+        try {
+          final model = MembershipPackageModel.fromJson(
+            response.data as Map<String, dynamic>,
+          );
+          return right(model);
+        } catch (e) {
+          return left(
+            ApiException.unknown(
+              msg: 'Failed to parse response: ${e.toString()}',
+            ),
+          );
+        }
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: 'Unexpected response from server. Code: $statusCode',
         ),
-        onSuccess:
-            (res) => _handleResponse(res, MembershipPackageModel.fromJson),
+      );
+    } on DioException catch (e) {
+      print('errr iss--$e');
+      // API level errors (validation, bad request, etc.)
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.isNotEmpty) {
+          return left(ApiException.unknown(msg: data.toString()));
+        }
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: e.message ?? 'Something went wrong during request.',
+        ),
       );
     } catch (e) {
-      return left(ApiException.unknown(msg: e.toString()));
+      return left(
+        ApiException.unknown(msg: 'Unexpected error: ${e.toString()}'),
+      );
     }
   }
 
@@ -110,26 +167,86 @@ final class MembershipRepository {
   /// ```
   ///
   /// @apiSuccess {void} response Success response
-  Future<Either<ApiException, void>> update({
+  // Future<Either<ApiException, void>> update({
+  //   required int id,
+  //   required Map<String, dynamic> body,
+  // }) async {
+  //   try {
+  //     return await Feggy.async(
+  //       call: _dio.patch<dynamic>(
+  //         ApiUris.updateMembershipPackage(id),
+  //         data: body,
+  //         options: Options(headers: {'X-Platform': platformSource}).token,
+  //       ),
+  //       onSuccess: (res) {
+  //         if (res.statusCode == 200) return right(null);
+  //         return left(const ApiException.unknown());
+  //       },
+  //     );
+  //   } on ApiException {
+  //     return left(const ApiException.unknown());
+  //   } catch (_) {
+  //     return left(const ApiException.unknown());
+  //   }
+  // }
+
+  Future<Either<ApiException, MembershipPackageModel>> update({
     required int id,
     required Map<String, dynamic> body,
   }) async {
     try {
-      return await Feggy.async(
-        call: _dio.patch<dynamic>(
-          ApiUris.updateMembershipPackage(id),
-          data: body,
-          options: Options(headers: {'X-Platform': platformSource}).token,
-        ),
-        onSuccess: (res) {
-          if (res.statusCode == 200) return right(null);
-          return left(const ApiException.unknown());
-        },
+      final response = await _dio.patch<dynamic>(
+        ApiUris.updateMembershipPackage(id),
+        data: body,
+        options: Options(headers: {'X-Platform': platformSource}).token,
       );
-    } on ApiException {
-      return left(const ApiException.unknown());
-    } catch (_) {
-      return left(const ApiException.unknown());
+
+      final statusCode = response.statusCode ?? 0;
+
+      // SUCCESS CASE — validate status codes and data type
+      if ((statusCode == 200 || statusCode == 201) &&
+          response.data != null &&
+          response.data is Map<String, dynamic>) {
+        try {
+          final model = MembershipPackageModel.fromJson(
+            response.data as Map<String, dynamic>,
+          );
+          return right(model);
+        } catch (e) {
+          return left(
+            ApiException.unknown(
+              msg: 'Failed to parse response: ${e.toString()}',
+            ),
+          );
+        }
+      }
+
+      // UNEXPECTED RESPONSE
+      return left(
+        ApiException.unknown(
+          msg: 'Unexpected response from server. Code: $statusCode',
+        ),
+      );
+    } on DioException catch (e) {
+      print('Update API error → $e');
+
+      // API-level validation errors
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.isNotEmpty) {
+          return left(ApiException.unknown(msg: data.toString()));
+        }
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: e.message ?? 'Something went wrong during request.',
+        ),
+      );
+    } catch (e) {
+      return left(
+        ApiException.unknown(msg: 'Unexpected error: ${e.toString()}'),
+      );
     }
   }
 
@@ -138,22 +255,71 @@ final class MembershipRepository {
   /// @apiGroup Membership
   ///
   /// @apiSuccess {void} response Success response
+  // Future<Either<ApiException, void>> delete({required int id}) async {
+  //   try {
+  //     return await Feggy.async(
+  //       call: _dio.delete<dynamic>(
+  //         ApiUris.deleteMembershipPackage(id),
+  //         options: Options(headers: {'X-Platform': platformSource}).token,
+  //       ),
+  //       onSuccess: (res) {
+  //         if (res.statusCode == 200) return right(null);
+  //         return left(const ApiException.unknown());
+  //       },
+  //     );
+  //   } on ApiException {
+  //     return left(const ApiException.unknown());
+  //   } catch (_) {
+  //     return left(const ApiException.unknown());
+  //   }
+  // }
+
   Future<Either<ApiException, void>> delete({required int id}) async {
     try {
-      return await Feggy.async(
-        call: _dio.delete<dynamic>(
-          ApiUris.deleteMembershipPackage(id),
-          options: Options(headers: {'X-Platform': platformSource}).token,
-        ),
-        onSuccess: (res) {
-          if (res.statusCode == 200) return right(null);
-          return left(const ApiException.unknown());
-        },
+      final response = await Dio().request<dynamic>(
+        ApiUris.deleteMembershipPackage(id),
+        options:
+            Options(
+              method: 'DELETE',
+              headers: {
+                'X-Platform': platformSource,
+                'Content-Type': 'application/json',
+              },
+            ).token,
       );
-    } on ApiException {
-      return left(const ApiException.unknown());
-    } catch (_) {
-      return left(const ApiException.unknown());
+
+      final statusCode = response.statusCode ?? 0;
+      print('Delete status code: $statusCode');
+
+      if (statusCode == 200 || statusCode == 204) {
+        return right(null);
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: 'Unexpected response from server. Code: $statusCode',
+        ),
+      );
+    } on DioException catch (e) {
+      print('Delete error: $e');
+
+      // If backend sends structured error message
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.isNotEmpty) {
+          return left(ApiException.unknown(msg: data.toString()));
+        }
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: e.message ?? 'Something went wrong during deletion.',
+        ),
+      );
+    } catch (e) {
+      return left(
+        ApiException.unknown(msg: 'Unexpected error: ${e.toString()}'),
+      );
     }
   }
 
@@ -186,11 +352,12 @@ final class MembershipRepository {
 
   Future<Either<ApiException, UpComingPayments>> listExpiringMembership({
     required Map<String, dynamic> queryParameters,
+    String? nextUrl,
   }) async {
     try {
       return await Feggy.async(
         call: _dio.get<dynamic>(
-          ApiUris.expiringMembershipPackages,
+          nextUrl ?? ApiUris.expiringMembershipPackages,
           queryParameters: queryParameters,
           options: Options(headers: {'X-Platform': platformSource}).token,
         ),

@@ -79,36 +79,48 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required MemberDetailsModel memeberDetails,
     required MembershipPackageModel membershipPackageModel,
   }) async {
+    print('id ---${membershipPackageModel.id}---$orgId');
     emit(
       state.copyWith(
         createOrUpdateMember: none(),
         memberOnboardedAnimationCompleted: null,
       ),
     );
+
+    final map = {
+      'first_name': memeberDetails.fullName,
+      // 'last_name': '',
+      'mobile_number': '+91${memeberDetails.mobileNumber}',
+      'email': memeberDetails.email,
+      'date_of_birth': memeberDetails.dateOfBirth?.format('yyyy-MM-dd'),
+      'gender': memeberDetails.gender,
+      'blood_group': memeberDetails.bloodGroup,
+      'address': memeberDetails.address,
+      'user_role': 45,
+      'organization_id': orgId,
+      'emergency_contact_number':
+          memeberDetails.emergencyContactNumber!.isNotEmpty
+              ? '+91${memeberDetails.emergencyContactNumber}'
+              : null,
+      'height': memeberDetails.height,
+      'weight': memeberDetails.weight,
+      'profession': memeberDetails.profession,
+      'membership_plan_id': membershipPackageModel.id,
+      'profile_picture':
+          (memeberDetails.profilePicture?.isNotEmpty ?? false)
+              ? await MultipartFile.fromFile(
+                memeberDetails.profilePicture!,
+                filename: 'profile.jpg',
+              )
+              : null,
+    }..removeWhere(
+      (key, value) =>
+          value == null || (value is String && value.trim().isEmpty),
+    );
+    print(' ths map is--$map');
     final res = await MembersRepository().createOrUpdateMember(
       memberId: null,
-      body: FormData.fromMap({
-        'first_name': memeberDetails.fullName,
-        'last_name': '',
-        'mobile_number': '+91${memeberDetails.mobileNumber}',
-        'email': memeberDetails.email,
-        'date_of_birth': memeberDetails.dateOfBirth?.format('yyyy-MM-dd'),
-        'gender': memeberDetails.gender,
-        'blood_group': memeberDetails.bloodGroup,
-        'user_role': 45,
-        'organization_id': orgId,
-        // 'emergency_contact_name': emergencyContactName,
-        'emergency_contact_number':
-            '+91${memeberDetails.emergencyContactNumber}',
-        'height': memeberDetails.height,
-        'weight': memeberDetails.weight,
-        'profession': memeberDetails.profession,
-        'membership_plan_id': membershipPackageModel.id,
-        if (memeberDetails.profilePicture?.isNotEmpty ?? false)
-          'profile_picture': await MultipartFile.fromFile(
-            memeberDetails.profilePicture ?? '',
-          ),
-      }),
+      body: FormData.fromMap(map),
     );
     emit(state.copyWith(createOrUpdateMember: some(res)));
     res.fold((l) {}, (r) {
@@ -442,54 +454,64 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required String? profilePicture,
   }) async {
     emit(state.copyWith(createOrUpdateMember: none()));
-    if (fullName?.isEmpty ?? true) {
-      emit(
-        state.copyWith(
-          createOrUpdateMember: some(
-            left(const ApiException.notFound(msg: 'Full name is required')),
-          ),
-        ),
-      );
-      return;
-    } else if (mobileNumber?.isEmpty ?? true) {
-      emit(
-        state.copyWith(
-          createOrUpdateMember: some(
-            left(const ApiException.notFound(msg: 'Mobile number is required')),
-          ),
-        ),
-      );
-      return;
-    } else if (email?.isEmpty ?? true) {
-      emit(
-        state.copyWith(
-          createOrUpdateMember: some(
-            left(const ApiException.notFound(msg: 'Email is required')),
-          ),
-        ),
-      );
-      return;
-    } else if (gender?.isEmpty ?? true) {
-      emit(
-        state.copyWith(
-          createOrUpdateMember: some(
-            left(const ApiException.notFound(msg: 'Gender is required')),
-          ),
-        ),
-      );
-      return;
+    // if (fullName?.isEmpty ?? true) {
+    //   emit(
+    //     state.copyWith(
+    //       createOrUpdateMember: some(
+    //         left(const ApiException.notFound(msg: 'Full name is required')),
+    //       ),
+    //     ),
+    //   );
+    //   return;
+    // } else if (mobileNumber?.isEmpty ?? true) {
+    //   emit(
+    //     state.copyWith(
+    //       createOrUpdateMember: some(
+    //         left(const ApiException.notFound(msg: 'Mobile number is required')),
+    //       ),
+    //     ),
+    //   );
+    //   return;
+    // } else if (email?.isEmpty ?? true) {
+    //   emit(
+    //     state.copyWith(
+    //       createOrUpdateMember: some(
+    //         left(const ApiException.notFound(msg: 'Email is required')),
+    //       ),
+    //     ),
+    //   );
+    //   return;
+    // } else if (gender?.isEmpty ?? true) {
+    //   emit(
+    //     state.copyWith(
+    //       createOrUpdateMember: some(
+    //         left(const ApiException.notFound(msg: 'Gender is required')),
+    //       ),
+    //     ),
+    //   );
+    //   return;
+    // }
+
+    final Map<String, dynamic> data = {};
+
+    void addIfNotNull(String key, dynamic value) {
+      if (value != null && value.toString().isNotEmpty) {
+        data[key] = value;
+      }
     }
-    final formData = FormData.fromMap({
-      'first_name': fullName,
-      'last_name': '',
-      'mobile_number': '+91$mobileNumber',
-      'email': email,
-      'gender': gender?.toLowerCase(),
-      'user_role': 35,
-      'organization_id': orgId,
-      'designation': 'trainer',
-    });
-    // Add profile picture if provided
+
+    addIfNotNull('first_name', fullName);
+    addIfNotNull('last_name', '');
+    addIfNotNull('mobile_number', '+91$mobileNumber');
+    addIfNotNull('email', email);
+    addIfNotNull('gender', gender?.toLowerCase());
+    addIfNotNull('user_role', 35);
+    addIfNotNull('organization_id', orgId);
+    addIfNotNull('designation', 'trainer');
+
+    final formData = FormData.fromMap(data);
+
+    // ===== PROFILE PICTURE CHECK =====
     if (profilePicture?.isNotEmpty ?? false) {
       formData.files.add(
         MapEntry(
@@ -498,6 +520,38 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         ),
       );
     }
+
+    debugPrint("📦 ----- MEMBER UPDATE PAYLOAD -----");
+    debugPrint("🧾 Fields:");
+    for (var field in formData.fields) {
+      debugPrint("   ${field.key}: ${field.value}");
+    }
+
+    debugPrint("🖼 Files:");
+    for (var file in formData.files) {
+      debugPrint("   ${file.key}: ${(file.value as MultipartFile).filename}");
+    }
+    debugPrint("📦 --------------------------------");
+
+    // final formData = FormData.fromMap({
+    //   'first_name': fullName,
+    //   'last_name': '',
+    //   'mobile_number': '+91$mobileNumber',
+    //   'email': email,
+    //   'gender': gender?.toLowerCase(),
+    //   'user_role': 35,
+    //   'organization_id': orgId,
+    //   'designation': 'trainer',
+    // });
+    // // Add profile picture if provided
+    // if (profilePicture?.isNotEmpty ?? false) {
+    //   formData.files.add(
+    //     MapEntry(
+    //       'profile_picture',
+    //       await MultipartFile.fromFile(profilePicture!),
+    //     ),
+    //   );
+    // }
     final res = await MembersRepository().createOrUpdateMember(
       memberId: memberId,
       body: formData,
@@ -615,12 +669,76 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
 
+  // Future<void> fetchExpiringMemberShip() async {
+  //   emit(state.copyWith(upComingPayments: none()));
+  //   final res = await MembershipRepository().listExpiringMembership(
+  //     queryParameters: {'organization_id': orgId},
+  //   );
+  //   emit(state.copyWith(upComingPayments: some(res)));
+  // }
 
-  Future<void> fetchExpiringMemberShip() async {
-    emit(state.copyWith(upComingPayments: none(),));
+  Future<void> fetchExpiringMemberShip({bool isPagination = false}) async {
+    // Extract existing data for pagination
+    final expiring = state.upComingPayments.data.fold(
+      () => null,
+      (t) => t.fold((l) => null, (r) => r),
+    );
+
+    // Stop if pagination requested but no next page
+    if (isPagination && (expiring?.next?.isEmpty ?? true)) {
+      return;
+    }
+
+    // Emit loading state (preserve previous data if pagination)
+    emit(
+      state.copyWith(
+        upComingPayments: (
+          data: isPagination ? state.upComingPayments.data : none(),
+          isPagination: isPagination,
+        ),
+      ),
+    );
+
+    // API Call
     final res = await MembershipRepository().listExpiringMembership(
       queryParameters: {'organization_id': orgId},
+      nextUrl: isPagination ? expiring?.next : null,
     );
-    emit(state.copyWith(upComingPayments: some(res)));
+
+    // Handle Pagination Case
+    if (isPagination) {
+      await res.fold(
+        (l) {
+          emit(
+            state.copyWith(
+              upComingPayments: (
+                data: state.upComingPayments.data,
+                isPagination: false,
+              ),
+            ),
+          );
+          return Dialogs.showSnack(msg: l.msg);
+        },
+        (r) {
+          final data = r.copyWith(
+            results: [...?expiring?.results, ...?r.results],
+          );
+
+          emit(
+            state.copyWith(
+              upComingPayments: (data: some(right(data)), isPagination: false),
+            ),
+          );
+        },
+      );
+    }
+    // Handle First Load (no pagination)
+    else {
+      emit(
+        state.copyWith(
+          upComingPayments: (data: some(res), isPagination: false),
+        ),
+      );
+    }
   }
 }

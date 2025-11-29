@@ -32,8 +32,8 @@ mixin _$MembersAndLeadsState {
       throw _privateConstructorUsedError;
   Option<Either<ApiException, CreateOrUpdateLeadModel>>?
   get createOrUpdateLead => throw _privateConstructorUsedError;
-  Option<Either<ApiException, UpComingPayments?>> get upComingPayments =>
-      throw _privateConstructorUsedError;
+  ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
+  get upComingPayments => throw _privateConstructorUsedError;
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.
@@ -62,7 +62,8 @@ abstract class $MembersAndLeadsStateCopyWith<$Res> {
     leads,
     Option<Either<ApiException, LeadDetailsModel>> leadDetails,
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
-    Option<Either<ApiException, UpComingPayments?>> upComingPayments,
+    ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
+    upComingPayments,
   });
 }
 
@@ -143,7 +144,10 @@ class _$MembersAndLeadsStateCopyWithImpl<
                 null == upComingPayments
                     ? _value.upComingPayments
                     : upComingPayments // ignore: cast_nullable_to_non_nullable
-                        as Option<Either<ApiException, UpComingPayments?>>,
+                        as ({
+                          Option<Either<ApiException, UpComingPayments>> data,
+                          bool isPagination,
+                        }),
           )
           as $Val,
     );
@@ -172,7 +176,8 @@ abstract class _$$MembersAndLeadsStateImplCopyWith<$Res>
     leads,
     Option<Either<ApiException, LeadDetailsModel>> leadDetails,
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
-    Option<Either<ApiException, UpComingPayments?>> upComingPayments,
+    ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
+    upComingPayments,
   });
 }
 
@@ -246,7 +251,10 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
             null == upComingPayments
                 ? _value.upComingPayments
                 : upComingPayments // ignore: cast_nullable_to_non_nullable
-                    as Option<Either<ApiException, UpComingPayments?>>,
+                    as ({
+                      Option<Either<ApiException, UpComingPayments>> data,
+                      bool isPagination,
+                    }),
       ),
     );
   }
@@ -263,7 +271,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
     this.leads = const (data: None(), isPagination: false),
     this.leadDetails = const None(),
     this.createOrUpdateLead,
-    this.upComingPayments = const None(),
+    this.upComingPayments = const (data: None(), isPagination: false),
   });
 
   //* Members
@@ -297,7 +305,11 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   createOrUpdateLead;
   @override
   @JsonKey()
-  final Option<Either<ApiException, UpComingPayments?>> upComingPayments;
+  final ({
+    Option<Either<ApiException, UpComingPayments>> data,
+    bool isPagination,
+  })
+  upComingPayments;
 
   @override
   String toString() {
@@ -374,7 +386,11 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
     final Option<Either<ApiException, LeadDetailsModel>> leadDetails,
     final Option<Either<ApiException, CreateOrUpdateLeadModel>>?
     createOrUpdateLead,
-    final Option<Either<ApiException, UpComingPayments?>> upComingPayments,
+    final ({
+      Option<Either<ApiException, UpComingPayments>> data,
+      bool isPagination,
+    })
+    upComingPayments,
   }) = _$MembersAndLeadsStateImpl;
 
   //* Members
@@ -395,7 +411,8 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
   @override
   Option<Either<ApiException, CreateOrUpdateLeadModel>>? get createOrUpdateLead;
   @override
-  Option<Either<ApiException, UpComingPayments?>> get upComingPayments;
+  ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
+  get upComingPayments;
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.

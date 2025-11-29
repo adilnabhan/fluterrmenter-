@@ -58,10 +58,32 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         'organization_id': orgDetails.id,
       },
     );
+    // await res.fold(
+    //   (l) async => emit(state.copyWith(payment: some(left(l)))),
+    //   (rozarpayOrder) async =>
+    //       openRazorpayCheckout(rozarpayOrder: rozarpayOrder),
+    // );
     await res.fold(
-      (l) async => emit(state.copyWith(payment: some(left(l)))),
-      (rozarpayOrder) async =>
-          openRazorpayCheckout(rozarpayOrder: rozarpayOrder),
+      (l) async {
+        emit(state.copyWith(payment: some(left(l))));
+      },
+      (rozarpayOrder) async {
+        final isFreePlan = rozarpayOrder.isFreePlan ?? false;
+
+        if (isFreePlan) {
+          final fakeResponse = PaymentSuccessResponse(
+            'FREE_PLAN',
+            'FREE_ORDER',
+            'FREE_SIGNATURE',
+            {},
+          );
+          emit(state.copyWith(payment: some(right(fakeResponse))));
+          return;
+        }
+
+        // Only open Razorpay when NOT a free plan
+        await openRazorpayCheckout(rozarpayOrder: rozarpayOrder);
+      },
     );
   }
 

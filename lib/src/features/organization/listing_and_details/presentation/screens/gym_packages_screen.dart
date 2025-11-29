@@ -294,34 +294,34 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                           color: Color(0xffDDDDDD),
                                         ),
                                       ).pOnly(bottom: 20, top: 12),
-                                      if (membership?.offerPrice?.isNotEmpty ??
-                                          false)
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              'Offer Price',
-                                              style:
-                                                  AppStyles
-                                                      .text13Px
-                                                      .poppins
-                                                      .w400
-                                                      .dark,
-                                            ),
-
-                                            ///
-                                            Text(
-                                              '₹${membership?.offerPrice}',
-                                              style:
-                                                  AppStyles
-                                                      .text14Px
-                                                      .poppins
-                                                      .w500
-                                                      .dark,
-                                            ),
-                                          ],
-                                        ).pOnly(bottom: 16),
+                                      // if (membership?.offerPrice?.isNotEmpty ??
+                                      //     false)
+                                      //   Row(
+                                      //     mainAxisAlignment:
+                                      //         MainAxisAlignment.spaceBetween,
+                                      //     children: [
+                                      //       Text(
+                                      //         'Offer Price',
+                                      //         style:
+                                      //             AppStyles
+                                      //                 .text13Px
+                                      //                 .poppins
+                                      //                 .w400
+                                      //                 .dark,
+                                      //       ),
+                                      //
+                                      //       ///
+                                      //       Text(
+                                      //         '₹${membership?.offerPrice}',
+                                      //         style:
+                                      //             AppStyles
+                                      //                 .text14Px
+                                      //                 .poppins
+                                      //                 .w500
+                                      //                 .dark,
+                                      //       ),
+                                      //     ],
+                                      //   ).pOnly(bottom: 16),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
@@ -371,14 +371,15 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                                 .w500
                                                 .dark
                                                 .copyWith(
-                                                  decoration:
-                                                      membership
-                                                                  ?.offerPrice
-                                                                  ?.isNotEmpty ??
-                                                              false
-                                                          ? TextDecoration
-                                                              .lineThrough
-                                                          : null,
+                                                  // decoration:
+                                                  //     membership
+                                                  //                 ?.offerPrice
+                                                  //                 ?.isNotEmpty ??
+                                                  //             false
+                                                  //         ?
+                                                  //     TextDecoration
+                                                  //             .lineThrough
+                                                  //         : null,
                                                 ),
                                           ),
                                         ],

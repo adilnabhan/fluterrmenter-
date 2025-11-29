@@ -10,8 +10,8 @@ _$UpComingPaymentsImpl _$$UpComingPaymentsImplFromJson(
   Map<String, dynamic> json,
 ) => _$UpComingPaymentsImpl(
   count: (json['count'] as num).toInt(),
-  next: json['next'],
-  previous: json['previous'],
+  next: json['next'] as String?,
+  previous: json['previous'] as String?,
   results:
       (json['results'] as List<dynamic>)
           .map((e) => UpComingPaymentsList.fromJson(e as Map<String, dynamic>))

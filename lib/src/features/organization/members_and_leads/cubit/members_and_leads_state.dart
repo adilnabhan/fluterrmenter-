@@ -21,8 +21,9 @@ class MembersAndLeadsState with _$MembersAndLeadsState {
     leads,
     @Default(None()) Option<Either<ApiException, LeadDetailsModel>> leadDetails,
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
-    @Default(None())
-    Option<Either<ApiException, UpComingPayments?>> upComingPayments,
+    @Default((data: None(), isPagination: false))
+    ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
+    upComingPayments,
   }) = _MembersAndLeadsState;
 }
 

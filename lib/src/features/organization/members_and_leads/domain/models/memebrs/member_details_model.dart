@@ -13,6 +13,7 @@ class MemberDetailsModel with _$MemberDetailsModel {
     @JsonKey(name: 'emergency_contact_number') String? emergencyContactNumber,
     @JsonKey(name: 'height') String? height,
     @JsonKey(name: 'weight') String? weight,
+    @JsonKey(name: 'address') String? address,
     @JsonKey(name: 'profession') String? profession,
     @JsonKey(name: 'is_active_member') bool? isActiveMember,
     @JsonKey(name: 'memberships') List<MembershipDataModel>? memberships,
@@ -30,7 +31,8 @@ class MemberDetailsModel with _$MemberDetailsModel {
     @JsonKey(name: 'hash_of_user_phone_number') String? hashOfUserPhoneNumber,
   }) = _MemberDetailsModel;
 
-  factory MemberDetailsModel.fromJson(Map<String, dynamic> json) => _$MemberDetailsModelFromJson(json);
+  factory MemberDetailsModel.fromJson(Map<String, dynamic> json) =>
+      _$MemberDetailsModelFromJson(json);
 }
 
 @freezed
@@ -53,5 +55,6 @@ class MembershipDataModel with _$MembershipDataModel {
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _MembershipDataModel;
 
-  factory MembershipDataModel.fromJson(Map<String, dynamic> json) => _$MembershipDataModelFromJson(json);
+  factory MembershipDataModel.fromJson(Map<String, dynamic> json) =>
+      _$MembershipDataModelFromJson(json);
 }
