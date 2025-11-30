@@ -222,6 +222,7 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
               Field<String>(
                 data: _brandCategory.copyWith(
                   onTap: () {
+                    FocusScope.of(context).unfocus();
                     AddCategorySheet(
                       selectedValues:
                           _brandCategory.selectedValues?.value ?? [],

@@ -725,6 +725,7 @@ class _CreateOrganizationWorkingDetailsScreenState
                   if (fields.first.label == 'Amenities') {
                     return InkWell(
                       onTap: () {
+                        FocusScope.of(context).unfocus();
                         AddAmenitiesSheet(
                           selectedValues: [
                             ...fields.first.selectedValues?.value.map(
