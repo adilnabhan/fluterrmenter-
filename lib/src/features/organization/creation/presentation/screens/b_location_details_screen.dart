@@ -146,10 +146,40 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
             ),
           ),
         ),
+        // FieldData(
+        //   type: FieldType.word,
+        //   textInputAction: TextInputAction.done,
+        //   label: 'PIN / ZIP Code',
+        //   requiredLabel: true,
+        //   inputFormatters: [
+        //     FilteringTextInputFormatter.digitsOnly,
+        //     LengthLimitingTextInputFormatter(6),
+        //   ],
+        //   keyboardType: TextInputType.number,
+        //   controller: TextEditingController(),
+        //   focusNode: FocusNode(),
+        //   validator: (value) {
+        //     if (value?.trim().isEmpty ?? true) {
+        //       return 'PIN / ZIP Code is required';
+        //     }
+        //     return null;
+        //   },
+        //   onSubmitted: (value) {
+        //     _locationDetails[4][0].focusNode?.requestFocus();
+        //   },
+        //   decoration: InputDecoration(
+        //     hintText: 'PIN / ZIP Code',
+        //     hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        //     border: const OutlineInputBorder(
+        //       borderRadius: BorderRadius.all(Radius.circular(8)),
+        //       borderSide: BorderSide(color: AppColors.borderGrey),
+        //     ),
+        //   ),
+        // ),
         FieldData(
           type: FieldType.word,
           textInputAction: TextInputAction.done,
-          label: 'PIN / ZIP Code',
+          label: 'Pin code',
           requiredLabel: true,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
@@ -160,7 +190,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           focusNode: FocusNode(),
           validator: (value) {
             if (value?.trim().isEmpty ?? true) {
-              return 'PIN / ZIP Code is required';
+              return 'Pin code is required';
             }
             return null;
           },
@@ -168,7 +198,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
             _locationDetails[4][0].focusNode?.requestFocus();
           },
           decoration: InputDecoration(
-            hintText: 'PIN / ZIP Code',
+            hintText: 'Pin code',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -303,25 +333,100 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
         },
         child: Scaffold(
           appBar: AppBar(automaticallyImplyLeading: false),
+          // floatingActionButton: SizedBox(
+          //   width: 84,
+          //   child: FloatingActionButton(
+          //     onPressed: _onContinue,
+          //     shape: const StadiumBorder(),
+          //     backgroundColor: AppColors.primary,
+          //     foregroundColor: AppColors.light,
+          //     elevation: 0,
+          //     child: const Icon(Icons.keyboard_arrow_right_outlined),
+          //   ),
+          // ),
           body: Form(
             key: _formKey,
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 const SizedBox(height: 22),
-                const OrganizationCreationCompletionStatusCard(progress: 2),
-                const SizedBox(height: 28),
-                Text(
-                  'Location Details',
-                  style: AppStyles.text16Px.poppins.w600.dark,
+                // const OrganizationCreationCompletionStatusCard(progress: 2),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(8, (index) {
+                    bool isActive = index <= 2;
+                    return Row(
+                      children: [
+                        Container(
+                          width: 25,
+                          height: 1,
+                          color:
+                              isActive
+                                  ? AppColors.primary
+                                  : AppColors.borderGrey,
+                        ),
+                        Transform.rotate(
+                          angle: 0.785398,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            color:
+                                isActive
+                                    ? AppColors.primary
+                                    : AppColors.borderGrey,
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 28),
+                // Text(
+                //   'Location Details',
+                //   style: AppStyles.text16Px.poppins.w600.dark,
+                // ),
+                // const SizedBox(height: 16),
+                RichText(
+                  text: TextSpan(
+                    style: AppStyles.text24Px.poppins.w600.dark.copyWith(
+                      height: 1.3,
+                    ),
+                    children: const [
+                      TextSpan(
+                        text: 'Put Your\n',
+                        // style: TextStyle(
+                        //   decoration: TextDecoration.underline,
+                        //   decorationColor: Colors.transparent,
+                        //   decorationThickness: 2,
+                        // ),
+                      ),
+                      TextSpan(
+                        text: 'Fitness Center on\n',
+                        // style: TextStyle(
+                        //   decoration: TextDecoration.underline,
+                        //   decorationColor: Colors.transparent,
+                        //   decorationThickness: 2,
+                        // ),
+                      ),
+                      TextSpan(
+                        text: 'the Map 🌍',
+                        // style: TextStyle(
+                        //   decoration: TextDecoration.underline,
+                        //   decorationColor: Colors.transparent,
+                        //   decorationThickness: 2,
+                        // ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Place yourself on the map and let your influence grow.',
+                  style: AppStyles.text14Px.poppins.w400.textGrey,
+                ),
+                const SizedBox(height: 24),
                 Row(
                   children: [
-                    const CircleAvatar(
-                      backgroundColor: AppColors.primary,
-                      radius: 3,
-                    ).pOnly(right: 6),
                     Flexible(
                       child: TextField(
                         focusNode: _searchFocusNode,
@@ -343,8 +448,12 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                             child:
                                 SvgPicture.asset(
                                   'assets/images/svg/icons/search.svg',
-                                  height: 32,
-                                  width: 32,
+                                  height: 20,
+                                  width: 20,
+                                  colorFilter: const ColorFilter.mode(
+                                    AppColors.textGrey,
+                                    BlendMode.srcIn,
+                                  ),
                                 ).center,
                           ),
                           suffixIcon: ValueListenableBuilder(
@@ -383,6 +492,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                           ),
                           enabledBorder: const OutlineInputBorder(
                             borderRadius: BorderRadius.all(Radius.circular(8)),
+                            borderSide: BorderSide(color: AppColors.borderGrey),
                           ),
                         ),
                       ),
@@ -410,29 +520,61 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                         }
                         _gymLocationCubit.getPlaceDetailsFromCurrentLocation();
                       },
-                      child: Row(
-                        children: [
-                          if (isLoading)
-                            const SizedBox.square(
-                              dimension: 32,
-                              child: CupertinoActivityIndicator(
-                                color: AppColors.dark,
+                      child:
+                      // Row(
+                      //   children: [
+                      //     if (isLoading)
+                      //       const SizedBox.square(
+                      //         dimension: 32,
+                      //         child: CupertinoActivityIndicator(
+                      //           color: AppColors.dark,
+                      //         ),
+                      //       )
+                      //     else
+                      //       SvgPicture.asset(
+                      //         'assets/images/svg/icons/map.svg',
+                      //         height: 32,
+                      //         width: 32,
+                      //       ),
+                      //     const SizedBox(width: 8),
+                      //     Flexible(
+                      //       child: Text(
+                      //         'Use your current location',
+                      //         style: AppStyles.text14Px.poppins.w600.dark,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEEFEF),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFEEFEF)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isLoading)
+                              const SizedBox.square(
+                                dimension: 24,
+                                child: CupertinoActivityIndicator(
+                                  color: AppColors.primary,
+                                ),
+                              )
+                            else
+                              const Icon(
+                                Icons.location_on,
+                                color: AppColors.primary,
+                                size: 24,
                               ),
-                            )
-                          else
-                            SvgPicture.asset(
-                              'assets/images/svg/icons/map.svg',
-                              height: 32,
-                              width: 32,
-                            ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
+                            const SizedBox(width: 8),
+                            Text(
                               'Use your current location',
-                              style: AppStyles.text14Px.poppins.w600.dark,
+                              style: AppStyles.text14Px.poppins.w600.primary,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -596,7 +738,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                           // return Row(
                           //   children: [
                           //     Expanded(child: Field(data: fields[0])),
-                          //     const SizedBox(width: 16),
+                          //     // const SizedBox(width: 16),
                           //     Expanded(child: Field(data: fields[1])),
                           //   ],
                           // );
@@ -613,19 +755,15 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
                     );
                   },
                 ),
-                const SizedBox(height: 96),
+                const SizedBox(height: 40),
+                Button.filled(
+                  title: 'Next',
+                  ontap: _onContinue,
+                  buttonColor: AppColors.primary,
+                  style: AppStyles.text16Px.poppins.w600.light,
+                ),
+                const SizedBox(height: 40),
               ],
-            ),
-          ),
-          floatingActionButton: SizedBox(
-            width: 84,
-            child: FloatingActionButton(
-              onPressed: _onContinue,
-              shape: const StadiumBorder(),
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.light,
-              elevation: 0,
-              child: const Icon(Icons.keyboard_arrow_right_outlined),
             ),
           ),
         ),
@@ -634,7 +772,6 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
   }
 }
 
-// import 'package:flutter/cupertino.dart';
 // import 'package:mentor_mobile_app/imports_bindings.dart';
 //
 // class CreateOrganizationLocationDetailsScreen extends StatelessWidget {

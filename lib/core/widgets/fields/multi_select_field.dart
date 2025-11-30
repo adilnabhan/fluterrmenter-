@@ -86,7 +86,8 @@ class MultiSelectField<T> extends StatefulWidget {
   State<MultiSelectField<T>> createState() => _MultiSelectFieldState<T>();
 }
 
-class _MultiSelectFieldState<T> extends State<MultiSelectField<T>> with ChangeNotifier {
+class _MultiSelectFieldState<T> extends State<MultiSelectField<T>>
+    with ChangeNotifier {
   @override
   Widget build(BuildContext context) {
     return AbsorbPointer(
@@ -104,26 +105,62 @@ class _MultiSelectFieldState<T> extends State<MultiSelectField<T>> with ChangeNo
             labelStyle: widget.labelStyle,
             requiredLabel: widget.requiredLabel,
             onFieldSubmitted: (_) {
-              if (widget.selectedMultiValues != null && (widget.controller?.text.trim().isNotEmpty ?? false)) {
-                widget.selectedMultiValues?.value.add(widget.controller?.text ?? '');
+              if (widget.selectedMultiValues != null &&
+                  (widget.controller?.text.trim().isNotEmpty ?? false)) {
+                widget.selectedMultiValues?.value.add(
+                  widget.controller?.text ?? '',
+                );
                 widget.controller?.clear();
                 widget.selectedMultiValues?.notifyListeners();
               }
             },
             decoration: (widget.decoration ?? const InputDecoration()).copyWith(
+              // ============ OLD CODE - BLACK BUTTON COMMENTED OUT ============
+              // suffixIcon: SizedBox.square(
+              //   dimension: 20,
+              //   child: Center(
+              //     child: IconButton.filled(
+              //       onPressed: () {
+              //         if (widget.selectedMultiValues != null && (widget.controller?.text.trim().isNotEmpty ?? false)) {
+              //           widget.selectedMultiValues?.value.add(widget.controller?.text ?? '');
+              //           widget.controller?.clear();
+              //           widget.selectedMultiValues?.notifyListeners();
+              //         }
+              //       },
+              //       style: IconButton.styleFrom(
+              //         backgroundColor: AppColors.dark,
+              //         foregroundColor: AppColors.light,
+              //         fixedSize: const Size.square(32),
+              //         maximumSize: const Size.square(32),
+              //         minimumSize: const Size.square(32),
+              //         padding: EdgeInsets.zero,
+              //       ),
+              //       icon: const Icon(Icons.add),
+              //     ),
+              //   ),
+              // ),
+              // ============ END OLD CODE ============
+
+              // ============ NEW CODE - RED CIRCULAR BUTTON ============
               suffixIcon: SizedBox.square(
                 dimension: 20,
                 child: Center(
                   child: IconButton.filled(
                     onPressed: () {
-                      if (widget.selectedMultiValues != null && (widget.controller?.text.trim().isNotEmpty ?? false)) {
-                        widget.selectedMultiValues?.value.add(widget.controller?.text ?? '');
+                      if (widget.selectedMultiValues != null &&
+                          (widget.controller?.text.trim().isNotEmpty ??
+                              false)) {
+                        widget.selectedMultiValues?.value.add(
+                          widget.controller?.text ?? '',
+                        );
                         widget.controller?.clear();
                         widget.selectedMultiValues?.notifyListeners();
                       }
                     },
                     style: IconButton.styleFrom(
-                      backgroundColor: AppColors.dark,
+                      backgroundColor:
+                          AppColors
+                              .primary, // Changed from AppColors.dark to red
                       foregroundColor: AppColors.light,
                       fixedSize: const Size.square(32),
                       maximumSize: const Size.square(32),
@@ -134,6 +171,7 @@ class _MultiSelectFieldState<T> extends State<MultiSelectField<T>> with ChangeNo
                   ),
                 ),
               ),
+              // ============ END NEW CODE ============
             ),
             validator: widget.validator,
             keyboardType: widget.keyboardType,
@@ -177,33 +215,82 @@ class _MultiSelectFieldState<T> extends State<MultiSelectField<T>> with ChangeNo
                     spacing: 8,
                     children:
                         values.map((item) {
-                          return DecoratedBox(
-                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), border: Border.all(color: const Color(0xffE6E6E6))),
+                          // ============ OLD CODE - COMMENTED OUT ============
+                          // return DecoratedBox(
+                          //   decoration: BoxDecoration(
+                          //     borderRadius: BorderRadius.circular(4),
+                          //     border: Border.all(
+                          //       color: const Color(0xffE6E6E6),
+                          //     ),
+                          //   ),
+                          //   child: Row(
+                          //     mainAxisSize: MainAxisSize.min,
+                          //     spacing: 16,
+                          //     children: [
+                          //       Text(item, style: AppStyles.text12Px.w500.dark),
+                          //       IconButton.filled(
+                          //         onPressed: () {
+                          //           widget.selectedMultiValues?.value.remove(
+                          //             item,
+                          //           );
+                          //           widget.selectedMultiValues
+                          //               ?.notifyListeners();
+                          //         },
+                          //         style: IconButton.styleFrom(
+                          //           backgroundColor: AppColors.dark,
+                          //           foregroundColor: AppColors.light,
+                          //           fixedSize: const Size.square(20),
+                          //           maximumSize: const Size.square(20),
+                          //           minimumSize: const Size.square(20),
+                          //           iconSize: 16,
+                          //           padding: EdgeInsets.zero,
+                          //           tapTargetSize:
+                          //               MaterialTapTargetSize.shrinkWrap,
+                          //         ),
+                          //         icon: const Icon(Icons.close),
+                          //       ),
+                          //     ],
+                          //   ).pxy(y: 8, x: 12),
+                          // ).pOnly(top: 8);
+                          // ============ END OLD CODE ============
+
+                          // ============ NEW CODE - CLEAN CHIP DESIGN ============
+                          return Container(
+                            margin: const EdgeInsets.only(top: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xffF7F7F7),
+                              borderRadius: BorderRadius.circular(80000),
+                            ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              spacing: 16,
                               children: [
-                                Text(item, style: AppStyles.text12Px.w500.dark),
-                                IconButton.filled(
-                                  onPressed: () {
-                                    widget.selectedMultiValues?.value.remove(item);
-                                    widget.selectedMultiValues?.notifyListeners();
+                                Text(
+                                  item,
+                                  style: AppStyles.text14Px.poppins.w400.dark,
+                                ),
+                                const SizedBox(width: 12),
+                                InkWell(
+                                  onTap: () {
+                                    widget.selectedMultiValues?.value.remove(
+                                      item,
+                                    );
+                                    widget.selectedMultiValues
+                                        ?.notifyListeners();
                                   },
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: AppColors.dark,
-                                    foregroundColor: AppColors.light,
-                                    fixedSize: const Size.square(20),
-                                    maximumSize: const Size.square(20),
-                                    minimumSize: const Size.square(20),
-                                    iconSize: 16,
-                                    padding: EdgeInsets.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  child: const Icon(
+                                    Icons.close,
+                                    size: 16,
+                                    color: AppColors.dark,
                                   ),
-                                  icon: const Icon(Icons.close),
                                 ),
                               ],
-                            ).pxy(y: 8, x: 12),
-                          ).pOnly(top: 8);
+                            ),
+                          );
+                          // ============ END NEW CODE ============
                           // return Chip(
                           //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                           //   side: BorderSide.none,

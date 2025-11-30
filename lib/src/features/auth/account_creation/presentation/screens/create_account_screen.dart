@@ -28,6 +28,7 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
   @override
   void initState() {
     _basicDetails = [
+      /*
       FieldData(
         type: FieldType.word,
         textInputAction: TextInputAction.next,
@@ -78,10 +79,62 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
           ),
         ),
       ),
+      */
+      FieldData(
+        type: FieldType.word,
+        textInputAction: TextInputAction.next,
+        label: 'Owner\'s First Name',
+        requiredLabel: true,
+        validator: (value) {
+          if (value?.trim().isEmpty ?? true) {
+            return 'Owner\'s name is required';
+          }
+          return null;
+        },
+        onSubmitted: (value) {
+          _basicDetails[1].focusNode?.requestFocus();
+        },
+        controller: TextEditingController(),
+        focusNode: FocusNode(),
+        decoration: InputDecoration(
+          hintText: 'Owner\'s name',
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
+        ),
+      ),
+      //To be removed
+      FieldData(
+        type: FieldType.word,
+        textInputAction: TextInputAction.next,
+        label: 'Last Name ',
+        requiredLabel: true,
+        validator: (value) {
+          if (value?.trim().isEmpty ?? true) {
+            return 'Last name is required';
+          }
+          return null;
+        },
+        onSubmitted: (value) {
+          _basicDetails[2].focusNode?.requestFocus();
+        },
+        controller: TextEditingController(),
+        focusNode: FocusNode(),
+        decoration: InputDecoration(
+          hintText: 'Enter your last name',
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
+        ),
+      ),
       FieldData(
         type: FieldType.word,
         textInputAction: TextInputAction.done,
-        label: 'Email Address',
+        label: 'Email',
         controller: TextEditingController(),
         focusNode: FocusNode(),
         validator: (value) {
@@ -96,10 +149,10 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
         },
         onSubmitted: (value) {
           _onContinue();
-          _basicDetails[3].focusNode?.unfocus();
+          _basicDetails[1].focusNode?.unfocus();
         },
         decoration: InputDecoration(
-          hintText: 'Enter your email address',
+          hintText: 'Email',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
           border: const OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -107,6 +160,21 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
           ),
         ),
       ),
+      // FieldData(
+      //   type: FieldType.word,
+      //   textInputAction: TextInputAction.done,
+      //   label: 'Referral Code',
+      //   controller: TextEditingController(),
+      //   focusNode: FocusNode(),
+      //   decoration: InputDecoration(
+      //     hintText: 'Code',
+      //     hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+      //     border: const OutlineInputBorder(
+      //       borderRadius: BorderRadius.all(Radius.circular(8)),
+      //       borderSide: BorderSide(color: AppColors.borderGrey),
+      //     ),
+      //   ),
+      // ),
     ];
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_basicDetails[0].focusNode);
@@ -125,6 +193,16 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
 
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
+      /*
+      final firstName = _basicDetails[0].controller?.text;
+      final lastName = _basicDetails[1].controller?.text;
+      final email = _basicDetails[2].controller?.text;
+      context.read<CreateAccountCubit>().onboardUser(
+        firstName: firstName ?? '',
+        lastName: lastName ?? '',
+        email: email ?? '',
+      );
+      */
       final firstName = _basicDetails[0].controller?.text;
       final lastName = _basicDetails[1].controller?.text;
       final email = _basicDetails[2].controller?.text;
@@ -162,6 +240,7 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
+              /*
               const SizedBox(height: 22),
               Text(
                 'Create Account',
@@ -172,6 +251,47 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
                 'assets/images/svg/vectors/create_account.svg',
                 height: 162,
               ),
+              */
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(8, (index) {
+                  return Row(
+                    children: [
+                      Container(
+                        width: 25,
+                        height: 1,
+                        color:
+                            index == 0
+                                ? AppColors.primary
+                                : AppColors.borderGrey,
+                      ),
+                      Transform.rotate(
+                        angle: 0.785398,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          color:
+                              index == 0
+                                  ? AppColors.primary
+                                  : AppColors.borderGrey,
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+              const SizedBox(height: 40),
+              Text(
+                'Let’s Build\nYour Fitness\nIdentity 🏋️‍♂️',
+                style: AppStyles.text30Px.poppins.w600.dark,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Show your expertise to fitness centers\nand clients',
+                style: AppStyles.text14Px.poppins.w400.textGrey,
+              ),
+              const SizedBox(height: 32),
               ListView.separated(
                 itemCount: _basicDetails.length,
                 shrinkWrap: true,
@@ -190,12 +310,14 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
                 },
                 builder: (context, state) {
                   return Button.filled(
-                    title: 'Continue',
+                    title: 'Next → Let’s Set Up Your Space',
                     ontap: _onContinue,
                     isLoading: state.onboardingUser?.isNone() ?? false,
+                    buttonColor: AppColors.primary,
                   );
                 },
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

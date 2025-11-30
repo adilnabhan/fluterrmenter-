@@ -100,10 +100,15 @@ class _TimeFieldState extends State<TimeField> {
 
   @override
   void initState() {
-    _ctrl = widget.controller ?? TextEditingController(text: widget.initialValue);
+    _ctrl =
+        widget.controller ?? TextEditingController(text: widget.initialValue);
     final initialDateAsString = widget.initialValue ?? _ctrl.text;
     if (initialDateAsString.trim().isNotEmpty) {
-      selectedTime = TimeOfDay.fromDateTime(widget.timeShowFormat != null ? widget.timeShowFormat!.parse(initialDateAsString) : DateFormat('hh:mm a').parse(initialDateAsString));
+      selectedTime = TimeOfDay.fromDateTime(
+        widget.timeShowFormat != null
+            ? widget.timeShowFormat!.parse(initialDateAsString)
+            : DateFormat('hh:mm a').parse(initialDateAsString),
+      );
     }
     super.initState();
   }
@@ -123,14 +128,21 @@ class _TimeFieldState extends State<TimeField> {
       child: InkWell(
         overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         onTap: () async {
-          final pickedTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+          final pickedTime = await showTimePicker(
+            context: context,
+            initialTime: TimeOfDay.now(),
+          );
           if (pickedTime != null) {
             selectedTime = pickedTime;
             _ctrl.value = TextEditingValue(
               text:
                   widget.timeShowFormat != null
-                      ? widget.timeShowFormat!.format(DateTime(0, 0, 0, pickedTime.hour, pickedTime.minute))
-                      : DateFormat('hh:mm a').format(DateTime(0, 0, 0, pickedTime.hour, pickedTime.minute)),
+                      ? widget.timeShowFormat!.format(
+                        DateTime(0, 0, 0, pickedTime.hour, pickedTime.minute),
+                      )
+                      : DateFormat('hh:mm a').format(
+                        DateTime(0, 0, 0, pickedTime.hour, pickedTime.minute),
+                      ),
             );
           }
         },
@@ -149,7 +161,17 @@ class _TimeFieldState extends State<TimeField> {
             decoration: (widget.decoration ?? const InputDecoration()).copyWith(
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [SvgPicture.asset('assets/images/svg/icons/clock.svg', height: 20, width: 20, colorFilter: const ColorFilter.mode(AppColors.dark, BlendMode.srcIn))],
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/svg/icons/clock.svg',
+                    height: 20,
+                    width: 20,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.dark,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ],
               ),
             ),
             validator: widget.validator,

@@ -149,6 +149,7 @@ flutter:
     - assets/images/png/icons/
     - assets/images/png/vectors/
     - assets/fonts/
+    - assets/debug/
 
   fonts:
     - family: TitanOne

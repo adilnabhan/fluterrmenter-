@@ -45,7 +45,11 @@ class MultiSelectSheetTemplate extends StatelessWidget {
               onPressed: () {
                 context.pop();
               },
-              icon: SvgPicture.asset('assets/images/svg/icons/close_outlined.svg', height: 20, width: 20),
+              icon: SvgPicture.asset(
+                'assets/images/svg/icons/close_outlined.svg',
+                height: 20,
+                width: 20,
+              ),
             ).pOnly(left: 16),
           ],
         ),
@@ -53,58 +57,89 @@ class MultiSelectSheetTemplate extends StatelessWidget {
           children: [
             TextField(
               onChanged: (q) {
-                EasyDebounce.debounce('search_query', const Duration(milliseconds: 500), () {
-                  onChangedField(q);
-                });
+                EasyDebounce.debounce(
+                  'search_query',
+                  const Duration(milliseconds: 500),
+                  () {
+                    onChangedField(q);
+                  },
+                );
               },
               decoration: InputDecoration(
                 hintText: hintText,
                 hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
                 filled: false,
-                prefixIcon: SizedBox.square(dimension: 32, child: SvgPicture.asset('assets/images/svg/icons/search.svg', height: 32, width: 32, color: AppColors.textGrey).center),
-                border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
-                focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
-                enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: Color(0xffDDDDDD))),
+                prefixIcon: SizedBox.square(
+                  dimension: 32,
+                  child:
+                      SvgPicture.asset(
+                        'assets/images/svg/icons/search.svg',
+                        height: 32,
+                        width: 32,
+                        color: AppColors.textGrey,
+                      ).center,
+                ),
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  borderSide: BorderSide(color: Color(0xffDDDDDD)),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  borderSide: BorderSide(color: Color(0xffDDDDDD)),
+                ),
+                enabledBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  borderSide: BorderSide(color: Color(0xffDDDDDD)),
+                ),
               ),
             ),
-            ValueListenableBuilder(
-              valueListenable: selectedValues,
-              builder: (context, values, child) {
-                if (values.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-                return SizedBox(
-                  height: 33,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: selectedValues.value.length,
-                    separatorBuilder: (BuildContext context, int index) {
-                      return const SizedBox(width: 10);
-                    },
-                    itemBuilder: (BuildContext context, int index) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(color: const Color(0xffF7F7F7), borderRadius: BorderRadius.circular(80000)),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(selectedValues.value[index].label, style: AppStyles.text14Px.poppins.w400.dark),
-                            const SizedBox(width: 12),
-                            InkWell(
-                              onTap: () {
-                                selectedValues.value = selectedValues.value.where((element) => element.value != selectedValues.value[index].value).toList();
-                              },
-                              child: SvgPicture.asset('assets/images/svg/icons/close_outlined.svg', height: 16, width: 16),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+            // ValueListenableBuilder(
+            //   valueListenable: selectedValues,
+            //   builder: (context, values, child) {
+            //     if (values.isEmpty) {
+            //       return const SizedBox.shrink();
+            //     }
+            //     return SizedBox(
+            //       height: 33,
+            //       child: ListView.separated(
+            //         scrollDirection: Axis.horizontal,
+            //         itemCount: selectedValues.value.length,
+            //         separatorBuilder: (BuildContext context, int index) {
+            //           return const SizedBox(width: 10);
+            //         },
+            //         itemBuilder: (BuildContext context, int index) {
+            //           return Container(
+            //             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            //             decoration: BoxDecoration(color: const Color(0xffF7F7F7), borderRadius: BorderRadius.circular(80000)),
+            //             child: Row(
+            //               mainAxisSize: MainAxisSize.min,
+            //               children: [
+            //                 Text(selectedValues.value[index].label, style: AppStyles.text14Px.poppins.w400.dark),
+            //                 const SizedBox(width: 12),
+            //                 InkWell(
+            //                   onTap: () {
+            //                     selectedValues.value = selectedValues.value.where((element) => element.value != selectedValues.value[index].value).toList();
+            //                   },
+            //                   child: SvgPicture.asset('assets/images/svg/icons/close_outlined.svg', height: 16, width: 16),
+            //                 ),
+            //               ],
+            //             ),
+            //           );
+            //         },
+            //       ),
+            //     ).pOnly(top: 20);
+            //   },
+            // ),
+            if (isSearching)
+              const Padding(
+                padding: EdgeInsets.only(top: 20),
+                child: Center(
+                  child: LinearProgressIndicator(
+                    color: AppColors.primary,
+                    backgroundColor: AppColors.lightPrimary,
                   ),
-                ).pOnly(top: 20);
-              },
-            ),
-            if (isSearching) const Padding(padding: EdgeInsets.only(top: 20), child: Center(child: LinearProgressIndicator(color: AppColors.primary, backgroundColor: AppColors.lightPrimary))),
+                ),
+              ),
             Expanded(
               child: Builder(
                 builder: (context) {
@@ -114,9 +149,20 @@ class MultiSelectSheetTemplate extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(errorText, style: AppStyles.text14Px.poppins.w500.dark),
+                          Text(
+                            errorText,
+                            style: AppStyles.text14Px.poppins.w500.dark,
+                          ),
                           const SizedBox(height: 8),
-                          SizedBox(width: 80, child: Button.filled(ontap: onRetry, title: 'Retry', raduis: 80000, buttonColor: AppColors.primary)),
+                          SizedBox(
+                            width: 80,
+                            child: Button.filled(
+                              ontap: onRetry,
+                              title: 'Retry',
+                              raduis: 80000,
+                              buttonColor: AppColors.primary,
+                            ),
+                          ),
                         ],
                       ),
                     );
@@ -125,23 +171,79 @@ class MultiSelectSheetTemplate extends StatelessWidget {
                     return const Center(child: CupertinoActivityIndicator());
                   }
                   if (availableValues.isEmpty) {
-                    return Center(child: Text(emptyText, style: AppStyles.text14Px.poppins.w500.dark));
+                    return Center(
+                      child: Text(
+                        emptyText,
+                        style: AppStyles.text14Px.poppins.w500.dark,
+                      ),
+                    );
                   }
-                  return ListView.separated(
-                    itemCount: availableValues.length,
-                    separatorBuilder: (BuildContext context, int index) {
-                      return const SizedBox(height: 2);
-                    },
-                    itemBuilder: (BuildContext context, int index) {
-                      return InkWell(
-                        onTap: () {
-                          if (selectedValues.value.any((element) => element.value == availableValues[index].value)) {
-                            selectedValues.value = selectedValues.value.where((element) => element.value != availableValues[index].value).toList();
-                          } else {
-                            selectedValues.value = [...selectedValues.value, availableValues[index]];
-                          }
+                  // return ListView.separated(
+                  //   itemCount: availableValues.length,
+                  //   separatorBuilder: (BuildContext context, int index) {
+                  //     return const SizedBox(height: 2);
+                  //   },
+                  //   itemBuilder: (BuildContext context, int index) {
+                  //     return InkWell(
+                  //       onTap: () {
+                  //         if (selectedValues.value.any((element) => element.value == availableValues[index].value)) {
+                  //           selectedValues.value = selectedValues.value.where((element) => element.value != availableValues[index].value).toList();
+                  //         } else {
+                  //           selectedValues.value = [...selectedValues.value, availableValues[index]];
+                  //         }
+                  //       },
+                  //       child: Text(availableValues[index].label, style: AppStyles.text14Px.poppins.w400.dark).pxy(x: 20, y: 20),
+                  //     );
+                  //   },
+                  // );
+                  return ValueListenableBuilder(
+                    valueListenable: selectedValues,
+                    builder: (context, currentSelectedValues, child) {
+                      return ListView.separated(
+                        itemCount: availableValues.length,
+                        separatorBuilder: (BuildContext context, int index) {
+                          return const SizedBox(height: 2);
                         },
-                        child: Text(availableValues[index].label, style: AppStyles.text14Px.poppins.w400.dark).pxy(x: 20, y: 20),
+                        itemBuilder: (BuildContext context, int index) {
+                          final isSelected = currentSelectedValues.any(
+                            (element) =>
+                                element.value == availableValues[index].value,
+                          );
+                          return InkWell(
+                            onTap: () {
+                              if (isSelected) {
+                                selectedValues.value =
+                                    selectedValues.value
+                                        .where(
+                                          (element) =>
+                                              element.value !=
+                                              availableValues[index].value,
+                                        )
+                                        .toList();
+                              } else {
+                                selectedValues.value = [
+                                  ...selectedValues.value,
+                                  availableValues[index],
+                                ];
+                              }
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  availableValues[index].label,
+                                  style: AppStyles.text14Px.poppins.w400.dark,
+                                ),
+                                if (isSelected)
+                                  Icon(
+                                    Icons.check,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                              ],
+                            ).pxy(x: 20, y: 20),
+                          );
+                        },
                       );
                     },
                   );

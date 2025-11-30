@@ -106,7 +106,8 @@ class CheckboxField<T> extends StatefulWidget {
   State<CheckboxField<T>> createState() => _CheckboxFieldState<T>();
 }
 
-class _CheckboxFieldState<T> extends State<CheckboxField<T>> with ChangeNotifier {
+class _CheckboxFieldState<T> extends State<CheckboxField<T>>
+    with ChangeNotifier {
   // T selectedRadio;
   late final ValueNotifier<List<({String label, T value})>> _ctrl;
   OverlayEntry? _overlyEntry;
@@ -152,23 +153,38 @@ class _CheckboxFieldState<T> extends State<CheckboxField<T>> with ChangeNotifier
                     label: widget.label,
                     labelStyle: widget.labelStyle,
                     requiredLabel: widget.requiredLabel,
-                    decoration: (widget.decoration ?? const InputDecoration()).copyWith(
-                      suffixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          switch (_overlyEntry == null) {
-                            true => const Icon(Icons.keyboard_arrow_down_outlined, size: 24),
-                            false => const Icon(Icons.keyboard_arrow_up_outlined, size: 24),
-                          },
-                          20.horizontalSpace,
-                        ],
-                      ),
-                      disabledBorder:
-                          _overlyEntry != null
-                              ? widget.decoration?.focusedBorder ?? context.theme.inputDecorationTheme.focusedBorder
-                              : widget.decoration?.disabledBorder ?? context.theme.inputDecorationTheme.disabledBorder,
-                    ),
+                    decoration: (widget.decoration ?? const InputDecoration())
+                        .copyWith(
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              switch (_overlyEntry == null) {
+                                true => const Icon(
+                                  Icons.keyboard_arrow_down_outlined,
+                                  size: 24,
+                                ),
+                                false => const Icon(
+                                  Icons.keyboard_arrow_up_outlined,
+                                  size: 24,
+                                ),
+                              },
+                              20.horizontalSpace,
+                            ],
+                          ),
+                          disabledBorder:
+                              _overlyEntry != null
+                                  ? widget.decoration?.focusedBorder ??
+                                      context
+                                          .theme
+                                          .inputDecorationTheme
+                                          .focusedBorder
+                                  : widget.decoration?.disabledBorder ??
+                                      context
+                                          .theme
+                                          .inputDecorationTheme
+                                          .disabledBorder,
+                        ),
                     validator: widget.validator,
                     keyboardType: widget.keyboardType,
                     textCapitalization: widget.textCapitalization,
@@ -212,35 +228,61 @@ class _CheckboxFieldState<T> extends State<CheckboxField<T>> with ChangeNotifier
                   if (values.isEmpty) {
                     return const SizedBox.shrink();
                   }
-                  return SizedBox(
-                    height: 33,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: widget.selectedValues!.value.length,
-                      separatorBuilder: (BuildContext context, int index) {
-                        return const SizedBox(width: 10);
-                      },
-                      itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(color: const Color(0xffF7F7F7), borderRadius: BorderRadius.circular(80000)),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(widget.selectedValues!.value[index].label, style: AppStyles.text14Px.poppins.w400.dark),
-                              const SizedBox(width: 12),
-                              InkWell(
-                                onTap: () {
-                                  widget.selectedValues!.value = widget.selectedValues!.value.where((element) => element.value != widget.selectedValues!.value[index].value).toList();
-                                },
-                                child: SvgPicture.asset('assets/images/svg/icons/close_outlined.svg', height: 16, width: 16),
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: List.generate(
+                          widget.selectedValues!.value.length,
+                          (index) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
                               ),
-                            ],
-                          ),
-                        );
-                      },
+                              decoration: BoxDecoration(
+                                color: const Color(0xffF7F7F7),
+                                borderRadius: BorderRadius.circular(80000),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    widget.selectedValues!.value[index].label,
+                                    style: AppStyles.text14Px.poppins.w400.dark,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  InkWell(
+                                    onTap: () {
+                                      widget.selectedValues!.value =
+                                          widget.selectedValues!.value
+                                              .where(
+                                                (element) =>
+                                                    element.value !=
+                                                    widget
+                                                        .selectedValues!
+                                                        .value[index]
+                                                        .value,
+                                              )
+                                              .toList();
+                                    },
+                                    child: SvgPicture.asset(
+                                      'assets/images/svg/icons/close_outlined.svg',
+                                      height: 16,
+                                      width: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
-                  ).pOnly(top: 12);
+                  );
                 },
               ),
           ],

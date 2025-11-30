@@ -35,11 +35,11 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
     _brandName = FieldData(
       type: FieldType.word,
       textInputAction: TextInputAction.next,
-      label: 'Brand Name ',
+      label: 'Fitness center Name',
       requiredLabel: true,
       validator: (value) {
         if (value?.trim().isEmpty ?? true) {
-          return 'Brand name is required';
+          return 'Fitness center name is required';
         }
         return null;
       },
@@ -49,7 +49,7 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
       controller: TextEditingController(),
       focusNode: FocusNode(),
       decoration: InputDecoration(
-        hintText: 'Enter your brand name',
+        hintText: 'Name of Fitness center',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -61,12 +61,12 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
       type: FieldType.checkbox,
       items: [],
       textInputAction: TextInputAction.next,
-      label: 'Brand Category ',
+      label: 'Categories',
       requiredLabel: true,
       selectedValues: ValueNotifier([]),
       validator: (value) {
         if (value?.trim().isEmpty ?? true) {
-          return 'Brand category is required';
+          return 'Fitness center category is required';
         }
         return null;
       },
@@ -76,7 +76,7 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
       controller: TextEditingController(),
       focusNode: FocusNode(),
       decoration: InputDecoration(
-        hintText: 'Select your brand category',
+        hintText: 'Select categories',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -87,11 +87,11 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
     _brandDescription = FieldData(
       type: FieldType.word,
       textInputAction: TextInputAction.next,
-      label: 'Describe your brand ',
+      label: 'Description (What makes your place special?)',
       requiredLabel: true,
       validator: (value) {
         if (value?.trim().isEmpty ?? true) {
-          return 'Brand description is required';
+          return 'Fitness center description is required';
         }
         return null;
       },
@@ -102,7 +102,7 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
       focusNode: FocusNode(),
       maxLines: 4,
       decoration: InputDecoration(
-        hintText: 'Highlight key features in a sentence or two',
+        hintText: '150 words',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -160,11 +160,63 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
-              const SizedBox(height: 22),
-              const OrganizationCreationCompletionStatusCard(progress: 1),
-              const SizedBox(height: 28),
-              Text('Gym Details', style: AppStyles.text16Px.poppins.w600.dark),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(8, (index) {
+                  bool isActive = index <= 1;
+                  return Row(
+                    children: [
+                      Container(
+                        width: 25,
+                        height: 1,
+                        color:
+                            isActive ? AppColors.primary : AppColors.borderGrey,
+                      ),
+                      Transform.rotate(
+                        angle: 0.785398,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          color:
+                              isActive
+                                  ? AppColors.primary
+                                  : AppColors.borderGrey,
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+              const SizedBox(height: 40),
+              Text(
+                'Show the World\nWhat You’ve\nGot 💪',
+                style: AppStyles.text30Px.poppins.w600.dark,
+              ),
               const SizedBox(height: 16),
+              Text(
+                'This is what users will see when they\nsearch your fitness center.',
+                style: AppStyles.text14Px.poppins.w400.textGrey,
+              ),
+              const SizedBox(height: 32),
+              Center(
+                child: Column(
+                  children: [
+                    BrandLogoPicker(
+                      isEdit: true,
+                      onChanged: (brandLogo) {
+                        _selectedBrandLogo = brandLogo;
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Set Fitness center logo',
+                      style: AppStyles.text14Px.poppins.w500.dark,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
               Field(data: _brandName),
               const SizedBox(height: 16),
               Field<String>(
@@ -181,29 +233,15 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Brand Logo', style: AppStyles.text14Px.poppins.w500.dark),
-              const SizedBox(height: 8),
-              BrandLogoPicker(
-                isEdit: true,
-                onChanged: (brandLogo) {
-                  _selectedBrandLogo = brandLogo;
-                },
-              ),
-              const SizedBox(height: 16),
               Field(data: _brandDescription),
               const SizedBox(height: 32),
+              Button.filled(
+                title: 'Next → Let’s Add Your Location',
+                ontap: _onContinue,
+                buttonColor: AppColors.primary,
+              ),
+              const SizedBox(height: 20),
             ],
-          ),
-        ),
-        floatingActionButton: SizedBox(
-          width: 84,
-          child: FloatingActionButton(
-            onPressed: _onContinue,
-            shape: const StadiumBorder(),
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.light,
-            elevation: 0,
-            child: const Icon(Icons.keyboard_arrow_right_outlined),
           ),
         ),
       ),

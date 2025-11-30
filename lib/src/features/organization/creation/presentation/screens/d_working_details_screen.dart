@@ -32,9 +32,13 @@ class _CreateOrganizationWorkingDetailsScreenState
           type: FieldType.time,
           controller: TextEditingController(),
           focusNode: FocusNode(),
-          label: 'Morning time',
+          label: 'Morning',
+          labelStyle: const TextStyle(color: AppColors.dark, fontSize: 13),
           requiredLabel: true,
-          decoration: const InputDecoration(hintText: 'Starting time'),
+          decoration: const InputDecoration(
+            hintText: 'Starting time',
+            hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 13),
+          ),
           validator: (value) {
             if (value == null) {
               return 'Please select a time';
@@ -46,7 +50,10 @@ class _CreateOrganizationWorkingDetailsScreenState
           type: FieldType.time,
           controller: TextEditingController(),
           focusNode: FocusNode(),
-          decoration: const InputDecoration(hintText: 'Ending time'),
+          decoration: const InputDecoration(
+            hintText: 'Ending time',
+            hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 13),
+          ),
           validator: (value) {
             if (value == null) {
               return 'Please select a time';
@@ -60,9 +67,13 @@ class _CreateOrganizationWorkingDetailsScreenState
           type: FieldType.time,
           controller: TextEditingController(),
           focusNode: FocusNode(),
-          label: 'Evening time',
+          label: 'Evening',
+          labelStyle: const TextStyle(color: AppColors.dark, fontSize: 13),
           requiredLabel: true,
-          decoration: const InputDecoration(hintText: 'Starting time'),
+          decoration: const InputDecoration(
+            hintText: 'Starting time',
+            hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 13),
+          ),
           validator: (value) {
             if (value == null) {
               return 'Please select a time';
@@ -74,7 +85,10 @@ class _CreateOrganizationWorkingDetailsScreenState
           type: FieldType.time,
           controller: TextEditingController(),
           focusNode: FocusNode(),
-          decoration: const InputDecoration(hintText: 'Ending time'),
+          decoration: const InputDecoration(
+            hintText: 'Ending time',
+            hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 13),
+          ),
           validator: (value) {
             if (value == null) {
               return 'Please select a time';
@@ -127,7 +141,7 @@ class _CreateOrganizationWorkingDetailsScreenState
           },
           onSubmitted: (value) {},
           decoration: InputDecoration(
-            hintText: 'Highlight what your business offers',
+            hintText: 'Select Amenities',
             hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -502,18 +516,62 @@ class _CreateOrganizationWorkingDetailsScreenState
           body: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
-              const SizedBox(height: 22),
-              const OrganizationCreationCompletionStatusCard(progress: 4),
-              const SizedBox(height: 28),
-              Text(
-                'Profile Details',
-                style: AppStyles.text16Px.poppins.w600.dark,
+              // ============ OLD CODE - COMMENTED OUT ============
+              // const SizedBox(height: 22),
+              // const OrganizationCreationCompletionStatusCard(progress: 4),
+              // const SizedBox(height: 28),
+              // Text(
+              //   'Profile Details',
+              //   style: AppStyles.text16Px.poppins.w600.dark,
+              // ),
+              // ============ END OLD CODE ============
+
+              // ============ NEW CODE - PROGRESS BAR ============
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(8, (index) {
+                  bool isActive = index <= 4; // Step 5 of 8
+                  return Row(
+                    children: [
+                      Container(
+                        width: 25,
+                        height: 1,
+                        color:
+                            isActive ? AppColors.primary : AppColors.borderGrey,
+                      ),
+                      Transform.rotate(
+                        angle: 0.785398,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          color:
+                              isActive
+                                  ? AppColors.primary
+                                  : AppColors.borderGrey,
+                        ),
+                      ),
+                    ],
+                  );
+                }),
               ),
+              const SizedBox(height: 40),
+              Text(
+                'Tell Members\nWhat You\nOffer',
+                style: AppStyles.text30Px.poppins.w600.dark,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Your timings, amenities, and social links\nhelp users choose confidently.',
+                style: AppStyles.text14Px.poppins.w400.textGrey,
+              ),
+
+              // ============ END NEW CODE ============
               const SizedBox(height: 32),
               Row(
                 children: [
                   Text(
-                    'Set your working days & hours',
+                    'Working Days',
                     style: AppStyles.text14Px.poppins.w500.dark,
                   ),
                   Text(
@@ -552,10 +610,53 @@ class _CreateOrganizationWorkingDetailsScreenState
                           }
                           _selectedWeekDays.value = [...selectedWeekDays];
                         },
+                        // ============ OLD CODE - COMMENTED OUT ============
+                        // child: Container(
+                        //   decoration: BoxDecoration(
+                        //     color: const Color(0xffF4F5FA),
+                        //     borderRadius: BorderRadius.circular(8),
+                        //   ),
+                        //   child: Row(
+                        //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        //     children: [
+                        //       Text(day, style: AppStyles.text14Px.w400.poppins),
+                        //       SvgPicture.asset(
+                        //         isSelected
+                        //             ? 'assets/images/svg/icons/checkbox_filled.svg'
+                        //             : 'assets/images/svg/icons/checkbox_blank.svg',
+                        //         height: 18,
+                        //         width: 18,
+                        //         colorFilter: const ColorFilter.mode(
+                        //           AppColors.dark,
+                        //           BlendMode.srcIn,
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                        // ============ END OLD CODE ============
+
+                        // ============ NEW CODE - SELECTED WITH PINK BG & RED BORDER ============
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xffF4F5FA),
+                            color:
+                                isSelected
+                                    ? const Color(
+                                      0xFFFEE9E7,
+                                    ) // Light pink background when selected
+                                    : const Color(
+                                      0xffF4F5FA,
+                                    ), // Default gray background
                             borderRadius: BorderRadius.circular(8),
+                            border:
+                                isSelected
+                                    ? Border.all(
+                                      color:
+                                          AppColors
+                                              .primary, // Red border when selected
+                                      width: 1.5,
+                                    )
+                                    : null,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -567,20 +668,40 @@ class _CreateOrganizationWorkingDetailsScreenState
                                     : 'assets/images/svg/icons/checkbox_blank.svg',
                                 height: 18,
                                 width: 18,
-                                colorFilter: const ColorFilter.mode(
-                                  AppColors.dark,
+                                colorFilter: ColorFilter.mode(
+                                  isSelected
+                                      ? AppColors
+                                          .primary // Red checkbox when selected
+                                      : AppColors
+                                          .dark, // Dark checkbox when not selected
                                   BlendMode.srcIn,
                                 ),
                               ),
                             ],
                           ),
                         ),
+                        // ============ END NEW CODE ============
                       );
                     },
                   );
                 },
               ),
               const SizedBox(height: 22),
+              Row(
+                children: [
+                  Text(
+                    'Set your working hours',
+                    style: AppStyles.text14Px.poppins.w500.dark,
+                  ),
+                  Text(
+                    '*',
+                    style: AppStyles.text14Px.poppins.w500.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               ListView.separated(
                 padding: EdgeInsets.zero,
                 itemCount: _gymWorkingDetailsFields.length,
@@ -631,66 +752,120 @@ class _CreateOrganizationWorkingDetailsScreenState
                   return Field(data: fields.first);
                 },
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 32),
+              // ============ NEW CODE - FULL WIDTH NEXT BUTTON ============
+              BlocBuilder<OrganizationCreationCubit, OrganizationCreationState>(
+                bloc: _gymCreationCubit,
+                buildWhen: (previous, current) {
+                  return previous.createOrg != current.createOrg;
+                },
+                builder: (context, state) {
+                  final isLoading = state.createOrg?.isNone() ?? false;
+                  return Button.filled(
+                    title: 'Next - Let\'s Add Your Plans',
+                    ontap:
+                        isLoading
+                            ? () {}
+                            : () {
+                              print(
+                                'selected days is--${_selectedWeekDays.value}',
+                              );
+                              _gymCreationCubit.createOrg(
+                                workingDays: _selectedWeekDays.value,
+                                morningStartingTime:
+                                    _gymWorkingDetailsFields[0][0].selectedTime,
+                                morningEndingTime:
+                                    _gymWorkingDetailsFields[0][1].selectedTime,
+                                eveningStartingTime:
+                                    _gymWorkingDetailsFields[1][0].selectedTime,
+                                eveningEndingTime:
+                                    _gymWorkingDetailsFields[1][1].selectedTime,
+                                serivicesOffering:
+                                    _gymWorkingDetailsFields[2][0]
+                                        .selectedMultiValues
+                                        ?.value ??
+                                    [],
+                                amenities:
+                                    _gymWorkingDetailsFields[3][0]
+                                        .selectedValues
+                                        ?.value
+                                        .map((e) => '${e.value}')
+                                        .toList() ??
+                                    [],
+                                website: _socialUrlFields[0].text,
+                                whatsapp: _socialUrlFields[1].text,
+                                instagram: _socialUrlFields[2].text,
+                                facebook: _socialUrlFields[3].text,
+                                youtube: _socialUrlFields[4].text,
+                              );
+                            },
+                    buttonColor: AppColors.primary,
+                  );
+                },
+              ),
+              // ============ END NEW CODE ============
+              const SizedBox(height: 20),
             ],
           ),
-          floatingActionButton: SizedBox(
-            width: 84,
-            child: BlocBuilder<
-              OrganizationCreationCubit,
-              OrganizationCreationState
-            >(
-              bloc: _gymCreationCubit,
-              buildWhen: (previous, current) {
-                return previous.createOrg != current.createOrg;
-              },
-              builder: (context, state) {
-                return FloatingActionButton(
-                  onPressed:
-                      (state.createOrg?.isNone() ?? false)
-                          ? null
-                          : () {
-                            print(
-                              'sekfcet dayss  is--${_selectedWeekDays.value}',
-                            );
-                            _gymCreationCubit.createOrg(
-                              workingDays: _selectedWeekDays.value,
-                              morningStartingTime:
-                                  _gymWorkingDetailsFields[0][0].selectedTime,
-                              morningEndingTime:
-                                  _gymWorkingDetailsFields[0][1].selectedTime,
-                              eveningStartingTime:
-                                  _gymWorkingDetailsFields[1][0].selectedTime,
-                              eveningEndingTime:
-                                  _gymWorkingDetailsFields[1][1].selectedTime,
-                              serivicesOffering:
-                                  _gymWorkingDetailsFields[2][0]
-                                      .selectedMultiValues
-                                      ?.value ??
-                                  [],
-                              amenities:
-                                  _gymWorkingDetailsFields[3][0]
-                                      .selectedValues
-                                      ?.value
-                                      .map((e) => '${e.value}')
-                                      .toList() ??
-                                  [],
-                              website: _socialUrlFields[0].text,
-                              whatsapp: _socialUrlFields[1].text,
-                              instagram: _socialUrlFields[2].text,
-                              facebook: _socialUrlFields[3].text,
-                              youtube: _socialUrlFields[4].text,
-                            );
-                          },
-                  shape: const StadiumBorder(),
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.light,
-                  elevation: 0,
-                  child: const Icon(Icons.keyboard_arrow_right_outlined),
-                );
-              },
-            ),
-          ),
+          // ============ OLD CODE - COMMENTED OUT ============
+          // floatingActionButton: SizedBox(
+          //   width: 84,
+          //   child: BlocBuilder<
+          //     OrganizationCreationCubit,
+          //     OrganizationCreationState
+          //   >(
+          //     bloc: _gymCreationCubit,
+          //     buildWhen: (previous, current) {
+          //       return previous.createOrg != current.createOrg;
+          //     },
+          //     builder: (context, state) {
+          //       return FloatingActionButton(
+          //         onPressed:
+          //             (state.createOrg?.isNone() ?? false)
+          //                 ? null
+          //                 : () {
+          //                   print(
+          //                     'sekfcet dayss  is--${_selectedWeekDays.value}',
+          //                   );
+          //                   _gymCreationCubit.createOrg(
+          //                     workingDays: _selectedWeekDays.value,
+          //                     morningStartingTime:
+          //                         _gymWorkingDetailsFields[0][0].selectedTime,
+          //                     morningEndingTime:
+          //                         _gymWorkingDetailsFields[0][1].selectedTime,
+          //                     eveningStartingTime:
+          //                         _gymWorkingDetailsFields[1][0].selectedTime,
+          //                     eveningEndingTime:
+          //                         _gymWorkingDetailsFields[1][1].selectedTime,
+          //                     serivicesOffering:
+          //                         _gymWorkingDetailsFields[2][0]
+          //                             .selectedMultiValues
+          //                             ?.value ??
+          //                         [],
+          //                     amenities:
+          //                         _gymWorkingDetailsFields[3][0]
+          //                             .selectedValues
+          //                             ?.value
+          //                             .map((e) => '${e.value}')
+          //                             .toList() ??
+          //                         [],
+          //                     website: _socialUrlFields[0].text,
+          //                     whatsapp: _socialUrlFields[1].text,
+          //                     instagram: _socialUrlFields[2].text,
+          //                     facebook: _socialUrlFields[3].text,
+          //                     youtube: _socialUrlFields[4].text,
+          //                   );
+          //                 },
+          //         shape: const StadiumBorder(),
+          //         backgroundColor: AppColors.primary,
+          //         foregroundColor: AppColors.light,
+          //         elevation: 0,
+          //         child: const Icon(Icons.keyboard_arrow_right_outlined),
+          //       );
+          //     },
+          //   ),
+          // ),
+          // ============ END OLD CODE ============
         ),
       ),
     );

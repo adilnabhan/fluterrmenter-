@@ -61,7 +61,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
           (t) => t.fold((l) {}, (r) {
             if (state.sentOtpEntity.process == 'registration') {
               context.push(
-                CreateAccountScreen(sentOtpEntity: state.sentOtpEntity),
+                UserRoleSelectionScreen(sentOtpEntity: state.sentOtpEntity),
               );
               return;
             }

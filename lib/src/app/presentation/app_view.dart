@@ -67,7 +67,7 @@ class _AppViewState extends State<AppView> {
 
   Widget getScreen(AppState state) {
     if (state.currentUser == null) {
-      return const SentOtpScreen();
+      return const SignupScreen();
     } else if (!(state.currentUser?.isProfileCompleted ?? false)) {
       return const CreateOrganizationBasicDetailsScreen();
     }

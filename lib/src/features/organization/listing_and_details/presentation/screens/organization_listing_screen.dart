@@ -79,7 +79,12 @@ class _OrganizationListingAndDetailsScreenState
               ) &&
               state.details.fold(
                 () => false,
-                (t) => t.fold((_) => false, (_) => true),
+                (t) => t.fold(
+                  (_) => false,
+                  (orgDetails) =>
+                      (orgDetails.isOnFreeTrial ?? false) ||
+                      (orgDetails.isSubscribed ?? false),
+                ),
               );
           return Scaffold(
             appBar:
