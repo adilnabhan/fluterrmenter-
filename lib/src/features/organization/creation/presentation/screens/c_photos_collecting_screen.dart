@@ -345,16 +345,22 @@ class _CreateOrganizationPhotosCollectingScreenState
                   // NEW UI - Upload Image Button
                   InkWell(
                     onTap: () {
-                      ImagePickerDialog(
-                        needRemove: false,
-                        onPickedImage: (image) {
-                          if (image != null) {
-                            setState(() {
-                              _images.add(image);
-                            });
-                          }
-                        },
-                      ).show(context);
+                      // ImagePickerDialog(
+                      //   needRemove: false,
+                      //   onPickedImage: (image) {
+                      //     if (image != null) {
+                      //       setState(() {
+                      //         _images.add(image);
+                      //       });
+                      //     }
+                      //   },
+                      // ).show(context);
+                      context.push(
+                        BlocProvider.value(
+                          value: _gymCreationCubit,
+                          child: const CreateOrganizationWorkingDetailsScreen(),
+                        ),
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -369,14 +375,14 @@ class _CreateOrganizationPhotosCollectingScreenState
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.camera_alt_outlined,
-                            color: AppColors.primary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
+                          // Icon(
+                          //   Icons.camera_alt_outlined,
+                          //   color: AppColors.primary,
+                          //   size: 20,
+                          // ),
+                          // const SizedBox(width: 8),
                           Text(
-                            'Upload Image',
+                            'Skip For Now',
                             style: AppStyles.text14Px.poppins.w500.copyWith(
                               color: AppColors.primary,
                             ),

@@ -279,25 +279,74 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
               print('Current location---${r.vicinity}');
               print('Current location---${r.district}');
               print('Current location---${r.formatedAddress}');
+              // _gymLocationCubit.searchPlaces(q: '');
+              // _searchField.value = TextEditingValue(
+              //   text: r.placeName ?? r.placeName ?? '',
+              // );
+              // _searchFocusNode.unfocus();
+              // _locationDetails[0][0].controller?.value = TextEditingValue(
+              //   text: r.vicinity ?? r.formatedAddress ?? '',
+              // );
+              // _locationDetails[1][0].controller?.value = TextEditingValue(
+              //   text: r.streetName ?? '',
+              // );
+              // _locationDetails[2][0].controller?.value = TextEditingValue(
+              //   text: r.district ?? '',
+              // );
+              // _locationDetails[3][0].controller?.value = TextEditingValue(
+              //   text: r.state ?? '',
+              // );
+              // _locationDetails[3][1].controller?.value = TextEditingValue(
+              //   text: r.pincode ?? '',
+              // );
+
               _gymLocationCubit.searchPlaces(q: '');
               _searchField.value = TextEditingValue(
                 text: r.placeName ?? r.placeName ?? '',
               );
               _searchFocusNode.unfocus();
+
+              String buildingName = r.vicinity ?? '';
+              String street = r.streetName ?? '';
+              String city = r.district ?? '';
+              String state = r.state ?? '';
+              String pincode = r.pincode ?? '';
+
+              // Fallback logic if specific components are missing
+              if (buildingName.isEmpty && r.formatedAddress != null) {
+                final parts = r.formatedAddress!.split(',');
+                if (parts.isNotEmpty) {
+                  buildingName = parts[0].trim();
+                  if (street.isEmpty && parts.length > 1) {
+                    final secondPart = parts[1].trim();
+                    // Simple heuristic to avoid setting city/state as street
+                    // checking if the second part is not contained in city or state string
+                    if ((city.isEmpty || !city.contains(secondPart)) &&
+                        (state.isEmpty || !state.contains(secondPart))) {
+                      street = secondPart;
+                    }
+                  }
+                }
+              }
+
               _locationDetails[0][0].controller?.value = TextEditingValue(
-                text: r.vicinity ?? r.formatedAddress ?? '',
+                text: buildingName,
+                // text: r.vicinity ?? r.formatedAddress 
               );
               _locationDetails[1][0].controller?.value = TextEditingValue(
-                text: r.streetName ?? '',
+                text: street,
+                  // text: r.streetName ?? '',
               );
               _locationDetails[2][0].controller?.value = TextEditingValue(
-                text: r.district ?? '',
+                text: city,
               );
               _locationDetails[3][0].controller?.value = TextEditingValue(
-                text: r.state ?? '',
+                text: state,
+                // text: r.state ?? '',
               );
               _locationDetails[3][1].controller?.value = TextEditingValue(
-                text: r.pincode ?? '',
+                text: pincode,
+                //  text: r.pincode ?? '',
               );
             });
           });
@@ -308,25 +357,73 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
               print('from map---${r.labelName}');
               print('from map---${r.vicinity}');
               print('from map---${r.district}');
+              // _gymLocationCubit.searchPlaces(q: '');
+              // _searchField.value = TextEditingValue(
+              //   text: r.placeName ?? r.placeName ?? '',
+              // );
+              // _searchFocusNode.unfocus();
+              // _locationDetails[0][0].controller?.value = TextEditingValue(
+              //   text: r.vicinity ?? r.formatedAddress ?? '',
+              // );
+              // _locationDetails[1][0].controller?.value = TextEditingValue(
+              //   text: r.streetName ?? r.placeName ?? '',
+              // );
+              // _locationDetails[2][0].controller?.value = TextEditingValue(
+              //   text: r.district ?? '',
+              // );
+              // _locationDetails[3][0].controller?.value = TextEditingValue(
+              //   text: r.state ?? '',
+              // );
+              // _locationDetails[3][1].controller?.value = TextEditingValue(
+              //   text: r.pincode ?? '',
+              // );
+
               _gymLocationCubit.searchPlaces(q: '');
               _searchField.value = TextEditingValue(
                 text: r.placeName ?? r.placeName ?? '',
               );
               _searchFocusNode.unfocus();
+
+              String buildingName = r.vicinity ?? '';
+              String street = r.streetName ?? '';
+              String city = r.district ?? '';
+              String state = r.state ?? '';
+              String pincode = r.pincode ?? '';
+
+              // Fallback logic if specific components are missing
+              if (buildingName.isEmpty && r.formatedAddress != null) {
+                final parts = r.formatedAddress!.split(',');
+                if (parts.isNotEmpty) {
+                  buildingName = parts[0].trim();
+                  if (street.isEmpty && parts.length > 1) {
+                    final secondPart = parts[1].trim();
+                    if ((city.isEmpty || !city.contains(secondPart)) &&
+                        (state.isEmpty || !state.contains(secondPart))) {
+                      street = secondPart;
+                    }
+                  }
+                }
+              }
+
               _locationDetails[0][0].controller?.value = TextEditingValue(
-                text: r.vicinity ?? r.formatedAddress ?? '',
+                text: buildingName,
+                  // text: r.vicinity ?? r.formatedAddress ?? '',
               );
               _locationDetails[1][0].controller?.value = TextEditingValue(
-                text: r.streetName ?? r.placeName ?? '',
+                text: street,
+                //  text: r.streetName ?? r.placeName ?? '',
               );
               _locationDetails[2][0].controller?.value = TextEditingValue(
-                text: r.district ?? '',
+                text: city,
+                // text: r.district ?? '',
               );
               _locationDetails[3][0].controller?.value = TextEditingValue(
-                text: r.state ?? '',
+                text: state,
+                  // text: r.state ?? '',
               );
               _locationDetails[3][1].controller?.value = TextEditingValue(
-                text: r.pincode ?? '',
+                text: pincode,
+                // text: r.pincode ?? '',
               );
             });
           });
