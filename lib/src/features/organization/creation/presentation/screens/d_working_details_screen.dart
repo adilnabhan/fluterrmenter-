@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/creation/presentation/screens/emi_screen.dart';
 
 class CreateOrganizationWorkingDetailsScreen extends StatefulWidget {
   const CreateOrganizationWorkingDetailsScreen({super.key});
@@ -503,7 +504,8 @@ class _CreateOrganizationWorkingDetailsScreenState
             },
             (r) {
               context.pushAndRemoveUntil(
-                const OrganizationCreationSuccessScreen(),
+                // const OrganizationCreationSuccessScreen(),
+                const OrganizationEmiScreen(),
               );
             },
           ),

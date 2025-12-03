@@ -89,7 +89,8 @@ class SubscriptionSuccessScreen extends StatelessWidget {
                           ontap: () {
                             // ============ NAVIGATE TO DASHBOARD ============
                             context.pushAndRemoveUntil(
-                              const OrganizationListingScreen(),
+                              // const OrganizationListingScreen(),
+                              const OrganizationCreationSuccessScreen(),
                             );
                             // ============ END NAVIGATE TO DASHBOARD ============
                           },
