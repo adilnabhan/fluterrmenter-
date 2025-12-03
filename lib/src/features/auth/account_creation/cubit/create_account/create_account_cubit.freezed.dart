@@ -20,6 +20,9 @@ mixin _$CreateAccountState {
   SentOtpEntity get sentOtpEntity => throw _privateConstructorUsedError;
   Option<Either<ApiException, LoginSuccessModel>>? get onboardingUser =>
       throw _privateConstructorUsedError;
+  Option<Either<ApiException, void>>? get createOrUpdateOnboarding =>
+      throw _privateConstructorUsedError;
+  bool get isLoading => throw _privateConstructorUsedError;
 
   /// Create a copy of CreateAccountState
   /// with the given fields replaced by the non-null parameter values.
@@ -38,6 +41,8 @@ abstract class $CreateAccountStateCopyWith<$Res> {
   $Res call({
     SentOtpEntity sentOtpEntity,
     Option<Either<ApiException, LoginSuccessModel>>? onboardingUser,
+    Option<Either<ApiException, void>>? createOrUpdateOnboarding,
+    bool isLoading,
   });
 
   $SentOtpEntityCopyWith<$Res> get sentOtpEntity;
@@ -57,7 +62,12 @@ class _$CreateAccountStateCopyWithImpl<$Res, $Val extends CreateAccountState>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? sentOtpEntity = null, Object? onboardingUser = freezed}) {
+  $Res call({
+    Object? sentOtpEntity = null,
+    Object? onboardingUser = freezed,
+    Object? createOrUpdateOnboarding = freezed,
+    Object? isLoading = null,
+  }) {
     return _then(
       _value.copyWith(
             sentOtpEntity:
@@ -70,6 +80,16 @@ class _$CreateAccountStateCopyWithImpl<$Res, $Val extends CreateAccountState>
                     ? _value.onboardingUser
                     : onboardingUser // ignore: cast_nullable_to_non_nullable
                         as Option<Either<ApiException, LoginSuccessModel>>?,
+            createOrUpdateOnboarding:
+                freezed == createOrUpdateOnboarding
+                    ? _value.createOrUpdateOnboarding
+                    : createOrUpdateOnboarding // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, void>>?,
+            isLoading:
+                null == isLoading
+                    ? _value.isLoading
+                    : isLoading // ignore: cast_nullable_to_non_nullable
+                        as bool,
           )
           as $Val,
     );
@@ -98,6 +118,8 @@ abstract class _$$CreateAccountStateImplCopyWith<$Res>
   $Res call({
     SentOtpEntity sentOtpEntity,
     Option<Either<ApiException, LoginSuccessModel>>? onboardingUser,
+    Option<Either<ApiException, void>>? createOrUpdateOnboarding,
+    bool isLoading,
   });
 
   @override
@@ -117,7 +139,12 @@ class __$$CreateAccountStateImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? sentOtpEntity = null, Object? onboardingUser = freezed}) {
+  $Res call({
+    Object? sentOtpEntity = null,
+    Object? onboardingUser = freezed,
+    Object? createOrUpdateOnboarding = freezed,
+    Object? isLoading = null,
+  }) {
     return _then(
       _$CreateAccountStateImpl(
         sentOtpEntity:
@@ -130,6 +157,16 @@ class __$$CreateAccountStateImplCopyWithImpl<$Res>
                 ? _value.onboardingUser
                 : onboardingUser // ignore: cast_nullable_to_non_nullable
                     as Option<Either<ApiException, LoginSuccessModel>>?,
+        createOrUpdateOnboarding:
+            freezed == createOrUpdateOnboarding
+                ? _value.createOrUpdateOnboarding
+                : createOrUpdateOnboarding // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, void>>?,
+        isLoading:
+            null == isLoading
+                ? _value.isLoading
+                : isLoading // ignore: cast_nullable_to_non_nullable
+                    as bool,
       ),
     );
   }
@@ -141,16 +178,23 @@ class _$CreateAccountStateImpl implements _CreateAccountState {
   const _$CreateAccountStateImpl({
     required this.sentOtpEntity,
     this.onboardingUser,
+    this.createOrUpdateOnboarding,
+    this.isLoading = false,
   });
 
   @override
   final SentOtpEntity sentOtpEntity;
   @override
   final Option<Either<ApiException, LoginSuccessModel>>? onboardingUser;
+  @override
+  final Option<Either<ApiException, void>>? createOrUpdateOnboarding;
+  @override
+  @JsonKey()
+  final bool isLoading;
 
   @override
   String toString() {
-    return 'CreateAccountState(sentOtpEntity: $sentOtpEntity, onboardingUser: $onboardingUser)';
+    return 'CreateAccountState(sentOtpEntity: $sentOtpEntity, onboardingUser: $onboardingUser, createOrUpdateOnboarding: $createOrUpdateOnboarding, isLoading: $isLoading)';
   }
 
   @override
@@ -161,11 +205,24 @@ class _$CreateAccountStateImpl implements _CreateAccountState {
             (identical(other.sentOtpEntity, sentOtpEntity) ||
                 other.sentOtpEntity == sentOtpEntity) &&
             (identical(other.onboardingUser, onboardingUser) ||
-                other.onboardingUser == onboardingUser));
+                other.onboardingUser == onboardingUser) &&
+            (identical(
+                  other.createOrUpdateOnboarding,
+                  createOrUpdateOnboarding,
+                ) ||
+                other.createOrUpdateOnboarding == createOrUpdateOnboarding) &&
+            (identical(other.isLoading, isLoading) ||
+                other.isLoading == isLoading));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, sentOtpEntity, onboardingUser);
+  int get hashCode => Object.hash(
+    runtimeType,
+    sentOtpEntity,
+    onboardingUser,
+    createOrUpdateOnboarding,
+    isLoading,
+  );
 
   /// Create a copy of CreateAccountState
   /// with the given fields replaced by the non-null parameter values.
@@ -183,12 +240,18 @@ abstract class _CreateAccountState implements CreateAccountState {
   const factory _CreateAccountState({
     required final SentOtpEntity sentOtpEntity,
     final Option<Either<ApiException, LoginSuccessModel>>? onboardingUser,
+    final Option<Either<ApiException, void>>? createOrUpdateOnboarding,
+    final bool isLoading,
   }) = _$CreateAccountStateImpl;
 
   @override
   SentOtpEntity get sentOtpEntity;
   @override
   Option<Either<ApiException, LoginSuccessModel>>? get onboardingUser;
+  @override
+  Option<Either<ApiException, void>>? get createOrUpdateOnboarding;
+  @override
+  bool get isLoading;
 
   /// Create a copy of CreateAccountState
   /// with the given fields replaced by the non-null parameter values.

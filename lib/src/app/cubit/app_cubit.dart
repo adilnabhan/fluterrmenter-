@@ -55,4 +55,35 @@ class AppCubit extends HydratedCubit<AppState> {
       'currentUser': state.currentUser?.toJson(),
     };
   }
+
+  Future<void> onboardingUpdate({
+    required Map<String, dynamic> body,
+    required int? id,
+  }) async {
+    try {
+      final result = await AuthRepository().onboardingUpdate(
+        body: body,
+        id: id,
+      );
+
+      // Handle both success and failure properly
+      result.fold(
+        (failure) {
+          // Emit error and stop loader
+        },
+        (r) {
+          // Emit success and stop loader
+          // addUser(r);
+          // emit(
+          //   state.copyWith(
+          //     currentUser: r,
+          //     // onboardingUser: some(right(r)),
+          //   ),
+          // );
+        },
+      );
+    } catch (e) {
+      // Catch unhandled exceptions and stop loader
+    }
+  }
 }

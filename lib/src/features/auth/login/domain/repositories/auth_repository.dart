@@ -222,4 +222,41 @@ final class AuthRepository {
       return left(const ApiException.unknown());
     }
   }
+
+  Future<Either<ApiException, LoginSuccessModel>> onboardingUpdate({
+    required Map<String, dynamic> body,
+    required int? id,
+  }) async {
+    return await Feggy.async(
+      call: _dio.patch<dynamic>(
+        ApiUris.onboardingUpdate(id!),
+        data: body,
+
+        options:
+            Options(
+              validateStatus: (_) => true,
+              headers: {'X-Platform': platformSource},
+            ).token,
+      ),
+      onSuccess: (res) {
+        if (res.statusCode != null &&
+            res.statusCode! >= 200 &&
+            res.statusCode! < 300) {
+          return right(
+            LoginSuccessModel.fromJson(res.data as Map<String, dynamic>),
+          );
+        }
+
+        final data = res.data;
+        String message = "Something went wrong";
+        if (data is Map<String, dynamic> && data.values.isNotEmpty) {
+          message = data.values.first.toString();
+          print('errro---${data.values.first.toString()}');
+        } else if (data is String) {
+          message = data;
+        }
+        return left(ApiException.unknown(msg: message));
+      },
+    );
+  }
 }

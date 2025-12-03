@@ -65,11 +65,30 @@ class _AppViewState extends State<AppView> {
     );
   }
 
+  // Widget getScreen(AppState state) {
+  //   if (state.currentUser == null) {
+  //     return const SentOtpScreen();
+  //   } else if (!(state.currentUser?.isProfileCompleted ?? false)) {
+  //     return const CreateOrganizationBasicDetailsScreen();
+  //   }
+  //   return const OrganizationListingScreen();
+  // }
+
   Widget getScreen(AppState state) {
+    print('usr dara----${state.currentUser?.mentor}');
+    print('usr dara----${state.currentUser?.isProfileCompleted}');
     if (state.currentUser == null) {
       return const SentOtpScreen();
-    } else if (!(state.currentUser?.isProfileCompleted ?? false)) {
-      return const CreateOrganizationBasicDetailsScreen();
+    } else if (state.currentUser?.isProfileCompleted ?? false) {
+      return const OrganizationListingScreen();
+    } else {
+      return const SentOtpScreen();
+
+      // if ((state.currentUser?.mentor?.org?.profileCompleteness ?? 0) == 6) {
+      //   return const OrganizationListingScreen();
+      // } else {
+      //   return const SentOtpScreen();
+      // }
     }
     return const OrganizationListingScreen();
   }

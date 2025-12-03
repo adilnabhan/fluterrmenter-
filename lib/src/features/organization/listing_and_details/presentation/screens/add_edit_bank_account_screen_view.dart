@@ -1,9 +1,14 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class AddEditBankAccountScreenView extends StatefulWidget {
-  const AddEditBankAccountScreenView({this.bankDetails, super.key});
+  const AddEditBankAccountScreenView({
+    this.bankDetails,
+    super.key,
+    this.progress = 0,
+  });
 
   final BankDetailsModel? bankDetails;
+  final int? progress;
   @override
   State<AddEditBankAccountScreenView> createState() =>
       _BankAccountDetailsScreenState();
@@ -166,19 +171,50 @@ class _BankAccountDetailsScreenState
             },
             (success) {
               Dialogs.showSnack(msg: 'Bank added successfully');
-              context.pop();
+              if (widget.progress == 0) {
+                context.pop();
+              } else {
+                var dat = context.read<AppCubit>().state;
+                print('org id is--${dat.currentUser?.mentor?.org}');
+                print('org id is--${_cubit.orgId}');
+                context.read<AppCubit>().onboardingUpdate(
+                  body: {'profile_completeness': 6},
+                  id: int.parse(_cubit.orgId),
+                );
+
+                context.pushAndRemoveUntil(
+                  MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create:
+                            (_) => MembershipCubit(orgId: _cubit.orgId ?? ''),
+                      ),
+                    ],
+                    child: GymPackagesScreen(
+                      progress: 6,
+                      orgDetails: OrganizationDetailsModel(
+                        id: int.parse(_cubit.orgId),
+                      ),
+                    ),
+                  ),
+                );
+              }
             },
           ),
         );
       },
       child: Scaffold(
-        appBar: AppBar(
-          leading: const PopButton().center,
-          title: Text(
-            'Bank Account Details',
-            style: AppStyles.text16Px.poppins.w500,
-          ),
-        ),
+        appBar:
+            widget.progress == 0
+                ? AppBar(
+                  leading: const PopButton().center,
+                  title: Text(
+                    'Bank Account Details',
+                    style: AppStyles.text16Px.poppins.w500,
+                  ),
+                )
+                : null,
+
         body: Form(
           key: _formKey,
           child: ListView(
@@ -187,6 +223,18 @@ class _BankAccountDetailsScreenState
                 child: Column(
                   spacing: 16,
                   children: [
+                    if (widget.progress != 0)
+                      Column(
+                        children: [
+                          const SizedBox(height: 22),
+                          OrganizationCreationCompletionStatusCard(
+                            progress: widget.progress ?? 0,
+                          ),
+                          const SizedBox(height: 28),
+                        ],
+                      )
+                    else
+                      SizedBox(),
                     Field(data: _bankNameField),
                     Field(data: _branchNameField),
                     Field(data: _accountHolderField),

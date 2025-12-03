@@ -12,6 +12,7 @@ final class ApiUris {
   static const loginWithOtp = '${_v1}user/otp/verify/';
   static const verifyOtp = '${_v1}user/otp/verification/registration/';
   static const onboarding = '${_v1}user/onboarding/';
+
   static const logout = '${_v1}user/logout/';
 
   ///============================= Common =============================\\\
@@ -19,7 +20,11 @@ final class ApiUris {
   static const amenities = '${_v1}fitnesscenter/amenities/';
 
   ///============================= Organization =============================\\\
+  ///
+  /// 31/update/
   static const createOrg = '${_v1}fitnesscenter/organization/create/';
+  static String onboardingUpdate(int id) =>
+      '${_v1}fitnesscenter/organization/$id/update/';
   static const listOrganizations = '${_v1}fitnesscenter/organization/list/';
   static String orgDetails(int orgId) =>
       '${_v1}fitnesscenter/organization/$orgId/';
@@ -59,6 +64,7 @@ final class ApiUris {
       '${_v1}fitnesscenter/membership-plans/$id/';
 
   ///============================= bank =============================\\\
-  static String bankDetails(String id) => '${_v1}fitnesscenter/bank-details/$id';
+  static String bankDetails(String id) =>
+      '${_v1}fitnesscenter/bank-details/$id';
   static const addBankDetails = '${_v1}fitnesscenter/bank-details/';
 }

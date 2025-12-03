@@ -4,10 +4,12 @@ class OrganizationCreationSuccessScreen extends StatefulWidget {
   const OrganizationCreationSuccessScreen({super.key});
 
   @override
-  State<OrganizationCreationSuccessScreen> createState() => _OrganizationCreationSuccessScreenState();
+  State<OrganizationCreationSuccessScreen> createState() =>
+      _OrganizationCreationSuccessScreenState();
 }
 
-class _OrganizationCreationSuccessScreenState extends State<OrganizationCreationSuccessScreen> {
+class _OrganizationCreationSuccessScreenState
+    extends State<OrganizationCreationSuccessScreen> {
   bool completedAnimation = false;
   @override
   void initState() {
@@ -29,19 +31,38 @@ class _OrganizationCreationSuccessScreenState extends State<OrganizationCreation
             true => Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SvgPicture.asset('assets/images/svg/vectors/onboarding_success.svg', height: 140)
+                SvgPicture.asset(
+                      'assets/images/svg/vectors/onboarding_success.svg',
+                      height: 140,
+                    )
                     .animate(
                       onComplete: (controller) {
-                        context.pushAndRemoveUntil(const OrganizationListingScreen());
+                        context.pushAndRemoveUntil(
+                          const OrganizationListingScreen(),
+                        );
                       },
                     )
-                    .scale(duration: const Duration(seconds: 2), curve: Curves.elasticOut, begin: Offset.zero, end: const Offset(1, 1)),
+                    .scale(
+                      duration: const Duration(seconds: 2),
+                      curve: Curves.elasticOut,
+                      begin: Offset.zero,
+                      end: const Offset(1, 1),
+                    ),
                 const SizedBox(height: 16),
-                Text('Gym created successfully! 🎉', style: AppStyles.text16Px.poppins.w700.dark, textAlign: TextAlign.center),
+                Text(
+                  'Gym created successfully! 🎉',
+                  style: AppStyles.text16Px.poppins.w700.dark,
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
             // ignore: prefer_const_constructors
-            false => Column(mainAxisAlignment: MainAxisAlignment.center, children: const [OrganizationCreationCompletionStatusCard(progress: 5)]),
+            false => Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                OrganizationCreationCompletionStatusCard(progress: 5),
+              ],
+            ),
           },
         ).pad(16),
       ),
