@@ -503,10 +503,33 @@ class _CreateOrganizationWorkingDetailsScreenState
               Dialogs.showSnack(msg: l.msg);
             },
             (r) {
-              context.pushAndRemoveUntil(
-                // const OrganizationCreationSuccessScreen(),
-                const OrganizationEmiScreen(),
+              var dat = context.read<AppCubit>().state;
+              print('org id is--${dat.currentUser?.mentor?.org}');
+
+              context.read<AppCubit>().onboardingUpdate(
+                body: {'profile_completeness': 5},
+                id: dat.currentUser?.mentor?.org?.id,
               );
+
+              context.push(
+                MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create:
+                          (_) => MembershipCubit(
+                            orgId:
+                                dat.currentUser?.mentor?.org?.id.toString() ??
+                                '',
+                          ),
+                    ),
+                  ],
+                  child: const AddEditBankAccountScreenView(progress: 5),
+                ),
+              );
+              // context.pushAndRemoveUntil(
+              //   // const OrganizationCreationSuccessScreen(),
+                const OrganizationEmiScreen(),
+              // );
             },
           ),
         );

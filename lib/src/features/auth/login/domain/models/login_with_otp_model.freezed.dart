@@ -573,6 +573,8 @@ mixin _$Mentor {
   int? get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'name')
   String? get name => throw _privateConstructorUsedError;
+  @JsonKey(name: 'organization')
+  Org? get org => throw _privateConstructorUsedError;
 
   /// Serializes this Mentor to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -591,7 +593,10 @@ abstract class $MentorCopyWith<$Res> {
   $Res call({
     @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'organization') Org? org,
   });
+
+  $OrgCopyWith<$Res>? get org;
 }
 
 /// @nodoc
@@ -608,7 +613,11 @@ class _$MentorCopyWithImpl<$Res, $Val extends Mentor>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = freezed, Object? name = freezed}) {
+  $Res call({
+    Object? id = freezed,
+    Object? name = freezed,
+    Object? org = freezed,
+  }) {
     return _then(
       _value.copyWith(
             id:
@@ -621,9 +630,28 @@ class _$MentorCopyWithImpl<$Res, $Val extends Mentor>
                     ? _value.name
                     : name // ignore: cast_nullable_to_non_nullable
                         as String?,
+            org:
+                freezed == org
+                    ? _value.org
+                    : org // ignore: cast_nullable_to_non_nullable
+                        as Org?,
           )
           as $Val,
     );
+  }
+
+  /// Create a copy of Mentor
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $OrgCopyWith<$Res>? get org {
+    if (_value.org == null) {
+      return null;
+    }
+
+    return $OrgCopyWith<$Res>(_value.org!, (value) {
+      return _then(_value.copyWith(org: value) as $Val);
+    });
   }
 }
 
@@ -638,7 +666,11 @@ abstract class _$$MentorImplCopyWith<$Res> implements $MentorCopyWith<$Res> {
   $Res call({
     @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'organization') Org? org,
   });
+
+  @override
+  $OrgCopyWith<$Res>? get org;
 }
 
 /// @nodoc
@@ -654,7 +686,11 @@ class __$$MentorImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = freezed, Object? name = freezed}) {
+  $Res call({
+    Object? id = freezed,
+    Object? name = freezed,
+    Object? org = freezed,
+  }) {
     return _then(
       _$MentorImpl(
         id:
@@ -667,6 +703,11 @@ class __$$MentorImplCopyWithImpl<$Res>
                 ? _value.name
                 : name // ignore: cast_nullable_to_non_nullable
                     as String?,
+        org:
+            freezed == org
+                ? _value.org
+                : org // ignore: cast_nullable_to_non_nullable
+                    as Org?,
       ),
     );
   }
@@ -678,6 +719,7 @@ class _$MentorImpl implements _Mentor {
   const _$MentorImpl({
     @JsonKey(name: 'id') this.id,
     @JsonKey(name: 'name') this.name,
+    @JsonKey(name: 'organization') this.org,
   });
 
   factory _$MentorImpl.fromJson(Map<String, dynamic> json) =>
@@ -689,10 +731,13 @@ class _$MentorImpl implements _Mentor {
   @override
   @JsonKey(name: 'name')
   final String? name;
+  @override
+  @JsonKey(name: 'organization')
+  final Org? org;
 
   @override
   String toString() {
-    return 'Mentor(id: $id, name: $name)';
+    return 'Mentor(id: $id, name: $name, org: $org)';
   }
 
   @override
@@ -701,12 +746,13 @@ class _$MentorImpl implements _Mentor {
         (other.runtimeType == runtimeType &&
             other is _$MentorImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.name, name) || other.name == name));
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.org, org) || other.org == org));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name);
+  int get hashCode => Object.hash(runtimeType, id, name, org);
 
   /// Create a copy of Mentor
   /// with the given fields replaced by the non-null parameter values.
@@ -726,6 +772,7 @@ abstract class _Mentor implements Mentor {
   const factory _Mentor({
     @JsonKey(name: 'id') final int? id,
     @JsonKey(name: 'name') final String? name,
+    @JsonKey(name: 'organization') final Org? org,
   }) = _$MentorImpl;
 
   factory _Mentor.fromJson(Map<String, dynamic> json) = _$MentorImpl.fromJson;
@@ -736,11 +783,222 @@ abstract class _Mentor implements Mentor {
   @override
   @JsonKey(name: 'name')
   String? get name;
+  @override
+  @JsonKey(name: 'organization')
+  Org? get org;
 
   /// Create a copy of Mentor
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MentorImplCopyWith<_$MentorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+Org _$OrgFromJson(Map<String, dynamic> json) {
+  return _Org.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Org {
+  @JsonKey(name: 'id')
+  int? get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'name')
+  String? get name => throw _privateConstructorUsedError;
+  @JsonKey(name: 'profile_completeness')
+  int? get profileCompleteness => throw _privateConstructorUsedError;
+
+  /// Serializes this Org to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Org
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $OrgCopyWith<Org> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $OrgCopyWith<$Res> {
+  factory $OrgCopyWith(Org value, $Res Function(Org) then) =
+      _$OrgCopyWithImpl<$Res, Org>;
+  @useResult
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'profile_completeness') int? profileCompleteness,
+  });
+}
+
+/// @nodoc
+class _$OrgCopyWithImpl<$Res, $Val extends Org> implements $OrgCopyWith<$Res> {
+  _$OrgCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Org
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? name = freezed,
+    Object? profileCompleteness = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            profileCompleteness:
+                freezed == profileCompleteness
+                    ? _value.profileCompleteness
+                    : profileCompleteness // ignore: cast_nullable_to_non_nullable
+                        as int?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$OrgImplCopyWith<$Res> implements $OrgCopyWith<$Res> {
+  factory _$$OrgImplCopyWith(_$OrgImpl value, $Res Function(_$OrgImpl) then) =
+      __$$OrgImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'profile_completeness') int? profileCompleteness,
+  });
+}
+
+/// @nodoc
+class __$$OrgImplCopyWithImpl<$Res> extends _$OrgCopyWithImpl<$Res, _$OrgImpl>
+    implements _$$OrgImplCopyWith<$Res> {
+  __$$OrgImplCopyWithImpl(_$OrgImpl _value, $Res Function(_$OrgImpl) _then)
+    : super(_value, _then);
+
+  /// Create a copy of Org
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? name = freezed,
+    Object? profileCompleteness = freezed,
+  }) {
+    return _then(
+      _$OrgImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        profileCompleteness:
+            freezed == profileCompleteness
+                ? _value.profileCompleteness
+                : profileCompleteness // ignore: cast_nullable_to_non_nullable
+                    as int?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$OrgImpl implements _Org {
+  const _$OrgImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'name') this.name,
+    @JsonKey(name: 'profile_completeness') this.profileCompleteness,
+  });
+
+  factory _$OrgImpl.fromJson(Map<String, dynamic> json) =>
+      _$$OrgImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'id')
+  final int? id;
+  @override
+  @JsonKey(name: 'name')
+  final String? name;
+  @override
+  @JsonKey(name: 'profile_completeness')
+  final int? profileCompleteness;
+
+  @override
+  String toString() {
+    return 'Org(id: $id, name: $name, profileCompleteness: $profileCompleteness)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$OrgImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.profileCompleteness, profileCompleteness) ||
+                other.profileCompleteness == profileCompleteness));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, name, profileCompleteness);
+
+  /// Create a copy of Org
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$OrgImplCopyWith<_$OrgImpl> get copyWith =>
+      __$$OrgImplCopyWithImpl<_$OrgImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$OrgImplToJson(this);
+  }
+}
+
+abstract class _Org implements Org {
+  const factory _Org({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'name') final String? name,
+    @JsonKey(name: 'profile_completeness') final int? profileCompleteness,
+  }) = _$OrgImpl;
+
+  factory _Org.fromJson(Map<String, dynamic> json) = _$OrgImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'id')
+  int? get id;
+  @override
+  @JsonKey(name: 'name')
+  String? get name;
+  @override
+  @JsonKey(name: 'profile_completeness')
+  int? get profileCompleteness;
+
+  /// Create a copy of Org
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$OrgImplCopyWith<_$OrgImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

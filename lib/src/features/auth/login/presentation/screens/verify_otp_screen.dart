@@ -59,6 +59,8 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
         state.verifyOtp?.fold(
           () => null,
           (t) => t.fold((l) {}, (r) {
+            print('process is--${state.sentOtpEntity.process}');
+
             if (state.sentOtpEntity.process == 'registration') {
               context.push(
                 UserRoleSelectionScreen(sentOtpEntity: state.sentOtpEntity),
@@ -66,18 +68,91 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
               return;
             }
             final isLogin = state.sentOtpEntity.process == 'login';
-            if (isLogin && !(r?.isProfileCompleted ?? false)) {
-              context.read<AppCubit>().addUser(r!);
-              context.pushAndRemoveUntil(
-                const CreateOrganizationBasicDetailsScreen(),
-              );
-              return;
-            }
             if (isLogin) {
               context.read<AppCubit>().addUser(r!);
-              context.pushAndRemoveUntil(const OrganizationListingScreen());
-              return;
+
+              if ((r.isProfileCompleted ?? false) &&
+                  (r.mentor?.org?.profileCompleteness == 5)) {
+                context.pushAndRemoveUntil(
+                  MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create:
+                            (_) => MembershipCubit(
+                              orgId: r.mentor?.org?.id.toString() ?? '',
+                            ),
+                      ),
+                    ],
+                    child: const AddEditBankAccountScreenView(progress: 5),
+                  ),
+                );
+              } else {
+                final dat = context.read<AppCubit>().state;
+                if (r.mentor?.org?.profileCompleteness == 7) {
+                  context.pushAndRemoveUntil(const OrganizationListingScreen());
+                  return;
+                } else if (r.mentor?.org?.profileCompleteness == 5) {
+                  context.pushAndRemoveUntil(
+                    MultiBlocProvider(
+                      providers: [
+                        BlocProvider(
+                          create:
+                              (_) => MembershipCubit(
+                                orgId: r.mentor?.org?.id.toString() ?? '',
+                              ),
+                        ),
+                      ],
+                      child: const AddEditBankAccountScreenView(progress: 5),
+                    ),
+                  );
+                  print(' go to bank adding ');
+                  return;
+                } else if (r.mentor?.org?.profileCompleteness == 6) {
+                  print(' go to package page');
+                  context.pushAndRemoveUntil(
+                    MultiBlocProvider(
+                      providers: [
+                        BlocProvider(
+                          create:
+                              (_) => MembershipCubit(
+                                orgId:
+                                    dat.currentUser?.mentor?.org?.id
+                                        .toString() ??
+                                    '',
+                              ),
+                        ),
+                      ],
+                      child: GymPackagesScreen(
+                        progress: 6,
+                        orgDetails: OrganizationDetailsModel(
+                          id: dat.currentUser?.mentor?.org?.id,
+                        ),
+                      ),
+                    ),
+                  );
+                  return;
+                } else if (r.isProfileCompleted ?? false) {
+                  context.pushAndRemoveUntil(const OrganizationListingScreen());
+                } else {
+                  context.pushAndRemoveUntil(
+                    const CreateOrganizationBasicDetailsScreen(),
+                  );
+                }
+              }
             }
+
+            // if (isLogin && !(r?.isProfileCompleted ?? false)) {
+            //   context.read<AppCubit>().addUser(r!);
+            //   context.pushAndRemoveUntil(
+            //     const CreateOrganizationBasicDetailsScreen(),
+            //   );
+            //   return;
+            // }
+            // if (isLogin) {
+            //   context.read<AppCubit>().addUser(r!);
+            //   context.pushAndRemoveUntil(const OrganizationListingScreen());
+            //   return;
+            // }
           }),
         );
       },

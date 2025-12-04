@@ -40,6 +40,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
       [
         FieldData(
           type: FieldType.word,
+          maxLength: 98,
           textInputAction: TextInputAction.next,
           label: 'Building/Flat Name & Number ',
           requiredLabel: true,

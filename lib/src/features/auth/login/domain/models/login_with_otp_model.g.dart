@@ -53,7 +53,27 @@ Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
 _$MentorImpl _$$MentorImplFromJson(Map<String, dynamic> json) => _$MentorImpl(
   id: (json['id'] as num?)?.toInt(),
   name: json['name'] as String?,
+  org:
+      json['organization'] == null
+          ? null
+          : Org.fromJson(json['organization'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$$MentorImplToJson(_$MentorImpl instance) =>
-    <String, dynamic>{'id': instance.id, 'name': instance.name};
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'organization': instance.org,
+    };
+
+_$OrgImpl _$$OrgImplFromJson(Map<String, dynamic> json) => _$OrgImpl(
+  id: (json['id'] as num?)?.toInt(),
+  name: json['name'] as String?,
+  profileCompleteness: (json['profile_completeness'] as num?)?.toInt(),
+);
+
+Map<String, dynamic> _$$OrgImplToJson(_$OrgImpl instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'profile_completeness': instance.profileCompleteness,
+};

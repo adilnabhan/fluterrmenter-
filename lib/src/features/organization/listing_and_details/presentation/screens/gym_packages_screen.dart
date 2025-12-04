@@ -1,24 +1,28 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class GymPackagesScreen extends StatelessWidget {
-  const GymPackagesScreen({required this.orgDetails, super.key});
+  const GymPackagesScreen({
+    required this.orgDetails,
+    super.key,
+    this.progress = 0,
+  });
 
   final OrganizationDetailsModel orgDetails;
-
+  final int? progress;
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => MembershipCubit(orgId: '${orgDetails.id!}'),
-      child: _GymPackagesScreen(orgDetails: orgDetails),
+      child: _GymPackagesScreen(orgDetails: orgDetails, progress: progress),
     );
   }
 }
 
 class _GymPackagesScreen extends StatefulWidget {
-  const _GymPackagesScreen({required this.orgDetails});
+  const _GymPackagesScreen({required this.orgDetails, this.progress = 0});
 
   final OrganizationDetailsModel orgDetails;
-
+  final int? progress;
   @override
   State<_GymPackagesScreen> createState() => __GymPackagesScreenState();
 }
@@ -141,16 +145,34 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
         );
       },
       child: Scaffold(
-        appBar: AppBar(
-          leading: const PopButton().center,
-          title: Text('Package', style: AppStyles.text16Px.poppins.w500),
-        ),
+        appBar:
+            widget.progress == 0
+                ? AppBar(
+                  leading: const PopButton().center,
+                  title: Text(
+                    'Package',
+                    style: AppStyles.text16Px.poppins.w500,
+                  ),
+                )
+                : null,
         body: Column(
           children: [
+            if (widget.progress != 0)
+              Column(
+                children: [
+                  SizedBox(height: MediaQuery.of(context).padding.top + 20),
+                  OrganizationCreationCompletionStatusCard(
+                    progress: widget.progress ?? 0,
+                  ),
+                  const SizedBox(height: 28),
+                ],
+              )
+            else
+              const SizedBox(),
             Row(
               children: [
                 Text(
-                  'Current Packages',
+                  widget.progress == 0 ? 'Current Packages' : 'Add Packages',
                   style: AppStyles.text16Px.poppins.w500.dark,
                 ),
                 const Spacer(),
@@ -411,6 +433,51 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
         //     );
         //   },
         // ).pad(16).pxy(y: 16),
+        bottomNavigationBar:
+            widget.progress != 0
+                ? BlocBuilder<MembershipCubit, MembershipState>(
+                  buildWhen:
+                      (p, c) => p.membershipPackages != c.membershipPackages,
+                  builder: (context, state) {
+                    return state.membershipPackages.fold(
+                      () => const Center(child: CircularProgressIndicator()),
+                      (either) => either.fold(
+                        (error) => error.maybeWhen(
+                          network: (e) => const SizedBox(),
+                          notFound: (e) => const SizedBox(),
+                          orElse: () => const SizedBox(),
+                        ),
+                        (data) {
+                          return data.results!.isNotEmpty
+                              ? Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Button.filled(
+                                  title: 'Continue',
+                                  buttonColor: AppColors.primary,
+
+                                  ontap: () {
+                                    context.read<AppCubit>().onboardingUpdate(
+                                      body: {'profile_completeness': 7},
+                                      id: int.parse(_cubit.orgId),
+                                    );
+
+                                    context.pushAndRemoveUntil(
+                                      const OrganizationCreationSuccessScreen(),
+                                    );
+
+                                    print(
+                                      ' calimng save api--go to succes page',
+                                    );
+                                  },
+                                ),
+                              )
+                              : const SizedBox();
+                        },
+                      ),
+                    );
+                  },
+                )
+                : const SizedBox(),
       ),
     );
   }

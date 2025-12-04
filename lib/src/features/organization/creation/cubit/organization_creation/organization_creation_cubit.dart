@@ -294,9 +294,19 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
       body: formData,
     );
     response.fold((l) {}, (r) {
+      print('the succes responce iss-----${r}');
+
       if (appState?.currentUser != null) {
         appCubit?.addUser(
-          appState!.currentUser!.copyWith(isProfileCompleted: true),
+          appState!.currentUser!.copyWith(
+            mentor: Mentor(
+              org: Org(
+                id: r['id'] as int?, // <-- cast to int?
+                name: r['name'] as String?, // <-- cast to String?
+                profileCompleteness: 5,
+              ),
+            ),
+          ),
         );
       }
     });

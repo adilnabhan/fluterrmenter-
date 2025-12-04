@@ -23,12 +23,29 @@ class LoginSuccessModel with _$LoginSuccessModel {
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
   }) = _LoginWithOtpEntity;
 
-  factory LoginSuccessModel.fromJson(Map<String, dynamic> json) => _$LoginSuccessModelFromJson(json);
+  factory LoginSuccessModel.fromJson(Map<String, dynamic> json) =>
+      _$LoginSuccessModelFromJson(json);
 }
 
 @freezed
 class Mentor with _$Mentor {
-  const factory Mentor({@JsonKey(name: 'id') int? id, @JsonKey(name: 'name') String? name}) = _Mentor;
+  const factory Mentor({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'organization') Org? org,
+  }) = _Mentor;
 
   factory Mentor.fromJson(Map<String, dynamic> json) => _$MentorFromJson(json);
+}
+
+@freezed
+class Org with _$Org {
+  const factory Org({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'name') String? name,
+    @JsonKey(name: 'profile_completeness') int? profileCompleteness,
+  }) = _Org;
+
+  factory Org.fromJson(Map<String, dynamic> json) =>
+      _$OrgFromJson(json);
 }

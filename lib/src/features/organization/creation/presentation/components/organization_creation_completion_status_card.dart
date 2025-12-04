@@ -4,15 +4,21 @@ import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class OrganizationCreationCompletionStatusCard extends StatefulWidget {
-  const OrganizationCreationCompletionStatusCard({required this.progress, super.key});
+  const OrganizationCreationCompletionStatusCard({
+    required this.progress,
+    super.key,
+  });
 
   final int progress;
 
   @override
-  State<OrganizationCreationCompletionStatusCard> createState() => _OrganizationCreationCompletionStatusCardState();
+  State<OrganizationCreationCompletionStatusCard> createState() =>
+      _OrganizationCreationCompletionStatusCardState();
 }
 
-class _OrganizationCreationCompletionStatusCardState extends State<OrganizationCreationCompletionStatusCard> with SingleTickerProviderStateMixin {
+class _OrganizationCreationCompletionStatusCardState
+    extends State<OrganizationCreationCompletionStatusCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
 
@@ -23,7 +29,12 @@ class _OrganizationCreationCompletionStatusCardState extends State<OrganizationC
       vsync: this,
       duration: const Duration(seconds: 1), // Animation duration
     );
-    _animation = Tween<double>(begin: 0, end: widget.progress.toDouble()).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+    _animation = Tween<double>(
+      begin: 0,
+      end: widget.progress.toDouble(),
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
 
     _animationController.forward();
   }
@@ -40,19 +51,47 @@ class _OrganizationCreationCompletionStatusCardState extends State<OrganizationC
       padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(14)),
-        image: DecorationImage(image: svg.Svg('assets/images/svg/vectors/gym_profile_progress_card_background.svg'), fit: BoxFit.cover),
+        image: DecorationImage(
+          image: svg.Svg(
+            'assets/images/svg/vectors/gym_profile_progress_card_background.svg',
+          ),
+          fit: BoxFit.cover,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Complete Your Profile', style: AppStyles.text16Px.poppins.w700.light, textAlign: TextAlign.center),
-          Text("You're almost there  complete a few more steps.", style: AppStyles.text12Px.poppins.w400.light, textAlign: TextAlign.center),
+          Text(
+            'Complete Your Profile',
+            style: AppStyles.text16Px.poppins.w700.light,
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            "You're almost there  complete a few more steps.",
+            style: AppStyles.text12Px.poppins.w400.light,
+            textAlign: TextAlign.center,
+          ),
           AnimatedBuilder(
             animation: _animation,
             builder: (context, child) {
               return SfSliderTheme(
-                data: const SfSliderThemeData(thumbColor: Colors.transparent, activeTrackColor: AppColors.primary, thumbRadius: 12, activeTrackHeight: 5, inactiveTrackHeight: 5),
-                child: SfSlider(min: 0, max: 5, interval: 1, value: _animation.value, thumbIcon: Image.asset('assets/images/png/icons/slider_thump.png'), onChanged: (dynamic newValue) {}),
+                data: const SfSliderThemeData(
+                  thumbColor: Colors.transparent,
+                  activeTrackColor: AppColors.primary,
+                  thumbRadius: 12,
+                  activeTrackHeight: 5,
+                  inactiveTrackHeight: 5,
+                ),
+                child: SfSlider(
+                  min: 0,
+                  max: 7,
+                  interval: 1,
+                  value: _animation.value,
+                  thumbIcon: Image.asset(
+                    'assets/images/png/icons/slider_thump.png',
+                  ),
+                  onChanged: (dynamic newValue) {},
+                ),
               );
             },
           ),
