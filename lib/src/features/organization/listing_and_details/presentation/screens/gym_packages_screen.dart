@@ -154,15 +154,57 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                     style: AppStyles.text16Px.poppins.w500,
                   ),
                 )
-                : null,
+                : AppBar(automaticallyImplyLeading: false),
         body: Column(
           children: [
             if (widget.progress != 0)
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: MediaQuery.of(context).padding.top + 20),
-                  OrganizationCreationCompletionStatusCard(
-                    progress: widget.progress ?? 0,
+                  // SizedBox(height: MediaQuery.of(context).padding.top + 20),
+                  // OrganizationCreationCompletionStatusCard(
+                  //   progress: widget.progress ?? 0,
+                  // ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(8, (index) {
+                      bool isActive = index <= 6; // Step 7 of 8
+                      return Row(
+                        children: [
+                          Container(
+                            width: 25,
+                            height: 1,
+                            color:
+                                isActive
+                                    ? AppColors.primary
+                                    : AppColors.borderGrey,
+                          ),
+                          Transform.rotate(
+                            angle: 0.785398,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              color:
+                                  isActive
+                                      ? AppColors.primary
+                                      : AppColors.borderGrey,
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 40),
+                  Text(
+                    'Your Fitness \nPlans, Their \nChoices 💼',
+                    textAlign: TextAlign.left,
+                    style: AppStyles.text30Px.poppins.w600.dark,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Add the membership packages users can subscribe to.',
+                    style: AppStyles.text14Px.poppins.w400.textGrey,
                   ),
                   const SizedBox(height: 28),
                 ],
@@ -172,7 +214,7 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
             Row(
               children: [
                 Text(
-                  widget.progress == 0 ? 'Current Packages' : 'Add Packages',
+                  widget.progress == 0 ? 'Current Packages' : 'Packages',
                   style: AppStyles.text16Px.poppins.w500.dark,
                 ),
                 const Spacer(),
@@ -244,168 +286,359 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
-                                        // mainAxisAlignment:
-                                        //     MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              membership?.name ?? '',
-                                              style:
-                                                  AppStyles
-                                                      .text14Px
-                                                      .poppins
-                                                      .w600
-                                                      .dark,
-                                            ),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.edit),
-                                            onPressed: () {
-                                              if (widget.orgDetails.id ==
-                                                  null) {
-                                                Dialogs.showSnack(
-                                                  msg:
-                                                      'Organization is not available',
-                                                );
-                                                return;
-                                              }
-                                              context.push(
-                                                BlocProvider.value(
-                                                  value: _cubit,
-                                                  child:
-                                                      GymAddOrEditPackageScreen(
-                                                        membershipPackage:
-                                                            membership,
-                                                      ),
-                                                ),
-                                              );
-                                            },
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: Colors.red,
-                                            ),
-                                          ).pOnly(left: 8),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete),
-                                            onPressed: () {
-                                              if (widget.orgDetails.id ==
-                                                  null) {
-                                                Dialogs.showSnack(
-                                                  msg:
-                                                      'Organization is not available',
-                                                );
-                                                return;
-                                              }
-                                              _onDeletePackage(
-                                                id: data.results?[index].id,
-                                              );
-                                              // _cubit.deleteMembershipPackage(
-                                              //   id: data.results?[index].id,
-                                              // );
-                                            },
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: Colors.red,
-                                            ),
-                                          ).pOnly(left: 8),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 1,
-                                        child: Divider(
-                                          thickness: 1,
-                                          color: Color(0xffDDDDDD),
-                                        ),
-                                      ).pOnly(bottom: 20, top: 12),
-                                      // if (membership?.offerPrice?.isNotEmpty ??
-                                      //     false)
-                                      //   Row(
-                                      //     mainAxisAlignment:
-                                      //         MainAxisAlignment.spaceBetween,
-                                      //     children: [
-                                      //       Text(
-                                      //         'Offer Price',
-                                      //         style:
-                                      //             AppStyles
-                                      //                 .text13Px
-                                      //                 .poppins
-                                      //                 .w400
-                                      //                 .dark,
-                                      //       ),
-                                      //
-                                      //       ///
-                                      //       Text(
-                                      //         '₹${membership?.offerPrice}',
+                                      // EXISTING CODE - COMMENTED OUT
+                                      // Row(
+                                      //   // mainAxisAlignment:
+                                      //   //     MainAxisAlignment.spaceBetween,
+                                      //   children: [
+                                      //     Expanded(
+                                      //       child: Text(
+                                      //         membership?.name ?? '',
                                       //         style:
                                       //             AppStyles
                                       //                 .text14Px
                                       //                 .poppins
-                                      //                 .w500
+                                      //                 .w600
                                       //                 .dark,
                                       //       ),
-                                      //     ],
-                                      //   ).pOnly(bottom: 16),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Duration',
-                                            style:
-                                                AppStyles
-                                                    .text13Px
-                                                    .poppins
-                                                    .w400
-                                                    .dark,
-                                          ),
-                                          Text(
-                                            // '${(membership?.durationDays ?? 0) ~/ 30} months',
-                                            '${membership?.durationDays ?? 0} days',
-                                            style:
-                                                AppStyles
-                                                    .text14Px
-                                                    .poppins
-                                                    .w500
-                                                    .dark,
-                                          ),
-                                        ],
-                                      ).pOnly(bottom: 16),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            // 'Actual Price',
-                                            'Amount',
-                                            style:
-                                                AppStyles
-                                                    .text13Px
-                                                    .poppins
-                                                    .w400
-                                                    .dark,
-                                          ),
+                                      //     ),
+                                      //     IconButton(
+                                      //       icon: const Icon(Icons.edit),
+                                      //       onPressed: () {
+                                      //         if (widget.orgDetails.id ==
+                                      //             null) {
+                                      //           Dialogs.showSnack(
+                                      //             msg:
+                                      //                 'Organization is not available',
+                                      //           );
+                                      //           return;
+                                      //         }
+                                      //         context.push(
+                                      //           BlocProvider.value(
+                                      //             value: _cubit,
+                                      //             child:
+                                      //                 GymAddOrEditPackageScreen(
+                                      //                   membershipPackage:
+                                      //                       membership,
+                                      //                 ),
+                                      //           ),
+                                      //         );
+                                      //       },
+                                      //       style: TextButton.styleFrom(
+                                      //         foregroundColor: Colors.red,
+                                      //       ),
+                                      //     ).pOnly(left: 8),
+                                      //     IconButton(
+                                      //       icon: const Icon(Icons.delete),
+                                      //       onPressed: () {
+                                      //         if (widget.orgDetails.id ==
+                                      //             null) {
+                                      //           Dialogs.showSnack(
+                                      //             msg:
+                                      //                 'Organization is not available',
+                                      //           );
+                                      //           return;
+                                      //         }
+                                      //         _onDeletePackage(
+                                      //           id: data.results?[index].id,
+                                      //         );
+                                      //         // _cubit.deleteMembershipPackage(
+                                      //         //   id: data.results?[index].id,
+                                      //         // );
+                                      //       },
+                                      //       style: TextButton.styleFrom(
+                                      //         foregroundColor: Colors.red,
+                                      //       ),
+                                      //     ).pOnly(left: 8),
+                                      //   ],
+                                      // ),
+                                      // const SizedBox(
+                                      //   height: 1,
+                                      //   child: Divider(
+                                      //     thickness: 1,
+                                      //     color: Color(0xffDDDDDD),
+                                      //   ),
+                                      // ).pOnly(bottom: 20, top: 12),
+                                      // // if (membership?.offerPrice?.isNotEmpty ??
+                                      // //     false)
+                                      // //   Row(
+                                      // //     mainAxisAlignment:
+                                      // //         MainAxisAlignment.spaceBetween,
+                                      // //     children: [
+                                      // //       Text(
+                                      // //         'Offer Price',
+                                      // //         style:
+                                      // //             AppStyles
+                                      // //                 .text13Px
+                                      // //                 .poppins
+                                      // //                 .w400
+                                      // //                 .dark,
+                                      // //       ),
+                                      // //
+                                      // //       ///
+                                      // //       Text(
+                                      // //         '₹${membership?.offerPrice}',
+                                      // //         style:
+                                      // //             AppStyles
+                                      // //                 .text14Px
+                                      // //                 .poppins
+                                      // //                 .w500
+                                      // //                 .dark,
+                                      // //       ),
+                                      // //     ],
+                                      // //   ).pOnly(bottom: 16),
+                                      // Row(
+                                      //   mainAxisAlignment:
+                                      //       MainAxisAlignment.spaceBetween,
+                                      //   children: [
+                                      //     Text(
+                                      //       'Duration',
+                                      //       style:
+                                      //           AppStyles
+                                      //               .text13Px
+                                      //               .poppins
+                                      //               .w400
+                                      //               .dark,
+                                      //     ),
+                                      //     Text(
+                                      //       // '${(membership?.durationDays ?? 0) ~/ 30} months',
+                                      //       '${membership?.durationDays ?? 0} days',
+                                      //       style:
+                                      //           AppStyles
+                                      //               .text14Px
+                                      //               .poppins
+                                      //               .w500
+                                      //               .dark,
+                                      //     ),
+                                      //   ],
+                                      // ).pOnly(bottom: 16),
+                                      // Row(
+                                      //   mainAxisAlignment:
+                                      //       MainAxisAlignment.spaceBetween,
+                                      //   children: [
+                                      //     Text(
+                                      //       // 'Actual Price',
+                                      //       'Amount',
+                                      //       style:
+                                      //           AppStyles
+                                      //               .text13Px
+                                      //               .poppins
+                                      //               .w400
+                                      //               .dark,
+                                      //     ),
+                                      //
+                                      //     ///
+                                      //     Text(
+                                      //       '₹${membership?.actualPrice}',
+                                      //       style: AppStyles
+                                      //           .text14Px
+                                      //           .poppins
+                                      //           .w500
+                                      //           .dark
+                                      //           .copyWith(
+                                      //             // decoration:
+                                      //             //     membership
+                                      //             //                 ?.offerPrice
+                                      //             //                 ?.isNotEmpty ??
+                                      //             //             false
+                                      //             //         ?
+                                      //             //     TextDecoration
+                                      //             //             .lineThrough
+                                      //             //         : null,
+                                      //           ),
+                                      //     ),
+                                      //   ],
+                                      // ),
+                                      // END OF EXISTING CODE
 
-                                          ///
+                                      // NEW UI DESIGN - MATCHING REFERENCE IMAGE
+                                      // Header with Plan Name and Edit/Delete Icons
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
                                           Text(
-                                            '₹${membership?.actualPrice}',
-                                            style: AppStyles
-                                                .text14Px
-                                                .poppins
-                                                .w500
-                                                .dark
-                                                .copyWith(
-                                                  // decoration:
-                                                  //     membership
-                                                  //                 ?.offerPrice
-                                                  //                 ?.isNotEmpty ??
-                                                  //             false
-                                                  //         ?
-                                                  //     TextDecoration
-                                                  //             .lineThrough
-                                                  //         : null,
+                                            membership?.name ?? '',
+                                            style:
+                                                AppStyles
+                                                    .text16Px
+                                                    .poppins
+                                                    .w600
+                                                    .dark,
+                                          ),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.edit_outlined,
+                                                  size: 20,
                                                 ),
+                                                onPressed: () {
+                                                  if (widget.orgDetails.id ==
+                                                      null) {
+                                                    Dialogs.showSnack(
+                                                      msg:
+                                                          'Organization is not available',
+                                                    );
+                                                    return;
+                                                  }
+                                                  context.push(
+                                                    BlocProvider.value(
+                                                      value: _cubit,
+                                                      child:
+                                                          GymAddOrEditPackageScreen(
+                                                            membershipPackage:
+                                                                membership,
+                                                          ),
+                                                    ),
+                                                  );
+                                                },
+                                                style: IconButton.styleFrom(
+                                                  foregroundColor: const Color(
+                                                    0xff666666,
+                                                  ),
+                                                  backgroundColor: const Color(
+                                                    0xffF5F5F5,
+                                                  ),
+                                                  padding: const EdgeInsets.all(
+                                                    8,
+                                                  ),
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.delete_outline,
+                                                  size: 20,
+                                                ),
+                                                onPressed: () {
+                                                  if (widget.orgDetails.id ==
+                                                      null) {
+                                                    Dialogs.showSnack(
+                                                      msg:
+                                                          'Organization is not available',
+                                                    );
+                                                    return;
+                                                  }
+                                                  _onDeletePackage(
+                                                    id: data.results?[index].id,
+                                                  );
+                                                },
+                                                style: IconButton.styleFrom(
+                                                  foregroundColor: Colors.red,
+                                                  backgroundColor: const Color(
+                                                    0xffF5F5F5,
+                                                  ),
+                                                  padding: const EdgeInsets.all(
+                                                    8,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
+                                      const SizedBox(height: 20),
+
+                                      // Offer Price (if available)
+                                      if (membership?.offerPrice?.isNotEmpty ??
+                                          false)
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              'Actual Price',
+                                              style:
+                                                  AppStyles
+                                                      .text14Px
+                                                      .poppins
+                                                      .w400
+                                                      .dark,
+                                            ),
+                                            Text(
+                                              '₹${membership?.actualPrice}',
+                                              style:
+                                                  AppStyles
+                                                      .text14Px
+                                                      .poppins
+                                                      .w500
+                                                      .dark,
+                                            ),
+                                          ],
+                                        ),
+
+                                      // EMI Options Section (if available)
+                                      if (membership?.isEmiAvailable == true &&
+                                          (membership?.emiPlans.isNotEmpty ??
+                                              false))
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 20),
+                                            Container(
+                                              width: double.infinity,
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xffF8F8F8),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'EMI Option',
+                                                    style:
+                                                        AppStyles
+                                                            .text14Px
+                                                            .poppins
+                                                            .w600
+                                                            .dark,
+                                                  ),
+                                                  const SizedBox(height: 12),
+                                                  ...membership!.emiPlans.map((
+                                                    emi,
+                                                  ) {
+                                                    return Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            bottom: 8,
+                                                          ),
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            '${emi.month} Month',
+                                                            style:
+                                                                AppStyles
+                                                                    .text13Px
+                                                                    .poppins
+                                                                    .w400
+                                                                    .dark,
+                                                          ),
+                                                          Text(
+                                                            '₹${emi.price.toStringAsFixed(0)}',
+                                                            style:
+                                                                AppStyles
+                                                                    .text13Px
+                                                                    .poppins
+                                                                    .w500
+                                                                    .dark,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -461,9 +694,44 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                       id: int.parse(_cubit.orgId),
                                     );
 
+                                    // EXISTING CODE - COMMENTED OUT (Using BlocProvider.value which may not work properly)
+                                    // final cubit =
+                                    //     context
+                                    //         .read<
+                                    //           OrganizationListingAndDetailsCubit
+                                    //         >();
+                                    // context.pushAndRemoveUntil(
+                                    //   BlocProvider.value(
+                                    //     value: cubit,
+                                    //     child: SubscriptionPlanChooseCom(
+                                    //       orgDetails: OrganizationDetailsModel(
+                                    //         id: widget.orgDetails.id,
+                                    //       ),
+                                    //     ),
+                                    //   ),
+                                    // );
+
+                                    // FIXED CODE - Using MultiBlocProvider pattern like other screens
                                     context.pushAndRemoveUntil(
-                                      const OrganizationCreationSuccessScreen(),
+                                      MultiBlocProvider(
+                                        providers: [
+                                          BlocProvider(
+                                            create:
+                                                (_) =>
+                                                    OrganizationListingAndDetailsCubit(),
+                                          ),
+                                        ],
+                                        child: SubscriptionPlanChooseCom(
+                                          orgDetails: OrganizationDetailsModel(
+                                            id: widget.orgDetails.id,
+                                          ),
+                                        ),
+                                      ),
                                     );
+
+                                    // context.pushAndRemoveUntil(
+                                    //   const OrganizationCreationSuccessScreen(),
+                                    // );
 
                                     print(
                                       ' calimng save api--go to succes page',

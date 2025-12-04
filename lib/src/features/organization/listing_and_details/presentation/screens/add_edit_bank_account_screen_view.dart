@@ -213,36 +213,77 @@ class _BankAccountDetailsScreenState
                     style: AppStyles.text16Px.poppins.w500,
                   ),
                 )
-                : null,
+                : AppBar(automaticallyImplyLeading: false),
 
         body: Form(
           key: _formKey,
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
-              _ShadowCard(
-                child: Column(
-                  spacing: 16,
-                  children: [
-                    if (widget.progress != 0)
-                      Column(
-                        children: [
-                          const SizedBox(height: 22),
-                          OrganizationCreationCompletionStatusCard(
-                            progress: widget.progress ?? 0,
-                          ),
-                          const SizedBox(height: 28),
-                        ],
-                      )
-                    else
-                      SizedBox(),
-                    Field(data: _bankNameField),
-                    Field(data: _branchNameField),
-                    Field(data: _accountHolderField),
-                    Field(data: _ifscCodeField),
-                    Field(data: _accountNumberField),
-                    Field(data: _confirmAccountNumberField),
-                  ],
-                ),
+              Column(
+                spacing: 16,
+                children: [
+                  if (widget.progress != 0)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // const SizedBox(height: 22),
+                        // OrganizationCreationCompletionStatusCard(
+                        //   progress: widget.progress ?? 0,
+                        // ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(8, (index) {
+                            bool isActive = index <= 5; // Step 6 of 8
+                            return Row(
+                              children: [
+                                Container(
+                                  width: 25,
+                                  height: 1,
+                                  color:
+                                      isActive
+                                          ? AppColors.primary
+                                          : AppColors.borderGrey,
+                                ),
+                                Transform.rotate(
+                                  angle: 0.785398,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    color:
+                                        isActive
+                                            ? AppColors.primary
+                                            : AppColors.borderGrey,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                        ),
+                        const SizedBox(height: 40),
+                        Text(
+                          'Get Paid\nSecurely',
+                          textAlign: TextAlign.left,
+                          style: AppStyles.text30Px.poppins.w600.dark,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Add your bank details to receive payments directly to your account.',
+                          style: AppStyles.text14Px.poppins.w400.textGrey,
+                        ),
+                        const SizedBox(height: 28),
+                      ],
+                    )
+                  else
+                    SizedBox(),
+                  Field(data: _bankNameField),
+                  Field(data: _branchNameField),
+                  Field(data: _accountHolderField),
+                  Field(data: _ifscCodeField),
+                  Field(data: _accountNumberField),
+                  Field(data: _confirmAccountNumberField),
+                ],
               ),
             ],
           ),
@@ -287,30 +328,6 @@ class _BankAccountDetailsScreenState
           },
         ),
       ),
-    );
-  }
-}
-
-class _ShadowCard extends StatelessWidget {
-  const _ShadowCard({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.2),
-            spreadRadius: 10,
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: child,
     );
   }
 }
