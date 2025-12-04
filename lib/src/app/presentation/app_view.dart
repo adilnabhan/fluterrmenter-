@@ -79,7 +79,7 @@ class _AppViewState extends State<AppView> {
     print('usr dara----${state.currentUser?.isProfileCompleted}');
     if (state.currentUser == null) {
       return const SentOtpScreen();
-    } else if (state.currentUser?.isProfileCompleted ?? false) {
+    } else if (state.currentUser?.isProfileCompleted ?? false ) {
       return const OrganizationListingScreen();
     } else {
       return const SentOtpScreen();

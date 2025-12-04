@@ -71,10 +71,22 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
             if (isLogin) {
               context.read<AppCubit>().addUser(r!);
 
-              if (r.isProfileCompleted ?? false) {
-                context.pushAndRemoveUntil(const OrganizationListingScreen());
+              if ((r.isProfileCompleted ?? false) &&
+                  (r.mentor?.org?.profileCompleteness == 5)) {
+                context.pushAndRemoveUntil(
+                  MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create:
+                            (_) => MembershipCubit(
+                              orgId: r.mentor?.org?.id.toString() ?? '',
+                            ),
+                      ),
+                    ],
+                    child: const AddEditBankAccountScreenView(progress: 5),
+                  ),
+                );
               } else {
-
                 final dat = context.read<AppCubit>().state;
                 if (r.mentor?.org?.profileCompleteness == 7) {
                   context.pushAndRemoveUntil(const OrganizationListingScreen());
@@ -93,10 +105,10 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                       child: const AddEditBankAccountScreenView(progress: 5),
                     ),
                   );
-
+                  print(' go to bank adding ');
                   return;
                 } else if (r.mentor?.org?.profileCompleteness == 6) {
-
+                  print(' go to package page');
                   context.pushAndRemoveUntil(
                     MultiBlocProvider(
                       providers: [
@@ -119,6 +131,8 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                     ),
                   );
                   return;
+                } else if (r.isProfileCompleted ?? false) {
+                  context.pushAndRemoveUntil(const OrganizationListingScreen());
                 } else {
                   context.pushAndRemoveUntil(
                     const CreateOrganizationBasicDetailsScreen(),
