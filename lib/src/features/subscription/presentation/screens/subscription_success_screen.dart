@@ -50,7 +50,7 @@ class SubscriptionSuccessScreen extends StatelessWidget {
                   // ============ END PROGRESS BAR ============
                   const SizedBox(height: 40),
                   const Text(
-                    "You're all set,\n[First Name]! 🚀",
+                    "You're all set, 🚀",
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 30,
