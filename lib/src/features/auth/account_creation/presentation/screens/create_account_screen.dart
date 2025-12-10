@@ -132,6 +132,7 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
         ),
       ),
       FieldData(
+        requiredLabel: true,
         type: FieldType.word,
         textInputAction: TextInputAction.done,
         label: 'Email',
@@ -203,9 +204,9 @@ class __CreateAccountScreenState extends State<_CreateAccountScreen> {
         email: email ?? '',
       );
       */
-      final firstName = _basicDetails[0].controller?.text;
-      final lastName = _basicDetails[1].controller?.text;
-      final email = _basicDetails[2].controller?.text;
+      final firstName = _basicDetails[0].controller?.text.trim();
+      final lastName = _basicDetails[1].controller?.text.trim();
+      final email = _basicDetails[2].controller?.text.trim();
       context.read<CreateAccountCubit>().onboardUser(
         firstName: firstName ?? '',
         lastName: lastName ?? '',
