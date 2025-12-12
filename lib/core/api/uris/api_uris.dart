@@ -65,6 +65,6 @@ final class ApiUris {
 
   ///============================= bank =============================\\\
   static String bankDetails(String id) =>
-      '${_v1}fitnesscenter/bank-details/$id';
+      '${_v1}fitnesscenter/bank-details/$id/';
   static const addBankDetails = '${_v1}fitnesscenter/bank-details/';
 }

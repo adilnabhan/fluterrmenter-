@@ -541,29 +541,63 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                       const SizedBox(height: 20),
 
                                       // Offer Price (if available)
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Actual Price',
+                                            style:
+                                                AppStyles
+                                                    .text14Px
+                                                    .poppins
+                                                    .w400
+                                                    .dark,
+                                          ),
+                                          Text(
+                                            '₹${membership?.actualPrice}',
+                                            style:
+                                                AppStyles
+                                                    .text14Px
+                                                    .poppins
+                                                    .w500
+                                                    .dark,
+                                          ),
+                                        ],
+                                      ),
                                       if (membership?.offerPrice?.isNotEmpty ??
                                           false)
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                        Column(
                                           children: [
-                                            Text(
-                                              'Actual Price',
-                                              style:
-                                                  AppStyles
-                                                      .text14Px
-                                                      .poppins
-                                                      .w400
-                                                      .dark,
-                                            ),
-                                            Text(
-                                              '₹${membership?.actualPrice}',
-                                              style:
-                                                  AppStyles
-                                                      .text14Px
-                                                      .poppins
-                                                      .w500
-                                                      .dark,
+                                            SizedBox(height: 10.h),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  'offer Price',
+                                                  style:
+                                                      AppStyles
+                                                          .text14Px
+                                                          .poppins
+                                                          .w400
+                                                          .dark,
+                                                ),
+                                                if (membership
+                                                        ?.offerPrice
+                                                        ?.isNotEmpty ??
+                                                    false)
+                                                  Text(
+                                                    '₹${membership?.offerPrice}',
+                                                    style:
+                                                        AppStyles
+                                                            .text14Px
+                                                            .poppins
+                                                            .w500
+                                                            .dark,
+                                                  ),
+                                              ],
                                             ),
                                           ],
                                         ),

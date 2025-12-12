@@ -487,10 +487,11 @@ final class MembershipRepository {
   /// @apiSuccess {MembershipPackageModel} response Success respons
   Future<Either<ApiException, void>> updateBankDetails({
     required Map<String, dynamic> body,
+    int? detailsId,
   }) async {
     return await Feggy.async(
       call: _dio.patch<dynamic>(
-        ApiUris.addBankDetails,
+        ApiUris.bankDetails(detailsId.toString()),
         data: body,
         options:
             Options(

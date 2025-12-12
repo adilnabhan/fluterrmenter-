@@ -50,8 +50,8 @@ class MembershipCubit extends Cubit<MembershipState> {
       if (name.isNotEmpty) 'name': name,
       if (description.isNotEmpty) 'description': description,
       'actual_price': actualPrice,
-      'offer_price': actualPrice,
-      'features': features,// always []
+      'offer_price': offerPrice,
+      'features': features, // always []
       'is_emi_available': isEmiAvailable,
       'is_active': true, // always included
       if (emiOptions!.isNotEmpty)
@@ -100,7 +100,10 @@ class MembershipCubit extends Cubit<MembershipState> {
     };
     final res =
         (detailsId != null
-            ? await MembershipRepository().updateBankDetails(body: body)
+            ? await MembershipRepository().updateBankDetails(
+              body: body,
+              detailsId: detailsId,
+            )
             : await MembershipRepository().createBankDetails(body: body));
     emit(state.copyWith(createOrUpdateBank: some(res), isLoading: false));
   }
