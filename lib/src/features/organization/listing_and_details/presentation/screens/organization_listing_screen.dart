@@ -145,6 +145,11 @@ class _OrganizationListingAndDetailsScreenState
                       ],
                     )
                     : null,
+            /// quick action button added for the workout log
+            floatingActionButton:
+                state.selectedOrganization?.id != null
+                    ? QuickActionsFab(orgId: state.selectedOrganization!.id!)
+                    : null,
             body: BlocBuilder<
               OrganizationListingAndDetailsCubit,
               OrganizationListingAndDetailsState
