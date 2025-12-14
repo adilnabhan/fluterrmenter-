@@ -11,6 +11,8 @@ class WorkoutGroupsScreen extends StatefulWidget {
 
 class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
   int _selectedTabIndex = 0;
+  final _formKey = GlobalKey<FormState>();
+  late final FieldData<dynamic> _groupName;
 
   final List<Map<String, dynamic>> _groups = [
     {'title': 'Chest\nMuscle', 'count': 4},
@@ -20,6 +22,40 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
     {'title': 'Shoulder\nMuscle', 'count': 12},
     {'title': 'Leg\nMuscle', 'count': 15},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _groupName = FieldData(
+      type: FieldType.word,
+      textInputAction: TextInputAction.done,
+      label: 'Group Name',
+      requiredLabel: true,
+      validator: (value) {
+        if (value?.trim().isEmpty ?? true) {
+          return 'Group name is required';
+        }
+        return null;
+      },
+      controller: TextEditingController(),
+      focusNode: FocusNode(),
+      decoration: InputDecoration(
+        hintText: 'Enter group name',
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _groupName.controller?.dispose();
+    _groupName.focusNode?.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -197,65 +233,47 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
               20,
               MediaQuery.of(context).viewInsets.bottom + 20,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Create a Single-Day group',
-                  style: AppStyles.text18Px.poppins.w600.copyWith(
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Group Name *',
-                  style: AppStyles.text14Px.poppins.w500.copyWith(
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.borderGrey),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter group name',
-                      fillColor: Colors.white,
-                      hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-                        color: AppColors.textGrey,
-                      ),
-                      border: InputBorder.none,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Create a Single-Day group',
+                    style: AppStyles.text18Px.poppins.w600.copyWith(
+                      color: AppColors.textDark,
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // TODO: Handle create group action
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD30000),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 24),
+                  Field(data: _groupName),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          // TODO: Handle create group action
+                          Navigator.pop(context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD30000),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Create Group',
-                      style: AppStyles.text16Px.poppins.w600.copyWith(
-                        color: Colors.white,
+                      child: Text(
+                        'Create Group',
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
     );

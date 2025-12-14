@@ -2,9 +2,18 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/create_group_button.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 
-class WorkoutGroupDetailsScreen extends StatelessWidget {
+class WorkoutGroupDetailsScreen extends StatefulWidget {
   const WorkoutGroupDetailsScreen({super.key, required this.groupTitle});
   final String groupTitle;
+
+  @override
+  State<WorkoutGroupDetailsScreen> createState() => _WorkoutGroupDetailsScreenState();
+}
+
+class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
+  final _formKey = GlobalKey<FormState>();
+  late final FieldData<dynamic> _planNamePrivate;
+  late final FieldData<dynamic> _planNamePublic;
 
   final List<Map<String, dynamic>> _plans = const [
     {
@@ -28,6 +37,67 @@ class WorkoutGroupDetailsScreen extends StatelessWidget {
       'createdOn': '22 Tuesday',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _planNamePrivate = FieldData(
+      type: FieldType.word,
+      textInputAction: TextInputAction.next,
+      label: 'Plan Name',
+      requiredLabel: true,
+      validator: (value) {
+        if (value?.trim().isEmpty ?? true) {
+          return 'Plan name is required';
+        }
+        return null;
+      },
+      onSubmitted: (value) {
+        _planNamePublic.focusNode?.requestFocus();
+      },
+      controller: TextEditingController(),
+      focusNode: FocusNode(),
+      decoration: InputDecoration(
+        hintText: 'Enter plan name',
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
+      ),
+    );
+    _planNamePublic = FieldData(
+      type: FieldType.word,
+      textInputAction: TextInputAction.done,
+      label: 'Plan Name',
+      requiredLabel: true,
+      validator: (value) {
+        if (value?.trim().isEmpty ?? true) {
+          return 'Plan name is required';
+        }
+        return null;
+      },
+      controller: TextEditingController(),
+      focusNode: FocusNode(),
+      decoration: InputDecoration(
+        hintText: 'Enter plan name',
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _planNamePrivate.controller?.dispose();
+    _planNamePrivate.focusNode?.dispose();
+    _planNamePublic.controller?.dispose();
+    _planNamePublic.focusNode?.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +155,7 @@ class WorkoutGroupDetailsScreen extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    groupTitle.replaceAll('\n', ' '),
+                    widget.groupTitle.replaceAll('\n', ' '),
                     style: AppStyles.text18Px.poppins.w600.copyWith(
                       color: AppColors.textDark,
                     ),
@@ -210,79 +280,61 @@ class WorkoutGroupDetailsScreen extends StatelessWidget {
               20,
               MediaQuery.of(context).viewInsets.bottom + 20,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Create a Single-Day group',
-                  style: AppStyles.text18Px.poppins.w600.copyWith(
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Plan Name* (only visible to you)',
-                  style: AppStyles.text14Px.poppins.w500.copyWith(
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _buildTextField('Enter plan name'),
-                const SizedBox(height: 16),
-                Text(
-                  'Plan Name* (visible to clients)',
-                  style: AppStyles.text14Px.poppins.w500.copyWith(
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _buildTextField('Enter plan name'),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD30000),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Create Plan',
-                      style: AppStyles.text16Px.poppins.w600.copyWith(
-                        color: Colors.white,
-                      ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Create a Single-Day group',
+                    style: AppStyles.text18Px.poppins.w600.copyWith(
+                      color: AppColors.textDark,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  Field(
+                    data: _planNamePrivate.copyWith(
+                      label: 'Plan Name (only visible to you)',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Field(
+                    data: _planNamePublic.copyWith(
+                      label: 'Plan Name (visible to clients)',
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD30000),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Create Plan',
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
     );
   }
 
-  Widget _buildTextField(String hint) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderGrey),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: hint,
-          fillColor: Colors.white,
-          hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-            color: AppColors.textGrey,
-          ),
-          border: InputBorder.none,
-        ),
-      ),
-    );
-  }
 }
 
 class _PlanCard extends StatelessWidget {

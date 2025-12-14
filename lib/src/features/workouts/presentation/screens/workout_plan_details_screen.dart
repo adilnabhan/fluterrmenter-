@@ -276,137 +276,219 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) => Container(
-            height: MediaQuery.of(context).size.height * 0.9,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      builder: (context) => const _CreateExerciseBottomSheet(),
+    );
+  }
+}
+
+class _CreateExerciseBottomSheet extends StatefulWidget {
+  const _CreateExerciseBottomSheet();
+
+  @override
+  State<_CreateExerciseBottomSheet> createState() => _CreateExerciseBottomSheetState();
+}
+
+class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> {
+  late final GlobalKey<FormState> _formKey;
+  late final FieldData<dynamic> _exerciseName;
+  late final FieldData<String> _muscle;
+  late final FieldData<String> _type;
+  late final FieldData<String> _equipment;
+  late final FieldData<dynamic> _youtubeLink;
+
+  @override
+  void initState() {
+    super.initState();
+    _formKey = GlobalKey<FormState>();
+    _exerciseName = FieldData(
+      type: FieldType.word,
+      textInputAction: TextInputAction.next,
+      label: 'Exercise Name',
+      requiredLabel: true,
+      validator: (value) {
+        if (value?.trim().isEmpty ?? true) {
+          return 'Exercise name is required';
+        }
+        return null;
+      },
+      onSubmitted: (value) {
+        if (mounted) {
+          _muscle.focusNode?.requestFocus();
+        }
+      },
+      controller: TextEditingController(),
+      focusNode: FocusNode(),
+      decoration: InputDecoration(
+        hintText: 'Enter exercise name',
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
+      ),
+    );
+    _muscle = FieldData<String>(
+      type: FieldType.checkbox,
+      items: [],
+      textInputAction: TextInputAction.next,
+      label: 'Muscle',
+      selectedValues: ValueNotifier([]),
+      controller: TextEditingController(),
+      focusNode: FocusNode(),
+      decoration: InputDecoration(
+        hintText: 'Select the muscle',
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
+      ),
+    );
+    _type = FieldData<String>(
+      type: FieldType.checkbox,
+      items: [],
+      textInputAction: TextInputAction.next,
+      label: 'Type',
+      selectedValues: ValueNotifier([]),
+      controller: TextEditingController(),
+      focusNode: FocusNode(),
+      decoration: InputDecoration(
+        hintText: 'Select the type of exercise',
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
+      ),
+    );
+    _equipment = FieldData<String>(
+      type: FieldType.checkbox,
+      items: [],
+      textInputAction: TextInputAction.next,
+      label: 'Equipment',
+      selectedValues: ValueNotifier([]),
+      controller: TextEditingController(),
+      focusNode: FocusNode(),
+      decoration: InputDecoration(
+        hintText: 'Select the equipment used',
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
+      ),
+    );
+    _youtubeLink = FieldData(
+      type: FieldType.word,
+      textInputAction: TextInputAction.done,
+      label: 'Youtube Link',
+      controller: TextEditingController(),
+      focusNode: FocusNode(),
+      decoration: InputDecoration(
+        hintText: 'Paste the youtube link of exercis..',
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
+        suffixIcon: const Icon(Icons.content_paste, color: AppColors.textGrey),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _exerciseName.controller?.dispose();
+    _exerciseName.focusNode?.dispose();
+    _muscle.controller?.dispose();
+    _muscle.focusNode?.dispose();
+    _type.controller?.dispose();
+    _type.focusNode?.dispose();
+    _equipment.controller?.dispose();
+    _equipment.focusNode?.dispose();
+    _youtubeLink.controller?.dispose();
+    _youtubeLink.focusNode?.dispose();
+    super.dispose();
+    // Dispose selectedValues after super.dispose() to ensure CheckboxField finishes disposing first
+    _muscle.selectedValues?.dispose();
+    _type.selectedValues?.dispose();
+    _equipment.selectedValues?.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: UniqueKey(),
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Create new Exercise',
+              style: AppStyles.text18Px.poppins.w600.copyWith(
+                color: AppColors.textDark,
+              ),
             ),
-            padding: EdgeInsets.fromLTRB(
-              20,
-              20,
-              20,
-              MediaQuery.of(context).viewInsets.bottom + 20,
+            const SizedBox(height: 24),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Field(data: _exerciseName),
+                    const SizedBox(height: 16),
+                    Field<String>(data: _muscle),
+                    const SizedBox(height: 16),
+                    Field<String>(data: _type),
+                    const SizedBox(height: 16),
+                    Field<String>(data: _equipment),
+                    const SizedBox(height: 16),
+                    Field(data: _youtubeLink),
+                  ],
+                ),
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Create new Exercise',
-                  style: AppStyles.text18Px.poppins.w600.copyWith(
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('Exercise Name *'),
-                        _buildTextField('Enter exercise name'),
-                        const SizedBox(height: 16),
-                        _buildLabel('Muscle'),
-                        _buildDropdown('Select the muscle'),
-                        const SizedBox(height: 16),
-                        _buildLabel('Type'),
-                        _buildDropdown('Select the type of exercise'),
-                        const SizedBox(height: 16),
-                        _buildLabel('Equipment'),
-                        _buildDropdown('Select the equipment used'),
-                        const SizedBox(height: 16),
-                        _buildLabel('Youtube Link'),
-                        _buildTextField(
-                          'Paste the youtube link of exercis..',
-                          suffixIcon: Icons.content_paste,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Close create sheet
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    // Unfocus before closing to prevent context access errors
+                    FocusScope.of(context).unfocus();
+                    Navigator.pop(context); // Close create sheet
+                    if (Navigator.canPop(context)) {
                       Navigator.pop(context); // Close select sheet
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD30000),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Create Exercise',
-                      style: AppStyles.text16Px.poppins.w600.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD30000),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-              ],
+                child: Text(
+                  'Create Exercise',
+                  style: AppStyles.text16Px.poppins.w600.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
-          ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: AppStyles.text14Px.poppins.w500.copyWith(
-          color: AppColors.textDark,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(String hint, {IconData? suffixIcon}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderGrey),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-            color: AppColors.textGrey,
-          ),
-          border: InputBorder.none,
-          suffixIcon:
-              suffixIcon != null
-                  ? Icon(suffixIcon, color: AppColors.textGrey)
-                  : null,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDropdown(String hint) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderGrey),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          hint: Text(
-            hint,
-            style: AppStyles.text14Px.poppins.w400.copyWith(
-              color: AppColors.textGrey,
-            ),
-          ),
-          items: const [],
-          onChanged: (val) {},
-          icon: const Icon(Icons.keyboard_arrow_down),
+          ],
         ),
       ),
     );
