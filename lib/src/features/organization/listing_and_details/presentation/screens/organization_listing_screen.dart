@@ -1221,7 +1221,7 @@ class _OrganizationListingAndDetailsScreenState
                                           ),
                                         ),
                                         const SizedBox(height: 40),
-                                        const SizedBox(height: 40),
+                                        // const SizedBox(height: 40),
                                       ],
                                     ),
                                     ColoredBox(
