@@ -640,33 +640,35 @@ class _OrganizationListingAndDetailsScreenState
                             ),
                             centerTitle: false,
                             actions: [
-                              InkWell(
-                                borderRadius: BorderRadius.circular(999999),
-                                onTap: () {
-                                  if (state.selectedOrganization?.id != null) {
-                                    context.push(
-                                      BlocProvider.value(
-                                        value: _cubit,
-                                        child: OrganizationDetailsScreen(
-                                          orgId:
-                                              state.selectedOrganization!.id!,
-                                        ),
-                                      ),
-                                    );
-                                  } else {
-                                    Dialogs.showSnack(
-                                      msg: 'Organization not found',
-                                    );
-                                  }
-                                },
-                                child: AbsorbPointer(
-                                  child: ProfileImage(
-                                    isEdit: false,
-                                    radius: 48,
-                                    url: state.selectedOrganization?.logo ?? '',
-                                  ),
-                                ),
-                              ).pOnly(right: 16),
+                              //!commented out as settings and notification are to be needed as per new ui
+                              
+                              // InkWell(
+                              //   borderRadius: BorderRadius.circular(999999),
+                              //   onTap: () {
+                              //     if (state.selectedOrganization?.id != null) {
+                              //       context.push(
+                              //         BlocProvider.value(
+                              //           value: _cubit,
+                              //           child: OrganizationDetailsScreen(
+                              //             orgId:
+                              //                 state.selectedOrganization!.id!,
+                              //           ),
+                              //         ),
+                              //       );
+                              //     } else {
+                              //       Dialogs.showSnack(
+                              //         msg: 'Organization not found',
+                              //       );
+                              //     }
+                              //   },
+                              //   child: AbsorbPointer(
+                              //     child: ProfileImage(
+                              //       isEdit: false,
+                              //       radius: 48,
+                              //       url: state.selectedOrganization?.logo ?? '',
+                              //     ),
+                              //   ),
+                              // ).pOnly(right: 16),
                             ],
                           )
                           : null,
@@ -1036,9 +1038,9 @@ class _OrganizationListingAndDetailsScreenState
                                 child: ListView(
                                   padding: EdgeInsets.zero,
                                   children: [
-                                    const SizedBox(height: 40),
+                                    const SizedBox(height: 10),
                                     const Padding(
-                                      padding: EdgeInsets.all(10),
+                                      padding: EdgeInsets.all(20),
                                       child: AspectRatio(
                                         aspectRatio: 16 / 9,
                                         child: ClipRRect(
@@ -1053,7 +1055,7 @@ class _OrganizationListingAndDetailsScreenState
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 10),
+                                    // const SizedBox(height: 5),
                                     ListView(
                                       padding: const EdgeInsets.all(16),
                                       shrinkWrap: true,
