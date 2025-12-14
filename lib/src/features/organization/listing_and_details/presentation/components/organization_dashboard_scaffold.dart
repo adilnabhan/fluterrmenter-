@@ -6,10 +6,12 @@ class OrganizationDashboardScaffold extends StatefulWidget {
     super.key,
     this.initialIndex = 0,
     this.profileImageUrl,
+    this.floatingActionButtons,
   });
   final List<Widget> pages;
   final int initialIndex;
   final String? profileImageUrl;
+  final List<Widget?>? floatingActionButtons;
 
   @override
   State<OrganizationDashboardScaffold> createState() =>
@@ -35,7 +37,13 @@ class _OrganizationDashboardScaffoldState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(index: _currentIndex, children: widget.pages),
+      floatingActionButton:
+          widget.floatingActionButtons != null &&
+                  widget.floatingActionButtons!.length > _currentIndex
+              ? widget.floatingActionButtons![_currentIndex]
+              : null,
       bottomNavigationBar: OrganizationBottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTap,

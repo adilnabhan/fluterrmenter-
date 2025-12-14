@@ -599,6 +599,12 @@ class _OrganizationListingAndDetailsScreenState
             return OrganizationDashboardScaffold(
               initialIndex: 0,
               profileImageUrl: state.selectedOrganization?.logo,
+              floatingActionButtons: [
+                if (state.selectedOrganization?.id != null)
+                  QuickActionsFab(orgId: state.selectedOrganization!.id!)
+                else
+                  null,
+              ],
               pages: [
                 Scaffold(
                   appBar:
@@ -665,13 +671,6 @@ class _OrganizationListingAndDetailsScreenState
                           )
                           : null,
 
-                  /// quick action button added for the workout log
-                  floatingActionButton:
-                      state.selectedOrganization?.id != null
-                          ? QuickActionsFab(
-                            orgId: state.selectedOrganization!.id!,
-                          )
-                          : null,
                   body: BlocBuilder<
                     OrganizationListingAndDetailsCubit,
                     OrganizationListingAndDetailsState
@@ -693,10 +692,18 @@ class _OrganizationListingAndDetailsScreenState
                           return state.homeData.fold(
                             _onLoading,
                             (either) => either.fold(_onError, (orgHomeData) {
-                              final cards = [
+                              /*
+                                final cards = [
                                 (
                                   title: 'Active Memberships',
-                                  color: const Color(0xff486CC2),
+                                  color: const Color.fromARGB(255, 32, 66, 145),
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color.fromARGB(255, 194, 207, 239),
+                                      Color.fromARGB(255, 164, 186, 240),
+                                      Color.fromARGB(255, 140, 167, 230),
+                                    ],
+                                  ),
                                   count: orgHomeData.activeCustomersCount ?? 0,
                                   onTap: () {
                                     if (state.selectedOrganization?.id !=
@@ -714,9 +721,76 @@ class _OrganizationListingAndDetailsScreenState
                                     }
                                   },
                                 ),
+                                // (
+                                //   title: 'Total Members & Trainers',
+                                //   color: const Color(0xff9C51BF),
+                                //   gradient: null,
+                                //   count:
+                                //       (orgHomeData.trainerCount ?? 0) +
+                                //       (orgHomeData.expiredCustomersCount ?? 0) +
+                                //       (orgHomeData.activeCustomersCount ?? 0),
+                                //   onTap: () {
+                                //     if (state.selectedOrganization?.id !=
+                                //         null) {
+                                //       context.push(
+                                //         MembersAndLeadsListingScreen(
+                                //           orgId:
+                                //               state.selectedOrganization!.id!,
+                                //         ),
+                                //       );
+                                //     } else {
+                                //       Dialogs.showSnack(
+                                //         msg: 'Organization not found',
+                                //       );
+                                //     }
+                                //   },
+                                // ),
                                 (
-                                  title: 'Total Members & Trainers',
+                                  title: 'Expired in 30 Days',
+                                  color: const Color(0xff527F50),
+                                  gradient: null,
+                                  count: orgHomeData.expiredCustomersCount ?? 0,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        ExpiredMembersListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    } else {
+                                      Dialogs.showSnack(
+                                        msg: 'Organization not found',
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Upcoming Renewals',
+                                  color: const Color(0xffC85074),
+                                  gradient: null,
+                                  count: orgHomeData.upcomingRenewalsCount ?? 0,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        UpcomingRenewalsListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    } else {
+                                      Dialogs.showSnack(
+                                        msg: 'Organization not found',
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Total Members',
                                   color: const Color(0xff9C51BF),
+                                  gradient: null,
                                   count:
                                       (orgHomeData.trainerCount ?? 0) +
                                       (orgHomeData.expiredCustomersCount ?? 0) +
@@ -738,48 +812,9 @@ class _OrganizationListingAndDetailsScreenState
                                   },
                                 ),
                                 (
-                                  title: 'Expired Memberships',
-                                  color: const Color(0xff527F50),
-                                  count: orgHomeData.expiredCustomersCount ?? 0,
-                                  onTap: () {
-                                    if (state.selectedOrganization?.id !=
-                                        null) {
-                                      context.push(
-                                        ExpiredMembersListingScreen(
-                                          orgId:
-                                              state.selectedOrganization!.id!,
-                                        ),
-                                      );
-                                    } else {
-                                      Dialogs.showSnack(
-                                        msg: 'Organization not found',
-                                      );
-                                    }
-                                  },
-                                ),
-                                (
-                                  title: 'Upcoming Renewals',
-                                  color: const Color(0xffC85074),
-                                  count: orgHomeData.upcomingRenewalsCount ?? 0,
-                                  onTap: () {
-                                    if (state.selectedOrganization?.id !=
-                                        null) {
-                                      context.push(
-                                        UpcomingRenewalsListingScreen(
-                                          orgId:
-                                              state.selectedOrganization!.id!,
-                                        ),
-                                      );
-                                    } else {
-                                      Dialogs.showSnack(
-                                        msg: 'Organization not found',
-                                      );
-                                    }
-                                  },
-                                ),
-                                (
                                   title: 'Upcoming EMIs',
                                   color: const Color(0xff486CC2),
+                                  gradient: null,
                                   count: orgHomeData.upcomingPaymentCount ?? 0,
                                   onTap: () {
                                     if (state.selectedOrganization?.id !=
@@ -797,12 +832,228 @@ class _OrganizationListingAndDetailsScreenState
                                     }
                                   },
                                 ),
+                                (
+                                  title: 'EMI Due',
+                                  color: const Color(0xff486CC2),
+                                  gradient: null,
+                                  count: orgHomeData.upcomingPaymentCount ?? 0,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        PaymentUpcomingViewScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    } else {
+                                      Dialogs.showSnack(
+                                        msg: 'Upcoming EMIs not found',
+                                      );
+                                    }
+                                  },
+                                ),
+                              ]; */
+
+                              final newCards = [
+                                (
+                                  title: 'Active\nMembers',
+                                  count: orgHomeData.activeCustomersCount ?? 0,
+                                  countColor: const Color(0xff3B5998),
+                                  labelColor: const Color(0xff3B5998),
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xffD6E4FF),
+                                      Color(0xffADC8FF),
+                                    ],
+                                  ),
+                                  borderColor: Colors.transparent,
+                                  iconColor: Colors.white,
+                                  iconBgColor: const Color(0xff3B5998),
+                                  isChevron: false,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        ActiveMembersListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Expired in\n30 days',
+                                  count: orgHomeData.expiredCustomersCount ?? 0,
+                                  countColor: const Color(0xffC0392B),
+                                  labelColor: const Color(0xffC0392B),
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xffFFCDD2),
+                                      Color(0xffFFAB91),
+                                    ],
+                                  ),
+                                  borderColor: Colors.transparent,
+                                  iconColor: Colors.white,
+                                  iconBgColor: const Color(0xffC0392B),
+                                  isChevron: false,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        ExpiredMembersListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Upcoming\nRenewals',
+                                  count: orgHomeData.upcomingRenewalsCount ?? 0,
+                                  countColor: const Color(0xffE67E22),
+                                  labelColor: const Color(0xff333333),
+                                  gradient: null,
+                                  borderColor: const Color(0xffEEEEEE),
+                                  iconColor: const Color(0xff666666),
+                                  iconBgColor: null,
+                                  isChevron: true,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        UpcomingRenewalsListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Total\nMembers',
+                                  count:
+                                      (orgHomeData.trainerCount ?? 0) +
+                                      (orgHomeData.expiredCustomersCount ?? 0) +
+                                      (orgHomeData.activeCustomersCount ?? 0),
+                                  countColor: const Color(0xff333333),
+                                  labelColor: const Color(0xff333333),
+                                  gradient: null,
+                                  borderColor: const Color(0xffEEEEEE),
+                                  iconColor: const Color(0xff666666),
+                                  iconBgColor: null,
+                                  isChevron: true,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        MembersAndLeadsListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Upcoming\nEMI',
+                                  count: orgHomeData.upcomingPaymentCount ?? 0,
+                                  countColor: const Color(0xff27AE60),
+                                  labelColor: const Color(0xff333333),
+                                  gradient: null,
+                                  borderColor: const Color(0xffEEEEEE),
+                                  iconColor: const Color(0xff666666),
+                                  iconBgColor: null,
+                                  isChevron: true,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        PaymentUpcomingViewScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'EMI Dues',
+                                  count:
+                                      0, // Dummy data matching image style, replace logically if needed
+                                  countColor: const Color(0xffE74C3C),
+                                  labelColor: const Color(0xff333333),
+                                  gradient: null,
+                                  borderColor: const Color(0xffEEEEEE),
+                                  iconColor: const Color(0xff666666),
+                                  iconBgColor: null,
+                                  isChevron: true,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        PaymentUpcomingViewScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Today\'s\nleads',
+                                  count: 0,
+                                  countColor: const Color(0xff333333),
+                                  labelColor: const Color(0xff333333),
+                                  gradient: null,
+                                  borderColor: const Color(0xffEEEEEE),
+                                  iconColor: const Color(0xff666666),
+                                  iconBgColor: null,
+                                  isChevron: true,
+                                  onTap: () {},
+                                ),
+                                (
+                                  title: 'Biometric\nDevices',
+                                  count: 0,
+                                  countColor: const Color(0xff27AE60),
+                                  labelColor: const Color(0xff333333),
+                                  gradient: null,
+                                  borderColor: const Color(0xffEEEEEE),
+                                  iconColor: const Color(0xff666666),
+                                  iconBgColor: null,
+                                  isChevron: true,
+                                  onTap: () {},
+                                ),
                               ];
                               return RefreshIndicator(
                                 onRefresh: () async => _fetch(isRefresh: true),
                                 child: ListView(
                                   padding: EdgeInsets.zero,
                                   children: [
+                                    const SizedBox(height: 40),
+                                    const Padding(
+                                      padding: EdgeInsets.all(10),
+                                      child: AspectRatio(
+                                        aspectRatio: 16 / 9,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(16),
+                                          ),
+                                          child: ImageNetwork(
+                                            'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
+                                            height: double.maxFinite,
+                                            width: double.maxFinite,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
                                     ListView(
                                       padding: const EdgeInsets.all(16),
                                       shrinkWrap: true,
@@ -821,80 +1072,135 @@ class _OrganizationListingAndDetailsScreenState
                                                 crossAxisSpacing: 16,
                                                 mainAxisExtent: 128,
                                               ),
-                                          itemCount: cards.length,
-                                          itemBuilder: (
-                                            BuildContext context,
-                                            int index,
-                                          ) {
-                                            final card = cards[index];
-                                            return InkWell(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              onTap: card.onTap,
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                                child: ColoredBox(
-                                                  color: card.color.withAlpha(
-                                                    25,
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        card.count.toString(),
-                                                        style: AppStyles
-                                                            .text20Px
-                                                            .poppins
-                                                            .w800
-                                                            .copyWith(
-                                                              color: card.color,
-                                                            ),
-                                                      ),
-                                                      const Spacer(),
-                                                      Row(
-                                                        children: [
-                                                          Flexible(
-                                                            child: SizedBox(
-                                                              width:
-                                                                  double
-                                                                      .maxFinite,
+                                          itemCount: newCards.length,
+                                          itemBuilder: (context, index) {
+                                            final card = newCards[index];
+                                            return LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                return InkWell(
+                                                  onTap: card.onTap,
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                          16,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          card.gradient == null
+                                                              ? Colors.white
+                                                              : null,
+                                                      gradient: card.gradient,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            20,
+                                                          ),
+                                                      border:
+                                                          card.gradient == null
+                                                              ? Border.all(
+                                                                color:
+                                                                    card.borderColor,
+                                                              )
+                                                              : null,
+                                                      boxShadow: [
+                                                        if (card.gradient ==
+                                                            null)
+                                                          BoxShadow(
+                                                            color: Colors.black
+                                                                .withOpacity(
+                                                                  0.04,
+                                                                ),
+                                                            blurRadius: 10,
+                                                            offset:
+                                                                const Offset(
+                                                                  0,
+                                                                  4,
+                                                                ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            '${card.count}',
+                                                            style: AppStyles
+                                                                .text24Px
+                                                                .w700
+                                                                .poppins
+                                                                .copyWith(
+                                                                  color:
+                                                                      card.countColor,
+                                                                  fontSize: 32,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            Expanded(
                                                               child: Text(
                                                                 card.title,
                                                                 style: AppStyles
                                                                     .text14Px
-                                                                    .poppins
                                                                     .w600
+                                                                    .poppins
                                                                     .copyWith(
                                                                       color:
-                                                                          card.color,
+                                                                          card.labelColor,
+                                                                      height:
+                                                                          1.2,
                                                                     ),
                                                               ),
                                                             ),
-                                                          ),
-                                                          CircleAvatar(
-                                                            backgroundColor:
-                                                                card.color,
-                                                            radius: 18,
-                                                            child: const Icon(
-                                                              Icons
-                                                                  .keyboard_arrow_right_outlined,
-                                                              color:
-                                                                  AppColors
-                                                                      .light,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ).pad(16),
-                                                ),
-                                              ),
+                                                            if (card.isChevron)
+                                                              Icon(
+                                                                Icons
+                                                                    .chevron_right_rounded,
+                                                                color:
+                                                                    card.iconColor,
+                                                                size: 20,
+                                                              )
+                                                            else
+                                                              Container(
+                                                                padding:
+                                                                    const EdgeInsets.all(
+                                                                      4,
+                                                                    ),
+                                                                decoration: BoxDecoration(
+                                                                  color:
+                                                                      card.iconBgColor,
+                                                                  shape:
+                                                                      BoxShape
+                                                                          .circle,
+                                                                ),
+                                                                child: Icon(
+                                                                  Icons
+                                                                      .chevron_right_rounded,
+                                                                  color:
+                                                                      card.iconColor,
+                                                                  size: 16,
+                                                                ),
+                                                              ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              },
                                             );
                                           },
                                         ),

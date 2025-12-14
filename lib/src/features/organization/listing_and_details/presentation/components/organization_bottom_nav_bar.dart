@@ -1,5 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
+import 'dart:ui';
+
 class OrganizationBottomNavBar extends StatelessWidget {
   const OrganizationBottomNavBar({
     required this.currentIndex,
@@ -13,17 +15,20 @@ class OrganizationBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.7),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -5),
+              ),
+            ],
           ),
-        ],
-      ),
       child: SafeArea(
         top: false,
         child: Padding(
@@ -105,7 +110,7 @@ class OrganizationBottomNavBar extends StatelessWidget {
           ),
         ),
       ),
-    );
+    )));
   }
 }
 
