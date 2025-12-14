@@ -1254,7 +1254,7 @@ class _OrganizationListingAndDetailsScreenState
                                                   ),
                                             ),
                                             Text(
-                                              'Made',
+                                              'Are Made',
                                               style: AppStyles
                                                   .text36Px
                                                   .titanOne
