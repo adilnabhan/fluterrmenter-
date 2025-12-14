@@ -1,9 +1,14 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class OrganizationDetailsScreen extends StatefulWidget {
-  const OrganizationDetailsScreen({required this.orgId, super.key});
+  const OrganizationDetailsScreen({
+    required this.orgId,
+    super.key,
+    this.canFetch = true,
+  });
 
   final int orgId;
+  final bool canFetch;
 
   @override
   State<OrganizationDetailsScreen> createState() =>
@@ -17,7 +22,9 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
   void initState() {
     super.initState();
     _cubit = context.read<OrganizationListingAndDetailsCubit>();
-    _fetch();
+    if (widget.canFetch) {
+      _fetch();
+    }
   }
 
   Future<void> _fetch() async {

@@ -86,7 +86,7 @@ class _OrganizationListingAndDetailsScreenState
                       (orgDetails.isSubscribed ?? false),
                 ),
               );
-          return Scaffold(
+          final home = Scaffold(
             appBar:
                 hasData
                     ? AppBar(
@@ -145,6 +145,7 @@ class _OrganizationListingAndDetailsScreenState
                       ],
                     )
                     : null,
+
             /// quick action button added for the workout log
             floatingActionButton:
                 state.selectedOrganization?.id != null
@@ -585,6 +586,783 @@ class _OrganizationListingAndDetailsScreenState
               },
             ),
           );
+
+          OrganizationDetailsModel? orgDetails;
+          state.details.fold(
+            () {},
+            (t) => t.fold((l) {}, (r) => orgDetails = r),
+          );
+
+          if (hasData &&
+              state.selectedOrganization?.id != null &&
+              orgDetails != null) {
+            return OrganizationDashboardScaffold(
+              initialIndex: 0,
+              profileImageUrl: state.selectedOrganization?.logo,
+              pages: [
+                Scaffold(
+                  appBar:
+                      hasData
+                          ? AppBar(
+                            title: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                side: const BorderSide(
+                                  color: Color(0xffDDDDDD),
+                                ),
+                              ),
+                              onPressed: () {
+                                const OrganizationSelectionSheet().show(
+                                  context,
+                                  _cubit,
+                                );
+                              },
+                              label: const Icon(
+                                Icons.keyboard_arrow_down_sharp,
+                                color: Color(0xff222222),
+                                size: 20,
+                              ),
+                              icon: Text(
+                                state.selectedOrganization?.name ?? '',
+                                style: AppStyles.text14Px.poppins.copyWith(
+                                  color: const Color(0xff222222),
+                                ),
+                              ),
+                            ),
+                            centerTitle: false,
+                            actions: [
+                              InkWell(
+                                borderRadius: BorderRadius.circular(999999),
+                                onTap: () {
+                                  if (state.selectedOrganization?.id != null) {
+                                    context.push(
+                                      BlocProvider.value(
+                                        value: _cubit,
+                                        child: OrganizationDetailsScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    Dialogs.showSnack(
+                                      msg: 'Organization not found',
+                                    );
+                                  }
+                                },
+                                child: AbsorbPointer(
+                                  child: ProfileImage(
+                                    isEdit: false,
+                                    radius: 48,
+                                    url: state.selectedOrganization?.logo ?? '',
+                                  ),
+                                ),
+                              ).pOnly(right: 16),
+                            ],
+                          )
+                          : null,
+
+                  /// quick action button added for the workout log
+                  floatingActionButton:
+                      state.selectedOrganization?.id != null
+                          ? QuickActionsFab(
+                            orgId: state.selectedOrganization!.id!,
+                          )
+                          : null,
+                  body: BlocBuilder<
+                    OrganizationListingAndDetailsCubit,
+                    OrganizationListingAndDetailsState
+                  >(
+                    buildWhen:
+                        (p, c) =>
+                            p.homeData != c.homeData ||
+                            p.selectedOrganization != c.selectedOrganization ||
+                            p.details != c.details,
+                    builder: (context, state) {
+                      return state.details.fold(_onLoading, (either) {
+                        return either.fold(_onError, (orgDetails) {
+                          if (!(orgDetails.isOnFreeTrial ?? false) &&
+                              !(orgDetails.isSubscribed ?? false)) {
+                            return SubscriptionPlanChooseCom(
+                              orgDetails: orgDetails,
+                            );
+                          }
+                          return state.homeData.fold(
+                            _onLoading,
+                            (either) => either.fold(_onError, (orgHomeData) {
+                              final cards = [
+                                (
+                                  title: 'Active Memberships',
+                                  color: const Color(0xff486CC2),
+                                  count: orgHomeData.activeCustomersCount ?? 0,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        ActiveMembersListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    } else {
+                                      Dialogs.showSnack(
+                                        msg: 'Organization not found',
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Total Members & Trainers',
+                                  color: const Color(0xff9C51BF),
+                                  count:
+                                      (orgHomeData.trainerCount ?? 0) +
+                                      (orgHomeData.expiredCustomersCount ?? 0) +
+                                      (orgHomeData.activeCustomersCount ?? 0),
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        MembersAndLeadsListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    } else {
+                                      Dialogs.showSnack(
+                                        msg: 'Organization not found',
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Expired Memberships',
+                                  color: const Color(0xff527F50),
+                                  count: orgHomeData.expiredCustomersCount ?? 0,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        ExpiredMembersListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    } else {
+                                      Dialogs.showSnack(
+                                        msg: 'Organization not found',
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Upcoming Renewals',
+                                  color: const Color(0xffC85074),
+                                  count: orgHomeData.upcomingRenewalsCount ?? 0,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        UpcomingRenewalsListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    } else {
+                                      Dialogs.showSnack(
+                                        msg: 'Organization not found',
+                                      );
+                                    }
+                                  },
+                                ),
+                                (
+                                  title: 'Upcoming EMIs',
+                                  color: const Color(0xff486CC2),
+                                  count: orgHomeData.upcomingPaymentCount ?? 0,
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        PaymentUpcomingViewScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    } else {
+                                      Dialogs.showSnack(
+                                        msg: 'Upcoming EMIs not found',
+                                      );
+                                    }
+                                  },
+                                ),
+                              ];
+                              return RefreshIndicator(
+                                onRefresh: () async => _fetch(isRefresh: true),
+                                child: ListView(
+                                  padding: EdgeInsets.zero,
+                                  children: [
+                                    ListView(
+                                      padding: const EdgeInsets.all(16),
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      children: [
+                                        GridView.builder(
+                                          padding: EdgeInsets.zero,
+                                          shrinkWrap: true,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          gridDelegate:
+                                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: 2,
+                                                mainAxisSpacing: 16,
+                                                crossAxisSpacing: 16,
+                                                mainAxisExtent: 128,
+                                              ),
+                                          itemCount: cards.length,
+                                          itemBuilder: (
+                                            BuildContext context,
+                                            int index,
+                                          ) {
+                                            final card = cards[index];
+                                            return InkWell(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              onTap: card.onTap,
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                                child: ColoredBox(
+                                                  color: card.color.withAlpha(
+                                                    25,
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        card.count.toString(),
+                                                        style: AppStyles
+                                                            .text20Px
+                                                            .poppins
+                                                            .w800
+                                                            .copyWith(
+                                                              color: card.color,
+                                                            ),
+                                                      ),
+                                                      const Spacer(),
+                                                      Row(
+                                                        children: [
+                                                          Flexible(
+                                                            child: SizedBox(
+                                                              width:
+                                                                  double
+                                                                      .maxFinite,
+                                                              child: Text(
+                                                                card.title,
+                                                                style: AppStyles
+                                                                    .text14Px
+                                                                    .poppins
+                                                                    .w600
+                                                                    .copyWith(
+                                                                      color:
+                                                                          card.color,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          CircleAvatar(
+                                                            backgroundColor:
+                                                                card.color,
+                                                            radius: 18,
+                                                            child: const Icon(
+                                                              Icons
+                                                                  .keyboard_arrow_right_outlined,
+                                                              color:
+                                                                  AppColors
+                                                                      .light,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ).pad(16),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(height: 40),
+                                        const AspectRatio(
+                                          aspectRatio: 16 / 9,
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(16),
+                                            ),
+                                            child: ImageNetwork(
+                                              'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
+                                              height: double.maxFinite,
+                                              width: double.maxFinite,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 40),
+                                        const SizedBox(height: 40),
+                                      ],
+                                    ),
+                                    ColoredBox(
+                                      color: const Color(0xffF7F7F7),
+                                      child: SizedBox(
+                                        width: double.maxFinite,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 60),
+                                            Text(
+                                              'Did you know?',
+                                              style:
+                                                  AppStyles
+                                                      .text14Px
+                                                      .poppins
+                                                      .w500
+                                                      .dark,
+                                            ),
+                                            const SizedBox(height: 24),
+                                            Text(
+                                              'Strong Businesses',
+                                              style: AppStyles
+                                                  .text26Px
+                                                  .titanOne
+                                                  .w400
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xff878787,
+                                                    ),
+                                                  ),
+                                            ),
+                                            Text(
+                                              'Made',
+                                              style: AppStyles
+                                                  .text36Px
+                                                  .titanOne
+                                                  .w400
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xff878787,
+                                                    ),
+                                                  ),
+                                            ),
+                                            Text(
+                                              'Not Born',
+                                              style: AppStyles
+                                                  .text26Px
+                                                  .titanOne
+                                                  .w400
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xff878787,
+                                                    ),
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 24),
+                                            Text(
+                                              'Built by fitness lovers 🧡',
+                                              style: AppStyles
+                                                  .text14Px
+                                                  .poppins
+                                                  .w400
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xff666666,
+                                                    ),
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 132),
+                                          ],
+                                        ).pxy(x: 20),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          );
+                        });
+                      });
+                    },
+                  ),
+                ),
+                GymTrainersScreen(orgDetails: orgDetails!),
+                PaymentUpcomingViewScreen(
+                  orgId: state.selectedOrganization!.id!,
+                ),
+                const Scaffold(body: Center(child: Text('Reports'))),
+                OrganizationDetailsScreen(
+                  orgId: state.selectedOrganization!.id!,
+                  canFetch: false,
+                ),
+              ],
+            );
+          }
+          /* return Scaffold(
+            appBar:
+                hasData
+                    ? AppBar(
+                      title: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          side: const BorderSide(color: Color(0xffDDDDDD)),
+                        ),
+                        onPressed: () {
+                          const OrganizationSelectionSheet().show(
+                            context,
+                            _cubit,
+                          );
+                        },
+                        label: const Icon(
+                          Icons.keyboard_arrow_down_sharp,
+                          color: Color(0xff222222),
+                          size: 20,
+                        ),
+                        icon: Text(
+                          state.selectedOrganization?.name ?? '',
+                          style: AppStyles.text14Px.poppins.copyWith(
+                            color: const Color(0xff222222),
+                          ),
+                        ),
+                      ),
+                      centerTitle: false,
+                      actions: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(999999),
+                          onTap: () {
+                            if (state.selectedOrganization?.id != null) {
+                              context.push(
+                                BlocProvider.value(
+                                  value: _cubit,
+                                  child: OrganizationDetailsScreen(
+                                    orgId: state.selectedOrganization!.id!,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              Dialogs.showSnack(msg: 'Organization not found');
+                            }
+                          },
+                          child: AbsorbPointer(
+                            child: ProfileImage(
+                              isEdit: false,
+                              radius: 48,
+                              url: state.selectedOrganization?.logo ?? '',
+                            ),
+                          ),
+                        ).pOnly(right: 16),
+                      ],
+                    )
+                    : null,
+
+            /// quick action button added for the workout log
+            floatingActionButton:
+                state.selectedOrganization?.id != null
+                    ? QuickActionsFab(orgId: state.selectedOrganization!.id!)
+                    : null,
+            body: BlocBuilder<
+              OrganizationListingAndDetailsCubit,
+              OrganizationListingAndDetailsState
+            >(
+              buildWhen:
+                  (p, c) =>
+                      p.homeData != c.homeData ||
+                      p.selectedOrganization != c.selectedOrganization ||
+                      p.details != c.details,
+              builder: (context, state) {
+                return state.details.fold(_onLoading, (either) {
+                  return either.fold(_onError, (orgDetails) {
+                    if (!(orgDetails.isOnFreeTrial ?? false) &&
+                        !(orgDetails.isSubscribed ?? false)) {
+                      return SubscriptionPlanChooseCom(orgDetails: orgDetails);
+                    }
+                    return state.homeData.fold(
+                      _onLoading,
+                      (either) => either.fold(_onError, (orgHomeData) {
+                        final cards = [
+                          (
+                            title: 'Active Memberships',
+                            color: const Color(0xff486CC2),
+                            count: orgHomeData.activeCustomersCount ?? 0,
+                            onTap: () {
+                              if (state.selectedOrganization?.id != null) {
+                                context.push(
+                                  ActiveMembersListingScreen(
+                                    orgId: state.selectedOrganization!.id!,
+                                  ),
+                                );
+                              } else {
+                                Dialogs.showSnack(
+                                  msg: 'Organization not found',
+                                );
+                              }
+                            },
+                          ),
+                          (
+                            title: 'Total Members & Trainers',
+                            color: const Color(0xff9C51BF),
+                            count:
+                                (orgHomeData.trainerCount ?? 0) +
+                                (orgHomeData.expiredCustomersCount ?? 0) +
+                                (orgHomeData.activeCustomersCount ?? 0),
+                            onTap: () {
+                              if (state.selectedOrganization?.id != null) {
+                                context.push(
+                                  MembersAndLeadsListingScreen(
+                                    orgId: state.selectedOrganization!.id!,
+                                  ),
+                                );
+                              } else {
+                                Dialogs.showSnack(
+                                  msg: 'Organization not found',
+                                );
+                              }
+                            },
+                          ),
+                          (
+                            title: 'Expired Memberships',
+                            color: const Color(0xff527F50),
+                            count: orgHomeData.expiredCustomersCount ?? 0,
+                            onTap: () {
+                              if (state.selectedOrganization?.id != null) {
+                                context.push(
+                                  ExpiredMembersListingScreen(
+                                    orgId: state.selectedOrganization!.id!,
+                                  ),
+                                );
+                              } else {
+                                Dialogs.showSnack(
+                                  msg: 'Organization not found',
+                                );
+                              }
+                            },
+                          ),
+                          (
+                            title: 'Upcoming Renewals',
+                            color: const Color(0xffC85074),
+                            count: orgHomeData.upcomingRenewalsCount ?? 0,
+                            onTap: () {
+                              if (state.selectedOrganization?.id != null) {
+                                context.push(
+                                  UpcomingRenewalsListingScreen(
+                                    orgId: state.selectedOrganization!.id!,
+                                  ),
+                                );
+                              } else {
+                                Dialogs.showSnack(
+                                  msg: 'Organization not found',
+                                );
+                              }
+                            },
+                          ),
+                          (
+                            title: 'Upcoming EMIs',
+                            color: const Color(0xff486CC2),
+                            count: orgHomeData.upcomingPaymentCount ?? 0,
+                            onTap: () {
+                              if (state.selectedOrganization?.id != null) {
+                                context.push(
+                                  PaymentUpcomingViewScreen(
+                                    orgId: state.selectedOrganization!.id!,
+                                  ),
+                                );
+                              } else {
+                                Dialogs.showSnack(
+                                  msg: 'Upcoming EMIs not found',
+                                );
+                              }
+                            },
+                          ),
+                        ];
+                        return RefreshIndicator(
+                          onRefresh: () async => _fetch(isRefresh: true),
+                          child: ListView(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              ListView(
+                                padding: const EdgeInsets.all(16),
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: [
+                                  GridView.builder(
+                                    padding: EdgeInsets.zero,
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2,
+                                          mainAxisSpacing: 16,
+                                          crossAxisSpacing: 16,
+                                          mainAxisExtent: 128,
+                                        ),
+                                    itemCount: cards.length,
+                                    itemBuilder: (
+                                      BuildContext context,
+                                      int index,
+                                    ) {
+                                      final card = cards[index];
+                                      return InkWell(
+                                        borderRadius: BorderRadius.circular(16),
+                                        onTap: card.onTap,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          child: ColoredBox(
+                                            color: card.color.withAlpha(25),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  card.count.toString(),
+                                                  style: AppStyles
+                                                      .text20Px
+                                                      .poppins
+                                                      .w800
+                                                      .copyWith(
+                                                        color: card.color,
+                                                      ),
+                                                ),
+                                                const Spacer(),
+                                                Row(
+                                                  children: [
+                                                    Flexible(
+                                                      child: SizedBox(
+                                                        width: double.maxFinite,
+                                                        child: Text(
+                                                          card.title,
+                                                          style: AppStyles
+                                                              .text14Px
+                                                              .poppins
+                                                              .w600
+                                                              .copyWith(
+                                                                color:
+                                                                    card.color,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    CircleAvatar(
+                                                      backgroundColor:
+                                                          card.color,
+                                                      radius: 18,
+                                                      child: const Icon(
+                                                        Icons
+                                                            .keyboard_arrow_right_outlined,
+                                                        color: AppColors.light,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ).pad(16),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 40),
+                                  const AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(16),
+                                      ),
+                                      child: ImageNetwork(
+                                        'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
+                                        height: double.maxFinite,
+                                        width: double.maxFinite,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 40),
+                                  const SizedBox(height: 40),
+                                ],
+                              ),
+                              ColoredBox(
+                                color: const Color(0xffF7F7F7),
+                                child: SizedBox(
+                                  width: double.maxFinite,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 60),
+                                      Text(
+                                        'Did you know?',
+                                        style:
+                                            AppStyles
+                                                .text14Px
+                                                .poppins
+                                                .w500
+                                                .dark,
+                                      ),
+                                      const SizedBox(height: 24),
+                                      Text(
+                                        'Strong Businesses',
+                                        style: AppStyles.text26Px.titanOne.w400
+                                            .copyWith(
+                                              color: const Color(0xff878787),
+                                            ),
+                                      ),
+                                      Text(
+                                        'Made',
+                                        style: AppStyles.text36Px.titanOne.w400
+                                            .copyWith(
+                                              color: const Color(0xff878787),
+                                            ),
+                                      ),
+                                      Text(
+                                        'Not Born',
+                                        style: AppStyles.text26Px.titanOne.w400
+                                            .copyWith(
+                                              color: const Color(0xff878787),
+                                            ),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      Text(
+                                        'Built by fitness lovers 🧡',
+                                        style: AppStyles.text14Px.poppins.w400
+                                            .copyWith(
+                                              color: const Color(0xff666666),
+                                            ),
+                                      ),
+                                      const SizedBox(height: 132),
+                                    ],
+                                  ).pxy(x: 20),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    );
+                  });
+                });
+              },
+            ),
+          */
+          return home;
         },
       ),
     );
