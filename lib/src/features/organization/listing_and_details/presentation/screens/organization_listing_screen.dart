@@ -145,6 +145,7 @@ class _OrganizationListingAndDetailsScreenState
                       ],
                     )
                     : null,
+
             /// quick action button added for the workout log
             floatingActionButton:
                 state.selectedOrganization?.id != null
@@ -260,6 +261,19 @@ class _OrganizationListingAndDetailsScreenState
                                 Dialogs.showSnack(
                                   msg: 'Upcoming EMIs not found',
                                 );
+                              }
+                            },
+                          ),
+                          //!temp for payments
+                          (
+                            title: 'Payments',
+                            color: Color.fromARGB(255, 69, 213, 221),
+                            count: orgHomeData.upcomingPaymentCount ?? 0,
+                            onTap: () {
+                              if (state.selectedOrganization?.id != null) {
+                                context.push(const PaymentHistoryScreen());
+                              } else {
+                                Dialogs.showSnack(msg: 'All Payments');
                               }
                             },
                           ),
@@ -511,6 +525,7 @@ class _OrganizationListingAndDetailsScreenState
                                   //                     ),
                                   //                   ],
                                   //                 ),
+
                                   //               ),
                                   //             ),
                                   //           ),
