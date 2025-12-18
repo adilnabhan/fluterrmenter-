@@ -115,7 +115,6 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                 child: Row(
                   children: [
                     _buildTab('Single-Day Workout', 0),
-
                     // const SizedBox(width: 16),
                     // _buildTab('Multi-Day Workout', 1),
                   ],
