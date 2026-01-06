@@ -144,7 +144,8 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 16,
                                     ),
-                                    child: Text('Processing'),
+                                    // child: Text('Processing'),
+                                    child: Text('Pending'),
                                   ),
                                 ),
                               ],
