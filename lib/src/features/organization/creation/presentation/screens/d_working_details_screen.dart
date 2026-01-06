@@ -98,32 +98,32 @@ class _CreateOrganizationWorkingDetailsScreenState
           },
         ),
       ],
-      [
-        FieldData(
-          type: FieldType.multValues,
-          textInputAction: TextInputAction.done,
-          label: 'Service Offerings',
-          requiredLabel: true,
-          controller: TextEditingController(),
-          selectedMultiValues: ValueNotifier([]),
-          focusNode: FocusNode(),
-          validator: (value) {
-            if (value?.trim().isEmpty ?? true) {
-              return 'Service Offerings is required';
-            }
-            return null;
-          },
-          onSubmitted: (value) {},
-          decoration: InputDecoration(
-            hintText: 'Enter the services you provide',
-            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-              borderSide: BorderSide(color: AppColors.borderGrey),
-            ),
-          ),
-        ),
-      ],
+      // [
+      //   FieldData(
+      //     type: FieldType.multValues,
+      //     textInputAction: TextInputAction.done,
+      //     label: 'Service Offerings',
+      //     requiredLabel: true,
+      //     controller: TextEditingController(),
+      //     selectedMultiValues: ValueNotifier([]),
+      //     focusNode: FocusNode(),
+      //     validator: (value) {
+      //       if (value?.trim().isEmpty ?? true) {
+      //         return 'Service Offerings is required';
+      //       }
+      //       return null;
+      //     },
+      //     onSubmitted: (value) {},
+      //     decoration: InputDecoration(
+      //       hintText: 'Enter the services you provide',
+      //       hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+      //       border: const OutlineInputBorder(
+      //         borderRadius: BorderRadius.all(Radius.circular(8)),
+      //         borderSide: BorderSide(color: AppColors.borderGrey),
+      //       ),
+      //     ),
+      //   ),
+      // ],
       [
         FieldData<String>(
           type: FieldType.checkbox,
