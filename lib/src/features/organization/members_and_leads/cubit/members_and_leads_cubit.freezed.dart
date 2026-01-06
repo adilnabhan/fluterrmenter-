@@ -33,7 +33,9 @@ mixin _$MembersAndLeadsState {
   Option<Either<ApiException, CreateOrUpdateLeadModel>>?
   get createOrUpdateLead => throw _privateConstructorUsedError;
   ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
-  get upComingPayments => throw _privateConstructorUsedError;
+  get upComingPayments => throw _privateConstructorUsedError; // paymentHistory
+  ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
+  get paymentHistory => throw _privateConstructorUsedError;
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.
@@ -64,6 +66,8 @@ abstract class $MembersAndLeadsStateCopyWith<$Res> {
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
     ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
     upComingPayments,
+    ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
+    paymentHistory,
   });
 }
 
@@ -93,6 +97,7 @@ class _$MembersAndLeadsStateCopyWithImpl<
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
     Object? upComingPayments = null,
+    Object? paymentHistory = null,
   }) {
     return _then(
       _value.copyWith(
@@ -148,6 +153,14 @@ class _$MembersAndLeadsStateCopyWithImpl<
                           Option<Either<ApiException, UpComingPayments>> data,
                           bool isPagination,
                         }),
+            paymentHistory:
+                null == paymentHistory
+                    ? _value.paymentHistory
+                    : paymentHistory // ignore: cast_nullable_to_non_nullable
+                        as ({
+                          Option<Either<ApiException, PaymentHistory>> data,
+                          bool isPagination,
+                        }),
           )
           as $Val,
     );
@@ -178,6 +191,8 @@ abstract class _$$MembersAndLeadsStateImplCopyWith<$Res>
     Option<Either<ApiException, CreateOrUpdateLeadModel>>? createOrUpdateLead,
     ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
     upComingPayments,
+    ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
+    paymentHistory,
   });
 }
 
@@ -203,6 +218,7 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
     Object? upComingPayments = null,
+    Object? paymentHistory = null,
   }) {
     return _then(
       _$MembersAndLeadsStateImpl(
@@ -255,6 +271,14 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
                       Option<Either<ApiException, UpComingPayments>> data,
                       bool isPagination,
                     }),
+        paymentHistory:
+            null == paymentHistory
+                ? _value.paymentHistory
+                : paymentHistory // ignore: cast_nullable_to_non_nullable
+                    as ({
+                      Option<Either<ApiException, PaymentHistory>> data,
+                      bool isPagination,
+                    }),
       ),
     );
   }
@@ -272,6 +296,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
     this.leadDetails = const None(),
     this.createOrUpdateLead,
     this.upComingPayments = const (data: None(), isPagination: false),
+    this.paymentHistory = const (data: None(), isPagination: false),
   });
 
   //* Members
@@ -310,10 +335,15 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
     bool isPagination,
   })
   upComingPayments;
+  // paymentHistory
+  @override
+  @JsonKey()
+  final ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
+  paymentHistory;
 
   @override
   String toString() {
-    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, memberOnboardedAnimationCompleted: $memberOnboardedAnimationCompleted, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead, upComingPayments: $upComingPayments)';
+    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, memberOnboardedAnimationCompleted: $memberOnboardedAnimationCompleted, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead, upComingPayments: $upComingPayments, paymentHistory: $paymentHistory)';
   }
 
   @override
@@ -338,7 +368,9 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
             (identical(other.createOrUpdateLead, createOrUpdateLead) ||
                 other.createOrUpdateLead == createOrUpdateLead) &&
             (identical(other.upComingPayments, upComingPayments) ||
-                other.upComingPayments == upComingPayments));
+                other.upComingPayments == upComingPayments) &&
+            (identical(other.paymentHistory, paymentHistory) ||
+                other.paymentHistory == paymentHistory));
   }
 
   @override
@@ -352,6 +384,7 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
     leadDetails,
     createOrUpdateLead,
     upComingPayments,
+    paymentHistory,
   );
 
   /// Create a copy of MembersAndLeadsState
@@ -391,6 +424,11 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
       bool isPagination,
     })
     upComingPayments,
+    final ({
+      Option<Either<ApiException, PaymentHistory>> data,
+      bool isPagination,
+    })
+    paymentHistory,
   }) = _$MembersAndLeadsStateImpl;
 
   //* Members
@@ -412,7 +450,10 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
   Option<Either<ApiException, CreateOrUpdateLeadModel>>? get createOrUpdateLead;
   @override
   ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
-  get upComingPayments;
+  get upComingPayments; // paymentHistory
+  @override
+  ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
+  get paymentHistory;
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.

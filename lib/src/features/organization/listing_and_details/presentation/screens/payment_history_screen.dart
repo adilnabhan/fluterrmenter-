@@ -1,20 +1,39 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
-class PaymentHistoryScreen extends StatefulWidget {
-  const PaymentHistoryScreen({super.key});
+class PaymentHistoryScreen extends StatelessWidget {
+  const PaymentHistoryScreen({required this.orgId, super.key});
+  final int orgId;
 
   @override
-  State<PaymentHistoryScreen> createState() => _PaymentHistoryScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => MembersAndLeadsCubit(orgId: orgId),
+      child: PaymentHistoryList(orgId: orgId),
+    );
+  }
 }
 
-class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
+class PaymentHistoryList extends StatefulWidget {
+  const PaymentHistoryList({required this.orgId});
+  final int orgId;
+  @override
+  State<PaymentHistoryList> createState() => _PaymentHistoryListState();
+}
+
+class _PaymentHistoryListState extends State<PaymentHistoryList>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-
+  late final MembersAndLeadsCubit _cubit;
   @override
   void initState() {
     super.initState();
+    _cubit = context.read<MembersAndLeadsCubit>();
     _tabController = TabController(length: 2, vsync: this);
+    _fetch();
+  }
+
+  Future<void> _fetch() async {
+    await _cubit.fetchPaymentHistory();
   }
 
   @override
@@ -71,50 +90,92 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
               ),
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              padding: const EdgeInsets.only(left: 10),
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.grey,
-              labelStyle: AppStyles.text14Px.poppins.w600,
-              indicatorColor: Colors.transparent,
-              dividerColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicator: _FolderTabIndicator(
-                color: const Color(0xfff9f9f9),
-                borderColor: Colors.grey.shade300,
-                radius: 12,
-              ),
-              tabs: const [
-                Tab(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('All Payments'),
-                  ),
+
+          BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+            buildWhen: (p, c) => p.paymentHistory != c.paymentHistory,
+            builder: (context, state) {
+              return state.paymentHistory.data.fold(
+                () => const Center(
+                  child: Center(child: CircularProgressIndicator()),
                 ),
-                Tab(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Processing'),
+                (either) => either.fold(
+                  (error) => error.maybeWhen(
+                    network: (e) => ErrorUi.network(onTap: _fetch),
+                    notFound: (e) => ErrorUi.notFound(onTap: _fetch),
+                    orElse: () => ErrorUi.server(onTap: _fetch),
                   ),
+                  (data) {
+                    return Expanded(
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border(
+                                bottom: BorderSide(color: Colors.grey.shade300),
+                              ),
+                            ),
+                            child: TabBar(
+                              controller: _tabController,
+                              isScrollable: true,
+                              padding: const EdgeInsets.only(left: 10),
+                              labelColor: Colors.black,
+                              unselectedLabelColor: Colors.grey,
+                              labelStyle: AppStyles.text14Px.poppins.w600,
+                              indicatorColor: Colors.transparent,
+                              dividerColor: Colors.transparent,
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              indicator: _FolderTabIndicator(
+                                color: const Color(0xfff9f9f9),
+                                borderColor: Colors.grey.shade300,
+                                radius: 12,
+                              ),
+                              tabs: const [
+                                Tab(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: Text('All Payments'),
+                                  ),
+                                ),
+                                Tab(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: Text('Processing'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              color: const Color(0xfff9f9f9),
+                              child: TabBarView(
+                                controller: _tabController,
+                                children: [
+                                  if (data.allPayments.results.isEmpty)
+                                    ErrorUi.empty().center
+                                  else
+                                    _ProcessingPaymentsTab(),
+
+                                  if (data.pendingPayments.results.isEmpty)
+                                    ErrorUi.empty().center
+                                  else
+                                    _AllPaymentsTab(),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              color: const Color(0xfff9f9f9),
-              child: TabBarView(
-                controller: _tabController,
-                children: [_AllPaymentsTab(), _ProcessingPaymentsTab()],
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -725,14 +786,16 @@ class _FolderTabPainter extends BoxPainter {
   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
     assert(configuration.size != null);
     final Rect rect = offset & configuration.size!;
-    final Paint paint = Paint()
-      ..color = decoration.color
-      ..style = PaintingStyle.fill;
+    final Paint paint =
+        Paint()
+          ..color = decoration.color
+          ..style = PaintingStyle.fill;
 
-    final Paint borderPaint = Paint()
-      ..color = decoration.borderColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+    final Paint borderPaint =
+        Paint()
+          ..color = decoration.borderColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0;
 
     final radius = decoration.radius;
     final Path path = Path();
@@ -741,71 +804,75 @@ class _FolderTabPainter extends BoxPainter {
     final double bottom = rect.bottom + 2;
 
     // Start from bottom left (extended)
-    path..moveTo(rect.left, bottom)
-
-    // Bottom left curved flare
-    ..quadraticBezierTo(
-      rect.left + 4, bottom - 4,
-      rect.left + 4, bottom - radius,
-    )
-
-    // Up to top left
-    ..lineTo(rect.left + 4, rect.top + radius)
-
-    // Top left corner
-    ..quadraticBezierTo(
-      rect.left + 4, rect.top,
-      rect.left + 4 + radius, rect.top,
-    )
-
-    // Across top
-    ..lineTo(rect.right - 4 - radius, rect.top)
-
-    // Top right corner
-    ..quadraticBezierTo(
-      rect.right - 4, rect.top,
-      rect.right - 4, rect.top + radius,
-    )
-
-    // Down to bottom right
-    ..lineTo(rect.right - 4, bottom - radius)
-
-    // Bottom right curved flare
-    ..quadraticBezierTo(
-      rect.right - 4, bottom - 4,
-      rect.right, bottom,
-    )
-
-    // Close at bottom
-    ..lineTo(rect.left, bottom);
+    path
+      ..moveTo(rect.left, bottom)
+      // Bottom left curved flare
+      ..quadraticBezierTo(
+        rect.left + 4,
+        bottom - 4,
+        rect.left + 4,
+        bottom - radius,
+      )
+      // Up to top left
+      ..lineTo(rect.left + 4, rect.top + radius)
+      // Top left corner
+      ..quadraticBezierTo(
+        rect.left + 4,
+        rect.top,
+        rect.left + 4 + radius,
+        rect.top,
+      )
+      // Across top
+      ..lineTo(rect.right - 4 - radius, rect.top)
+      // Top right corner
+      ..quadraticBezierTo(
+        rect.right - 4,
+        rect.top,
+        rect.right - 4,
+        rect.top + radius,
+      )
+      // Down to bottom right
+      ..lineTo(rect.right - 4, bottom - radius)
+      // Bottom right curved flare
+      ..quadraticBezierTo(rect.right - 4, bottom - 4, rect.right, bottom)
+      // Close at bottom
+      ..lineTo(rect.left, bottom);
 
     // Draw fill
     canvas.drawPath(path, paint);
 
     // Draw border (exclude bottom line to merge)
-    final borderPath = Path()
-    ..moveTo(rect.left, rect.bottom)
-    ..quadraticBezierTo(
-      rect.left + 4, rect.bottom - 4,
-      rect.left + 4, rect.bottom - radius,
-    )
-    ..lineTo(rect.left + 4, rect.top + radius)
-    ..quadraticBezierTo(
-      rect.left + 4, rect.top,
-      rect.left + 4 + radius, rect.top,
-    )
-    ..lineTo(rect.right - 4 - radius, rect.top)
-    ..quadraticBezierTo(
-      rect.right - 4, rect.top,
-      rect.right - 4, rect.top + radius,
-    )
-    ..lineTo(rect.right - 4, rect.bottom - radius)
-    ..quadraticBezierTo(
-      rect.right - 4, rect.bottom - 4,
-      rect.right, rect.bottom,
-    );
+    final borderPath =
+        Path()
+          ..moveTo(rect.left, rect.bottom)
+          ..quadraticBezierTo(
+            rect.left + 4,
+            rect.bottom - 4,
+            rect.left + 4,
+            rect.bottom - radius,
+          )
+          ..lineTo(rect.left + 4, rect.top + radius)
+          ..quadraticBezierTo(
+            rect.left + 4,
+            rect.top,
+            rect.left + 4 + radius,
+            rect.top,
+          )
+          ..lineTo(rect.right - 4 - radius, rect.top)
+          ..quadraticBezierTo(
+            rect.right - 4,
+            rect.top,
+            rect.right - 4,
+            rect.top + radius,
+          )
+          ..lineTo(rect.right - 4, rect.bottom - radius)
+          ..quadraticBezierTo(
+            rect.right - 4,
+            rect.bottom - 4,
+            rect.right,
+            rect.bottom,
+          );
 
     canvas.drawPath(borderPath, borderPaint);
   }
 }
-

@@ -332,11 +332,11 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
 
               _locationDetails[0][0].controller?.value = TextEditingValue(
                 text: buildingName,
-                // text: r.vicinity ?? r.formatedAddress 
+                // text: r.vicinity ?? r.formatedAddress
               );
               _locationDetails[1][0].controller?.value = TextEditingValue(
                 text: street,
-                  // text: r.streetName ?? '',
+                // text: r.streetName ?? '',
               );
               _locationDetails[2][0].controller?.value = TextEditingValue(
                 text: city,
@@ -408,7 +408,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
 
               _locationDetails[0][0].controller?.value = TextEditingValue(
                 text: buildingName,
-                  // text: r.vicinity ?? r.formatedAddress ?? '',
+                // text: r.vicinity ?? r.formatedAddress ?? '',
               );
               _locationDetails[1][0].controller?.value = TextEditingValue(
                 text: street,
@@ -420,7 +420,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
               );
               _locationDetails[3][0].controller?.value = TextEditingValue(
                 text: state,
-                  // text: r.state ?? '',
+                // text: r.state ?? '',
               );
               _locationDetails[3][1].controller?.value = TextEditingValue(
                 text: pincode,

@@ -267,11 +267,15 @@ class _OrganizationListingAndDetailsScreenState
                           //!temp for payments
                           (
                             title: 'Payments',
-                            color: Color.fromARGB(255, 69, 213, 221),
+                            color: const Color.fromARGB(255, 69, 213, 221),
                             count: orgHomeData.upcomingPaymentCount ?? 0,
                             onTap: () {
                               if (state.selectedOrganization?.id != null) {
-                                context.push(const PaymentHistoryScreen());
+                                context.push(
+                                  PaymentHistoryScreen(
+                                    orgId: state.selectedOrganization!.id!,
+                                  ),
+                                );
                               } else {
                                 Dialogs.showSnack(msg: 'All Payments');
                               }

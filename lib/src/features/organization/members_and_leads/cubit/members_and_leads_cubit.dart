@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/payment_history/payment_history_model.dart';
 
 part 'members_and_leads_state.dart';
 part 'members_and_leads_cubit.freezed.dart';
@@ -741,4 +742,79 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
     }
   }
+
+
+
+  Future<void> fetchPaymentHistory({bool isPagination = false}) async {
+    final paymentHistoryData = state.paymentHistory.data.fold(
+          () => null,
+          (t) => t.fold((l) => null, (r) => r),
+    );
+
+    final String? nextUrl = paymentHistoryData?.allPayments.next;
+
+    if (isPagination && (nextUrl == null || nextUrl.isEmpty)) {
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        paymentHistory: (
+        data: isPagination ? state.paymentHistory.data : none(),
+        isPagination: isPagination,
+        ),
+      ),
+    );
+
+    final res = await MembershipRepository().listPaymentHistory(
+      nextUrl: isPagination ? nextUrl : null,
+    );
+
+    if (isPagination) {
+      await res.fold(
+            (l) {
+          emit(
+            state.copyWith(
+              paymentHistory: (
+              data: state.paymentHistory.data,
+              isPagination: false,
+              ),
+            ),
+          );
+          Dialogs.showSnack(msg: l.msg);
+        },
+            (r) {
+          final mergedData = r.copyWith(
+            allPayments: r.allPayments.copyWith(
+              results: [
+                ...?paymentHistoryData?.allPayments.results,
+                ...r.allPayments.results,
+              ],
+            ),
+          );
+
+          emit(
+            state.copyWith(
+              paymentHistory: (
+              data: some(right(mergedData)),
+              isPagination: false,
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      emit(
+        state.copyWith(
+          paymentHistory: (
+          data: some(res),
+          isPagination: false,
+          ),
+        ),
+      );
+    }
+  }
+
+
+
 }
