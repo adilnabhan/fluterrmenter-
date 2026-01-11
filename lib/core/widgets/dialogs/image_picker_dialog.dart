@@ -49,7 +49,7 @@ class ImagePickerDialog extends StatelessWidget {
         },
       ),
       (
-        label: 'Choose from galley',
+        label: 'Choose from gallery',
         onTap: () {
           // ImagePicker().pickImage(source: ImageSource.gallery).then((xFile) {
           //   if (xFile != null) {

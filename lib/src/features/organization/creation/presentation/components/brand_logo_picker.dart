@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class BrandLogoPicker extends StatefulWidget {
   const BrandLogoPicker({
@@ -25,6 +26,30 @@ class _BrandLogoPickerState extends State<BrandLogoPicker> {
   XFile? _localImage;
   bool _isLoading = false;
 
+  Future<CroppedFile?> _cropImage(String path) async {
+    return await ImageCropper().cropImage(
+      sourcePath: path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Edit Photo',
+          toolbarColor: AppColors.primary,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.square,
+          lockAspectRatio: true,
+          showCropGrid: false,
+          aspectRatioPresets: [CropAspectRatioPreset.square],
+        ),
+        IOSUiSettings(
+          title: 'Edit Photo',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+          aspectRatioPresets: [CropAspectRatioPreset.square],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final radius = widget.radius ?? 111.r;
@@ -41,9 +66,18 @@ class _BrandLogoPickerState extends State<BrandLogoPicker> {
                     // },
                     onPickStart: () => setState(() => _isLoading = true),
                     onPickEnd: () => setState(() => _isLoading = false),
-                    onPickedImage: (image) {
-                      widget.onChanged?.call(image);
-                      setState(() => _localImage = image);
+                    onPickedImage: (image) async {
+                      if (image != null) {
+                        final croppedFile = await _cropImage(image.path);
+                        if (croppedFile != null) {
+                          widget.onChanged?.call(XFile(croppedFile.path));
+                          setState(() => _localImage = XFile(croppedFile.path));
+                        }
+                      } else {
+                        // User chose to remove the photo
+                        widget.onChanged?.call(null);
+                        setState(() => _localImage = null);
+                      }
                     },
                   ).show(context)
                   : null,

@@ -221,15 +221,18 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
               const SizedBox(height: 16),
               Field<String>(
                 data: _brandCategory.copyWith(
-                  onTap: () {
+                  onTap: () async {
                     FocusScope.of(context).unfocus();
-                    AddCategorySheet(
+                    await AddCategorySheet(
                       selectedValues:
                           _brandCategory.selectedValues?.value ?? [],
                       onSubmit: (values) {
                         _brandCategory.selectedValues?.value = [...values];
                       },
                     ).show(context);
+                    if (context.mounted) {
+                      FocusScope.of(context).unfocus();
+                    }
                   },
                 ),
               ),
