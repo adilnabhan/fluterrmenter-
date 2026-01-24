@@ -62,9 +62,12 @@ final class ApiUris {
       '${_v1}fitnesscenter/membership-plans/$id/';
   static String deleteMembershipPackage(int id) =>
       '${_v1}fitnesscenter/membership-plans/$id/';
-  static const paymentHistory =
-      '${_v1}fitnesscenter/customer-payments/';
+  // static const paymentHistory = '${_v1}fitnesscenter/customer-payments/$orgId/';
+  static String paymentHistory(String orgId) =>
+      '${_v1}fitnesscenter/customer-payments/$orgId';
+
   ///============================= bank =============================\\\
+
   static String bankDetails(String id) =>
       '${_v1}fitnesscenter/bank-details/$id/';
   static const addBankDetails = '${_v1}fitnesscenter/bank-details/';

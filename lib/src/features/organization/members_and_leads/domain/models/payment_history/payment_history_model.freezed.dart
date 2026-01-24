@@ -250,12 +250,12 @@ PaymentHistorySection _$PaymentHistorySectionFromJson(
 mixin _$PaymentHistorySection {
   @JsonKey(name: 'count')
   int get count => throw _privateConstructorUsedError;
-
-  /// Pagination URLs
   @JsonKey(name: 'next')
   String? get next => throw _privateConstructorUsedError;
   @JsonKey(name: 'previous')
   String? get previous => throw _privateConstructorUsedError;
+
+  /// Safe default in case API sends null
   @JsonKey(name: 'results')
   List<PaymentHistoryItem> get results => throw _privateConstructorUsedError;
   @JsonKey(name: 'total_paid_today')
@@ -438,7 +438,8 @@ class _$PaymentHistorySectionImpl implements _PaymentHistorySection {
     @JsonKey(name: 'count') required this.count,
     @JsonKey(name: 'next') this.next,
     @JsonKey(name: 'previous') this.previous,
-    @JsonKey(name: 'results') required final List<PaymentHistoryItem> results,
+    @JsonKey(name: 'results')
+    final List<PaymentHistoryItem> results = const <PaymentHistoryItem>[],
     @JsonKey(name: 'total_paid_today') required this.totalPaidToday,
     @JsonKey(name: 'total_pending_amount') required this.totalPendingAmount,
   }) : _results = results;
@@ -449,15 +450,17 @@ class _$PaymentHistorySectionImpl implements _PaymentHistorySection {
   @override
   @JsonKey(name: 'count')
   final int count;
-
-  /// Pagination URLs
   @override
   @JsonKey(name: 'next')
   final String? next;
   @override
   @JsonKey(name: 'previous')
   final String? previous;
+
+  /// Safe default in case API sends null
   final List<PaymentHistoryItem> _results;
+
+  /// Safe default in case API sends null
   @override
   @JsonKey(name: 'results')
   List<PaymentHistoryItem> get results {
@@ -529,7 +532,7 @@ abstract class _PaymentHistorySection implements PaymentHistorySection {
     @JsonKey(name: 'count') required final int count,
     @JsonKey(name: 'next') final String? next,
     @JsonKey(name: 'previous') final String? previous,
-    @JsonKey(name: 'results') required final List<PaymentHistoryItem> results,
+    @JsonKey(name: 'results') final List<PaymentHistoryItem> results,
     @JsonKey(name: 'total_paid_today') required final num totalPaidToday,
     @JsonKey(name: 'total_pending_amount')
     required final num totalPendingAmount,
@@ -541,14 +544,14 @@ abstract class _PaymentHistorySection implements PaymentHistorySection {
   @override
   @JsonKey(name: 'count')
   int get count;
-
-  /// Pagination URLs
   @override
   @JsonKey(name: 'next')
   String? get next;
   @override
   @JsonKey(name: 'previous')
   String? get previous;
+
+  /// Safe default in case API sends null
   @override
   @JsonKey(name: 'results')
   List<PaymentHistoryItem> get results;
@@ -580,7 +583,7 @@ mixin _$PaymentHistoryItem {
   @JsonKey(name: 'membership_name')
   String get membershipName => throw _privateConstructorUsedError;
 
-  /// API sends this as string ("1700.00")
+  /// API sends amount as string
   @JsonKey(name: 'amount')
   String get amount => throw _privateConstructorUsedError;
   @JsonKey(name: 'status')
@@ -845,7 +848,7 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
   @JsonKey(name: 'membership_name')
   final String membershipName;
 
-  /// API sends this as string ("1700.00")
+  /// API sends amount as string
   @override
   @JsonKey(name: 'amount')
   final String amount;
@@ -956,7 +959,7 @@ abstract class _PaymentHistoryItem implements PaymentHistoryItem {
   @JsonKey(name: 'membership_name')
   String get membershipName;
 
-  /// API sends this as string ("1700.00")
+  /// API sends amount as string
   @override
   @JsonKey(name: 'amount')
   String get amount;

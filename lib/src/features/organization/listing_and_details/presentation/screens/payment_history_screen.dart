@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/payment_history/payment_history_model.dart';
 
 class PaymentHistoryScreen extends StatelessWidget {
   const PaymentHistoryScreen({required this.orgId, super.key});
@@ -28,12 +29,13 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
   void initState() {
     super.initState();
     _cubit = context.read<MembersAndLeadsCubit>();
+    print('org id isss----${widget.orgId}');
     _tabController = TabController(length: 2, vsync: this);
     _fetch();
   }
 
   Future<void> _fetch() async {
-    await _cubit.fetchPaymentHistory();
+    await _cubit.fetchPaymentHistory(orgId: widget.orgId);
   }
 
   @override
@@ -63,40 +65,41 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search for name or date of payment',
-                hintStyle: AppStyles.text14Px.poppins.copyWith(
-                  color: Colors.grey,
-                ),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                filled: true,
-                fillColor: Colors.grey.shade50,
-                contentPadding: EdgeInsets.zero,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.primary),
-                ),
-              ),
-            ),
-          ),
-
+          // Padding(
+          //   padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          //   child: TextField(
+          //     decoration: InputDecoration(
+          //       hintText: 'Search for name or date of payment',
+          //       hintStyle: AppStyles.text14Px.poppins.copyWith(
+          //         color: Colors.grey,
+          //       ),
+          //       prefixIcon: const Icon(Icons.search, color: Colors.grey),
+          //       filled: true,
+          //       fillColor: Colors.grey.shade50,
+          //       contentPadding: EdgeInsets.zero,
+          //       border: OutlineInputBorder(
+          //         borderRadius: BorderRadius.circular(12),
+          //         borderSide: BorderSide(color: Colors.grey.shade200),
+          //       ),
+          //       enabledBorder: OutlineInputBorder(
+          //         borderRadius: BorderRadius.circular(12),
+          //         borderSide: BorderSide(color: Colors.grey.shade200),
+          //       ),
+          //       focusedBorder: OutlineInputBorder(
+          //         borderRadius: BorderRadius.circular(12),
+          //         borderSide: const BorderSide(color: AppColors.primary),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
             buildWhen: (p, c) => p.paymentHistory != c.paymentHistory,
             builder: (context, state) {
               return state.paymentHistory.data.fold(
-                () => const Center(
-                  child: Center(child: CircularProgressIndicator()),
+                () => const Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [Center(child: CircularProgressIndicator())],
                 ),
                 (either) => either.fold(
                   (error) => error.maybeWhen(
@@ -152,7 +155,7 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
                             ),
                           ),
                           Expanded(
-                            child: Container(
+                            child: ColoredBox(
                               color: const Color(0xfff9f9f9),
                               child: TabBarView(
                                 controller: _tabController,
@@ -160,12 +163,13 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
                                   if (data.allPayments.results.isEmpty)
                                     ErrorUi.empty().center
                                   else
-                                    _ProcessingPaymentsTab(),
-
+                                    _AllPaymentsTab(
+                                      allPayment: data.allPayments,
+                                    ),
                                   if (data.pendingPayments.results.isEmpty)
                                     ErrorUi.empty().center
                                   else
-                                    _AllPaymentsTab(),
+                                  _ProcessingPaymentsTab(),
                                 ],
                               ),
                             ),
@@ -185,54 +189,58 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
 }
 
 class _AllPaymentsTab extends StatelessWidget {
+  const _AllPaymentsTab({super.key, this.allPayment});
+
+  final PaymentHistorySection? allPayment;
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _allPaymentsData.length + 1,
+      itemCount: allPayment?.results.length ?? 0,
       itemBuilder: (context, index) {
-        if (index == 0) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _FilterChip(
-                      label: 'Filter x',
-                      onTap: () {},
-                      textColor: const Color(0xffEF5350),
-                      borderColor: const Color(0xffEF5350).withOpacity(0.2),
-                      backgroundColor: const Color(0xffFFEBEE),
-                      icon: Icons.filter_list,
-                      iconColor: const Color(0xffEF5350),
-                    ),
-                    const SizedBox(width: 8),
-                    _FilterChip(
-                      label: 'Today',
-                      onTap: () {},
-                      textColor: const Color(0xffEF5350),
-                      borderColor: const Color(0xffEF5350).withOpacity(0.2),
-                      backgroundColor: const Color(0xffFFEBEE),
-                    ),
-                    const SizedBox(width: 8),
-                    _FilterChip(
-                      label: 'Type: All',
-                      onTap: () {},
-                      textColor: const Color(0xffEF5350),
-                      borderColor: const Color(0xffEF5350).withOpacity(0.2),
-                      backgroundColor: const Color(0xffFFEBEE),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // SingleChildScrollView(
+            //   scrollDirection: Axis.horizontal,
+            //   child: Row(
+            //     children: [
+            //       _FilterChip(
+            //         label: 'Filter x',
+            //         onTap: () {},
+            //         textColor: const Color(0xffEF5350),
+            //         borderColor: const Color(0xffEF5350).withOpacity(0.2),
+            //         backgroundColor: const Color(0xffFFEBEE),
+            //         icon: Icons.filter_list,
+            //         iconColor: const Color(0xffEF5350),
+            //       ),
+            //       const SizedBox(width: 8),
+            //       _FilterChip(
+            //         label: 'Today',
+            //         onTap: () {},
+            //         textColor: const Color(0xffEF5350),
+            //         borderColor: const Color(0xffEF5350).withOpacity(0.2),
+            //         backgroundColor: const Color(0xffFFEBEE),
+            //       ),
+            //       const SizedBox(width: 8),
+            //       _FilterChip(
+            //         label: 'Type: All',
+            //         onTap: () {},
+            //         textColor: const Color(0xffEF5350),
+            //         borderColor: const Color(0xffEF5350).withOpacity(0.2),
+            //         backgroundColor: const Color(0xffFFEBEE),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            if (index == 0) const SizedBox(height: 16),
+            if (index == 0)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${_allPaymentsData.length} payments today',
+                    '${allPayment?.results.length ?? 0} payments today',
                     style: AppStyles.text14Px.poppins.copyWith(
                       color: Colors.grey,
                     ),
@@ -245,7 +253,7 @@ class _AllPaymentsTab extends StatelessWidget {
                       ),
                       children: [
                         TextSpan(
-                          text: '₹5,500',
+                          text: '₹${allPayment?.totalPaidToday}',
                           style: AppStyles.text16Px.poppins.w700.copyWith(
                             color: Colors.green,
                           ),
@@ -255,15 +263,224 @@ class _AllPaymentsTab extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-            ],
-          );
-        }
+            if (index == 0) const SizedBox(height: 16),
+            paymentCard(isAllPayments: true, data: allPayment?.results[index]),
+          ],
+        );
 
-        final item = _allPaymentsData[index - 1];
-        return _PaymentCard.fromModel(item);
+        // return _PaymentCard.fromModel(item);
       },
     );
+  }
+}
+
+Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.08),
+          offset: const Offset(0, 6),
+          blurRadius: 16,
+          spreadRadius: 2,
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: const NetworkImage(
+                'https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png',
+              ),
+              backgroundColor: Colors.grey.shade200,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          data?.customerName ?? '',
+                          maxLines: 2,
+                          style: AppStyles.text16Px.poppins.w600.copyWith(
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        formatPaymentDate(data!.paymentDate.toString()),
+                        style: AppStyles.text12Px.poppins.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    data.membershipName ?? '',
+                    style: AppStyles.text14Px.poppins.copyWith(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (!isAllPayments) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Membership + ${data.membershipName}',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: Colors.black,
+                ),
+              ),
+              Text(
+                '₹1,000',
+                style: AppStyles.text14Px.poppins.w600.copyWith(
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Platform fee (4%)',
+                style: AppStyles.text14Px.poppins.copyWith(color: Colors.grey),
+              ),
+              Text(
+                '-₹60',
+                style: AppStyles.text14Px.poppins.w600.copyWith(
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: Divider(),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total :',
+                style: AppStyles.text14Px.poppins.copyWith(color: Colors.grey),
+              ),
+              Text(
+                '₹1,440',
+                style: AppStyles.text20Px.poppins.w700.copyWith(
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          Text(
+            'The amount will be credited to your account within 3 working days.',
+            style: AppStyles.text12Px.poppins.copyWith(color: Colors.grey),
+          ),
+        ] else ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Membership + ${data.membershipName}',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: Colors.black,
+                ),
+              ),
+
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xffE8F5E9),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '₹${data.amount}',
+                  style: AppStyles.text16Px.poppins.w700.copyWith(
+                    color: const Color(0xff2E7D32),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xffE3F2FD),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  '${data.paymentMethod}'.toUpperCase(),
+                  style: AppStyles.text12Px.poppins.w600.copyWith(
+                    color: const Color(0xff1565C0),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 8),
+              // Text(
+              //   'statusPendingText sdgts drgdrsf ',
+              //   style: AppStyles.text12Px.poppins.w400.copyWith(
+              //     color: Colors.grey,
+              //   ),
+              // ),
+            ],
+          ),
+        ],
+      ],
+    ),
+  );
+}
+
+String formatPaymentDate(String isoDate) {
+  final DateTime dateTime = DateTime.parse(isoDate).toLocal();
+  final DateTime now = DateTime.now();
+
+  final DateTime today = DateTime(now.year, now.month, now.day);
+  final DateTime yesterday = today.subtract(const Duration(days: 1));
+  final DateTime dateOnly = DateTime(
+    dateTime.year,
+    dateTime.month,
+    dateTime.day,
+  );
+
+  final String time = DateFormat('hh:mm a').format(dateTime);
+
+  if (dateOnly == today) {
+    return '$time, Today';
+  } else if (dateOnly == yesterday) {
+    return '$time, Yesterday';
+  } else {
+    final String date = DateFormat('dd MMM yyyy').format(dateTime);
+    return '$time, $date';
   }
 }
 
@@ -274,32 +491,32 @@ class _ProcessingPaymentsTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: _processingPaymentsData.length + 1,
       itemBuilder: (context, index) {
-        if (index == 0) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  _FilterChip(
-                    label: 'Filter x',
-                    onTap: () {},
-                    textColor: const Color(0xffEF5350),
-                    borderColor: const Color(0xffEF5350).withOpacity(0.2),
-                    backgroundColor: const Color(0xffFFEBEE),
-                    icon: Icons.filter_list,
-                    iconColor: const Color(0xffEF5350),
-                  ),
-                  const SizedBox(width: 8),
-                  _FilterChip(
-                    label: 'Today',
-                    onTap: () {},
-                    textColor: const Color(0xffEF5350),
-                    borderColor: const Color(0xffEF5350).withOpacity(0.2),
-                    backgroundColor: const Color(0xffFFEBEE),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Row(
+            //   children: [
+            //     _FilterChip(
+            //       label: 'Filter x',
+            //       onTap: () {},
+            //       textColor: const Color(0xffEF5350),
+            //       borderColor: const Color(0xffEF5350).withOpacity(0.2),
+            //       backgroundColor: const Color(0xffFFEBEE),
+            //       icon: Icons.filter_list,
+            //       iconColor: const Color(0xffEF5350),
+            //     ),
+            //     const SizedBox(width: 8),
+            //     _FilterChip(
+            //       label: 'Today',
+            //       onTap: () {},
+            //       textColor: const Color(0xffEF5350),
+            //       borderColor: const Color(0xffEF5350).withOpacity(0.2),
+            //       backgroundColor: const Color(0xffFFEBEE),
+            //     ),
+            //   ],
+            // ),
+            if (index == 0) const SizedBox(height: 16),
+            if (index == 0)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -327,12 +544,27 @@ class _ProcessingPaymentsTab extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-            ],
-          );
-        }
+            if (index == 0) const SizedBox(height: 16),
+            paymentCard(
+              isAllPayments: false,
+              data: PaymentHistoryItem.fromJson({
+                "id": 133,
+                "customer_name": "Arpan Subhjith",
+                "membership_name": "TEST",
+                "amount": "50.00",
+                "status": "Successful",
+                "payment_method": "upi",
+                "payment_date": "2026-01-16T06:56:38.044003Z",
+                "order_id": null,
+                "payment_id": "pay_S4SUgw6nuS91Zv",
+                "created_at": "2026-01-16T06:56:38.144488Z",
+              }),
+            ),
+          ],
+        );
+
         final item = _processingPaymentsData[index - 1];
-        return _PaymentCard.fromModel(item);
+        // return _PaymentCard.fromModel(item);
       },
     );
   }
@@ -488,13 +720,13 @@ class _PaymentCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          name,
+                          'Jisham',
                           style: AppStyles.text16Px.poppins.w600.copyWith(
                             color: Colors.black,
                           ),
                         ),
                         Text(
-                          time,
+                          '07:30 AM, Today',
                           style: AppStyles.text12Px.poppins.copyWith(
                             color: Colors.grey,
                           ),
@@ -502,7 +734,7 @@ class _PaymentCard extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      planName,
+                      '1 Month Plan',
                       style: AppStyles.text14Px.poppins.copyWith(
                         color: Colors.grey,
                       ),
@@ -518,13 +750,13 @@ class _PaymentCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  description,
+                  'Membership + 1 Month Plan',
                   style: AppStyles.text14Px.poppins.w500.copyWith(
                     color: Colors.black,
                   ),
                 ),
                 Text(
-                  amount ?? '',
+                  '₹1,000',
                   style: AppStyles.text14Px.poppins.w600.copyWith(
                     color: Colors.green,
                   ),
@@ -536,13 +768,13 @@ class _PaymentCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  platformFee ?? '',
+                  'Platform fee (4%)',
                   style: AppStyles.text14Px.poppins.copyWith(
                     color: Colors.grey,
                   ),
                 ),
                 Text(
-                  platformFeeAmount ?? '',
+                  '-₹60',
                   style: AppStyles.text14Px.poppins.w600.copyWith(
                     color: Colors.grey,
                   ),
@@ -557,79 +789,75 @@ class _PaymentCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  totalLabel ?? 'Total :',
+                  'Total :',
                   style: AppStyles.text14Px.poppins.copyWith(
                     color: Colors.grey,
                   ),
                 ),
                 Text(
-                  totalAmount ?? '',
+                  '₹1,440',
                   style: AppStyles.text20Px.poppins.w700.copyWith(
                     color: Colors.green,
                   ),
                 ),
               ],
             ),
-            if (footerNote != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                footerNote!,
-                style: AppStyles.text12Px.poppins.copyWith(color: Colors.grey),
-              ),
-            ],
+            Text(
+              'The amount will be credited to your account within 3 working days.',
+              style: AppStyles.text12Px.poppins.copyWith(color: Colors.grey),
+            ),
           ] else ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  description,
+                  'Membership + 1 Month Plan',
                   style: AppStyles.text14Px.poppins.w500.copyWith(
                     color: Colors.black,
                   ),
                 ),
-                if (showAmountPill && amount != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xffE8F5E9),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      amount!,
-                      style: AppStyles.text16Px.poppins.w700.copyWith(
-                        color: const Color(0xff2E7D32),
-                      ),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffE8F5E9),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '₹1,000',
+                    style: AppStyles.text16Px.poppins.w700.copyWith(
+                      color: const Color(0xff2E7D32),
                     ),
                   ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                if (status != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusColor ?? Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      status!,
-                      style: AppStyles.text12Px.poppins.w600.copyWith(
-                        color: statusTextColor ?? Colors.grey.shade700,
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffE3F2FD),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    'Cash',
+                    style: AppStyles.text12Px.poppins.w600.copyWith(
+                      color: const Color(0xff1565C0),
                     ),
                   ),
+                ),
                 if (statusPendingText != null) ...[
                   const SizedBox(width: 8),
                   Text(
-                    statusPendingText!,
+                    'statusPendingText sdgts drgdrsf ',
                     style: AppStyles.text12Px.poppins.w400.copyWith(
                       color: Colors.grey,
                     ),
@@ -645,55 +873,55 @@ class _PaymentCard extends StatelessWidget {
 }
 
 final _allPaymentsData = [
-  _PaymentUIModel(
+  const _PaymentUIModel(
     name: 'Marcus Lee',
     time: '07:30 AM, Today',
     planName: '1 Month Plan',
     description: 'Membership + 1 Month Plan',
     amount: '₹1,000',
     status: 'Cash',
-    statusColor: const Color(0xffE8F5E9),
-    statusTextColor: const Color(0xff2E7D32),
+    statusColor: Color(0xffE8F5E9),
+    statusTextColor: Color(0xff2E7D32),
     showAmountPill: true,
   ),
-  _PaymentUIModel(
+  const _PaymentUIModel(
     name: 'Sarah Lopez',
     time: '07:30 AM, Today',
     planName: '1 Month Plan',
     description: 'Membership + 1 Month Plan',
     amount: '₹1,000',
     status: 'UPI',
-    statusColor: const Color(0xffE3F2FD),
-    statusTextColor: const Color(0xff1565C0),
+    statusColor: Color(0xffE3F2FD),
+    statusTextColor: Color(0xff1565C0),
     showAmountPill: true,
   ),
-  _PaymentUIModel(
+  const _PaymentUIModel(
     name: 'Sarah Lopez',
     time: '07:30 AM, Today',
     planName: '1 Month Plan',
     description: 'Membership + 1 Month Plan',
     amount: '₹1500',
     status: 'Online',
-    statusColor: const Color(0xffFFEBEE),
-    statusTextColor: const Color(0xffC62828),
+    statusColor: Color(0xffFFEBEE),
+    statusTextColor: Color(0xffC62828),
     statusPendingText: 'Status: Pending',
     showAmountPill: true,
   ),
-  _PaymentUIModel(
+  const _PaymentUIModel(
     name: 'Sarah Lopez',
     time: '07:30 AM, Today',
     planName: '1 Month Plan',
     description: 'Membership + 1 Month Plan',
     amount: '₹2,000',
     status: 'EMI',
-    statusColor: const Color(0xffF3E5F5),
-    statusTextColor: const Color(0xff7B1FA2),
+    statusColor: Color(0xffF3E5F5),
+    statusTextColor: Color(0xff7B1FA2),
     showAmountPill: true,
   ),
 ];
 
 final _processingPaymentsData = [
-  _PaymentUIModel(
+  const _PaymentUIModel(
     name: 'Sarah Lopez',
     time: '07:30 AM, Today',
     planName: '1 Month Plan',
@@ -707,7 +935,7 @@ final _processingPaymentsData = [
     footerNote:
         'The amount will be credited to your account within 3 working days.',
   ),
-  _PaymentUIModel(
+  const _PaymentUIModel(
     name: 'Sarah Lopez',
     time: '07:30 AM, Today',
     planName: '1 Month Plan',

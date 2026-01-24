@@ -30,9 +30,10 @@ _$PaymentHistorySectionImpl _$$PaymentHistorySectionImplFromJson(
   next: json['next'] as String?,
   previous: json['previous'] as String?,
   results:
-      (json['results'] as List<dynamic>)
-          .map((e) => PaymentHistoryItem.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      (json['results'] as List<dynamic>?)
+          ?.map((e) => PaymentHistoryItem.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const <PaymentHistoryItem>[],
   totalPaidToday: json['total_paid_today'] as num,
   totalPendingAmount: json['total_pending_amount'] as num,
 );

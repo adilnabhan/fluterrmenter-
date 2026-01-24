@@ -745,7 +745,9 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
 
 
 
-  Future<void> fetchPaymentHistory({bool isPagination = false}) async {
+  Future<void> fetchPaymentHistory({bool isPagination = false,
+    required int orgId
+  }) async {
     final paymentHistoryData = state.paymentHistory.data.fold(
           () => null,
           (t) => t.fold((l) => null, (r) => r),
@@ -767,7 +769,8 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     );
 
     final res = await MembershipRepository().listPaymentHistory(
-      nextUrl: isPagination ? nextUrl : null,
+      nextUrl: isPagination ? nextUrl : null,orgId: orgId
+
     );
 
     if (isPagination) {

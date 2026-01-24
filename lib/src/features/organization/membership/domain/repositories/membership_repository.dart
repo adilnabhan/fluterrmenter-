@@ -380,11 +380,12 @@ final class MembershipRepository {
   Future<Either<ApiException, PaymentHistory>> listPaymentHistory({
     // required Map<String, dynamic> queryParameters,
     String? nextUrl,
+    required int orgId,
   }) async {
     try {
       return await Feggy.async(
         call: _dio.get<dynamic>(
-          nextUrl ?? ApiUris.paymentHistory,
+          nextUrl ?? ApiUris.paymentHistory(orgId as String),
           // queryParameters: queryParameters,
           options: Options(headers: {'X-Platform': platformSource}).token,
         ),
