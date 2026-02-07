@@ -260,6 +260,7 @@ final class AuthRepository {
     );
   }
 
+  /*
   Future<Either<ApiException, Map<String, dynamic>>> refreshToken(
     String refreshToken,
   ) async {
@@ -281,6 +282,40 @@ final class AuthRepository {
     } on ApiException catch (e) {
       return left(e);
     } catch (_) {
+      return left(const ApiException.unknown());
+    }
+  }
+  */
+
+  Future<Either<ApiException, Map<String, dynamic>>> refreshToken(
+    String refreshToken,
+  ) async {
+    try {
+      print('🌐 AuthRepository: Calling refresh token API...');
+      print('📤 Sending Refresh Token: $refreshToken');
+      // print('refesh tojken is--$refreshToken');
+      return await Feggy.async(
+        call: _dio.post<dynamic>(
+          ApiUris.tokenRefresh,
+          data: {'refresh_token': refreshToken},
+          options: Options(headers: {'X-Platform': platformSource}),
+        ),
+        onSuccess: (res) {
+          if (res.statusCode == 200 && res.data is Map) {
+            print('✅ AuthRepository: Refresh token API success.');
+            return right(res.data as Map<String, dynamic>);
+          }
+          print(
+            '❌ AuthRepository: Refresh token API failed with status ${res.statusCode}',
+          );
+          return left(const ApiException.unknown());
+        },
+      );
+    } on ApiException catch (e) {
+      print('❌ AuthRepository: ApiException: $e');
+      return left(e);
+    } catch (_) {
+      print('❌ AuthRepository: Unknown Exception');
       return left(const ApiException.unknown());
     }
   }

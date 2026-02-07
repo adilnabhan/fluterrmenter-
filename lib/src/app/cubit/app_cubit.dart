@@ -135,6 +135,7 @@ class AppCubit extends HydratedCubit<AppState> {
   //   _isRefreshing = false;
   // }
 
+  /*
   Future<void> refreshToken() async {
     if (_isRefreshing) return;
     _isRefreshing = true;
@@ -183,6 +184,76 @@ class AppCubit extends HydratedCubit<AppState> {
         },
       );
     } catch (e) {
+      // ❌ Network / unexpected crash → logout safely
+      if (state.currentUser != null) {
+        emit(state.copyWith(currentUser: null));
+      }
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+  */
+
+  Future<void> refreshToken() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    print('🔄 AppCubit: Starting token refresh process...');
+
+    try {
+      final user = state.currentUser;
+      final refreshToken = user?.refresh;
+
+      // 🚪 No refresh token → logout
+      if (refreshToken == null || refreshToken.isEmpty) {
+        print('❌ AppCubit: No refresh token found. Logging out.');
+        if (state.currentUser != null) {
+          emit(state.copyWith(currentUser: null));
+        }
+        return;
+      }
+
+      final result = await AuthRepository().refreshToken(refreshToken);
+
+      result.fold(
+        (error) {
+          print(
+            '❌ AppCubit: Token refresh API failed. Logging out. Error: $error',
+          );
+          // ❌ Refresh failed → logout
+          if (state.currentUser != null) {
+            emit(state.copyWith(currentUser: null));
+            Feggy.pushAndRemoveUntil(const SentOtpScreen());
+          }
+        },
+        (data) {
+          print('✅ AppCubit: Token refresh API success.');
+          print('🔑 New Access Token: ${data['access']}');
+          print('🔄 New Refresh Token: ${data['refresh']}');
+
+          final access = data['access']?.toString();
+          final refresh = data['refresh']?.toString();
+
+          // ❌ Invalid response → logout
+          if (access == null) {
+            print('❌ AppCubit: New access token is null. Logging out.');
+            emit(state.copyWith(currentUser: null));
+            return;
+          }
+
+          // ✅ Update tokens
+          print('✅ AppCubit: Updating user with new tokens.');
+          emit(
+            state.copyWith(
+              currentUser: user!.copyWith(
+                access: access,
+                refresh: refresh ?? user.refresh,
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('❌ AppCubit: Exception during token refresh: $e');
       // ❌ Network / unexpected crash → logout safely
       if (state.currentUser != null) {
         emit(state.copyWith(currentUser: null));
