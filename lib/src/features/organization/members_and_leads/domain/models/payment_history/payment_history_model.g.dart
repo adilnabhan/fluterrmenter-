@@ -34,8 +34,8 @@ _$PaymentHistorySectionImpl _$$PaymentHistorySectionImplFromJson(
           ?.map((e) => PaymentHistoryItem.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const <PaymentHistoryItem>[],
-  totalPaidToday: json['total_paid_today'] as num,
-  totalPendingAmount: json['total_pending_amount'] as num,
+  totalPaidToday: json['total_paid_today'] as num? ?? 0,
+  totalPendingAmount: json['total_pending_amount'] as num? ?? 0,
 );
 
 Map<String, dynamic> _$$PaymentHistorySectionImplToJson(
@@ -62,6 +62,10 @@ _$PaymentHistoryItemImpl _$$PaymentHistoryItemImplFromJson(
   orderId: json['order_id'] as String?,
   paymentId: json['payment_id'] as String?,
   createdAt: DateTime.parse(json['created_at'] as String),
+  platformFee: json['platform_fee'] as String?,
+  platformFeePercentage: json['platform_fee_percentage'] as String?,
+  totalAmount: json['total_amount'] as String?,
+  settlementTime: json['settlement_time'] as String?,
 );
 
 Map<String, dynamic> _$$PaymentHistoryItemImplToJson(
@@ -77,4 +81,8 @@ Map<String, dynamic> _$$PaymentHistoryItemImplToJson(
   'order_id': instance.orderId,
   'payment_id': instance.paymentId,
   'created_at': instance.createdAt.toIso8601String(),
+  'platform_fee': instance.platformFee,
+  'platform_fee_percentage': instance.platformFeePercentage,
+  'total_amount': instance.totalAmount,
+  'settlement_time': instance.settlementTime,
 };

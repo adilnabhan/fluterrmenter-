@@ -255,7 +255,7 @@ mixin _$PaymentHistorySection {
   @JsonKey(name: 'previous')
   String? get previous => throw _privateConstructorUsedError;
 
-  /// Safe default in case API sends null
+  /// Safe default when API sends null
   @JsonKey(name: 'results')
   List<PaymentHistoryItem> get results => throw _privateConstructorUsedError;
   @JsonKey(name: 'total_paid_today')
@@ -440,8 +440,8 @@ class _$PaymentHistorySectionImpl implements _PaymentHistorySection {
     @JsonKey(name: 'previous') this.previous,
     @JsonKey(name: 'results')
     final List<PaymentHistoryItem> results = const <PaymentHistoryItem>[],
-    @JsonKey(name: 'total_paid_today') required this.totalPaidToday,
-    @JsonKey(name: 'total_pending_amount') required this.totalPendingAmount,
+    @JsonKey(name: 'total_paid_today') this.totalPaidToday = 0,
+    @JsonKey(name: 'total_pending_amount') this.totalPendingAmount = 0,
   }) : _results = results;
 
   factory _$PaymentHistorySectionImpl.fromJson(Map<String, dynamic> json) =>
@@ -457,10 +457,10 @@ class _$PaymentHistorySectionImpl implements _PaymentHistorySection {
   @JsonKey(name: 'previous')
   final String? previous;
 
-  /// Safe default in case API sends null
+  /// Safe default when API sends null
   final List<PaymentHistoryItem> _results;
 
-  /// Safe default in case API sends null
+  /// Safe default when API sends null
   @override
   @JsonKey(name: 'results')
   List<PaymentHistoryItem> get results {
@@ -533,9 +533,8 @@ abstract class _PaymentHistorySection implements PaymentHistorySection {
     @JsonKey(name: 'next') final String? next,
     @JsonKey(name: 'previous') final String? previous,
     @JsonKey(name: 'results') final List<PaymentHistoryItem> results,
-    @JsonKey(name: 'total_paid_today') required final num totalPaidToday,
-    @JsonKey(name: 'total_pending_amount')
-    required final num totalPendingAmount,
+    @JsonKey(name: 'total_paid_today') final num totalPaidToday,
+    @JsonKey(name: 'total_pending_amount') final num totalPendingAmount,
   }) = _$PaymentHistorySectionImpl;
 
   factory _PaymentHistorySection.fromJson(Map<String, dynamic> json) =
@@ -551,7 +550,7 @@ abstract class _PaymentHistorySection implements PaymentHistorySection {
   @JsonKey(name: 'previous')
   String? get previous;
 
-  /// Safe default in case API sends null
+  /// Safe default when API sends null
   @override
   @JsonKey(name: 'results')
   List<PaymentHistoryItem> get results;
@@ -597,7 +596,15 @@ mixin _$PaymentHistoryItem {
   @JsonKey(name: 'payment_id')
   String? get paymentId => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
-  DateTime get createdAt => throw _privateConstructorUsedError;
+  DateTime get createdAt => throw _privateConstructorUsedError; // 🔹 NEW FIELDS (from API)
+  @JsonKey(name: 'platform_fee')
+  String? get platformFee => throw _privateConstructorUsedError;
+  @JsonKey(name: 'platform_fee_percentage')
+  String? get platformFeePercentage => throw _privateConstructorUsedError;
+  @JsonKey(name: 'total_amount')
+  String? get totalAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'settlement_time')
+  String? get settlementTime => throw _privateConstructorUsedError;
 
   /// Serializes this PaymentHistoryItem to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -627,6 +634,10 @@ abstract class $PaymentHistoryItemCopyWith<$Res> {
     @JsonKey(name: 'order_id') String? orderId,
     @JsonKey(name: 'payment_id') String? paymentId,
     @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'platform_fee') String? platformFee,
+    @JsonKey(name: 'platform_fee_percentage') String? platformFeePercentage,
+    @JsonKey(name: 'total_amount') String? totalAmount,
+    @JsonKey(name: 'settlement_time') String? settlementTime,
   });
 }
 
@@ -655,6 +666,10 @@ class _$PaymentHistoryItemCopyWithImpl<$Res, $Val extends PaymentHistoryItem>
     Object? orderId = freezed,
     Object? paymentId = freezed,
     Object? createdAt = null,
+    Object? platformFee = freezed,
+    Object? platformFeePercentage = freezed,
+    Object? totalAmount = freezed,
+    Object? settlementTime = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -708,6 +723,26 @@ class _$PaymentHistoryItemCopyWithImpl<$Res, $Val extends PaymentHistoryItem>
                     ? _value.createdAt
                     : createdAt // ignore: cast_nullable_to_non_nullable
                         as DateTime,
+            platformFee:
+                freezed == platformFee
+                    ? _value.platformFee
+                    : platformFee // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            platformFeePercentage:
+                freezed == platformFeePercentage
+                    ? _value.platformFeePercentage
+                    : platformFeePercentage // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            totalAmount:
+                freezed == totalAmount
+                    ? _value.totalAmount
+                    : totalAmount // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            settlementTime:
+                freezed == settlementTime
+                    ? _value.settlementTime
+                    : settlementTime // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -734,6 +769,10 @@ abstract class _$$PaymentHistoryItemImplCopyWith<$Res>
     @JsonKey(name: 'order_id') String? orderId,
     @JsonKey(name: 'payment_id') String? paymentId,
     @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'platform_fee') String? platformFee,
+    @JsonKey(name: 'platform_fee_percentage') String? platformFeePercentage,
+    @JsonKey(name: 'total_amount') String? totalAmount,
+    @JsonKey(name: 'settlement_time') String? settlementTime,
   });
 }
 
@@ -761,6 +800,10 @@ class __$$PaymentHistoryItemImplCopyWithImpl<$Res>
     Object? orderId = freezed,
     Object? paymentId = freezed,
     Object? createdAt = null,
+    Object? platformFee = freezed,
+    Object? platformFeePercentage = freezed,
+    Object? totalAmount = freezed,
+    Object? settlementTime = freezed,
   }) {
     return _then(
       _$PaymentHistoryItemImpl(
@@ -814,6 +857,26 @@ class __$$PaymentHistoryItemImplCopyWithImpl<$Res>
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
                     as DateTime,
+        platformFee:
+            freezed == platformFee
+                ? _value.platformFee
+                : platformFee // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        platformFeePercentage:
+            freezed == platformFeePercentage
+                ? _value.platformFeePercentage
+                : platformFeePercentage // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        totalAmount:
+            freezed == totalAmount
+                ? _value.totalAmount
+                : totalAmount // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        settlementTime:
+            freezed == settlementTime
+                ? _value.settlementTime
+                : settlementTime // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -833,6 +896,10 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
     @JsonKey(name: 'order_id') this.orderId,
     @JsonKey(name: 'payment_id') this.paymentId,
     @JsonKey(name: 'created_at') required this.createdAt,
+    @JsonKey(name: 'platform_fee') this.platformFee,
+    @JsonKey(name: 'platform_fee_percentage') this.platformFeePercentage,
+    @JsonKey(name: 'total_amount') this.totalAmount,
+    @JsonKey(name: 'settlement_time') this.settlementTime,
   });
 
   factory _$PaymentHistoryItemImpl.fromJson(Map<String, dynamic> json) =>
@@ -870,10 +937,23 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
   @override
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
+  // 🔹 NEW FIELDS (from API)
+  @override
+  @JsonKey(name: 'platform_fee')
+  final String? platformFee;
+  @override
+  @JsonKey(name: 'platform_fee_percentage')
+  final String? platformFeePercentage;
+  @override
+  @JsonKey(name: 'total_amount')
+  final String? totalAmount;
+  @override
+  @JsonKey(name: 'settlement_time')
+  final String? settlementTime;
 
   @override
   String toString() {
-    return 'PaymentHistoryItem(id: $id, customerName: $customerName, membershipName: $membershipName, amount: $amount, status: $status, paymentMethod: $paymentMethod, paymentDate: $paymentDate, orderId: $orderId, paymentId: $paymentId, createdAt: $createdAt)';
+    return 'PaymentHistoryItem(id: $id, customerName: $customerName, membershipName: $membershipName, amount: $amount, status: $status, paymentMethod: $paymentMethod, paymentDate: $paymentDate, orderId: $orderId, paymentId: $paymentId, createdAt: $createdAt, platformFee: $platformFee, platformFeePercentage: $platformFeePercentage, totalAmount: $totalAmount, settlementTime: $settlementTime)';
   }
 
   @override
@@ -896,7 +976,15 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
             (identical(other.paymentId, paymentId) ||
                 other.paymentId == paymentId) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.platformFee, platformFee) ||
+                other.platformFee == platformFee) &&
+            (identical(other.platformFeePercentage, platformFeePercentage) ||
+                other.platformFeePercentage == platformFeePercentage) &&
+            (identical(other.totalAmount, totalAmount) ||
+                other.totalAmount == totalAmount) &&
+            (identical(other.settlementTime, settlementTime) ||
+                other.settlementTime == settlementTime));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -913,6 +1001,10 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
     orderId,
     paymentId,
     createdAt,
+    platformFee,
+    platformFeePercentage,
+    totalAmount,
+    settlementTime,
   );
 
   /// Create a copy of PaymentHistoryItem
@@ -944,6 +1036,11 @@ abstract class _PaymentHistoryItem implements PaymentHistoryItem {
     @JsonKey(name: 'order_id') final String? orderId,
     @JsonKey(name: 'payment_id') final String? paymentId,
     @JsonKey(name: 'created_at') required final DateTime createdAt,
+    @JsonKey(name: 'platform_fee') final String? platformFee,
+    @JsonKey(name: 'platform_fee_percentage')
+    final String? platformFeePercentage,
+    @JsonKey(name: 'total_amount') final String? totalAmount,
+    @JsonKey(name: 'settlement_time') final String? settlementTime,
   }) = _$PaymentHistoryItemImpl;
 
   factory _PaymentHistoryItem.fromJson(Map<String, dynamic> json) =
@@ -980,7 +1077,19 @@ abstract class _PaymentHistoryItem implements PaymentHistoryItem {
   String? get paymentId;
   @override
   @JsonKey(name: 'created_at')
-  DateTime get createdAt;
+  DateTime get createdAt; // 🔹 NEW FIELDS (from API)
+  @override
+  @JsonKey(name: 'platform_fee')
+  String? get platformFee;
+  @override
+  @JsonKey(name: 'platform_fee_percentage')
+  String? get platformFeePercentage;
+  @override
+  @JsonKey(name: 'total_amount')
+  String? get totalAmount;
+  @override
+  @JsonKey(name: 'settlement_time')
+  String? get settlementTime;
 
   /// Create a copy of PaymentHistoryItem
   /// with the given fields replaced by the non-null parameter values.

@@ -3,7 +3,6 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/payment_history/payment_history_model.dart';
 
-
 @immutable
 final class MembershipRepository {
   ///* This constructor body for creating singleton widget
@@ -375,8 +374,6 @@ final class MembershipRepository {
     }
   }
 
-
-
   Future<Either<ApiException, PaymentHistory>> listPaymentHistory({
     // required Map<String, dynamic> queryParameters,
     String? nextUrl,
@@ -385,7 +382,7 @@ final class MembershipRepository {
     try {
       return await Feggy.async(
         call: _dio.get<dynamic>(
-          nextUrl ?? ApiUris.paymentHistory(orgId as String),
+          nextUrl ?? '${ApiUris.paymentHistory}?organization_id=$orgId',
           // queryParameters: queryParameters,
           options: Options(headers: {'X-Platform': platformSource}).token,
         ),

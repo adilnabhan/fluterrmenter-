@@ -16,6 +16,14 @@ class _AppViewState extends State<AppView> {
   void initState() {
     super.initState();
     _cubit = AppCubit();
+
+    /// 🔥 IMPORTANT: wait until HydratedCubit restores state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = _cubit.state.currentUser;
+      // if (user?.refresh?.isNotEmpty == true) {
+        _cubit.refreshToken();
+      // }
+    });
   }
 
   @override
@@ -26,40 +34,57 @@ class _AppViewState extends State<AppView> {
 
   @override
   Widget build(BuildContext context) {
-    return FeggyApp(
-      commonErrorHandlers: (error) {
-        final nonFieldError = ApiCommonErrors.handleNonFieldError(error: error);
-        if (nonFieldError != null) {
-          return nonFieldError;
-        }
-        return null;
-      },
-      fixedHeaders: {'X-Platform': platformSource, 'user_role': 20},
-      token: () => 'JWT ${_cubit.state.currentUser?.access}',
-      onTokenError: () async {
-        _cubit.removeUser();
-        await Feggy.pushAndRemoveUntil(const SentOtpScreen());
-      },
-      child: Sizer.init(
-        child: MultiBlocProvider(
-          providers: [BlocProvider.value(value: _cubit)],
-          child: BlocBuilder<AppCubit, AppState>(
-            bloc: _cubit,
-            builder: (context, state) {
-              return MaterialApp(
+    return Sizer.init(
+      child: MultiBlocProvider(
+        providers: [BlocProvider.value(value: _cubit)],
+        child: BlocBuilder<AppCubit, AppState>(
+          bloc: _cubit,
+          builder: (context, state) {
+            return FeggyApp(
+              commonErrorHandlers: (error) {
+                return ApiCommonErrors.handleNonFieldError(error: error);
+              },
+              // FeggyApp(
+              // commonErrorHandlers: (error) {
+              //   final nonFieldError = ApiCommonErrors.handleNonFieldError(error: error);
+              //   if (nonFieldError != null) {
+              //     return nonFieldError;
+              //   }
+              //   return null;
+              // },
+              fixedHeaders: {'X-Platform': platformSource, 'user_role': 20},
+              // token: () => 'JWT ${_cubit.state.currentUser?.access}',
+
+              /// ✅ Correct prefix
+              token: () {
+                final access = _cubit.state.currentUser?.access;
+                return access != null ? 'JWT $access' : null;
+              },
+              // onTokenError: () async {
+              //   _cubit.removeUser();
+              //   await Feggy.pushAndRemoveUntil(const SentOtpScreen());
+              // },
+
+              /// 🔥 Do NOT logout immediately
+              onTokenError: () async {
+                await _cubit.refreshToken();
+              },
+
+              child: MaterialApp(
                 navigatorKey: Feggy.navKey,
                 debugShowCheckedModeBanner: false,
                 themeMode: state.themeMode,
                 theme: AppThemes.light,
                 darkTheme: AppThemes.dark,
                 locale: state.locale,
-                home: BlocBuilder<AppCubit, AppState>(
-                  buildWhen: (p, c) => false,
-                  builder: (context, state) => getScreen(state),
-                ),
-              );
-            },
-          ),
+                home: getScreen(state)
+                // BlocBuilder<AppCubit, AppState>(
+                //   buildWhen: (p, c) => false,
+                //   builder: (context, state) => getScreen(state),
+                // ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -75,11 +100,12 @@ class _AppViewState extends State<AppView> {
   // }
 
   Widget getScreen(AppState state) {
-    print('usr dara----${state.currentUser?.mentor}');
-    print('usr dara----${state.currentUser?.isProfileCompleted}');
+    // print('usr dara----${state.currentUser?.mentor}');
+    print('newly stored token is---${state.currentUser?.access}');
+    // print('usr dara----${state.currentUser?.isProfileCompleted}');
     if (state.currentUser == null) {
       return const SignupScreen();
-    } else if (state.currentUser?.isProfileCompleted ?? false ) {
+    } else if (state.currentUser?.isProfileCompleted ?? false) {
       return const OrganizationListingScreen();
     } else {
       return const SentOtpScreen();

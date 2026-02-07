@@ -15,6 +15,7 @@ _$OrganizationHomeDataModelImpl _$$OrganizationHomeDataModelImplFromJson(
   upcomingRenewalsCount: (json['upcoming_renewals_count'] as num?)?.toInt(),
   expiredCustomersCount: (json['expired_customers_count'] as num?)?.toInt(),
   upcomingPaymentCount: (json['upcoming_payment_count'] as num?)?.toInt(),
+  allPaymentCount: (json['allPayment_count'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$$OrganizationHomeDataModelImplToJson(
@@ -26,4 +27,5 @@ Map<String, dynamic> _$$OrganizationHomeDataModelImplToJson(
   'upcoming_renewals_count': instance.upcomingRenewalsCount,
   'expired_customers_count': instance.expiredCustomersCount,
   'upcoming_payment_count': instance.upcomingPaymentCount,
+  'allPayment_count': instance.allPaymentCount,
 };

@@ -116,16 +116,18 @@ class PaymentHistorySection with _$PaymentHistorySection {
     @JsonKey(name: 'previous')
     String? previous,
 
-    /// Safe default in case API sends null
+    /// Safe default when API sends null
     @JsonKey(name: 'results')
     @Default(<PaymentHistoryItem>[])
     List<PaymentHistoryItem> results,
 
     @JsonKey(name: 'total_paid_today')
-    required num totalPaidToday,
+    @Default(0)
+    num totalPaidToday,
 
     @JsonKey(name: 'total_pending_amount')
-    required num totalPendingAmount,
+    @Default(0)
+    num totalPendingAmount,
   }) = _PaymentHistorySection;
 
   factory PaymentHistorySection.fromJson(Map<String, dynamic> json) =>
@@ -165,6 +167,19 @@ class PaymentHistoryItem with _$PaymentHistoryItem {
 
     @JsonKey(name: 'created_at')
     required DateTime createdAt,
+
+    // 🔹 NEW FIELDS (from API)
+    @JsonKey(name: 'platform_fee')
+    String? platformFee,
+
+    @JsonKey(name: 'platform_fee_percentage')
+    String? platformFeePercentage,
+
+    @JsonKey(name: 'total_amount')
+    String? totalAmount,
+
+    @JsonKey(name: 'settlement_time')
+    String? settlementTime,
   }) = _PaymentHistoryItem;
 
   factory PaymentHistoryItem.fromJson(Map<String, dynamic> json) =>

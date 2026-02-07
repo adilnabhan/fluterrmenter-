@@ -11,6 +11,7 @@ final class ApiUris {
   static const sentOtp = '${_v1}user/send-otp/';
   static const loginWithOtp = '${_v1}user/otp/verify/';
   static const verifyOtp = '${_v1}user/otp/verification/registration/';
+  static const tokenRefresh = '${_v1}user/token/refresh/';
   static const onboarding = '${_v1}user/onboarding/';
 
   static const logout = '${_v1}user/logout/';
@@ -62,9 +63,9 @@ final class ApiUris {
       '${_v1}fitnesscenter/membership-plans/$id/';
   static String deleteMembershipPackage(int id) =>
       '${_v1}fitnesscenter/membership-plans/$id/';
-  // static const paymentHistory = '${_v1}fitnesscenter/customer-payments/$orgId/';
-  static String paymentHistory(String orgId) =>
-      '${_v1}fitnesscenter/customer-payments/$orgId';
+  static const paymentHistory = '${_v1}fitnesscenter/customer-payments';
+  // static String paymentHistory(String orgId) =>
+  //     '${_v1}fitnesscenter/customer-payments/$orgId';
 
   ///============================= bank =============================\\\
 

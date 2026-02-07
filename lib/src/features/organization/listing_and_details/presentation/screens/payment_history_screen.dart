@@ -147,8 +147,8 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 16,
                                     ),
-                                    // child: Text('Processing'),
-                                    child: Text('Pending'),
+                                    child: Text('Processing'),
+                                    // child: Text('Pending'),
                                   ),
                                 ),
                               ],
@@ -169,7 +169,11 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
                                   if (data.pendingPayments.results.isEmpty)
                                     ErrorUi.empty().center
                                   else
-                                  _ProcessingPaymentsTab(),
+                                    _AllPaymentsTab(
+                                      isAllPayment: false,
+                                      allPayment: data.pendingPayments,
+                                    ),
+                                  // _ProcessingPaymentsTab(),
                                 ],
                               ),
                             ),
@@ -189,7 +193,8 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
 }
 
 class _AllPaymentsTab extends StatelessWidget {
-  const _AllPaymentsTab({super.key, this.allPayment});
+  final bool isAllPayment;
+  const _AllPaymentsTab({super.key, this.allPayment, this.isAllPayment = true});
 
   final PaymentHistorySection? allPayment;
 
@@ -264,7 +269,10 @@ class _AllPaymentsTab extends StatelessWidget {
                 ],
               ),
             if (index == 0) const SizedBox(height: 16),
-            paymentCard(isAllPayments: true, data: allPayment?.results[index]),
+            paymentCard(
+              isAllPayments: isAllPayment,
+              data: allPayment?.results[index],
+            ),
           ],
         );
 
@@ -350,7 +358,7 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
                 ),
               ),
               Text(
-                '₹1,000',
+                '₹${data.amount}',
                 style: AppStyles.text14Px.poppins.w600.copyWith(
                   color: Colors.green,
                 ),
@@ -362,11 +370,11 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Platform fee (4%)',
+                'Platform fee (${data.platformFeePercentage}%)',
                 style: AppStyles.text14Px.poppins.copyWith(color: Colors.grey),
               ),
               Text(
-                '-₹60',
+                '-₹${data.platformFee}',
                 style: AppStyles.text14Px.poppins.w600.copyWith(
                   color: Colors.grey,
                 ),
@@ -385,7 +393,7 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
                 style: AppStyles.text14Px.poppins.copyWith(color: Colors.grey),
               ),
               Text(
-                '₹1,440',
+                '₹${data.totalAmount ?? 0}',
                 style: AppStyles.text20Px.poppins.w700.copyWith(
                   color: Colors.green,
                 ),
@@ -393,7 +401,7 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
             ],
           ),
           Text(
-            'The amount will be credited to your account within 3 working days.',
+            data.settlementTime ?? '',
             style: AppStyles.text12Px.poppins.copyWith(color: Colors.grey),
           ),
         ] else ...[

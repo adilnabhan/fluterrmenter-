@@ -35,6 +35,8 @@ mixin _$OrganizationHomeDataModel {
   int? get expiredCustomersCount => throw _privateConstructorUsedError;
   @JsonKey(name: 'upcoming_payment_count')
   int? get upcomingPaymentCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'allPayment_count')
+  int? get allPaymentCount => throw _privateConstructorUsedError;
 
   /// Serializes this OrganizationHomeDataModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -60,6 +62,7 @@ abstract class $OrganizationHomeDataModelCopyWith<$Res> {
     @JsonKey(name: 'upcoming_renewals_count') int? upcomingRenewalsCount,
     @JsonKey(name: 'expired_customers_count') int? expiredCustomersCount,
     @JsonKey(name: 'upcoming_payment_count') int? upcomingPaymentCount,
+    @JsonKey(name: 'allPayment_count') int? allPaymentCount,
   });
 }
 
@@ -87,6 +90,7 @@ class _$OrganizationHomeDataModelCopyWithImpl<
     Object? upcomingRenewalsCount = freezed,
     Object? expiredCustomersCount = freezed,
     Object? upcomingPaymentCount = freezed,
+    Object? allPaymentCount = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -120,6 +124,11 @@ class _$OrganizationHomeDataModelCopyWithImpl<
                     ? _value.upcomingPaymentCount
                     : upcomingPaymentCount // ignore: cast_nullable_to_non_nullable
                         as int?,
+            allPaymentCount:
+                freezed == allPaymentCount
+                    ? _value.allPaymentCount
+                    : allPaymentCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
           )
           as $Val,
     );
@@ -142,6 +151,7 @@ abstract class _$$OrganizationHomeDataModelImplCopyWith<$Res>
     @JsonKey(name: 'upcoming_renewals_count') int? upcomingRenewalsCount,
     @JsonKey(name: 'expired_customers_count') int? expiredCustomersCount,
     @JsonKey(name: 'upcoming_payment_count') int? upcomingPaymentCount,
+    @JsonKey(name: 'allPayment_count') int? allPaymentCount,
   });
 }
 
@@ -169,6 +179,7 @@ class __$$OrganizationHomeDataModelImplCopyWithImpl<$Res>
     Object? upcomingRenewalsCount = freezed,
     Object? expiredCustomersCount = freezed,
     Object? upcomingPaymentCount = freezed,
+    Object? allPaymentCount = freezed,
   }) {
     return _then(
       _$OrganizationHomeDataModelImpl(
@@ -202,6 +213,11 @@ class __$$OrganizationHomeDataModelImplCopyWithImpl<$Res>
                 ? _value.upcomingPaymentCount
                 : upcomingPaymentCount // ignore: cast_nullable_to_non_nullable
                     as int?,
+        allPaymentCount:
+            freezed == allPaymentCount
+                ? _value.allPaymentCount
+                : allPaymentCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
       ),
     );
   }
@@ -217,6 +233,7 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
     @JsonKey(name: 'upcoming_renewals_count') this.upcomingRenewalsCount,
     @JsonKey(name: 'expired_customers_count') this.expiredCustomersCount,
     @JsonKey(name: 'upcoming_payment_count') this.upcomingPaymentCount,
+    @JsonKey(name: 'allPayment_count') this.allPaymentCount,
   });
 
   factory _$OrganizationHomeDataModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -240,10 +257,13 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
   @override
   @JsonKey(name: 'upcoming_payment_count')
   final int? upcomingPaymentCount;
+  @override
+  @JsonKey(name: 'allPayment_count')
+  final int? allPaymentCount;
 
   @override
   String toString() {
-    return 'OrganizationHomeDataModel(organizationId: $organizationId, trainerCount: $trainerCount, activeCustomersCount: $activeCustomersCount, upcomingRenewalsCount: $upcomingRenewalsCount, expiredCustomersCount: $expiredCustomersCount, upcomingPaymentCount: $upcomingPaymentCount)';
+    return 'OrganizationHomeDataModel(organizationId: $organizationId, trainerCount: $trainerCount, activeCustomersCount: $activeCustomersCount, upcomingRenewalsCount: $upcomingRenewalsCount, expiredCustomersCount: $expiredCustomersCount, upcomingPaymentCount: $upcomingPaymentCount, allPaymentCount: $allPaymentCount)';
   }
 
   @override
@@ -262,7 +282,9 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
             (identical(other.expiredCustomersCount, expiredCustomersCount) ||
                 other.expiredCustomersCount == expiredCustomersCount) &&
             (identical(other.upcomingPaymentCount, upcomingPaymentCount) ||
-                other.upcomingPaymentCount == upcomingPaymentCount));
+                other.upcomingPaymentCount == upcomingPaymentCount) &&
+            (identical(other.allPaymentCount, allPaymentCount) ||
+                other.allPaymentCount == allPaymentCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -275,6 +297,7 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
     upcomingRenewalsCount,
     expiredCustomersCount,
     upcomingPaymentCount,
+    allPaymentCount,
   );
 
   /// Create a copy of OrganizationHomeDataModel
@@ -301,6 +324,7 @@ abstract class _OrganizationHomeDataModel implements OrganizationHomeDataModel {
     @JsonKey(name: 'upcoming_renewals_count') final int? upcomingRenewalsCount,
     @JsonKey(name: 'expired_customers_count') final int? expiredCustomersCount,
     @JsonKey(name: 'upcoming_payment_count') final int? upcomingPaymentCount,
+    @JsonKey(name: 'allPayment_count') final int? allPaymentCount,
   }) = _$OrganizationHomeDataModelImpl;
 
   factory _OrganizationHomeDataModel.fromJson(Map<String, dynamic> json) =
@@ -324,6 +348,9 @@ abstract class _OrganizationHomeDataModel implements OrganizationHomeDataModel {
   @override
   @JsonKey(name: 'upcoming_payment_count')
   int? get upcomingPaymentCount;
+  @override
+  @JsonKey(name: 'allPayment_count')
+  int? get allPaymentCount;
 
   /// Create a copy of OrganizationHomeDataModel
   /// with the given fields replaced by the non-null parameter values.

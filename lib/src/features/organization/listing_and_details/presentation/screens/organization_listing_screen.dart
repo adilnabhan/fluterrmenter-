@@ -147,10 +147,10 @@ class _OrganizationListingAndDetailsScreenState
                     : null,
 
             /// quick action button added for the workout log
-            floatingActionButton:
-                state.selectedOrganization?.id != null && hasData
-                    ? QuickActionsFab(orgId: state.selectedOrganization!.id!)
-                    : null,
+            // floatingActionButton:
+            //     state.selectedOrganization?.id != null && hasData
+            //         ? QuickActionsFab(orgId: state.selectedOrganization!.id!)
+            //         : null,
             body: BlocBuilder<
               OrganizationListingAndDetailsCubit,
               OrganizationListingAndDetailsState
@@ -268,7 +268,7 @@ class _OrganizationListingAndDetailsScreenState
                           (
                             title: 'Payments',
                             color: const Color.fromARGB(255, 69, 213, 221),
-                            count: orgHomeData.upcomingPaymentCount ?? 0,
+                            count: orgHomeData.allPaymentCount ?? 0,
                             onTap: () {
                               if (state.selectedOrganization?.id != null) {
                                 context.push(

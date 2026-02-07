@@ -259,4 +259,29 @@ final class AuthRepository {
       },
     );
   }
+
+  Future<Either<ApiException, Map<String, dynamic>>> refreshToken(
+    String refreshToken,
+  ) async {
+    try {
+      print('refesh tojken is--$refreshToken');
+      return await Feggy.async(
+        call: _dio.post<dynamic>(
+          ApiUris.tokenRefresh,
+          data: {"refresh_token": refreshToken},
+          options: Options(headers: {'X-Platform': platformSource}),
+        ),
+        onSuccess: (res) {
+          if (res.statusCode == 200 && res.data is Map) {
+            return right(res.data as Map<String, dynamic>);
+          }
+          return left(const ApiException.unknown());
+        },
+      );
+    } on ApiException catch (e) {
+      return left(e);
+    } catch (_) {
+      return left(const ApiException.unknown());
+    }
+  }
 }
