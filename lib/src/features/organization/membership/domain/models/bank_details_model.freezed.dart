@@ -37,6 +37,10 @@ mixin _$BankDetailsModel {
   String get bankName => throw _privateConstructorUsedError;
   @JsonKey(name: "branch_name")
   String get branchName => throw _privateConstructorUsedError;
+  @JsonKey(name: "pan_number")
+  String? get panNumber => throw _privateConstructorUsedError;
+  @JsonKey(name: "date_of_birth")
+  String? get dateOBirth => throw _privateConstructorUsedError;
 
   /// Serializes this BankDetailsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -64,6 +68,8 @@ abstract class $BankDetailsModelCopyWith<$Res> {
     @JsonKey(name: "ifsc_code") String ifscCode,
     @JsonKey(name: "bank_name") String bankName,
     @JsonKey(name: "branch_name") String branchName,
+    @JsonKey(name: "pan_number") String? panNumber,
+    @JsonKey(name: "date_of_birth") String? dateOBirth,
   });
 }
 
@@ -90,6 +96,8 @@ class _$BankDetailsModelCopyWithImpl<$Res, $Val extends BankDetailsModel>
     Object? ifscCode = null,
     Object? bankName = null,
     Object? branchName = null,
+    Object? panNumber = freezed,
+    Object? dateOBirth = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -133,6 +141,16 @@ class _$BankDetailsModelCopyWithImpl<$Res, $Val extends BankDetailsModel>
                     ? _value.branchName
                     : branchName // ignore: cast_nullable_to_non_nullable
                         as String,
+            panNumber:
+                freezed == panNumber
+                    ? _value.panNumber
+                    : panNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            dateOBirth:
+                freezed == dateOBirth
+                    ? _value.dateOBirth
+                    : dateOBirth // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -157,6 +175,8 @@ abstract class _$$BankDetailsModelImplCopyWith<$Res>
     @JsonKey(name: "ifsc_code") String ifscCode,
     @JsonKey(name: "bank_name") String bankName,
     @JsonKey(name: "branch_name") String branchName,
+    @JsonKey(name: "pan_number") String? panNumber,
+    @JsonKey(name: "date_of_birth") String? dateOBirth,
   });
 }
 
@@ -182,6 +202,8 @@ class __$$BankDetailsModelImplCopyWithImpl<$Res>
     Object? ifscCode = null,
     Object? bankName = null,
     Object? branchName = null,
+    Object? panNumber = freezed,
+    Object? dateOBirth = freezed,
   }) {
     return _then(
       _$BankDetailsModelImpl(
@@ -225,6 +247,16 @@ class __$$BankDetailsModelImplCopyWithImpl<$Res>
                 ? _value.branchName
                 : branchName // ignore: cast_nullable_to_non_nullable
                     as String,
+        panNumber:
+            freezed == panNumber
+                ? _value.panNumber
+                : panNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        dateOBirth:
+            freezed == dateOBirth
+                ? _value.dateOBirth
+                : dateOBirth // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -242,6 +274,8 @@ class _$BankDetailsModelImpl implements _BankDetailsModel {
     @JsonKey(name: "ifsc_code") required this.ifscCode,
     @JsonKey(name: "bank_name") required this.bankName,
     @JsonKey(name: "branch_name") required this.branchName,
+    @JsonKey(name: "pan_number") this.panNumber,
+    @JsonKey(name: "date_of_birth") this.dateOBirth,
   });
 
   factory _$BankDetailsModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -271,10 +305,16 @@ class _$BankDetailsModelImpl implements _BankDetailsModel {
   @override
   @JsonKey(name: "branch_name")
   final String branchName;
+  @override
+  @JsonKey(name: "pan_number")
+  final String? panNumber;
+  @override
+  @JsonKey(name: "date_of_birth")
+  final String? dateOBirth;
 
   @override
   String toString() {
-    return 'BankDetailsModel(id: $id, organization: $organization, organizationId: $organizationId, accountHolderName: $accountHolderName, accountNumber: $accountNumber, ifscCode: $ifscCode, bankName: $bankName, branchName: $branchName)';
+    return 'BankDetailsModel(id: $id, organization: $organization, organizationId: $organizationId, accountHolderName: $accountHolderName, accountNumber: $accountNumber, ifscCode: $ifscCode, bankName: $bankName, branchName: $branchName, panNumber: $panNumber, dateOBirth: $dateOBirth)';
   }
 
   @override
@@ -296,7 +336,11 @@ class _$BankDetailsModelImpl implements _BankDetailsModel {
             (identical(other.bankName, bankName) ||
                 other.bankName == bankName) &&
             (identical(other.branchName, branchName) ||
-                other.branchName == branchName));
+                other.branchName == branchName) &&
+            (identical(other.panNumber, panNumber) ||
+                other.panNumber == panNumber) &&
+            (identical(other.dateOBirth, dateOBirth) ||
+                other.dateOBirth == dateOBirth));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -311,6 +355,8 @@ class _$BankDetailsModelImpl implements _BankDetailsModel {
     ifscCode,
     bankName,
     branchName,
+    panNumber,
+    dateOBirth,
   );
 
   /// Create a copy of BankDetailsModel
@@ -341,6 +387,8 @@ abstract class _BankDetailsModel implements BankDetailsModel {
     @JsonKey(name: "ifsc_code") required final String ifscCode,
     @JsonKey(name: "bank_name") required final String bankName,
     @JsonKey(name: "branch_name") required final String branchName,
+    @JsonKey(name: "pan_number") final String? panNumber,
+    @JsonKey(name: "date_of_birth") final String? dateOBirth,
   }) = _$BankDetailsModelImpl;
 
   factory _BankDetailsModel.fromJson(Map<String, dynamic> json) =
@@ -370,6 +418,12 @@ abstract class _BankDetailsModel implements BankDetailsModel {
   @override
   @JsonKey(name: "branch_name")
   String get branchName;
+  @override
+  @JsonKey(name: "pan_number")
+  String? get panNumber;
+  @override
+  @JsonKey(name: "date_of_birth")
+  String? get dateOBirth;
 
   /// Create a copy of BankDetailsModel
   /// with the given fields replaced by the non-null parameter values.

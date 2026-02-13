@@ -47,7 +47,7 @@ class __UpcomingRenewalsListingScreenState
       _cubit.fetchMembers(
         isPagination: isPaginating,
         sort: _sort,
-        status: MemberStatus.upcoming,
+        status: MemberStatus.expired,
         searchQuery: searchQuery,
       );
 

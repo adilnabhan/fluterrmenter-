@@ -24,6 +24,8 @@ class _BankAccountDetailsScreenState
   late final FieldData<String> _ifscCodeField;
   late final FieldData<String> _accountNumberField;
   late final FieldData<String> _confirmAccountNumberField;
+  late final FieldData<String> _panCardNumberField;
+  late final FieldData<String> _dateOfBirth;
 
   late final MembershipCubit
   _cubit; // you can replace this with your own cubit if needed
@@ -98,6 +100,7 @@ class _BankAccountDetailsScreenState
     _accountNumberField = FieldData<String>(
       type: FieldType.word,
       textInputAction: TextInputAction.next,
+      obscureText: true,
       label: 'Account Number',
       requiredLabel: true,
       controller: TextEditingController(
@@ -133,6 +136,53 @@ class _BankAccountDetailsScreenState
       decoration: _inputDecoration('Re-enter account number'),
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
     );
+
+    _panCardNumberField = FieldData<String>(
+      type: FieldType.word,
+      readOnly: widget.bankDetails?.panNumber == null ? false : true,
+      textInputAction: TextInputAction.next,
+      label: 'PAN Number',
+      requiredLabel: true,
+      controller: TextEditingController(
+        text: widget.bankDetails?.panNumber ?? '',
+      ),
+      validator:
+          (value) => value?.isEmpty ?? true ? 'PAN Number is required' : null,
+      onValueChanged: (_) {},
+      onSubmitted: (_) {},
+      decoration: _inputDecoration('Enter PAN Number'),
+    );
+
+    _dateOfBirth = FieldData(
+      type:
+          widget.bankDetails?.dateOBirth == null
+              ? FieldType.date
+              : FieldType.word,
+      textInputAction: TextInputAction.done,
+      label: 'Date of Birth',
+      requiredLabel: true,
+      readOnly: widget.bankDetails?.dateOBirth == null ? false : true,
+      controller: TextEditingController(
+        text: widget.bankDetails?.dateOBirth ?? '',
+      ),
+      validator: (value) {
+        if (value?.isEmpty ?? true) {
+          return 'Date of Birth must be selected';
+        }
+        return null;
+      },
+      // onSubmitted: (value) {
+      //   _fields[7].focusNode?.requestFocus();
+      // },
+      decoration: InputDecoration(
+        hintText: 'Select Date of Birth',
+        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
+      ),
+    );
   }
 
   @override
@@ -143,6 +193,8 @@ class _BankAccountDetailsScreenState
     _ifscCodeField.controller?.dispose();
     _accountNumberField.controller?.dispose();
     _confirmAccountNumberField.controller?.dispose();
+    _panCardNumberField.controller?.dispose();
+    _dateOfBirth.controller?.dispose();
     super.dispose();
   }
 
@@ -177,10 +229,13 @@ class _BankAccountDetailsScreenState
                 var dat = context.read<AppCubit>().state;
                 print('org id is--${dat.currentUser?.mentor?.org}');
                 print('org id is--${_cubit.orgId}');
-                context.read<AppCubit>().onboardingUpdate(
-                  body: {'profile_completeness': 6},
-                  id: int.parse(_cubit.orgId),
-                );
+
+                if (widget.bankDetails == null) {
+                  context.read<AppCubit>().onboardingUpdate(
+                    body: {'profile_completeness': 6},
+                    id: int.parse(_cubit.orgId),
+                  );
+                }
 
                 context.pushAndRemoveUntil(
                   MultiBlocProvider(
@@ -283,6 +338,42 @@ class _BankAccountDetailsScreenState
                   Field(data: _ifscCodeField),
                   Field(data: _accountNumberField),
                   Field(data: _confirmAccountNumberField),
+                  Field(data: _panCardNumberField),
+                  Field(data: _dateOfBirth),
+
+                  // TextFormField(
+                  //   controller: _dateOfBirth.controller,
+                  //   readOnly: true,
+                  //   showCursor: false,
+                  //   onTap: () async {
+                  //     // Open date picker here
+                  //     final pickedDate = await showDatePicker(
+                  //       context: context,
+                  //       initialDate: DateTime.now(),
+                  //       firstDate: DateTime(1900),
+                  //       lastDate: DateTime.now(),
+                  //     );
+                  //
+                  //     if (pickedDate != null) {
+                  //       _dateOfBirth.controller!.text =
+                  //           DateFormat('dd-MM-yyyy').format(pickedDate);
+                  //     }
+                  //   },
+                  //   decoration: InputDecoration(
+                  //     hintText: 'Select Date of Birth',
+                  //     hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+                  //     border: const OutlineInputBorder(
+                  //       borderRadius: BorderRadius.all(Radius.circular(8)),
+                  //       borderSide: BorderSide(color: AppColors.borderGrey),
+                  //     ),
+                  //   ),
+                  //   validator: (value) {
+                  //     if (value?.isEmpty ?? true) {
+                  //       return 'Date of Birth must be selected';
+                  //     }
+                  //     return null;
+                  //   },
+                  // ),
                 ],
               ),
             ],
@@ -299,6 +390,11 @@ class _BankAccountDetailsScreenState
               isLoading: isLoading,
               buttonColor: AppColors.primary,
               ontap: () {
+                // context.read<AppCubit>().onboardingUpdate(
+                //   body: {'profile_completeness': 6},
+                //   id: int.parse(_cubit.orgId),
+                // );
+
                 if (isLoading) return;
 
                 if (!_formKey.currentState!.validate()) {
@@ -314,6 +410,20 @@ class _BankAccountDetailsScreenState
                 final ifsc = _ifscCodeField.controller!.text.trim();
                 final accountNumber =
                     _accountNumberField.controller!.text.trim();
+                final confirmAccount =
+                    _confirmAccountNumberField.controller!.text.trim();
+
+                final panNumber = _panCardNumberField.controller!.text.trim();
+                final dob = _dateOfBirth.controller!.text.trim();
+
+                /// 🔴 Confirm account number validation
+                if (accountNumber != confirmAccount) {
+                  Dialogs.showSnack(
+                    msg:
+                        'Account number and confirm account number do not match.',
+                  );
+                  return;
+                }
 
                 _cubit.createOrUpdateBankDetails(
                   detailsId: widget.bankDetails?.id,
@@ -322,6 +432,8 @@ class _BankAccountDetailsScreenState
                   holderName: holderName,
                   ifsc: ifsc,
                   accountNumber: accountNumber,
+                  dateOBirth: dob,
+                  panNumber: panNumber,
                 );
               },
             ).pad(16).pxy(y: 16);

@@ -30,7 +30,6 @@ final class MembersRepository {
     String? nextUrl,
   }) async {
     try {
-      print('qqq---$queryParameters');
       return await Feggy.async(
         call: Dio().get<dynamic>(
           nextUrl ?? ApiUris.membersListing,

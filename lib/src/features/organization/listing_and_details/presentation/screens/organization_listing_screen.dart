@@ -194,7 +194,7 @@ class _OrganizationListingAndDetailsScreenState
                             color: const Color(0xff9C51BF),
                             count:
                                 (orgHomeData.trainerCount ?? 0) +
-                                (orgHomeData.expiredCustomersCount ?? 0) +
+                                // (orgHomeData.expiredCustomersCount ?? 0) +
                                 (orgHomeData.activeCustomersCount ?? 0),
                             onTap: () {
                               if (state.selectedOrganization?.id != null) {

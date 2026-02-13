@@ -87,6 +87,8 @@ class MembershipCubit extends Cubit<MembershipState> {
     required String ifsc,
     required String bankName,
     required String branchName,
+    required String dateOBirth,
+    required String panNumber,
     int? detailsId,
   }) async {
     emit(state.copyWith(createOrUpdateBank: none(), isLoading: true));
@@ -97,6 +99,8 @@ class MembershipCubit extends Cubit<MembershipState> {
       'bank_name': bankName,
       'branch_name': branchName,
       'organization_id': orgId,
+      'pan_number': panNumber,
+      'date_of_birth': dateOBirth,
     };
     final res =
         (detailsId != null

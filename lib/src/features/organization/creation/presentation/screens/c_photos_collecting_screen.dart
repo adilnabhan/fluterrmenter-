@@ -19,6 +19,20 @@ class _CreateOrganizationPhotosCollectingScreenState
     super.initState();
   }
 
+  Future<void> _pickImageDialog() async {
+    final ImagePicker picker = ImagePicker();
+
+    final List<XFile> pickedImages = await picker.pickMultiImage(
+      imageQuality: 80,
+    );
+
+    if (pickedImages.isNotEmpty) {
+      setState(() {
+        _images.addAll(pickedImages);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -122,11 +136,11 @@ class _CreateOrganizationPhotosCollectingScreenState
                               child: Container(
                                 width: 24,
                                 height: 24,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
+                                child: const Icon(
                                   Icons.close,
                                   size: 16,
                                   color: AppColors.primary,
@@ -140,18 +154,20 @@ class _CreateOrganizationPhotosCollectingScreenState
                     // Add photo button
                     return InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      onTap: () {
-                        ImagePickerDialog(
-                          needRemove: false,
-                          onPickedImage: (image) {
-                            if (image != null) {
-                              setState(() {
-                                _images.add(image);
-                              });
-                            }
+                      onTap:
+                      // _pickImageDialog,
+                          () {
+                            ImagePickerDialog(
+                              allowMultiple: true,
+                              needRemove: false,
+                              onPickedImages: (images) {
+                                setState(() {
+                                  _images.addAll(images);
+                                });
+                              },
+                            ).show(context);
+
                           },
-                        ).show(context);
-                      },
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -162,7 +178,7 @@ class _CreateOrganizationPhotosCollectingScreenState
                             width: 2,
                           ),
                         ),
-                        child: Center(
+                        child: const Center(
                           child: Icon(
                             Icons.add,
                             size: 40,

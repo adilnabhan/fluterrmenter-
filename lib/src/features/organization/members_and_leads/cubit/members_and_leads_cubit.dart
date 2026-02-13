@@ -18,7 +18,6 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     bool isPagination = false,
     String? searchQuery,
   }) async {
-    print(status);
     final members = state.members.data.fold(
       () => null,
       (t) => t.fold((l) => null, (r) => r),
