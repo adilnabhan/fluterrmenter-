@@ -7,3 +7,4 @@ export 'api/api.dart';
 export 'api/uris/api_uris.dart';
 export 'bloc/bloc.dart';
 export 'utils/utils.dart';
+export 'storage/storage.dart';

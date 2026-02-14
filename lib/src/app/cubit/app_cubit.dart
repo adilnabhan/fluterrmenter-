@@ -24,21 +24,32 @@ class AppCubit extends HydratedCubit<AppState> {
   }
 
   void addUser(LoginSuccessModel user) {
+    LocalStorageService().saveUser(user);
     emit(state.copyWith(currentUser: user));
   }
 
   void removeUser() {
+    LocalStorageService().clearUser();
     emit(state.copyWith(currentUser: null));
   }
 
   @override
   AppState? fromJson(Map<String, dynamic> json) {
-    final currentUser =
+    var currentUser =
         json['currentUser'] != null
             ? LoginSuccessModel.fromJson(
               json['currentUser'] as Map<String, dynamic>,
             )
             : null;
+
+    // 🛡️ Fallback: Check Hive if HydratedBloc lost the user (e.g. cache cleared)
+    if (currentUser == null) {
+      final localUser = LocalStorageService().getUser();
+      if (localUser != null) {
+        print('✅ AppCubit: Restored user from Hive storage.');
+        currentUser = localUser;
+      }
+    }
     return AppState(
       themeMode: switch (json['theme_mode']) {
         'dark' => ThemeMode.dark,
@@ -216,14 +227,26 @@ class AppCubit extends HydratedCubit<AppState> {
 
       result.fold(
         (error) {
-          print(
-            '❌ AppCubit: Token refresh API failed. Logging out. Error: $error',
+          print('❌ AppCubit: Token refresh API failed. Error: $error');
+
+          error.maybeWhen(
+            network: (msg) {
+              print(
+                '🌐 AppCubit: Network issue detected ($msg). Keeping current session for offline access.',
+              );
+              // 🚪 Do NOT logout if it's just a network issue.
+              // This allows the user to see cached data while offline.
+            },
+            orElse: () {
+              print(
+                '🚫 AppCubit: Token refresh failed (Invalid token). Logging out.',
+              );
+              if (state.currentUser != null) {
+                emit(state.copyWith(currentUser: null));
+                Feggy.pushAndRemoveUntil(const SentOtpScreen());
+              }
+            },
           );
-          // ❌ Refresh failed → logout
-          if (state.currentUser != null) {
-            emit(state.copyWith(currentUser: null));
-            Feggy.pushAndRemoveUntil(const SentOtpScreen());
-          }
         },
         (data) {
           print('✅ AppCubit: Token refresh API success.');
@@ -242,22 +265,25 @@ class AppCubit extends HydratedCubit<AppState> {
 
           // ✅ Update tokens
           print('✅ AppCubit: Updating user with new tokens.');
-          emit(
-            state.copyWith(
-              currentUser: user!.copyWith(
-                access: access,
-                refresh: refresh ?? user.refresh,
-              ),
-            ),
+
+          final updatedUser = user!.copyWith(
+            access: access,
+            refresh: refresh ?? user.refresh,
           );
+
+          // 💾 Save to Hive
+          LocalStorageService().saveUser(updatedUser);
+
+          emit(state.copyWith(currentUser: updatedUser));
         },
       );
     } catch (e) {
       print('❌ AppCubit: Exception during token refresh: $e');
-      // ❌ Network / unexpected crash → logout safely
-      if (state.currentUser != null) {
-        emit(state.copyWith(currentUser: null));
-      }
+      // 🚪 On unexpected error, we keep the session to avoid aggressive logouts
+      // especially during transient network issues or offline startup.
+      print(
+        '⚠️ AppCubit: Failed to pre-emptively refresh token. Keeping current session.',
+      );
     } finally {
       _isRefreshing = false;
     }

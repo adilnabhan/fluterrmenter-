@@ -25,7 +25,17 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   Bloc.observer = const AppBlocObserver();
 
   // //* 🍪📦  session configuration
-  HydratedBloc.storage = await HydratedStorage.build(storageDirectory: kIsWeb ? HydratedStorageDirectory.web : HydratedStorageDirectory((await getApplicationCacheDirectory()).path));
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory:
+        kIsWeb
+            ? HydratedStorageDirectory.web
+            : HydratedStorageDirectory(
+              (await getApplicationCacheDirectory()).path,
+            ),
+  );
+
+  //* 📦 Local Storage (Hive)
+  await LocalStorageService().init();
 
   //* Environment variables
   await dotenv.load();

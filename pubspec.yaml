@@ -118,6 +118,11 @@ dependencies:
   image_cropper: ^11.0.0
   crop_image: ^1.0.17
 
+  #* Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  flutter_secure_storage: ^10.0.0
+
 dependency_overrides:
   web: any
   intl: any

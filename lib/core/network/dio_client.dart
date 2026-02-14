@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mentor_mobile_app/core/network/authInterceptor.dart';
+import 'package:mentor_mobile_app/src/app/cubit/app_cubit.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class DioClient {
@@ -18,8 +20,18 @@ class DioClient {
   static final DioClient _instance = DioClient._internal();
 
   late final Dio _dio;
+  bool _authInterceptorAdded = false;
 
   Dio get dio => _dio;
+
+  /// Register AuthInterceptor once AppCubit is available
+  void registerAuthInterceptor(AppCubit appCubit) {
+    if (!_authInterceptorAdded) {
+      _dio.interceptors.add(AuthInterceptor(appCubit, _dio));
+      _authInterceptorAdded = true;
+      print('✅ AuthInterceptor registered with DioClient');
+    }
+  }
 }
 
 class CurlLoggerInterceptor extends Interceptor {

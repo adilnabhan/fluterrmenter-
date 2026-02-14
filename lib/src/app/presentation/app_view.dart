@@ -1,3 +1,4 @@
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 ///* First widget integrating
@@ -17,11 +18,14 @@ class _AppViewState extends State<AppView> {
     super.initState();
     _cubit = AppCubit();
 
+    // 🔐 Register AuthInterceptor with DioClient
+    DioClient().registerAuthInterceptor(_cubit);
+
     /// 🔥 IMPORTANT: wait until HydratedCubit restores state
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = _cubit.state.currentUser;
       // if (user?.refresh?.isNotEmpty == true) {
-        _cubit.refreshToken();
+      _cubit.refreshToken();
       // }
     });
   }
@@ -77,7 +81,7 @@ class _AppViewState extends State<AppView> {
                 theme: AppThemes.light,
                 darkTheme: AppThemes.dark,
                 locale: state.locale,
-                home: getScreen(state)
+                home: getScreen(state),
                 // BlocBuilder<AppCubit, AppState>(
                 //   buildWhen: (p, c) => false,
                 //   builder: (context, state) => getScreen(state),
