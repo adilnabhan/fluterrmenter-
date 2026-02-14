@@ -370,11 +370,11 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Platform fee (${data.platformFeePercentage}%)',
+                'Platform fee (${data.platformFee}%)',
                 style: AppStyles.text14Px.poppins.copyWith(color: Colors.grey),
               ),
               Text(
-                '-₹${data.platformFee}',
+                '-₹${data.platformFeePercentage}',
                 style: AppStyles.text14Px.poppins.w600.copyWith(
                   color: Colors.grey,
                 ),

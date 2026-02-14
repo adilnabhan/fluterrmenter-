@@ -226,18 +226,29 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
   }
 
   void _onContinue() {
-    _formKey.currentState?.validate();
-    final flatName = _locationDetails[0][0].controller?.text;
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!isValid) return;
+
+    final flatName = _locationDetails[0][0].controller?.text.trim() ?? '';
     final street = _locationDetails[1][0].controller?.text;
     final city = _locationDetails[2][0].controller?.text;
     final state = _locationDetails[3][0].controller?.text;
     final picode = _locationDetails[3][1].controller?.text;
+
 
     print('selected values---$flatName');
     print('selected values---$state');
     print('selected values---$street');
     print('selected values---$city');
     print('selected values---$picode');
+
+    // ✅ flat name minimum length validation
+    if (flatName.length < 10) {
+      Dialogs.showSnack(
+        msg: 'Building/Flat Name & Number  must be at least 10 characters',
+      );
+      return;
+    }
 
     final error = _gymCreationCubit.addGymLocationDetails(
       flatName: flatName,
@@ -246,18 +257,53 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
       state: state,
       picode: picode,
     );
+
     if (error != null) {
       Dialogs.showSnack(msg: error);
       return;
-    } else {
-      context.push(
-        BlocProvider.value(
-          value: _gymCreationCubit,
-          child: const CreateOrganizationPhotosCollectingScreen(),
-        ),
-      );
     }
+
+    context.push(
+      BlocProvider.value(
+        value: _gymCreationCubit,
+        child: const CreateOrganizationPhotosCollectingScreen(),
+      ),
+    );
   }
+
+  // void _onContinue() {
+  //   _formKey.currentState?.validate();
+  //   final flatName = _locationDetails[0][0].controller?.text;
+  //   final street = _locationDetails[1][0].controller?.text;
+  //   final city = _locationDetails[2][0].controller?.text;
+  //   final state = _locationDetails[3][0].controller?.text;
+  //   final picode = _locationDetails[3][1].controller?.text;
+  //
+  //   print('selected values---$flatName');
+  //   print('selected values---$state');
+  //   print('selected values---$street');
+  //   print('selected values---$city');
+  //   print('selected values---$picode');
+  //
+  //   final error = _gymCreationCubit.addGymLocationDetails(
+  //     flatName: flatName,
+  //     street: street,
+  //     city: city,
+  //     state: state,
+  //     picode: picode,
+  //   );
+  //   if (error != null) {
+  //     Dialogs.showSnack(msg: error);
+  //     return;
+  //   } else {
+  //     context.push(
+  //       BlocProvider.value(
+  //         value: _gymCreationCubit,
+  //         child: const CreateOrganizationPhotosCollectingScreen(),
+  //       ),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {

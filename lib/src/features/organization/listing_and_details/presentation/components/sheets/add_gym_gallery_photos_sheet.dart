@@ -37,16 +37,33 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
     _cubit = context.read<OrganizationListingAndDetailsCubit>();
   }
 
+  // Future<void> _pickImageDialog() async {
+  //   await ImagePickerDialog(
+  //     needRemove: false,
+  //     onPickedImage: (xFile) {
+  //       if (xFile != null && xFile.path.isNotEmpty) {
+  //         setState(() => _images.add(xFile.path));
+  //       }
+  //     },
+  //   ).show(context);
+  // }
+
   Future<void> _pickImageDialog() async {
-    await ImagePickerDialog(
-      needRemove: false,
-      onPickedImage: (xFile) {
-        if (xFile != null && xFile.path.isNotEmpty) {
-          setState(() => _images.add(xFile.path));
-        }
-      },
-    ).show(context);
+    final ImagePicker picker = ImagePicker();
+
+    final List<XFile> pickedImages = await picker.pickMultiImage(
+      imageQuality: 80,
+    );
+
+    if (pickedImages.isNotEmpty) {
+      setState(() {
+        _images.addAll(
+          pickedImages.map((e) => e.path),
+        );
+      });
+    }
   }
+
 
   Future<void> _onSave() async {
     if (_cubit.state.updateOrgDetails?.isNone() ?? false) return;

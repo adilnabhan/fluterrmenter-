@@ -17,6 +17,8 @@ _$BankDetailsModelImpl _$$BankDetailsModelImplFromJson(
   ifscCode: json['ifsc_code'] as String,
   bankName: json['bank_name'] as String,
   branchName: json['branch_name'] as String,
+  panNumber: json['pan_number'] as String?,
+  dateOBirth: json['date_of_birth'] as String?,
 );
 
 Map<String, dynamic> _$$BankDetailsModelImplToJson(
@@ -30,4 +32,6 @@ Map<String, dynamic> _$$BankDetailsModelImplToJson(
   'ifsc_code': instance.ifscCode,
   'bank_name': instance.bankName,
   'branch_name': instance.branchName,
+  'pan_number': instance.panNumber,
+  'date_of_birth': instance.dateOBirth,
 };
