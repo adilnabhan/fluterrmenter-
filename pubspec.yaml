@@ -3,7 +3,7 @@ description: "A new Fegno Flutter project."
 
 publish_to: "none"
 
-version: 1.0.1+24
+version: 1.0.1+27
 
 environment:
   sdk: ^3.7.2
@@ -115,6 +115,13 @@ dependencies:
   #* Payment
   razorpay_flutter: ^1.4.0
   pretty_dio_logger: ^1.4.0
+  image_cropper: ^11.0.0
+  crop_image: ^1.0.17
+
+  #* Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  flutter_secure_storage: ^10.0.0
 
 dependency_overrides:
   web: any

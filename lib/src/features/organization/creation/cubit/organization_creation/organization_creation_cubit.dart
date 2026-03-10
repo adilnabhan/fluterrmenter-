@@ -154,19 +154,6 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
         ),
       );
       return;
-    } else if (serivicesOffering.isEmpty) {
-      emit(
-        state.copyWith(
-          createOrg: some(
-            left(
-              const ApiException.notFound(
-                msg: 'Services offering are required',
-              ),
-            ),
-          ),
-        ),
-      );
-      return;
     } else if (amenities.isEmpty) {
       emit(
         state.copyWith(

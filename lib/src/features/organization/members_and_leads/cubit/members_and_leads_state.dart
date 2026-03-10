@@ -24,6 +24,10 @@ class MembersAndLeadsState with _$MembersAndLeadsState {
     @Default((data: None(), isPagination: false))
     ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
     upComingPayments,
+    // paymentHistory
+    @Default((data: None(), isPagination: false))
+    ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
+    paymentHistory,
   }) = _MembersAndLeadsState;
 }
 

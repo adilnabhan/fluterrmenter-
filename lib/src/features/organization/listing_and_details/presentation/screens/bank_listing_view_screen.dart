@@ -176,7 +176,7 @@ class __BankListingViewScreenState extends State<_BankListingViewScreen> {
                       (error) => error.maybeWhen(
                         network: (e) => ErrorUi.network(onTap: _fetch),
                         notFound: (e) => ErrorUi.empty().center,
-                        orElse: () => ErrorUi.server( onTap: _fetch,),
+                        orElse: () => ErrorUi.server(onTap: _fetch),
                       ),
                       (data) {
                         // BankDetailsModel bankData=data;
@@ -242,6 +242,8 @@ class __BankListingViewScreenState extends State<_BankListingViewScreen> {
                                 _buildRow('Account Number', data.accountNumber),
                                 _buildRow('IFSC Code', data.ifscCode),
                                 _buildRow('Branch', data.branchName),
+                                _buildRow('PAN Number', data.panNumber),
+                                _buildRow('DOB', data.panNumber),
                               ],
                             ),
                           ),

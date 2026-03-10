@@ -98,32 +98,32 @@ class _CreateOrganizationWorkingDetailsScreenState
           },
         ),
       ],
-      [
-        FieldData(
-          type: FieldType.multValues,
-          textInputAction: TextInputAction.done,
-          label: 'Service Offerings',
-          requiredLabel: true,
-          controller: TextEditingController(),
-          selectedMultiValues: ValueNotifier([]),
-          focusNode: FocusNode(),
-          validator: (value) {
-            if (value?.trim().isEmpty ?? true) {
-              return 'Service Offerings is required';
-            }
-            return null;
-          },
-          onSubmitted: (value) {},
-          decoration: InputDecoration(
-            hintText: 'Enter the services you provide',
-            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-              borderSide: BorderSide(color: AppColors.borderGrey),
-            ),
-          ),
-        ),
-      ],
+      // [
+      //   FieldData(
+      //     type: FieldType.multValues,
+      //     textInputAction: TextInputAction.done,
+      //     label: 'Service Offerings',
+      //     requiredLabel: true,
+      //     controller: TextEditingController(),
+      //     selectedMultiValues: ValueNotifier([]),
+      //     focusNode: FocusNode(),
+      //     validator: (value) {
+      //       if (value?.trim().isEmpty ?? true) {
+      //         return 'Service Offerings is required';
+      //       }
+      //       return null;
+      //     },
+      //     onSubmitted: (value) {},
+      //     decoration: InputDecoration(
+      //       hintText: 'Enter the services you provide',
+      //       hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+      //       border: const OutlineInputBorder(
+      //         borderRadius: BorderRadius.all(Radius.circular(8)),
+      //         borderSide: BorderSide(color: AppColors.borderGrey),
+      //       ),
+      //     ),
+      //   ),
+      // ],
       [
         FieldData<String>(
           type: FieldType.checkbox,
@@ -528,7 +528,7 @@ class _CreateOrganizationWorkingDetailsScreenState
               );
               // context.pushAndRemoveUntil(
               //   // const OrganizationCreationSuccessScreen(),
-                // const OrganizationEmiScreen();
+              // const OrganizationEmiScreen();
               // );
             },
           ),
@@ -788,43 +788,33 @@ class _CreateOrganizationWorkingDetailsScreenState
                 builder: (context, state) {
                   final isLoading = state.createOrg?.isNone() ?? false;
                   return Button.filled(
+                    isLoading: isLoading,
                     title: 'Next - Let\'s Add Your Plans',
-                    ontap:
-                        isLoading
-                            ? () {}
-                            : () {
-                              print(
-                                'selected days is--${_selectedWeekDays.value}',
-                              );
-                              _gymCreationCubit.createOrg(
-                                workingDays: _selectedWeekDays.value,
-                                morningStartingTime:
-                                    _gymWorkingDetailsFields[0][0].selectedTime,
-                                morningEndingTime:
-                                    _gymWorkingDetailsFields[0][1].selectedTime,
-                                eveningStartingTime:
-                                    _gymWorkingDetailsFields[1][0].selectedTime,
-                                eveningEndingTime:
-                                    _gymWorkingDetailsFields[1][1].selectedTime,
-                                serivicesOffering:
-                                    _gymWorkingDetailsFields[2][0]
-                                        .selectedMultiValues
-                                        ?.value ??
-                                    [],
-                                amenities:
-                                    _gymWorkingDetailsFields[3][0]
-                                        .selectedValues
-                                        ?.value
-                                        .map((e) => '${e.value}')
-                                        .toList() ??
-                                    [],
-                                website: _socialUrlFields[0].text,
-                                whatsapp: _socialUrlFields[1].text,
-                                instagram: _socialUrlFields[2].text,
-                                facebook: _socialUrlFields[3].text,
-                                youtube: _socialUrlFields[4].text,
-                              );
-                            },
+                    ontap: () {
+                      print('selected days is--${_selectedWeekDays.value}');
+                      _gymCreationCubit.createOrg(
+                        workingDays: _selectedWeekDays.value,
+                        morningStartingTime:
+                            _gymWorkingDetailsFields[0][0].selectedTime,
+                        morningEndingTime:
+                            _gymWorkingDetailsFields[0][1].selectedTime,
+                        eveningStartingTime:
+                            _gymWorkingDetailsFields[1][0].selectedTime,
+                        eveningEndingTime:
+                            _gymWorkingDetailsFields[1][1].selectedTime,
+                        serivicesOffering: [],
+                        amenities:
+                            _gymWorkingDetailsFields[2][0].selectedValues?.value
+                                .map((e) => '${e.value}')
+                                .toList() ??
+                            [],
+                        website: _socialUrlFields[0].text,
+                        whatsapp: _socialUrlFields[1].text,
+                        instagram: _socialUrlFields[2].text,
+                        facebook: _socialUrlFields[3].text,
+                        youtube: _socialUrlFields[4].text,
+                      );
+                    },
                     buttonColor: AppColors.primary,
                   );
                 },

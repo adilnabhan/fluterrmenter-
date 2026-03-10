@@ -147,10 +147,10 @@ class _OrganizationListingAndDetailsScreenState
                     : null,
 
             /// quick action button added for the workout log
-            floatingActionButton:
-                state.selectedOrganization?.id != null
-                    ? QuickActionsFab(orgId: state.selectedOrganization!.id!)
-                    : null,
+            // floatingActionButton:
+            //     state.selectedOrganization?.id != null && hasData
+            //         ? QuickActionsFab(orgId: state.selectedOrganization!.id!)
+            //         : null,
             body: BlocBuilder<
               OrganizationListingAndDetailsCubit,
               OrganizationListingAndDetailsState
@@ -194,7 +194,7 @@ class _OrganizationListingAndDetailsScreenState
                             color: const Color(0xff9C51BF),
                             count:
                                 (orgHomeData.trainerCount ?? 0) +
-                                (orgHomeData.expiredCustomersCount ?? 0) +
+                                // (orgHomeData.expiredCustomersCount ?? 0) +
                                 (orgHomeData.activeCustomersCount ?? 0),
                             onTap: () {
                               if (state.selectedOrganization?.id != null) {
@@ -261,6 +261,23 @@ class _OrganizationListingAndDetailsScreenState
                                 Dialogs.showSnack(
                                   msg: 'Upcoming EMIs not found',
                                 );
+                              }
+                            },
+                          ),
+                          //!temp for payments
+                          (
+                            title: 'Payments',
+                            color: const Color.fromARGB(255, 69, 213, 221),
+                            count: orgHomeData.allPaymentCount ?? 0,
+                            onTap: () {
+                              if (state.selectedOrganization?.id != null) {
+                                context.push(
+                                  PaymentHistoryScreen(
+                                    orgId: state.selectedOrganization!.id!,
+                                  ),
+                                );
+                              } else {
+                                Dialogs.showSnack(msg: 'All Payments');
                               }
                             },
                           ),
@@ -512,6 +529,7 @@ class _OrganizationListingAndDetailsScreenState
                                   //                     ),
                                   //                   ],
                                   //                 ),
+
                                   //               ),
                                   //             ),
                                   //           ),

@@ -126,16 +126,16 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                               ),
                             );
                           }),
-                          _buildProfileListItem('Services', () {
-                            context.push(
-                              BlocProvider.value(
-                                value: _cubit,
-                                child: GymServicesScreen(
-                                  orgDetails: orgDetails,
-                                ),
-                              ),
-                            );
-                          }),
+                          // _buildProfileListItem('Services', () {
+                          //   context.push(
+                          //     BlocProvider.value(
+                          //       value: _cubit,
+                          //       child: GymServicesScreen(
+                          //         orgDetails: orgDetails,
+                          //       ),
+                          //     ),
+                          //   );
+                          // }),
                           _buildProfileListItem('Packages', () {
                             context.push(
                               BlocProvider.value(

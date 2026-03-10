@@ -34,6 +34,10 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
   double _creditedAmount = 0.0;
   String _commissionMessage = '';
 
+  double _offerCalculatedCommission = 0.0;
+  double _offerCreditedAmount = 0.0;
+  String _offerCommissionMessage = '';
+
   /// 🧩 Helper: builds month FieldData with existing controller
   FieldData<String> _buildMonthFieldWithController(
     TextEditingController controller, {
@@ -269,6 +273,12 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       ),
     );
 
+    _offerPriceField.controller!.addListener(_calculateOfferCommission);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _calculateOfferCommission();
+    });
+
     // Initializing description field
     _descriptionField = FieldData<String>(
       type: FieldType.word,
@@ -363,11 +373,31 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
     });
   }
 
+  void _calculateOfferCommission() {
+    final text = _offerPriceField.controller?.text.trim() ?? '';
+    final amount = double.tryParse(text) ?? 0.0;
+
+    if (!mounted) return;
+
+    setState(() {
+      _offerCalculatedCommission = amount * (_razorpayCommissionPercent / 100);
+      _offerCreditedAmount = amount - _offerCalculatedCommission;
+
+      _offerCommissionMessage =
+          amount > 0
+              ? 'After $_razorpayCommissionPercent% payment gateway charges '
+                  '(₹${_offerCalculatedCommission.toStringAsFixed(2)}), '
+                  '₹${_offerCreditedAmount.toStringAsFixed(2)} will be credited to your account.'
+              : '';
+    });
+  }
+
   @override
   void dispose() {
     // Remove listener before disposing to avoid memory leaks
     try {
       _actualPriceField.controller?.removeListener(_calculateCommission);
+      _offerPriceField.controller?.removeListener(_calculateOfferCommission);
     } catch (_) {}
 
     _membershipNameField.controller?.dispose();
@@ -580,6 +610,16 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
               ],
               const SizedBox(height: 16),
               Field(data: _offerPriceField),
+              if (_offerCommissionMessage.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _offerCommissionMessage,
+                  style: AppStyles.text13Px.poppins.w500.copyWith(
+                    fontSize: 10,
+                    color: AppColors.error,
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               Field(data: _descriptionField),
               const SizedBox(height: 24),
@@ -614,6 +654,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                   final i = entry.key;
                   final emi = entry.value;
                   final total = _emiTotalForOption(emi);
+                  final isLast = i == _emiOptions.length - 1;
                   return Padding(
                     padding: const EdgeInsets.only(top: 16),
                     child: Column(
@@ -625,8 +666,39 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                             Expanded(child: Field(data: emi.month)),
                             const SizedBox(width: 16),
                             Expanded(child: Field(data: emi.price)),
+
+                            /// ❌ Close button only for last item
+                            if (isLast)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      if (_emiOptions.isNotEmpty) {
+                                        final lastEmi =
+                                            _emiOptions.removeLast();
+
+                                        /// Dispose controllers
+                                        lastEmi.month.controller?.dispose();
+                                        lastEmi.price.controller?.dispose();
+                                      }
+
+                                      /// If no EMI left → auto switch OFF
+                                      if (_emiOptions.isEmpty) {
+                                        _isEmi = false;
+                                      }
+                                    });
+                                  },
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: AppColors.error,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
+
                         if (emi.price.controller!.text.isNotEmpty)
                           Text(
                             _emiCommissionMessage(emi.price.controller!.text),
@@ -635,11 +707,12 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                               color: AppColors.error,
                             ),
                           ),
+
                         if (emi.price.controller!.text.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 5),
                             child: Text(
-                              'Total Amount= ${total.toStringAsFixed(2)}',
+                              'Total Amount = ${total.toStringAsFixed(2)}',
                               style: AppStyles.text13Px.w600.copyWith(
                                 fontSize: 10,
                                 color: AppColors.error,
@@ -649,6 +722,42 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                       ],
                     ),
                   );
+
+                  //   Padding(
+                  //   padding: const EdgeInsets.only(top: 16),
+                  //   child: Column(
+                  //     crossAxisAlignment: CrossAxisAlignment.start,
+                  //     children: [
+                  //       Row(
+                  //         crossAxisAlignment: CrossAxisAlignment.start,
+                  //         children: [
+                  //           Expanded(child: Field(data: emi.month)),
+                  //           const SizedBox(width: 16),
+                  //           Expanded(child: Field(data: emi.price)),
+                  //         ],
+                  //       ),
+                  //       if (emi.price.controller!.text.isNotEmpty)
+                  //         Text(
+                  //           _emiCommissionMessage(emi.price.controller!.text),
+                  //           style: AppStyles.text13Px.poppins.w500.copyWith(
+                  //             fontSize: 10,
+                  //             color: AppColors.error,
+                  //           ),
+                  //         ),
+                  //       if (emi.price.controller!.text.isNotEmpty)
+                  //         Padding(
+                  //           padding: const EdgeInsets.only(top: 5),
+                  //           child: Text(
+                  //             'Total Amount= ${total.toStringAsFixed(2)}',
+                  //             style: AppStyles.text13Px.w600.copyWith(
+                  //               fontSize: 10,
+                  //               color: AppColors.error,
+                  //             ),
+                  //           ),
+                  //         ),
+                  //     ],
+                  //   ),
+                  // );
                 }),
               if (_isEmi)
                 Align(

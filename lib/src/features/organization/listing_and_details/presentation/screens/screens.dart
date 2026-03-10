@@ -14,3 +14,4 @@ export 'gallery_view_screen.dart';
 export 'payment_upcoming_view_screen.dart';
 export 'add_edit_bank_account_screen_view.dart';
 export 'bank_listing_view_screen.dart';
+export 'payment_history_screen.dart';
