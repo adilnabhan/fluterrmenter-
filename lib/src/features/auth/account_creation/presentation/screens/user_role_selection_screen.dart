@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/auth/account_creation/presentation/screens/create_trainer_account.dart';
 
 class UserRoleSelectionScreen extends StatelessWidget {
   const UserRoleSelectionScreen({required this.sentOtpEntity, super.key});
@@ -18,7 +19,7 @@ class UserRoleSelectionScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,7 +68,7 @@ class UserRoleSelectionScreen extends StatelessWidget {
                   SizedBox(height: 24.h),
 
                   // Trainer Option (Commented out)
-                  /*
+                  // /*
                   _RoleOptionCard(
                     icon: 'assets/images/png/icons/arm.png',
                     title: 'Trainer/Coach',
@@ -75,10 +76,12 @@ class UserRoleSelectionScreen extends StatelessWidget {
                     buttonText: 'Continue as Trainer →',
                     buttonColor: const Color(0xFFFBBF24), // Yellow color
                     onTap: () {
-                      // Navigate to trainer flow
+                      context.push(
+                        CreateTrainerAccountScreen(sentOtpEntity: sentOtpEntity),
+                      );
                     },
                   ),
-                  */
+                  // */
                 ],
               ),
 

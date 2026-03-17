@@ -1,2 +1,14 @@
 export 'create_account_screen.dart';
 export 'user_role_selection_screen.dart';
+export 'create_trainer_professional_details_screen.dart';
+export 'create_trainer_account.dart';
+export 'trainer_profile_screen.dart';
+export 'trainer_creation_success_screen.dart';
+export 'create_trainer_results_screen.dart';
+export 'create_trainer_career_details_screen.dart';
+export 'create_trainer_social_media_screen.dart';
+export 'create_trainer_early_bird_offer_screen.dart';
+export 'create_trainer_location_details_screen.dart';
+export 'create_trainer_bank_details_screen.dart';
+export 'create_trainer_packages_screen.dart';
+export 'create_trainer_add_edit_package_screen.dart';
