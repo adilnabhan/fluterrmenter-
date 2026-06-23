@@ -1,5 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/add_or_edit_memeber_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/leads/add_or_edit_lead_screen.dart';
 
 class QuickActionsFab extends StatelessWidget {
   final int orgId;
@@ -47,23 +49,6 @@ class _QuickActionsSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _ActionCard(
-            icon: Icons.fitness_center,
-            iconColor: Colors.white,
-            iconBgColor: const Color(0xFFFF3434),
-            title: 'Workout Plan',
-            subtitle: 'Create/Assign Plan',
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const WorkoutGroupsScreen(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          _ActionCard(
             icon: Icons.calendar_today,
             iconColor: Colors.white,
             iconBgColor: const Color(0xFF9C51BF),
@@ -81,6 +66,46 @@ class _QuickActionsSheet extends StatelessWidget {
                                 MembershipCubit(orgId: orgId.toString()),
                         child: const GymAddOrEditPackageScreen(),
                       ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          _ActionCard(
+            icon: Icons.person_add,
+            iconColor: Colors.white,
+            iconBgColor: const Color(0xFF4CAF50),
+            title: 'Add Customer',
+            subtitle: 'Add a new customer',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider(
+                    create: (context) => MembersAndLeadsCubit(orgId: orgId),
+                    child: AddOrEditMemeberScreen(orgId: orgId),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          _ActionCard(
+            icon: Icons.sports_gymnastics,
+            iconColor: Colors.white,
+            iconBgColor: const Color(0xFF2196F3),
+            title: 'Add Trainer',
+            subtitle: 'Add a new trainer',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider(
+                    create: (context) => MembersAndLeadsCubit(orgId: orgId),
+                    child: const AddOrEditLeadScreen(),
+                  ),
                 ),
               );
             },

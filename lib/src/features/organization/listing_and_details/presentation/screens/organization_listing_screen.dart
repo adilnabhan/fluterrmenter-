@@ -7,24 +7,50 @@ class OrganizationListingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => OrganizationListingAndDetailsCubit(),
-      child: BlocListener<
-        OrganizationListingAndDetailsCubit,
-        OrganizationListingAndDetailsState
-      >(
-        listenWhen: (p, c) => p.details != c.details,
-        listener: (context, state) {
-          state.details.fold(() {}, (either) {
-            either.fold((error) {}, (orgDetails) {
-              if (orgDetails.id == null) {
-                Dialogs.showSnack(msg: 'Organization not found');
-              }
-              // else if (!(orgDetails.isOnFreeTrial ?? false) && !(orgDetails.isSubscribed ?? false)) {
-              //   Dialogs.showSnack(msg: '${orgDetails.name} subscription expired. Please renew to continue.', duration: const Duration(seconds: 5));
-              //   context.pushAndRemoveUntil(SubscriptionPlanChooseScreen(orgDetails: orgDetails));
-              // }
-            });
-          });
-        },
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<
+            OrganizationListingAndDetailsCubit,
+            OrganizationListingAndDetailsState
+          >(
+            listenWhen: (p, c) => p.details != c.details,
+            listener: (context, state) {
+              state.details.fold(() {}, (either) {
+                either.fold((error) {}, (orgDetails) {
+                  if (orgDetails.id == null) {
+                    Dialogs.showSnack(msg: 'Organization not found');
+                  }
+                });
+              });
+            },
+          ),
+          BlocListener<
+            OrganizationListingAndDetailsCubit,
+            OrganizationListingAndDetailsState
+          >(
+            listenWhen: (p, c) => p.list != c.list,
+            listener: (context, state) {
+              state.list.fold(() {}, (either) {
+                either.fold((error) {
+                  error.maybeWhen(
+                    notFound: (msg) {
+                      context.pushAndRemoveUntil(
+                        const CreateOrganizationBasicDetailsScreen(),
+                      );
+                    },
+                    orElse: () {},
+                  );
+                }, (r) {
+                  if (r.result == null || r.result!.isEmpty) {
+                    context.pushAndRemoveUntil(
+                      const CreateOrganizationBasicDetailsScreen(),
+                    );
+                  }
+                });
+              });
+            },
+          ),
+        ],
         child: const _OrganizationListingAndDetailsScreen(),
       ),
     );

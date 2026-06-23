@@ -725,7 +725,7 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                   ontap: () {
                                     context.read<AppCubit>().onboardingUpdate(
                                       body: {'profile_completeness': 7},
-                                      id: int.parse(_cubit.orgId),
+                                      id: int.tryParse(_cubit.orgId),
                                     );
 
                                     // EXISTING CODE - COMMENTED OUT (Using BlocProvider.value which may not work properly)

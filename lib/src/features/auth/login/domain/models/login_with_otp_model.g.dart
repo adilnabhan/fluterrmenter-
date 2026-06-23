@@ -29,6 +29,7 @@ _$LoginWithOtpEntityImpl _$$LoginWithOtpEntityImplFromJson(
   profilePicture: json['profile_picture'],
   warnings: json['warnings'] as List<dynamic>?,
   isProfileCompleted: json['is_profile_complete'] as bool?,
+  userRole: (json['user_role'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
@@ -48,6 +49,7 @@ Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
   'profile_picture': instance.profilePicture,
   'warnings': instance.warnings,
   'is_profile_complete': instance.isProfileCompleted,
+  'user_role': instance.userRole,
 };
 
 _$MentorImpl _$$MentorImplFromJson(Map<String, dynamic> json) => _$MentorImpl(

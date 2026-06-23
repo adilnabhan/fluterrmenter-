@@ -502,13 +502,13 @@ class _CreateOrganizationWorkingDetailsScreenState
             (l) {
               Dialogs.showSnack(msg: l.msg);
             },
-            (r) {
-              var dat = context.read<AppCubit>().state;
-              print('org id is--${dat.currentUser?.mentor?.org}');
+            (_) {
+              final orgId =
+                  context.read<AppCubit>().state.currentUser?.mentor?.org?.id;
 
               context.read<AppCubit>().onboardingUpdate(
                 body: {'profile_completeness': 5},
-                id: dat.currentUser?.mentor?.org?.id,
+                id: orgId,
               );
 
               context.push(
@@ -517,9 +517,7 @@ class _CreateOrganizationWorkingDetailsScreenState
                     BlocProvider(
                       create:
                           (_) => MembershipCubit(
-                            orgId:
-                                dat.currentUser?.mentor?.org?.id.toString() ??
-                                '',
+                            orgId: orgId?.toString() ?? '',
                           ),
                     ),
                   ],

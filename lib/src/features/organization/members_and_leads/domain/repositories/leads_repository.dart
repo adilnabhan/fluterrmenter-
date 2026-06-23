@@ -1,4 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
+
 
 @immutable
 final class LeadsRepository {
@@ -31,10 +33,10 @@ final class LeadsRepository {
   }) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(
+        call: DioClient().dio.get<dynamic>(
           nextUrl ?? ApiUris.leadsListing,
           queryParameters: queryParameters,
-          options: Options(headers: {'X-Platform': platformSource}).token,
+          options: Options(headers: {'X-Platform': platformSource}),
         ),
         onSuccess: (res) {
           if (res.statusCode == 200) {
@@ -110,15 +112,15 @@ final class LeadsRepository {
     try {
       final response =
           leadId == null
-              ? await Dio().post<dynamic>(
+              ? await DioClient().dio.post<dynamic>(
                 ApiUris.createLead,
                 data: body,
-                options: Options(headers: {'X-Platform': platformSource}).token,
+                options: Options(headers: {'X-Platform': platformSource}),
               )
-              : await Dio().patch<dynamic>(
+              : await DioClient().dio.patch<dynamic>(
                 ApiUris.updateLead(leadId),
                 data: body,
-                options: Options(headers: {'X-Platform': platformSource}).token,
+                options: Options(headers: {'X-Platform': platformSource}),
               );
 
       final statusCode = response.statusCode ?? 0;
@@ -186,9 +188,9 @@ final class LeadsRepository {
   }) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(
+        call: DioClient().dio.get<dynamic>(
           ApiUris.leadDetails(id),
-          options: Options(headers: {'X-Platform': platformSource}).token,
+          options: Options(headers: {'X-Platform': platformSource}),
         ),
         onSuccess: (res) {
           if (res.statusCode == 200) {

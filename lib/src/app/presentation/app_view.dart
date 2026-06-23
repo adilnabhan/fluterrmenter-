@@ -2,6 +2,9 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 ///* First widget integrating
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_dashboard_screen.dart';
+
+///* First widget integrating
 class AppView extends StatefulWidget {
   ///*
   const AppView({super.key});
@@ -48,26 +51,16 @@ class _AppViewState extends State<AppView> {
               commonErrorHandlers: (error) {
                 return ApiCommonErrors.handleNonFieldError(error: error);
               },
-              // FeggyApp(
-              // commonErrorHandlers: (error) {
-              //   final nonFieldError = ApiCommonErrors.handleNonFieldError(error: error);
-              //   if (nonFieldError != null) {
-              //     return nonFieldError;
-              //   }
-              //   return null;
-              // },
-              fixedHeaders: {'X-Platform': platformSource, 'user_role': 20},
-              // token: () => 'JWT ${_cubit.state.currentUser?.access}',
+              fixedHeaders: {
+                'X-Platform': platformSource,
+                'user_role': state.currentUser?.userRole ?? 20
+              },
 
               /// ✅ Correct prefix
               token: () {
                 final access = _cubit.state.currentUser?.access;
                 return access != null ? 'JWT $access' : null;
               },
-              // onTokenError: () async {
-              //   _cubit.removeUser();
-              //   await Feggy.pushAndRemoveUntil(const SentOtpScreen());
-              // },
 
               /// 🔥 Do NOT logout immediately
               onTokenError: () async {
@@ -82,10 +75,6 @@ class _AppViewState extends State<AppView> {
                 darkTheme: AppThemes.dark,
                 locale: state.locale,
                 home: getScreen(state),
-                // BlocBuilder<AppCubit, AppState>(
-                //   buildWhen: (p, c) => false,
-                //   builder: (context, state) => getScreen(state),
-                // ),
               ),
             );
           },
@@ -94,32 +83,23 @@ class _AppViewState extends State<AppView> {
     );
   }
 
-  // Widget getScreen(AppState state) {
-  //   if (state.currentUser == null) {
-  //     return const SentOtpScreen();
-  //   } else if (!(state.currentUser?.isProfileCompleted ?? false)) {
-  //     return const CreateOrganizationBasicDetailsScreen();
-  //   }
-  //   return const OrganizationListingScreen();
-  // }
-
   Widget getScreen(AppState state) {
-    // print('usr dara----${state.currentUser?.mentor}');
     print('newly stored token is---${state.currentUser?.access}');
-    // print('usr dara----${state.currentUser?.isProfileCompleted}');
-    if (state.currentUser == null) {
+    final user = state.currentUser;
+    if (user == null) {
       return const SignupScreen();
-    } else if (state.currentUser?.isProfileCompleted ?? false) {
+    }
+    
+    // Redirect Trainer (role 35) to TrainerDashboardScreen
+    if (user.userRole == 35) {
+      return const TrainerDashboardScreen();
+    }
+
+    if ((user.isProfileCompleted ?? false) ||
+        user.mentor?.org != null) {
       return const OrganizationListingScreen();
     } else {
       return const SentOtpScreen();
-
-      // if ((state.currentUser?.mentor?.org?.profileCompleteness ?? 0) == 6) {
-      //   return const OrganizationListingScreen();
-      // } else {
-      //   return const SentOtpScreen();
-      // }
     }
-    return const OrganizationListingScreen();
   }
 }

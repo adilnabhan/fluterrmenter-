@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 @immutable
@@ -38,7 +39,7 @@ final class OrganizationCreationRepository {
 
   Future<Either<ApiException, dynamic>> create({required FormData body}) async {
     try {
-      final dio = Dio();
+      final dio = DioClient().dio;
       final response = await dio.post<dynamic>(
         ApiUris.createOrg,
         data: body,

@@ -21,6 +21,7 @@ class LoginSuccessModel with _$LoginSuccessModel {
     @JsonKey(name: 'profile_picture') dynamic profilePicture,
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
+    @JsonKey(name: 'user_role') int? userRole,
   }) = _LoginWithOtpEntity;
 
   factory LoginSuccessModel.fromJson(Map<String, dynamic> json) =>

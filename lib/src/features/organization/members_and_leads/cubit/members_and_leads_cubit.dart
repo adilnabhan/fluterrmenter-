@@ -344,7 +344,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       for (var i = 0; i < trainerCertificates!.length; i++) {
         formData.files.add(
           MapEntry(
-            'trainer_certificates[$i]',
+            'trainer_certificates',
             await MultipartFile.fromFile(trainerCertificates[i]),
           ),
         );

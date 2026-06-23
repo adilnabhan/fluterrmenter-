@@ -49,6 +49,8 @@ mixin _$LoginSuccessModel {
   List<dynamic>? get warnings => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_profile_complete')
   bool? get isProfileCompleted => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_role')
+  int? get userRole => throw _privateConstructorUsedError;
 
   /// Serializes this LoginSuccessModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -82,6 +84,7 @@ abstract class $LoginSuccessModelCopyWith<$Res> {
     @JsonKey(name: 'profile_picture') dynamic profilePicture,
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
+    @JsonKey(name: 'user_role') int? userRole,
   });
 
   $MentorCopyWith<$Res>? get mentor;
@@ -116,6 +119,7 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
     Object? profilePicture = freezed,
     Object? warnings = freezed,
     Object? isProfileCompleted = freezed,
+    Object? userRole = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -189,6 +193,11 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
                     ? _value.isProfileCompleted
                     : isProfileCompleted // ignore: cast_nullable_to_non_nullable
                         as bool?,
+            userRole:
+                freezed == userRole
+                    ? _value.userRole
+                    : userRole // ignore: cast_nullable_to_non_nullable
+                        as int?,
           )
           as $Val,
     );
@@ -233,6 +242,7 @@ abstract class _$$LoginWithOtpEntityImplCopyWith<$Res>
     @JsonKey(name: 'profile_picture') dynamic profilePicture,
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
+    @JsonKey(name: 'user_role') int? userRole,
   });
 
   @override
@@ -267,6 +277,7 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
     Object? profilePicture = freezed,
     Object? warnings = freezed,
     Object? isProfileCompleted = freezed,
+    Object? userRole = freezed,
   }) {
     return _then(
       _$LoginWithOtpEntityImpl(
@@ -340,6 +351,11 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
                 ? _value.isProfileCompleted
                 : isProfileCompleted // ignore: cast_nullable_to_non_nullable
                     as bool?,
+        userRole:
+            freezed == userRole
+                ? _value.userRole
+                : userRole // ignore: cast_nullable_to_non_nullable
+                    as int?,
       ),
     );
   }
@@ -363,6 +379,7 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     @JsonKey(name: 'profile_picture') this.profilePicture,
     @JsonKey(name: 'warnings') final List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') this.isProfileCompleted,
+    @JsonKey(name: 'user_role') this.userRole,
   }) : _warnings = warnings;
 
   factory _$LoginWithOtpEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -418,10 +435,13 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
   @override
   @JsonKey(name: 'is_profile_complete')
   final bool? isProfileCompleted;
+  @override
+  @JsonKey(name: 'user_role')
+  final int? userRole;
 
   @override
   String toString() {
-    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted)';
+    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted, userRole: $userRole)';
   }
 
   @override
@@ -451,7 +471,9 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
             ) &&
             const DeepCollectionEquality().equals(other._warnings, _warnings) &&
             (identical(other.isProfileCompleted, isProfileCompleted) ||
-                other.isProfileCompleted == isProfileCompleted));
+                other.isProfileCompleted == isProfileCompleted) &&
+            (identical(other.userRole, userRole) ||
+                other.userRole == userRole));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -472,6 +494,7 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     const DeepCollectionEquality().hash(profilePicture),
     const DeepCollectionEquality().hash(_warnings),
     isProfileCompleted,
+    userRole,
   );
 
   /// Create a copy of LoginSuccessModel
@@ -507,6 +530,7 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
     @JsonKey(name: 'profile_picture') final dynamic profilePicture,
     @JsonKey(name: 'warnings') final List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') final bool? isProfileCompleted,
+    @JsonKey(name: 'user_role') final int? userRole,
   }) = _$LoginWithOtpEntityImpl;
 
   factory _LoginWithOtpEntity.fromJson(Map<String, dynamic> json) =
@@ -554,6 +578,9 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
   @override
   @JsonKey(name: 'is_profile_complete')
   bool? get isProfileCompleted;
+  @override
+  @JsonKey(name: 'user_role')
+  int? get userRole;
 
   /// Create a copy of LoginSuccessModel
   /// with the given fields replaced by the non-null parameter values.

@@ -1,4 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
+
 
 @immutable
 final class MembersRepository {
@@ -31,10 +33,10 @@ final class MembersRepository {
   }) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(
+        call: DioClient().dio.get<dynamic>(
           nextUrl ?? ApiUris.membersListing,
           queryParameters: queryParameters,
-          options: Options(headers: {'X-Platform': platformSource}).token,
+          options: Options(headers: {'X-Platform': platformSource}),
         ),
         onSuccess: (res) {
           if (res.statusCode == 200) {
@@ -125,7 +127,7 @@ final class MembersRepository {
   }) async {
     try {
       final bool isCreate = memberId == null;
-      final response = await Dio().request<dynamic>(
+      final response = await DioClient().dio.request<dynamic>(
         isCreate ? ApiUris.createMember : ApiUris.updateMember(memberId),
         data: body,
         options:
@@ -135,7 +137,7 @@ final class MembersRepository {
                 'X-Platform': platformSource,
                 'Content-Type': 'application/json',
               },
-            ).token,
+            ),
       );
 
       print(' status code is--${response.statusCode}');
@@ -225,9 +227,9 @@ final class MembersRepository {
   }) async {
     try {
       return await Feggy.async(
-        call: Dio().get<dynamic>(
+        call: DioClient().dio.get<dynamic>(
           ApiUris.memberDetails(id),
-          options: Options(headers: {'X-Platform': platformSource}).token,
+          options: Options(headers: {'X-Platform': platformSource}),
         ),
         onSuccess: (res) {
           if (res.statusCode == 200) {

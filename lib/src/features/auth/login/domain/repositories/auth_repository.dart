@@ -227,9 +227,12 @@ final class AuthRepository {
     required Map<String, dynamic> body,
     required int? id,
   }) async {
+    if (id == null) {
+      return left(const ApiException.unknown(msg: 'Organization ID is missing.'));
+    }
     return await Feggy.async(
       call: _dio.patch<dynamic>(
-        ApiUris.onboardingUpdate(id!),
+        ApiUris.onboardingUpdate(id),
         data: body,
 
         options:

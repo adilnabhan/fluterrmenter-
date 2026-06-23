@@ -4,7 +4,9 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 @immutable
 final class ApiUris {
   ///* Base Url
-  static const _baseUrl = String.fromEnvironment('baseUrl');
+  static const _baseUrlEnv = String.fromEnvironment('baseUrl');
+  static const _baseUrl =
+      _baseUrlEnv == '' ? 'https://discipl-backend-u0w9.onrender.com' : _baseUrlEnv;
   static const _v1 = '$_baseUrl/api/v1/';
 
   ///============================= Authentication =============================\\\
@@ -52,6 +54,7 @@ final class ApiUris {
   static const createLead = '${_v1}mentor/trainers/';
   static String updateLead(int id) => '${_v1}mentor/trainers/$id/';
   static String leadDetails(String id) => '${_v1}mentor/trainers/$id/';
+  static String assignWorkoutPlan(int planId) => '${_v1}trainer/workout-plans/$planId/assign/';
 
   ///============================= Membership =============================\\\
   static const createMembershipPackage =
@@ -72,4 +75,9 @@ final class ApiUris {
   static String bankDetails(String id) =>
       '${_v1}fitnesscenter/bank-details/$id/';
   static const addBankDetails = '${_v1}fitnesscenter/bank-details/';
+
+  ///============================= Trainer =============================\\\
+  static const trainerDashboard = '${_v1}trainer/dashboard/';
+  static const trainerCustomers = '${_v1}trainer/customers/';
+  static String trainerCustomerDetails(int customerId) => '${_v1}trainer/customers/$customerId/';
 }

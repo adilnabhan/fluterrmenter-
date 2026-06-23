@@ -233,7 +233,7 @@ class _BankAccountDetailsScreenState
                 if (widget.bankDetails == null) {
                   context.read<AppCubit>().onboardingUpdate(
                     body: {'profile_completeness': 6},
-                    id: int.parse(_cubit.orgId),
+                    id: int.tryParse(_cubit.orgId),
                   );
                 }
 
@@ -248,7 +248,7 @@ class _BankAccountDetailsScreenState
                     child: GymPackagesScreen(
                       progress: 6,
                       orgDetails: OrganizationDetailsModel(
-                        id: int.parse(_cubit.orgId),
+                        id: int.tryParse(_cubit.orgId),
                       ),
                     ),
                   ),
@@ -385,57 +385,114 @@ class _BankAccountDetailsScreenState
                   previous.createOrUpdateBank != current.createOrUpdateBank,
           builder: (context, state) {
             final isLoading = state.createOrUpdateBank?.isNone() ?? false;
-            return Button.filled(
-              title: 'Save',
-              isLoading: isLoading,
-              buttonColor: AppColors.primary,
-              ontap: () {
-                // context.read<AppCubit>().onboardingUpdate(
-                //   body: {'profile_completeness': 6},
-                //   id: int.parse(_cubit.orgId),
-                // );
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.progress != null && widget.progress != 0)
+                  InkWell(
+                    onTap: () {
+                      context.read<AppCubit>().onboardingUpdate(
+                        body: {'profile_completeness': 6},
+                        id: int.tryParse(_cubit.orgId),
+                      );
 
-                if (isLoading) return;
+                      context.pushAndRemoveUntil(
+                        MultiBlocProvider(
+                          providers: [
+                            BlocProvider(
+                              create:
+                                  (_) => MembershipCubit(
+                                    orgId: _cubit.orgId ?? '',
+                                  ),
+                            ),
+                          ],
+                          child: GymPackagesScreen(
+                            progress: 6,
+                            orgDetails: OrganizationDetailsModel(
+                              id: int.tryParse(_cubit.orgId),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF5F5),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFFFFE0E0),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Skip For Now',
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ).pOnly(bottom: 12),
+                Button.filled(
+                  title: 'Save',
+                  isLoading: isLoading,
+                  buttonColor: AppColors.primary,
+                  ontap: () {
+                    // context.read<AppCubit>().onboardingUpdate(
+                    //   body: {'profile_completeness': 6},
+                    //   id: int.parse(_cubit.orgId),
+                    // );
 
-                if (!_formKey.currentState!.validate()) {
-                  Dialogs.showSnack(
-                    msg: 'Please fill all required fields correctly.',
-                  );
-                  return;
-                }
+                    if (isLoading) return;
 
-                final bankName = _bankNameField.controller!.text.trim();
-                final branchName = _branchNameField.controller!.text.trim();
-                final holderName = _accountHolderField.controller!.text.trim();
-                final ifsc = _ifscCodeField.controller!.text.trim();
-                final accountNumber =
-                    _accountNumberField.controller!.text.trim();
-                final confirmAccount =
-                    _confirmAccountNumberField.controller!.text.trim();
+                    if (!_formKey.currentState!.validate()) {
+                      Dialogs.showSnack(
+                        msg: 'Please fill all required fields correctly.',
+                      );
+                      return;
+                    }
 
-                final panNumber = _panCardNumberField.controller!.text.trim();
-                final dob = _dateOfBirth.controller!.text.trim();
+                    final bankName = _bankNameField.controller!.text.trim();
+                    final branchName = _branchNameField.controller!.text.trim();
+                    final holderName =
+                        _accountHolderField.controller!.text.trim();
+                    final ifsc = _ifscCodeField.controller!.text.trim();
+                    final accountNumber =
+                        _accountNumberField.controller!.text.trim();
+                    final confirmAccount =
+                        _confirmAccountNumberField.controller!.text.trim();
 
-                /// 🔴 Confirm account number validation
-                if (accountNumber != confirmAccount) {
-                  Dialogs.showSnack(
-                    msg:
-                        'Account number and confirm account number do not match.',
-                  );
-                  return;
-                }
+                    final panNumber =
+                        _panCardNumberField.controller!.text.trim();
+                    final dob = _dateOfBirth.controller!.text.trim();
 
-                _cubit.createOrUpdateBankDetails(
-                  detailsId: widget.bankDetails?.id,
-                  bankName: bankName,
-                  branchName: branchName,
-                  holderName: holderName,
-                  ifsc: ifsc,
-                  accountNumber: accountNumber,
-                  dateOBirth: dob,
-                  panNumber: panNumber,
-                );
-              },
+                    /// 🔴 Confirm account number validation
+                    if (accountNumber != confirmAccount) {
+                      Dialogs.showSnack(
+                        msg:
+                            'Account number and confirm account number do not match.',
+                      );
+                      return;
+                    }
+
+                    _cubit.createOrUpdateBankDetails(
+                      detailsId: widget.bankDetails?.id,
+                      bankName: bankName,
+                      branchName: branchName,
+                      holderName: holderName,
+                      ifsc: ifsc,
+                      accountNumber: accountNumber,
+                      dateOBirth: dob,
+                      panNumber: panNumber,
+                    );
+                  },
+                ),
+              ],
             ).pad(16).pxy(y: 16);
           },
         ),

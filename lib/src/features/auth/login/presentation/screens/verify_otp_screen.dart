@@ -131,7 +131,7 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                     ),
                   );
                   return;
-                } else if (r.isProfileCompleted ?? false) {
+                } else if ((r.isProfileCompleted ?? false) || r.mentor?.org != null) {
                   context.pushAndRemoveUntil(const OrganizationListingScreen());
                 } else {
                   context.pushAndRemoveUntil(

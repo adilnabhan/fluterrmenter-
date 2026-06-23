@@ -1,6 +1,8 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/create_group_button.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/assign_workout_plan_screen.dart';
+
 
 class WorkoutGroupDetailsScreen extends StatefulWidget {
   const WorkoutGroupDetailsScreen({super.key, required this.groupTitle});
@@ -17,21 +19,25 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
   final List<Map<String, dynamic>> _plans = const [
     {
+      'id': 1,
       'title': 'Chest Exercise Plan 1',
       'exerciseCount': 4,
       'createdOn': '21 Monday',
     },
     {
+      'id': 2,
       'title': 'Chest Exercise Plan 2',
       'exerciseCount': 6,
       'createdOn': '22 Tuesday',
     },
     {
+      'id': 3,
       'title': 'Chest Exercise Plan 3',
       'exerciseCount': 6,
       'createdOn': '22 Tuesday',
     },
     {
+      'id': 4,
       'title': 'Chest Exercise Plan 4',
       'exerciseCount': 6,
       'createdOn': '22 Tuesday',
@@ -237,6 +243,18 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                   ),
                                 );
                               },
+                              onAssignTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder:
+                                        (context) => AssignWorkoutPlanScreen(
+                                          planId: plan['id'] as int,
+                                          planTitle: plan['title'] as String,
+                                        ),
+                                  ),
+                                );
+                              },
                             );
                           },
                         ),
@@ -343,12 +361,14 @@ class _PlanCard extends StatelessWidget {
     required this.exerciseCount,
     required this.createdOn,
     required this.onTap,
+    required this.onAssignTap,
   });
 
   final String title;
   final int exerciseCount;
   final String createdOn;
   final VoidCallback onTap;
+  final VoidCallback onAssignTap;
 
   @override
   Widget build(BuildContext context) {
@@ -399,20 +419,24 @@ class _PlanCard extends StatelessWidget {
                     color: AppColors.textGrey,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF2E7D32)),
-                  ),
-                  child: Text(
-                    'Assign to',
-                    style: AppStyles.text12Px.poppins.w600.copyWith(
-                      color: const Color(0xFF2E7D32),
+                InkWell(
+                  onTap: onAssignTap,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFF2E7D32)),
+                    ),
+                    child: Text(
+                      'Assign to',
+                      style: AppStyles.text12Px.poppins.w600.copyWith(
+                        color: const Color(0xFF2E7D32),
+                      ),
                     ),
                   ),
                 ),
