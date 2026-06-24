@@ -17,6 +17,11 @@ class _CreateOrganizationPhotosCollectingScreenState
   void initState() {
     _gymCreationCubit = context.read<OrganizationCreationCubit>();
     super.initState();
+    if (_gymCreationCubit.state.gymPhotos.isNotEmpty) {
+      _images.addAll(
+        _gymCreationCubit.state.gymPhotos.map((path) => XFile(path)),
+      );
+    }
   }
 
   Future<void> _pickImageDialog() async {
@@ -36,9 +41,9 @@ class _CreateOrganizationPhotosCollectingScreenState
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: true,
       child: Scaffold(
-        appBar: AppBar(automaticallyImplyLeading: false),
+        appBar: AppBar(),
         body: Column(
           children: [
             // Fixed header section (non-scrollable)

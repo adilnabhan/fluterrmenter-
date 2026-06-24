@@ -51,6 +51,8 @@ mixin _$LoginSuccessModel {
   bool? get isProfileCompleted => throw _privateConstructorUsedError;
   @JsonKey(name: 'user_role')
   int? get userRole => throw _privateConstructorUsedError;
+  @JsonKey(name: 'trainer')
+  TrainerModel? get trainer => throw _privateConstructorUsedError;
 
   /// Serializes this LoginSuccessModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -85,9 +87,11 @@ abstract class $LoginSuccessModelCopyWith<$Res> {
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
     @JsonKey(name: 'user_role') int? userRole,
+    @JsonKey(name: 'trainer') TrainerModel? trainer,
   });
 
   $MentorCopyWith<$Res>? get mentor;
+  $TrainerModelCopyWith<$Res>? get trainer;
 }
 
 /// @nodoc
@@ -120,6 +124,7 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
     Object? warnings = freezed,
     Object? isProfileCompleted = freezed,
     Object? userRole = freezed,
+    Object? trainer = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -198,6 +203,11 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
                     ? _value.userRole
                     : userRole // ignore: cast_nullable_to_non_nullable
                         as int?,
+            trainer:
+                freezed == trainer
+                    ? _value.trainer
+                    : trainer // ignore: cast_nullable_to_non_nullable
+                        as TrainerModel?,
           )
           as $Val,
     );
@@ -214,6 +224,20 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
 
     return $MentorCopyWith<$Res>(_value.mentor!, (value) {
       return _then(_value.copyWith(mentor: value) as $Val);
+    });
+  }
+
+  /// Create a copy of LoginSuccessModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TrainerModelCopyWith<$Res>? get trainer {
+    if (_value.trainer == null) {
+      return null;
+    }
+
+    return $TrainerModelCopyWith<$Res>(_value.trainer!, (value) {
+      return _then(_value.copyWith(trainer: value) as $Val);
     });
   }
 }
@@ -243,10 +267,13 @@ abstract class _$$LoginWithOtpEntityImplCopyWith<$Res>
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
     @JsonKey(name: 'user_role') int? userRole,
+    @JsonKey(name: 'trainer') TrainerModel? trainer,
   });
 
   @override
   $MentorCopyWith<$Res>? get mentor;
+  @override
+  $TrainerModelCopyWith<$Res>? get trainer;
 }
 
 /// @nodoc
@@ -278,6 +305,7 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
     Object? warnings = freezed,
     Object? isProfileCompleted = freezed,
     Object? userRole = freezed,
+    Object? trainer = freezed,
   }) {
     return _then(
       _$LoginWithOtpEntityImpl(
@@ -356,6 +384,11 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
                 ? _value.userRole
                 : userRole // ignore: cast_nullable_to_non_nullable
                     as int?,
+        trainer:
+            freezed == trainer
+                ? _value.trainer
+                : trainer // ignore: cast_nullable_to_non_nullable
+                    as TrainerModel?,
       ),
     );
   }
@@ -380,6 +413,7 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     @JsonKey(name: 'warnings') final List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') this.isProfileCompleted,
     @JsonKey(name: 'user_role') this.userRole,
+    @JsonKey(name: 'trainer') this.trainer,
   }) : _warnings = warnings;
 
   factory _$LoginWithOtpEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -438,10 +472,13 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
   @override
   @JsonKey(name: 'user_role')
   final int? userRole;
+  @override
+  @JsonKey(name: 'trainer')
+  final TrainerModel? trainer;
 
   @override
   String toString() {
-    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted, userRole: $userRole)';
+    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted, userRole: $userRole, trainer: $trainer)';
   }
 
   @override
@@ -473,7 +510,8 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
             (identical(other.isProfileCompleted, isProfileCompleted) ||
                 other.isProfileCompleted == isProfileCompleted) &&
             (identical(other.userRole, userRole) ||
-                other.userRole == userRole));
+                other.userRole == userRole) &&
+            (identical(other.trainer, trainer) || other.trainer == trainer));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -495,6 +533,7 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     const DeepCollectionEquality().hash(_warnings),
     isProfileCompleted,
     userRole,
+    trainer,
   );
 
   /// Create a copy of LoginSuccessModel
@@ -531,6 +570,7 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
     @JsonKey(name: 'warnings') final List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') final bool? isProfileCompleted,
     @JsonKey(name: 'user_role') final int? userRole,
+    @JsonKey(name: 'trainer') final TrainerModel? trainer,
   }) = _$LoginWithOtpEntityImpl;
 
   factory _LoginWithOtpEntity.fromJson(Map<String, dynamic> json) =
@@ -581,6 +621,9 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
   @override
   @JsonKey(name: 'user_role')
   int? get userRole;
+  @override
+  @JsonKey(name: 'trainer')
+  TrainerModel? get trainer;
 
   /// Create a copy of LoginSuccessModel
   /// with the given fields replaced by the non-null parameter values.
@@ -819,6 +862,226 @@ abstract class _Mentor implements Mentor {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MentorImplCopyWith<_$MentorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+TrainerModel _$TrainerModelFromJson(Map<String, dynamic> json) {
+  return _TrainerModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$TrainerModel {
+  @JsonKey(name: 'id')
+  int? get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_type')
+  String? get userType => throw _privateConstructorUsedError;
+  @JsonKey(name: 'profile_step')
+  int? get profileStep => throw _privateConstructorUsedError;
+
+  /// Serializes this TrainerModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of TrainerModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $TrainerModelCopyWith<TrainerModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $TrainerModelCopyWith<$Res> {
+  factory $TrainerModelCopyWith(
+    TrainerModel value,
+    $Res Function(TrainerModel) then,
+  ) = _$TrainerModelCopyWithImpl<$Res, TrainerModel>;
+  @useResult
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'user_type') String? userType,
+    @JsonKey(name: 'profile_step') int? profileStep,
+  });
+}
+
+/// @nodoc
+class _$TrainerModelCopyWithImpl<$Res, $Val extends TrainerModel>
+    implements $TrainerModelCopyWith<$Res> {
+  _$TrainerModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of TrainerModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? userType = freezed,
+    Object? profileStep = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            userType:
+                freezed == userType
+                    ? _value.userType
+                    : userType // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            profileStep:
+                freezed == profileStep
+                    ? _value.profileStep
+                    : profileStep // ignore: cast_nullable_to_non_nullable
+                        as int?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$TrainerModelImplCopyWith<$Res>
+    implements $TrainerModelCopyWith<$Res> {
+  factory _$$TrainerModelImplCopyWith(
+    _$TrainerModelImpl value,
+    $Res Function(_$TrainerModelImpl) then,
+  ) = __$$TrainerModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'user_type') String? userType,
+    @JsonKey(name: 'profile_step') int? profileStep,
+  });
+}
+
+/// @nodoc
+class __$$TrainerModelImplCopyWithImpl<$Res>
+    extends _$TrainerModelCopyWithImpl<$Res, _$TrainerModelImpl>
+    implements _$$TrainerModelImplCopyWith<$Res> {
+  __$$TrainerModelImplCopyWithImpl(
+    _$TrainerModelImpl _value,
+    $Res Function(_$TrainerModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of TrainerModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? userType = freezed,
+    Object? profileStep = freezed,
+  }) {
+    return _then(
+      _$TrainerModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        userType:
+            freezed == userType
+                ? _value.userType
+                : userType // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        profileStep:
+            freezed == profileStep
+                ? _value.profileStep
+                : profileStep // ignore: cast_nullable_to_non_nullable
+                    as int?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$TrainerModelImpl implements _TrainerModel {
+  const _$TrainerModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'user_type') this.userType,
+    @JsonKey(name: 'profile_step') this.profileStep,
+  });
+
+  factory _$TrainerModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$TrainerModelImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'id')
+  final int? id;
+  @override
+  @JsonKey(name: 'user_type')
+  final String? userType;
+  @override
+  @JsonKey(name: 'profile_step')
+  final int? profileStep;
+
+  @override
+  String toString() {
+    return 'TrainerModel(id: $id, userType: $userType, profileStep: $profileStep)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$TrainerModelImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.userType, userType) ||
+                other.userType == userType) &&
+            (identical(other.profileStep, profileStep) ||
+                other.profileStep == profileStep));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, userType, profileStep);
+
+  /// Create a copy of TrainerModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$TrainerModelImplCopyWith<_$TrainerModelImpl> get copyWith =>
+      __$$TrainerModelImplCopyWithImpl<_$TrainerModelImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$TrainerModelImplToJson(this);
+  }
+}
+
+abstract class _TrainerModel implements TrainerModel {
+  const factory _TrainerModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'user_type') final String? userType,
+    @JsonKey(name: 'profile_step') final int? profileStep,
+  }) = _$TrainerModelImpl;
+
+  factory _TrainerModel.fromJson(Map<String, dynamic> json) =
+      _$TrainerModelImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'id')
+  int? get id;
+  @override
+  @JsonKey(name: 'user_type')
+  String? get userType;
+  @override
+  @JsonKey(name: 'profile_step')
+  int? get profileStep;
+
+  /// Create a copy of TrainerModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$TrainerModelImplCopyWith<_$TrainerModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

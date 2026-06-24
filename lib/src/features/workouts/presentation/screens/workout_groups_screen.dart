@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/create_group_button.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_group_details_screen.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
 
 class WorkoutGroupsScreen extends StatefulWidget {
   const WorkoutGroupsScreen({super.key});
@@ -14,18 +15,14 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
   final _formKey = GlobalKey<FormState>();
   late final FieldData<dynamic> _groupName;
 
-  final List<Map<String, dynamic>> _groups = [
-    {'title': 'Chest\nMuscle', 'count': 4},
-    {'title': 'Triceps\nMuscle', 'count': 14},
-    {'title': 'Push\nMuscle', 'count': 12},
-    {'title': 'Biceps\nMuscle', 'count': 15},
-    {'title': 'Shoulder\nMuscle', 'count': 12},
-    {'title': 'Leg\nMuscle', 'count': 15},
-  ];
+  List<Map<String, dynamic>> _groups = [];
+  bool _isLoading = true;
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
+    _fetchGroups();
     _groupName = FieldData(
       type: FieldType.word,
       textInputAction: TextInputAction.done,
@@ -52,9 +49,78 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
 
   @override
   void dispose() {
-    super.dispose();
     _groupName.controller?.dispose();
     _groupName.focusNode?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchGroups() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.workoutGroups,
+        queryParameters: {
+          if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
+        },
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = (response.data is Map)
+            ? (response.data['results'] as List<dynamic>? ?? [])
+            : (response.data as List<dynamic>);
+        setState(() {
+          _groups = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        Dialogs.showSnack(msg: 'Failed to load workout groups');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      Dialogs.showSnack(msg: 'Error loading groups: ${e.toString()}');
+    }
+  }
+
+  Future<void> _createGroup(String name) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await DioClient().dio.post<dynamic>(
+        ApiUris.workoutGroups,
+        data: {
+          'name': name,
+          'type': 'single_day',
+        },
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Dialogs.showSnack(msg: 'Workout group created successfully');
+        _groupName.controller?.clear();
+        _fetchGroups();
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        Dialogs.showSnack(msg: 'Failed to create workout group');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      Dialogs.showSnack(msg: 'Error creating workout group: ${e.toString()}');
+    }
   }
 
   @override
@@ -73,12 +139,6 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
           'Workouts',
           style: AppStyles.text24Px.poppins.w600.copyWith(color: Colors.black),
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.settings_outlined, color: Colors.black),
-        //     onPressed: () {},
-        //   ),
-        // ],
       ),
       body: Stack(
         children: [
@@ -97,6 +157,14 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                     border: Border.all(color: AppColors.borderGrey),
                   ),
                   child: TextField(
+                    onChanged: (val) {
+                      _searchQuery = val;
+                      EasyDebounce.debounce(
+                        'groups-search',
+                        const Duration(milliseconds: 400),
+                        () => _fetchGroups(),
+                      );
+                    },
                     decoration: InputDecoration(
                       icon: const Icon(Icons.search, color: AppColors.textGrey),
                       hintText: 'Search for workout group',
@@ -115,8 +183,6 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                 child: Row(
                   children: [
                     _buildTab('Single-Day Workout', 0),
-                    // const SizedBox(width: 16),
-                    // _buildTab('Multi-Day Workout', 1),
                   ],
                 ),
               ),
@@ -137,7 +203,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              '4 workout groups',
+                              '${_groups.length} workout groups',
                               style: AppStyles.text14Px.poppins.w400.copyWith(
                                 color: AppColors.textGrey,
                               ),
@@ -172,7 +238,13 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                           ],
                         ),
                       ),
-                      Expanded(child: WorkoutGroupsGrid(groups: _groups)),
+                      Expanded(
+                        child: _isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : _groups.isEmpty
+                                ? const Center(child: Text('No workout groups found.'))
+                                : WorkoutGroupsGrid(groups: _groups),
+                      ),
                     ],
                   ),
                 ),
@@ -253,8 +325,11 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
-                          // TODO: Handle create group action
+                          final name = _groupName.controller?.text.trim() ?? '';
                           Navigator.pop(context);
+                          if (name.isNotEmpty) {
+                            _createGroup(name);
+                          }
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -308,6 +383,10 @@ class _WorkoutGroupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final int groupId = group['id'] as int;
+    final String groupName = group['name'] as String? ?? '';
+    final int planCount = group['plan_count'] as int? ?? 0;
+
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -315,7 +394,8 @@ class _WorkoutGroupCard extends StatelessWidget {
           MaterialPageRoute<void>(
             builder:
                 (context) => WorkoutGroupDetailsScreen(
-                  groupTitle: group['title'] as String,
+                  groupId: groupId,
+                  groupTitle: groupName,
                 ),
           ),
         );
@@ -343,7 +423,7 @@ class _WorkoutGroupCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    group['title'] as String,
+                    groupName,
                     style: AppStyles.text16Px.poppins.w600.copyWith(
                       color: AppColors.textDark,
                       height: 1.2,
@@ -361,7 +441,7 @@ class _WorkoutGroupCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'Workout plans: ${group['count']}',
+                  'Workout plans: $planCount',
                   style: AppStyles.text14Px.poppins.w400.copyWith(
                     color: AppColors.textGrey,
                   ),

@@ -187,21 +187,6 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                TextButton.icon(
-                                  onPressed: () => _showAssignClientsSheet(trainer),
-                                  icon: const Icon(Icons.assignment_ind_outlined, size: 16, color: AppColors.primary),
-                                  label: Text(
-                                    'Assign',
-                                    style: AppStyles.text12Px.poppins.w600.copyWith(color: AppColors.primary),
-                                  ),
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    backgroundColor: const Color(0xffFFEAEA),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                           );

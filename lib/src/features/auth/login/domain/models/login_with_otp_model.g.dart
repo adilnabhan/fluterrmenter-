@@ -30,6 +30,10 @@ _$LoginWithOtpEntityImpl _$$LoginWithOtpEntityImplFromJson(
   warnings: json['warnings'] as List<dynamic>?,
   isProfileCompleted: json['is_profile_complete'] as bool?,
   userRole: (json['user_role'] as num?)?.toInt(),
+  trainer:
+      json['trainer'] == null
+          ? null
+          : TrainerModel.fromJson(json['trainer'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
@@ -50,6 +54,7 @@ Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
   'warnings': instance.warnings,
   'is_profile_complete': instance.isProfileCompleted,
   'user_role': instance.userRole,
+  'trainer': instance.trainer,
 };
 
 _$MentorImpl _$$MentorImplFromJson(Map<String, dynamic> json) => _$MentorImpl(
@@ -66,6 +71,20 @@ Map<String, dynamic> _$$MentorImplToJson(_$MentorImpl instance) =>
       'id': instance.id,
       'name': instance.name,
       'organization': instance.org,
+    };
+
+_$TrainerModelImpl _$$TrainerModelImplFromJson(Map<String, dynamic> json) =>
+    _$TrainerModelImpl(
+      id: (json['id'] as num?)?.toInt(),
+      userType: json['user_type'] as String?,
+      profileStep: (json['profile_step'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$$TrainerModelImplToJson(_$TrainerModelImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'user_type': instance.userType,
+      'profile_step': instance.profileStep,
     };
 
 _$OrgImpl _$$OrgImplFromJson(Map<String, dynamic> json) => _$OrgImpl(

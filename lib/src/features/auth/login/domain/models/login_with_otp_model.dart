@@ -22,6 +22,7 @@ class LoginSuccessModel with _$LoginSuccessModel {
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
     @JsonKey(name: 'user_role') int? userRole,
+    @JsonKey(name: 'trainer') TrainerModel? trainer,
   }) = _LoginWithOtpEntity;
 
   factory LoginSuccessModel.fromJson(Map<String, dynamic> json) =>
@@ -37,6 +38,17 @@ class Mentor with _$Mentor {
   }) = _Mentor;
 
   factory Mentor.fromJson(Map<String, dynamic> json) => _$MentorFromJson(json);
+}
+
+@freezed
+class TrainerModel with _$TrainerModel {
+  const factory TrainerModel({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'user_type') String? userType,
+    @JsonKey(name: 'profile_step') int? profileStep,
+  }) = _TrainerModel;
+
+  factory TrainerModel.fromJson(Map<String, dynamic> json) => _$TrainerModelFromJson(json);
 }
 
 @freezed

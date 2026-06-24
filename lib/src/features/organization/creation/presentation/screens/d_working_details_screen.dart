@@ -533,9 +533,9 @@ class _CreateOrganizationWorkingDetailsScreenState
         );
       },
       child: PopScope(
-        canPop: false,
+        canPop: true,
         child: Scaffold(
-          appBar: AppBar(automaticallyImplyLeading: false),
+          appBar: AppBar(),
           body: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [

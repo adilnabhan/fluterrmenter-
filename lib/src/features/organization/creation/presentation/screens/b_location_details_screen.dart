@@ -36,6 +36,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
     _gymLocationCubit = context.read<OrganizationLocationDetailsCubit>();
     _searchFocusNode = FocusNode();
     _searchField = TextEditingController();
+    final savedLocation = _gymCreationCubit.state.gymLocationDetails;
     _locationDetails = [
       [
         FieldData(
@@ -53,7 +54,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           onSubmitted: (value) {
             _locationDetails[1][0].focusNode?.requestFocus();
           },
-          controller: TextEditingController(),
+          controller: TextEditingController(text: savedLocation?.flatName),
           focusNode: FocusNode(),
           decoration: InputDecoration(
             hintText: 'Building/Flat Name & Number',
@@ -80,7 +81,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           onSubmitted: (value) {
             _locationDetails[2][0].focusNode?.requestFocus();
           },
-          controller: TextEditingController(),
+          controller: TextEditingController(text: savedLocation?.street),
           focusNode: FocusNode(),
           decoration: InputDecoration(
             hintText: 'Street / Road Name',
@@ -99,7 +100,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           label: 'City',
           requiredLabel: true,
 
-          controller: TextEditingController(),
+          controller: TextEditingController(text: savedLocation?.city),
           focusNode: FocusNode(),
           validator: (value) {
             if (value?.trim().isEmpty ?? true) {
@@ -127,7 +128,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           label: 'State',
           requiredLabel: true,
 
-          controller: TextEditingController(),
+          controller: TextEditingController(text: savedLocation?.state),
           focusNode: FocusNode(),
           validator: (value) {
             if (value?.trim().isEmpty ?? true) {
@@ -147,36 +148,6 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
             ),
           ),
         ),
-        // FieldData(
-        //   type: FieldType.word,
-        //   textInputAction: TextInputAction.done,
-        //   label: 'PIN / ZIP Code',
-        //   requiredLabel: true,
-        //   inputFormatters: [
-        //     FilteringTextInputFormatter.digitsOnly,
-        //     LengthLimitingTextInputFormatter(6),
-        //   ],
-        //   keyboardType: TextInputType.number,
-        //   controller: TextEditingController(),
-        //   focusNode: FocusNode(),
-        //   validator: (value) {
-        //     if (value?.trim().isEmpty ?? true) {
-        //       return 'PIN / ZIP Code is required';
-        //     }
-        //     return null;
-        //   },
-        //   onSubmitted: (value) {
-        //     _locationDetails[4][0].focusNode?.requestFocus();
-        //   },
-        //   decoration: InputDecoration(
-        //     hintText: 'PIN / ZIP Code',
-        //     hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-        //     border: const OutlineInputBorder(
-        //       borderRadius: BorderRadius.all(Radius.circular(8)),
-        //       borderSide: BorderSide(color: AppColors.borderGrey),
-        //     ),
-        //   ),
-        // ),
         FieldData(
           type: FieldType.word,
           textInputAction: TextInputAction.done,
@@ -187,7 +158,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
             LengthLimitingTextInputFormatter(6),
           ],
           keyboardType: TextInputType.number,
-          controller: TextEditingController(),
+          controller: TextEditingController(text: savedLocation?.picode),
           focusNode: FocusNode(),
           validator: (value) {
             if (value?.trim().isEmpty ?? true) {
@@ -243,9 +214,9 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
     print('selected values---$picode');
 
     // ✅ flat name minimum length validation
-    if (flatName.length < 10) {
+    if (flatName.length < 3) {
       Dialogs.showSnack(
-        msg: 'Building/Flat Name & Number  must be at least 10 characters',
+        msg: 'Building/Flat Name & Number must be at least 3 characters',
       );
       return;
     }
@@ -308,7 +279,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: true,
       child: BlocListener<
         OrganizationLocationDetailsCubit,
         OrganizationLocationDetailsState
@@ -476,7 +447,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
           });
         },
         child: Scaffold(
-          appBar: AppBar(automaticallyImplyLeading: false),
+          appBar: AppBar(),
           // floatingActionButton: SizedBox(
           //   width: 84,
           //   child: FloatingActionButton(

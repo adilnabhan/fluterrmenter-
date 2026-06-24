@@ -15,6 +15,9 @@ class OrganizationBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -29,88 +32,104 @@ class OrganizationBottomNavBar extends StatelessWidget {
               ),
             ],
           ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavBarItem(
-                icon: SvgPicture.asset(
-                  'assets/images/svg/icons/homeicon.svg',
-                  color:
-                      currentIndex == 0
-                          ? AppColors.primary
-                          : AppColors.textGrey,
-                ),
-                label: 'Home',
-                isSelected: currentIndex == 0,
-                onTap: () => onTap(0),
-              ),
-              _NavBarItem(
-                icon: SvgPicture.asset(
-                  'assets/images/svg/icons/trainers.svg',
-                  color:
-                      currentIndex == 1
-                          ? AppColors.primary
-                          : AppColors.textGrey,
-                ),
-                label: 'Trainers',
-                isSelected: currentIndex == 1,
-                onTap: () => onTap(1),
-              ),
-              _NavBarItem(
-                icon: SvgPicture.asset(
-                  'assets/images/svg/icons/payments.svg',
-                  color:
-                      currentIndex == 2
-                          ? AppColors.primary
-                          : AppColors.textGrey,
-                ),
-                label: 'Payments',
-                isSelected: currentIndex == 2,
-                onTap: () => onTap(2),
-              ),
-              _NavBarItem(
-                icon: SvgPicture.asset(
-                  'assets/images/svg/icons/reports.svg',
-                  color:
-                      currentIndex == 3
-                          ? AppColors.primary
-                          : AppColors.textGrey,
-                ),
-                label: 'Reports',
-                isSelected: currentIndex == 3,
-                onTap: () => onTap(3),
-              ),
-              // Use a generic profile icon for now as we don't have the image URL
-              _NavBarItem(
-                // icon: Icon(
-                //   Icons.person_outline_rounded,
-                //   color:
-                //       currentIndex == 4
-                //           ? AppColors.primary
-                //           : AppColors.textGrey,
-                //   size: 26,
-                // ),
-                icon: IgnorePointer(
-                  child: ProfileImage(
-                    url: profileImageUrl,
-                    radius: 23,
-                    isEdit: false,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _NavBarItem(
+                    icon: SvgPicture.asset(
+                      'assets/images/svg/icons/homeicon.svg',
+                      color: currentIndex == 0 ? AppColors.primary : AppColors.textGrey,
+                    ),
+                    label: 'Home',
+                    isSelected: currentIndex == 0,
+                    onTap: () => onTap(0),
                   ),
-                ),
-                label: 'Profile',
-                isSelected: currentIndex == 4,
-                onTap: () => onTap(4),
-                profileImageUrl: profileImageUrl,
+                  if (!isTrainer) ...[
+                    _NavBarItem(
+                      icon: SvgPicture.asset(
+                        'assets/images/svg/icons/trainers.svg',
+                        color: currentIndex == 1 ? AppColors.primary : AppColors.textGrey,
+                      ),
+                      label: 'Trainers',
+                      isSelected: currentIndex == 1,
+                      onTap: () => onTap(1),
+                    ),
+                    _NavBarItem(
+                      icon: SvgPicture.asset(
+                        'assets/images/svg/icons/payments.svg',
+                        color: currentIndex == 2 ? AppColors.primary : AppColors.textGrey,
+                      ),
+                      label: 'Payments',
+                      isSelected: currentIndex == 2,
+                      onTap: () => onTap(2),
+                    ),
+                    _NavBarItem(
+                      icon: SvgPicture.asset(
+                        'assets/images/svg/icons/reports.svg',
+                        color: currentIndex == 3 ? AppColors.primary : AppColors.textGrey,
+                      ),
+                      label: 'Reports',
+                      isSelected: currentIndex == 3,
+                      onTap: () => onTap(3),
+                    ),
+                    _NavBarItem(
+                      icon: IgnorePointer(
+                        child: ProfileImage(
+                          url: profileImageUrl,
+                          radius: 23,
+                          isEdit: false,
+                        ),
+                      ),
+                      label: 'Profile',
+                      isSelected: currentIndex == 4,
+                      onTap: () => onTap(4),
+                      profileImageUrl: profileImageUrl,
+                    ),
+                  ] else ...[
+                    _NavBarItem(
+                      icon: Icon(
+                        Icons.fitness_center_rounded,
+                        color: currentIndex == 1 ? AppColors.primary : AppColors.textGrey,
+                        size: 24,
+                      ),
+                      label: 'Workouts',
+                      isSelected: currentIndex == 1,
+                      onTap: () => onTap(1),
+                    ),
+                    _NavBarItem(
+                      icon: SvgPicture.asset(
+                        'assets/images/svg/icons/reports.svg',
+                        color: currentIndex == 2 ? AppColors.primary : AppColors.textGrey,
+                      ),
+                      label: 'Reports',
+                      isSelected: currentIndex == 2,
+                      onTap: () => onTap(2),
+                    ),
+                    _NavBarItem(
+                      icon: IgnorePointer(
+                        child: ProfileImage(
+                          url: profileImageUrl,
+                          radius: 23,
+                          isEdit: false,
+                        ),
+                      ),
+                      label: 'Profile',
+                      isSelected: currentIndex == 3,
+                      onTap: () => onTap(3),
+                      profileImageUrl: profileImageUrl,
+                    ),
+                  ],
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
-    )));
+    );
   }
 }
 

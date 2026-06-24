@@ -1,4 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_dashboard_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_main_screen.dart';
 
 class TrainerCreationSuccessScreen extends StatefulWidget {
   const TrainerCreationSuccessScreen({super.key});
@@ -89,7 +91,7 @@ class _TrainerCreationSuccessScreenState extends State<TrainerCreationSuccessScr
                           Button.filled(
                             title: 'Go to Trainer Dashboard →',
                             ontap: () {
-                              Dialogs.showSnack(msg: 'Navigating to Dashboard...');
+                              context.pushAndRemoveUntil(const TrainerMainScreen(initialIndex: 0));
                             },
                             buttonColor: AppColors.primary,
                             raduis: 12,

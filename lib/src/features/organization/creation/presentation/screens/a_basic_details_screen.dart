@@ -152,9 +152,9 @@ class _GymProfileCreationScreenState extends State<_GymProfileCreationScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: true,
       child: Scaffold(
-        appBar: AppBar(automaticallyImplyLeading: false),
+        appBar: AppBar(),
         body: Form(
           key: _formKey,
           child: ListView(

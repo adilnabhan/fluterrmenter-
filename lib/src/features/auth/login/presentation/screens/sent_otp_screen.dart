@@ -70,7 +70,8 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
             fit: StackFit.expand,
             children: [
               AppBar(
-                automaticallyImplyLeading: false,
+                automaticallyImplyLeading: Navigator.canPop(context),
+                leading: Navigator.canPop(context) ? const PopButton().center : null,
                 toolbarHeight: context.height * .3,
                 title: SvgPicture.asset(
                   'assets/images/svg/vectors/logo.svg',

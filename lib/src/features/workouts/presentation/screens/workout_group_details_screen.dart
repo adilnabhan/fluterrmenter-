@@ -2,10 +2,17 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/create_group_button.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/assign_workout_plan_screen.dart';
-
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:intl/intl.dart';
 
 class WorkoutGroupDetailsScreen extends StatefulWidget {
-  const WorkoutGroupDetailsScreen({super.key, required this.groupTitle});
+  const WorkoutGroupDetailsScreen({
+    required this.groupId,
+    required this.groupTitle,
+    super.key,
+  });
+
+  final int groupId;
   final String groupTitle;
 
   @override
@@ -17,36 +24,14 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
   late final FieldData<dynamic> _planNamePrivate;
   late final FieldData<dynamic> _planNamePublic;
 
-  final List<Map<String, dynamic>> _plans = const [
-    {
-      'id': 1,
-      'title': 'Chest Exercise Plan 1',
-      'exerciseCount': 4,
-      'createdOn': '21 Monday',
-    },
-    {
-      'id': 2,
-      'title': 'Chest Exercise Plan 2',
-      'exerciseCount': 6,
-      'createdOn': '22 Tuesday',
-    },
-    {
-      'id': 3,
-      'title': 'Chest Exercise Plan 3',
-      'exerciseCount': 6,
-      'createdOn': '22 Tuesday',
-    },
-    {
-      'id': 4,
-      'title': 'Chest Exercise Plan 4',
-      'exerciseCount': 6,
-      'createdOn': '22 Tuesday',
-    },
-  ];
+  List<Map<String, dynamic>> _plans = [];
+  bool _isLoading = true;
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
+    _fetchPlans();
     _planNamePrivate = FieldData(
       type: FieldType.word,
       textInputAction: TextInputAction.next,
@@ -98,11 +83,83 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
   @override
   void dispose() {
-    super.dispose();
     _planNamePrivate.controller?.dispose();
     _planNamePrivate.focusNode?.dispose();
     _planNamePublic.controller?.dispose();
     _planNamePublic.focusNode?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchPlans() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.workoutPlans,
+        queryParameters: {
+          'group': widget.groupId,
+          if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
+        },
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200 && response.data is List) {
+        final List<dynamic> data = response.data as List<dynamic>;
+        setState(() {
+          _plans = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        Dialogs.showSnack(msg: 'Failed to load workout plans');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      Dialogs.showSnack(msg: 'Error loading plans: ${e.toString()}');
+    }
+  }
+
+  Future<void> _createPlan(String privateName, String publicName) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await DioClient().dio.post<dynamic>(
+        ApiUris.workoutPlans,
+        data: {
+          'plan_name': publicName,
+          'plan_name_internal': privateName,
+          'group': widget.groupId,
+          'total_weeks': 1,
+          'total_days': 1,
+        },
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Dialogs.showSnack(msg: 'Workout plan created successfully');
+        _planNamePrivate.controller?.clear();
+        _planNamePublic.controller?.clear();
+        _fetchPlans();
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        Dialogs.showSnack(msg: 'Failed to create workout plan');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      Dialogs.showSnack(msg: 'Error creating workout plan: ${e.toString()}');
+    }
   }
 
   @override
@@ -120,12 +177,6 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
           'Workout Plans',
           style: AppStyles.text20Px.poppins.w600.copyWith(color: Colors.black),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Stack(
         children: [
@@ -144,6 +195,14 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                     border: Border.all(color: AppColors.borderGrey),
                   ),
                   child: TextField(
+                    onChanged: (val) {
+                      _searchQuery = val;
+                      EasyDebounce.debounce(
+                        'plans-search',
+                        const Duration(milliseconds: 400),
+                        () => _fetchPlans(),
+                      );
+                    },
                     decoration: InputDecoration(
                       icon: const Icon(Icons.search, color: AppColors.textGrey),
                       hintText: 'Search for plan',
@@ -221,43 +280,54 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                         ),
                       ),
                       Expanded(
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                          itemCount: _plans.length,
-                          separatorBuilder:
-                              (context, index) => const SizedBox(height: 16),
-                          itemBuilder: (context, index) {
-                            final plan = _plans[index];
-                            return _PlanCard(
-                              title: plan['title'] as String,
-                              exerciseCount: plan['exerciseCount'] as int,
-                              createdOn: plan['createdOn'] as String,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder:
-                                        (context) => WorkoutPlanDetailsScreen(
-                                          planTitle: plan['title'] as String,
-                                        ),
+                        child: _isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : _plans.isEmpty
+                                ? const Center(child: Text('No workout plans found.'))
+                                : ListView.separated(
+                                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                                    itemCount: _plans.length,
+                                    separatorBuilder:
+                                        (context, index) => const SizedBox(height: 16),
+                                    itemBuilder: (context, index) {
+                                      final plan = _plans[index];
+                                      final int planId = plan['id'] as int;
+                                      final String planName = plan['plan_name'] as String? ?? 'Plan';
+                                      final int exerciseCount = plan['exercise_count'] as int? ?? 0;
+                                      final String createdOn = plan['created_at'] != null
+                                          ? DateFormat('dd MMM yyyy').format(DateTime.parse(plan['created_at'] as String))
+                                          : 'N/A';
+
+                                      return _PlanCard(
+                                        title: planName,
+                                        exerciseCount: exerciseCount,
+                                        createdOn: createdOn,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder:
+                                                  (context) => WorkoutPlanDetailsScreen(
+                                                    planTitle: planName,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        onAssignTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder:
+                                                  (context) => AssignWorkoutPlanScreen(
+                                                    planId: planId,
+                                                    planTitle: planName,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                              onAssignTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder:
-                                        (context) => AssignWorkoutPlanScreen(
-                                          planId: plan['id'] as int,
-                                          planTitle: plan['title'] as String,
-                                        ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
                       ),
                     ],
                   ),
@@ -328,7 +398,12 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
+                          final privateName = _planNamePrivate.controller?.text.trim() ?? '';
+                          final publicName = _planNamePublic.controller?.text.trim() ?? '';
                           Navigator.pop(context);
+                          if (privateName.isNotEmpty && publicName.isNotEmpty) {
+                            _createPlan(privateName, publicName);
+                          }
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -352,7 +427,6 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
           ),
     );
   }
-
 }
 
 class _PlanCard extends StatelessWidget {

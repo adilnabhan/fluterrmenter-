@@ -2,7 +2,7 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 ///* First widget integrating
-import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_dashboard_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_main_screen.dart';
 
 ///* First widget integrating
 class AppView extends StatefulWidget {
@@ -90,9 +90,9 @@ class _AppViewState extends State<AppView> {
       return const SignupScreen();
     }
     
-    // Redirect Trainer (role 35) to TrainerDashboardScreen
+    // Redirect Trainer (role 35) to TrainerMainScreen
     if (user.userRole == 35) {
-      return const TrainerDashboardScreen();
+      return const TrainerMainScreen();
     }
 
     if ((user.isProfileCompleted ?? false) ||

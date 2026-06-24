@@ -20,6 +20,7 @@ mixin _$AppState {
   ThemeMode get themeMode => throw _privateConstructorUsedError;
   Locale get locale => throw _privateConstructorUsedError;
   LoginSuccessModel? get currentUser => throw _privateConstructorUsedError;
+  List<LoginSuccessModel> get accounts => throw _privateConstructorUsedError;
 
   /// Create a copy of AppState
   /// with the given fields replaced by the non-null parameter values.
@@ -37,6 +38,7 @@ abstract class $AppStateCopyWith<$Res> {
     ThemeMode themeMode,
     Locale locale,
     LoginSuccessModel? currentUser,
+    List<LoginSuccessModel> accounts,
   });
 
   $LoginSuccessModelCopyWith<$Res>? get currentUser;
@@ -60,6 +62,7 @@ class _$AppStateCopyWithImpl<$Res, $Val extends AppState>
     Object? themeMode = null,
     Object? locale = null,
     Object? currentUser = freezed,
+    Object? accounts = null,
   }) {
     return _then(
       _value.copyWith(
@@ -78,6 +81,11 @@ class _$AppStateCopyWithImpl<$Res, $Val extends AppState>
                     ? _value.currentUser
                     : currentUser // ignore: cast_nullable_to_non_nullable
                         as LoginSuccessModel?,
+            accounts:
+                null == accounts
+                    ? _value.accounts
+                    : accounts // ignore: cast_nullable_to_non_nullable
+                        as List<LoginSuccessModel>,
           )
           as $Val,
     );
@@ -111,6 +119,7 @@ abstract class _$$AppStateImplCopyWith<$Res>
     ThemeMode themeMode,
     Locale locale,
     LoginSuccessModel? currentUser,
+    List<LoginSuccessModel> accounts,
   });
 
   @override
@@ -134,6 +143,7 @@ class __$$AppStateImplCopyWithImpl<$Res>
     Object? themeMode = null,
     Object? locale = null,
     Object? currentUser = freezed,
+    Object? accounts = null,
   }) {
     return _then(
       _$AppStateImpl(
@@ -152,6 +162,11 @@ class __$$AppStateImplCopyWithImpl<$Res>
                 ? _value.currentUser
                 : currentUser // ignore: cast_nullable_to_non_nullable
                     as LoginSuccessModel?,
+        accounts:
+            null == accounts
+                ? _value._accounts
+                : accounts // ignore: cast_nullable_to_non_nullable
+                    as List<LoginSuccessModel>,
       ),
     );
   }
@@ -164,7 +179,8 @@ class _$AppStateImpl implements _AppState {
     this.themeMode = ThemeMode.light,
     this.locale = const Locale('en'),
     this.currentUser,
-  });
+    final List<LoginSuccessModel> accounts = const [],
+  }) : _accounts = accounts;
 
   @override
   @JsonKey()
@@ -174,10 +190,18 @@ class _$AppStateImpl implements _AppState {
   final Locale locale;
   @override
   final LoginSuccessModel? currentUser;
+  final List<LoginSuccessModel> _accounts;
+  @override
+  @JsonKey()
+  List<LoginSuccessModel> get accounts {
+    if (_accounts is EqualUnmodifiableListView) return _accounts;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_accounts);
+  }
 
   @override
   String toString() {
-    return 'AppState(themeMode: $themeMode, locale: $locale, currentUser: $currentUser)';
+    return 'AppState(themeMode: $themeMode, locale: $locale, currentUser: $currentUser, accounts: $accounts)';
   }
 
   @override
@@ -189,11 +213,18 @@ class _$AppStateImpl implements _AppState {
                 other.themeMode == themeMode) &&
             (identical(other.locale, locale) || other.locale == locale) &&
             (identical(other.currentUser, currentUser) ||
-                other.currentUser == currentUser));
+                other.currentUser == currentUser) &&
+            const DeepCollectionEquality().equals(other._accounts, _accounts));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, themeMode, locale, currentUser);
+  int get hashCode => Object.hash(
+    runtimeType,
+    themeMode,
+    locale,
+    currentUser,
+    const DeepCollectionEquality().hash(_accounts),
+  );
 
   /// Create a copy of AppState
   /// with the given fields replaced by the non-null parameter values.
@@ -209,6 +240,7 @@ abstract class _AppState implements AppState {
     final ThemeMode themeMode,
     final Locale locale,
     final LoginSuccessModel? currentUser,
+    final List<LoginSuccessModel> accounts,
   }) = _$AppStateImpl;
 
   @override
@@ -217,6 +249,8 @@ abstract class _AppState implements AppState {
   Locale get locale;
   @override
   LoginSuccessModel? get currentUser;
+  @override
+  List<LoginSuccessModel> get accounts;
 
   /// Create a copy of AppState
   /// with the given fields replaced by the non-null parameter values.

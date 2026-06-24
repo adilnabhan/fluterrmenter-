@@ -13,8 +13,8 @@ class UserRoleSelectionScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        // leading: const PopButton().center,
+        automaticallyImplyLeading: true,
+        leading: const PopButton().center,
         backgroundColor: Colors.white,
         elevation: 0,
       ),

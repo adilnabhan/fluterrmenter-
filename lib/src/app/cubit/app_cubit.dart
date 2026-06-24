@@ -25,12 +25,40 @@ class AppCubit extends HydratedCubit<AppState> {
 
   void addUser(LoginSuccessModel user) {
     LocalStorageService().saveUser(user);
+    final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
+    final existingIndex = currentAccounts.indexWhere(
+      (a) => a.id == user.id && a.userRole == user.userRole,
+    );
+    if (existingIndex != -1) {
+      currentAccounts[existingIndex] = user;
+    } else {
+      currentAccounts.add(user);
+    }
+    emit(state.copyWith(currentUser: user, accounts: currentAccounts));
+  }
+
+  void switchAccount(LoginSuccessModel user) {
+    LocalStorageService().saveUser(user);
     emit(state.copyWith(currentUser: user));
   }
 
   void removeUser() {
-    LocalStorageService().clearUser();
-    emit(state.copyWith(currentUser: null));
+    final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
+    final user = state.currentUser;
+    if (user != null) {
+      currentAccounts.removeWhere(
+        (a) => a.id == user.id && a.userRole == user.userRole,
+      );
+    }
+
+    if (currentAccounts.isNotEmpty) {
+      final nextUser = currentAccounts.first;
+      LocalStorageService().saveUser(nextUser);
+      emit(state.copyWith(currentUser: nextUser, accounts: currentAccounts));
+    } else {
+      LocalStorageService().clearUser();
+      emit(state.copyWith(currentUser: null, accounts: []));
+    }
   }
 
   @override
@@ -42,12 +70,25 @@ class AppCubit extends HydratedCubit<AppState> {
             )
             : null;
 
+    var accounts = json['accounts'] != null
+        ? (json['accounts'] as List)
+            .map((e) => LoginSuccessModel.fromJson(e as Map<String, dynamic>))
+            .toList()
+        : <LoginSuccessModel>[];
+
+    if (accounts.isEmpty && currentUser != null) {
+      accounts = [currentUser];
+    }
+
     // 🛡️ Fallback: Check Hive if HydratedBloc lost the user (e.g. cache cleared)
     if (currentUser == null) {
       final localUser = LocalStorageService().getUser();
       if (localUser != null) {
         print('✅ AppCubit: Restored user from Hive storage.');
         currentUser = localUser;
+        if (!accounts.any((a) => a.id == localUser.id && a.userRole == localUser.userRole)) {
+          accounts.add(localUser);
+        }
       }
     }
     return AppState(
@@ -55,8 +96,9 @@ class AppCubit extends HydratedCubit<AppState> {
         'dark' => ThemeMode.dark,
         _ => ThemeMode.light,
       },
-      locale: Locale(json['language_code'] as String),
+      locale: Locale(json['language_code'] as String? ?? 'en'),
       currentUser: currentUser,
+      accounts: accounts,
     );
   }
 
@@ -66,6 +108,7 @@ class AppCubit extends HydratedCubit<AppState> {
       'theme_mode': state.themeMode.name,
       'language_code': state.locale.languageCode,
       'currentUser': state.currentUser?.toJson(),
+      'accounts': state.accounts.map((e) => e.toJson()).toList(),
     };
   }
 

@@ -1,5 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_dashboard_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_main_screen.dart';
+
 
 class VerifyOtpScreen extends StatelessWidget {
   const VerifyOtpScreen({required this.sentOtpEntity, super.key});
@@ -23,8 +26,8 @@ class _VerifyOtpScreen extends StatefulWidget {
 }
 
 class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
-  final _pinController = TextEditingController();
-  final _pinFocusNode = FocusNode();
+  final TextEditingController _pinController = TextEditingController();
+  final FocusNode _pinFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -70,6 +73,11 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
             final isLogin = state.sentOtpEntity.process == 'login';
             if (isLogin) {
               context.read<AppCubit>().addUser(r!);
+
+              if (r.userRole == 35) {
+                context.pushAndRemoveUntil(const TrainerMainScreen(initialIndex: 0));
+                return;
+              }
 
               if ((r.isProfileCompleted ?? false) &&
                   (r.mentor?.org?.profileCompleteness == 5)) {

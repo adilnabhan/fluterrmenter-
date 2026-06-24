@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 
 class TrainerClientDetailScreen extends StatefulWidget {
   const TrainerClientDetailScreen({required this.customerId, super.key});
@@ -114,6 +115,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     final fitnessLevel = profile['fitness_level'] ?? 'N/A';
     final imgUrl = profile['profile_picture'];
 
+    final isAssignedToMe = profile['is_assigned_to_me'] ?? false;
+    final trainerName = profile['trainer_name'] as String?;
+
     final hasActiveMembership = membership.isNotEmpty;
 
     return Scaffold(
@@ -183,6 +187,8 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                           'Email: $email',
                           style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
                         ),
+                        const SizedBox(height: 6),
+                        _buildDetailAssignmentRow(isAssignedToMe, trainerName),
                       ],
                     ),
                   ),
@@ -302,52 +308,87 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: _notesController,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      hintText: 'Add progress logs, dietary notes, or remarks...',
-                      hintStyle: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.primary),
-                      ),
-                      fillColor: const Color(0xffF7F7F7),
-                      filled: true,
+              child: isAssignedToMe
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: _notesController,
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            hintText: 'Add progress logs, dietary notes, or remarks...',
+                            hintStyle: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: Colors.grey.shade200),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: AppColors.primary),
+                            ),
+                            fillColor: const Color(0xffF7F7F7),
+                            filled: true,
+                          ),
+                          style: AppStyles.text13Px.poppins.w400,
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.maxFinite,
+                          child: Button.filled(
+                            ontap: _isSavingNotes ? () {} : _saveNotes,
+                            title: 'Save Notes',
+                            buttonColor: AppColors.primary,
+                            isLoading: _isSavingNotes,
+                            style: AppStyles.text14Px.poppins.w600.light,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(
+                      'Assign this client to yourself to write progress notes and remarks.',
+                      style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
                     ),
-                    style: AppStyles.text13Px.poppins.w400,
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.maxFinite,
-                    child: Button.filled(
-                      ontap: _isSavingNotes ? () {} : _saveNotes,
-                      title: 'Save Notes',
-                      buttonColor: AppColors.primary,
-                      isLoading: _isSavingNotes,
-                      style: AppStyles.text14Px.poppins.w600.light,
-                    ),
-                  ),
-                ],
-              ),
             ),
             const SizedBox(height: 20),
 
             // Assigned workout plans
-            Text(
-              'Assigned Workout Plans',
-              style: AppStyles.text16Px.poppins.w600.dark,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Assigned Workout Plans',
+                  style: AppStyles.text16Px.poppins.w600.dark,
+                ),
+                if (isAssignedToMe)
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (context) => const WorkoutGroupsScreen(),
+                        ),
+                      ).then((_) => _fetchClientDetails());
+                    },
+                    icon: const Icon(Icons.add, size: 16, color: Color(0xFF2E7D32)),
+                    label: Text(
+                      'Assign Plan',
+                      style: AppStyles.text12Px.poppins.w600.copyWith(color: const Color(0xFF2E7D32)),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: const Color(0xffE8F5E9),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 10),
             Container(
@@ -363,60 +404,65 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                   ),
                 ],
               ),
-              child: assignedPlans.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No workout plans assigned.',
-                        style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                      ),
+              child: !isAssignedToMe
+                  ? Text(
+                      'Workout plans are only visible and manageable when this customer is assigned to you.',
+                      style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
                     )
-                  : Column(
-                      children: assignedPlans.map((plan) {
-                        final planName = plan['plan_name'] ?? 'Plan';
-                        final statusStr = plan['status'] ?? 'active';
-                        final days = plan['total_days'] ?? 0;
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xffF7F7F7),
-                            borderRadius: BorderRadius.circular(8),
+                  : assignedPlans.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No workout plans assigned.',
+                            style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        )
+                      : Column(
+                          children: assignedPlans.map((plan) {
+                            final planName = plan['plan_name'] ?? 'Plan';
+                            final statusStr = plan['status'] ?? 'active';
+                            final days = plan['total_days'] ?? 0;
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xffF7F7F7),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    planName,
-                                    style: AppStyles.text13Px.poppins.w600,
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        planName,
+                                        style: AppStyles.text13Px.poppins.w600,
+                                      ),
+                                      Text(
+                                        '$days Days duration',
+                                        style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    '$days Days duration',
-                                    style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: statusStr == 'active' ? const Color(0xffE8F5E9) : const Color(0xffE0E0E0),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      statusStr.toUpperCase(),
+                                      style: AppStyles.text10Px.poppins.w600.copyWith(
+                                        color: statusStr == 'active' ? const Color(0xFF43A047) : Colors.grey.shade700,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: statusStr == 'active' ? const Color(0xffE8F5E9) : const Color(0xffE0E0E0),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  statusStr.toUpperCase(),
-                                  style: AppStyles.text10Px.poppins.w600.copyWith(
-                                    color: statusStr == 'active' ? const Color(0xFF43A047) : Colors.grey.shade700,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                            );
+                          }).toList(),
+                        ),
             ),
             const SizedBox(height: 20),
 
@@ -531,5 +577,87 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildDetailAssignmentRow(bool isAssignedToMe, String? trainerName) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            isAssignedToMe
+                ? 'Assigned to: Me'
+                : (trainerName != null && trainerName.isNotEmpty)
+                    ? 'Assigned to: $trainerName'
+                    : 'Unassigned',
+            style: AppStyles.text12Px.poppins.w600.copyWith(
+              color: isAssignedToMe
+                  ? const Color(0xFF43A047)
+                  : (trainerName != null && trainerName.isNotEmpty)
+                      ? AppColors.textGrey
+                      : Colors.orange.shade800,
+            ),
+          ),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            backgroundColor: isAssignedToMe ? const Color(0xffFFEAEA) : const Color(0xffE8F5E9),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed: () => _toggleDetailAssignment(isAssignedToMe),
+          child: Text(
+            isAssignedToMe ? 'Unassign' : 'Assign to me',
+            style: AppStyles.text12Px.poppins.w600.copyWith(
+              color: isAssignedToMe ? AppColors.primary : const Color(0xFF43A047),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _toggleDetailAssignment(bool isCurrentlyAssigned) async {
+    final trainerId = context.read<AppCubit>().state.currentUser?.mentor?.id;
+    if (trainerId == null) {
+      Dialogs.showSnack(msg: 'Trainer profile not found.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await DioClient().dio.patch<dynamic>(
+        ApiUris.updateMember(widget.customerId),
+        data: {
+          'trainer_id': isCurrentlyAssigned ? null : trainerId,
+        },
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200) {
+        Dialogs.showSnack(
+          msg: isCurrentlyAssigned
+              ? 'Client unassigned successfully'
+              : 'Client assigned to you successfully',
+        );
+        _fetchClientDetails();
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        Dialogs.showSnack(msg: 'Failed to update assignment');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      Dialogs.showSnack(msg: 'Error updating assignment: ${e.toString()}');
+    }
   }
 }
