@@ -19,7 +19,7 @@ class TrainerMainScreen extends StatelessWidget {
 
     return OrganizationDashboardScaffold(
       initialIndex: initialIndex,
-      profileImageUrl: user?.profilePicture,
+      profileImageUrl: user?.profilePicture as String?,
       pages: isTrainer
           ? const [
               TrainerDashboardScreen(),

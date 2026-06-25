@@ -41,7 +41,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = (response.data is Map)
-            ? (response.data['results'] ?? [])
+            ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
             : (response.data as List<dynamic>);
         setState(() {
           _clients = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();

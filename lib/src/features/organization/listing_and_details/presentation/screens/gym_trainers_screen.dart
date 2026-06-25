@@ -37,7 +37,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = (response.data is Map)
-            ? (response.data['results'] ?? [])
+            ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
             : (response.data as List<dynamic>);
         setState(() {
           _trainers = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
@@ -134,7 +134,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
                         itemCount: _trainers.length,
                         itemBuilder: (context, index) {
                           final trainer = _trainers[index];
-                          final int exp = trainer['experience_years'] ?? 0;
+                          final int exp = trainer['experience_years'] as int? ?? 0;
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(12),
@@ -175,7 +175,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        trainer['name'] ?? 'N/A',
+                                        trainer['name'] as String? ?? 'N/A',
                                         style: AppStyles.text14Px.poppins.w600,
                                       ),
                                       const SizedBox(height: 4),
@@ -241,7 +241,7 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = (response.data is Map)
-            ? (response.data['results'] ?? [])
+            ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
             : (response.data as List<dynamic>);
         setState(() {
           _customers = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
@@ -402,7 +402,7 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        customer['full_name'] ?? 'N/A',
+                                        customer['full_name'] as String? ?? 'N/A',
                                         style: AppStyles.text14Px.poppins.w600,
                                       ),
                                       const SizedBox(height: 2),

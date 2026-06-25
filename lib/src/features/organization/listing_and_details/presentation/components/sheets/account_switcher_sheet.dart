@@ -92,7 +92,7 @@ class AccountSwitcherSheet extends StatelessWidget {
                             child: ProfileImage(
                               isEdit: false,
                               radius: 48,
-                              url: account.profilePicture ?? '',
+                              url: account.profilePicture as String? ?? '',
                             ),
                           ),
                         ),

@@ -265,8 +265,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         ),
                         child: Column(
                           children: leaderboard.map((player) {
-                            final rank = player['rank'] ?? 1;
-                            final name = player['name'] ?? 'N/A';
+                            final int rank = player['rank'] as int? ?? 1;
+                            final String name = player['name'] as String? ?? 'N/A';
                             final completed = player['sessions_completed'] ?? 0;
                             final imgUrl = player['profile_picture'];
 
@@ -299,7 +299,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
-                                          name,
+                                          name as String,
                                           style: AppStyles.text14Px.poppins.w600,
                                         ),
                                       ),
@@ -341,8 +341,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         ),
                         child: Column(
                           children: upcomingBirthdays.map<Widget>((bday) {
-                            final name = bday['name'] ?? 'N/A';
-                            final dateStr = bday['date_of_birth'] ?? '';
+                            final String name = bday['name'] as String? ?? 'N/A';
+                            final String dateStr = bday['date_of_birth'] as String? ?? '';
                             final daysUntil = bday['days_until'] ?? 0;
                             final imgUrl = bday['profile_picture'];
 
@@ -376,11 +376,11 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              name,
+                                              name as String,
                                               style: AppStyles.text14Px.poppins.w600,
                                             ),
                                             Text(
-                                              dateStr,
+                                              dateStr as String,
                                               style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
                                             ),
                                           ],

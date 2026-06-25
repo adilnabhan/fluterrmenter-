@@ -30,7 +30,7 @@ class TrainerProfileSettingsScreen extends StatelessWidget {
                 ProfileImage(
                   isEdit: false,
                   radius: 80.w,
-                  url: user?.profilePicture ?? '',
+                  url: user?.profilePicture as String? ?? '',
                 ),
                 const SizedBox(width: 16),
                 Expanded(

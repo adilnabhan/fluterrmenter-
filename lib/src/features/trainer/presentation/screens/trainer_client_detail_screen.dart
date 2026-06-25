@@ -105,17 +105,17 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     final prRecords = _clientData['pr_records'] as List<dynamic>? ?? [];
     final recentSessions = _clientData['recent_sessions'] as List<dynamic>? ?? [];
 
-    final name = profile['name'] ?? 'N/A';
-    final mobile = profile['mobile'] ?? 'N/A';
-    final email = profile['email'] ?? 'N/A';
-    final gender = profile['gender'] ?? 'N/A';
-    final height = profile['height'] ?? 'N/A';
-    final weight = profile['weight'] ?? 'N/A';
-    final bmi = profile['bmi'] ?? 'N/A';
-    final fitnessLevel = profile['fitness_level'] ?? 'N/A';
+    final String name = profile['name'] as String? ?? 'N/A';
+    final String mobile = profile['mobile'] as String? ?? 'N/A';
+    final String email = profile['email'] as String? ?? 'N/A';
+    final String gender = profile['gender'] as String? ?? 'N/A';
+    final String height = (profile['height'] ?? 'N/A').toString();
+    final String weight = (profile['weight'] ?? 'N/A').toString();
+    final String bmi = (profile['bmi'] ?? 'N/A').toString();
+    final String fitnessLevel = profile['fitness_level'] as String? ?? 'N/A';
     final imgUrl = profile['profile_picture'];
 
-    final isAssignedToMe = profile['is_assigned_to_me'] ?? false;
+    final bool isAssignedToMe = profile['is_assigned_to_me'] as bool? ?? false;
     final trainerName = profile['trainer_name'] as String?;
 
     final hasActiveMembership = membership.isNotEmpty;
@@ -175,7 +175,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          name,
+                          name as String,
                           style: AppStyles.text16Px.poppins.w600.dark,
                         ),
                         const SizedBox(height: 4),
@@ -218,7 +218,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               ),
               child: Column(
                 children: [
-                  _buildStatRow('Gender', gender),
+                  _buildStatRow('Gender', gender as String),
                   const Divider(height: 20, thickness: 0.5),
                   _buildStatRow('Height', '$height cm'),
                   const Divider(height: 20, thickness: 0.5),
@@ -226,7 +226,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                   const Divider(height: 20, thickness: 0.5),
                   _buildStatRow('BMI', '$bmi'),
                   const Divider(height: 20, thickness: 0.5),
-                  _buildStatRow('Fitness Level', fitnessLevel),
+                  _buildStatRow('Fitness Level', fitnessLevel as String),
                 ],
               ),
             ),
@@ -260,7 +260,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                             const Icon(Icons.check_circle_outline, color: Color(0xFF43A047)),
                             const SizedBox(width: 8),
                             Text(
-                              membership['plan_name'] ?? 'Active Plan',
+                              membership['plan_name'] as String? ?? 'Active Plan',
                               style: AppStyles.text14Px.poppins.w600,
                             ),
                           ],
@@ -436,7 +436,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        planName,
+                                        planName as String,
                                         style: AppStyles.text13Px.poppins.w600,
                                       ),
                                       Text(
@@ -452,7 +452,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      statusStr.toUpperCase(),
+                                      (statusStr as String).toUpperCase(),
                                       style: AppStyles.text10Px.poppins.w600.copyWith(
                                         color: statusStr == 'active' ? const Color(0xFF43A047) : Colors.grey.shade700,
                                       ),
@@ -503,7 +503,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(workout, style: AppStyles.text13Px.poppins.w500),
+                              Text(workout as String, style: AppStyles.text13Px.poppins.w500),
                               Text('$val $unit', style: AppStyles.text13Px.poppins.w600.copyWith(color: AppColors.primary)),
                             ],
                           ),
@@ -549,8 +549,8 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(titleStr, style: AppStyles.text13Px.poppins.w500),
-                              Text(dateStr, style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+                              Text(titleStr as String, style: AppStyles.text13Px.poppins.w500),
+                              Text(dateStr as String, style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
                             ],
                           ),
                         );
