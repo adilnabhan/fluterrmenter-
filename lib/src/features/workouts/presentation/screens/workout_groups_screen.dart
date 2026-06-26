@@ -90,17 +90,24 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
     }
   }
 
+  List<Map<String, dynamic>> get _filteredGroups {
+    final typeFilter = _selectedTabIndex == 0 ? 'single_day' : 'multi_day';
+    return _groups.where((g) => g['type'] == typeFilter).toList();
+  }
+
   Future<void> _createGroup(String name) async {
     setState(() {
       _isLoading = true;
     });
+
+    final groupType = _selectedTabIndex == 0 ? 'single_day' : 'multi_day';
 
     try {
       final response = await DioClient().dio.post<dynamic>(
         ApiUris.workoutGroups,
         data: {
           'name': name,
-          'type': 'single_day',
+          'type': groupType,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );
@@ -125,6 +132,8 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _filteredGroups;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -182,7 +191,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    _buildTab('Single-Day Workout', 0),
+                    Expanded(child: _buildTab('Single-Day Workout', 0)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildTab('Multi-Day Workout', 1)),
                   ],
                 ),
               ),
@@ -203,7 +214,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              '${_groups.length} workout groups',
+                              '${filtered.length} workout groups',
                               style: AppStyles.text14Px.poppins.w400.copyWith(
                                 color: AppColors.textGrey,
                               ),
@@ -241,9 +252,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                       Expanded(
                         child: _isLoading
                             ? const Center(child: CircularProgressIndicator())
-                            : _groups.isEmpty
+                            : filtered.isEmpty
                                 ? const Center(child: Text('No workout groups found.'))
-                                : WorkoutGroupsGrid(groups: _groups),
+                                : WorkoutGroupsGrid(groups: filtered),
                       ),
                     ],
                   ),
@@ -273,13 +284,17 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedTabIndex = index),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFF4F4F4) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           text,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: AppStyles.text14Px.poppins.w600.copyWith(
             color: isSelected ? Colors.black : AppColors.textGrey,
           ),
@@ -440,10 +455,14 @@ class _WorkoutGroupCard extends StatelessWidget {
             const Spacer(),
             Row(
               children: [
-                Text(
-                  'Workout plans: $planCount',
-                  style: AppStyles.text14Px.poppins.w400.copyWith(
-                    color: AppColors.textGrey,
+                Expanded(
+                  child: Text(
+                    '$planCount plans',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppStyles.text14Px.poppins.w400.copyWith(
+                      color: AppColors.textGrey,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 4),

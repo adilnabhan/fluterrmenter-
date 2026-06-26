@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/organization_reports_screen.dart';
 
 class OrganizationListingScreen extends StatelessWidget {
   const OrganizationListingScreen({super.key});
@@ -1355,7 +1356,9 @@ class _OrganizationListingAndDetailsScreenState
                 PaymentUpcomingViewScreen(
                   orgId: state.selectedOrganization!.id!,
                 ),
-                const Scaffold(body: Center(child: Text('Reports'))),
+                OrganizationReportsScreen(
+                  orgId: state.selectedOrganization!.id!,
+                ),
                 OrganizationDetailsScreen(
                   orgId: state.selectedOrganization!.id!,
                   canFetch: false,
