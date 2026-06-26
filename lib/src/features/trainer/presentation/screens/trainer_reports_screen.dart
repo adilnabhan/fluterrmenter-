@@ -75,8 +75,10 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
     // Default stats fallback
     final clientsTrained = myPerformance?['clients_trained_count'] ?? 0;
     final workoutsAssigned = myPerformance?['workout_plans_given_count'] ?? 0;
-    final workoutsCompleted = (workoutsAssigned * 0.85).round(); // Fallback estimate
-    final attendance = "92%"; // Mock attendance
+    final workoutsCompleted = myPerformance?['workouts_completed_count'] ?? (workoutsAssigned * 0.85).round();
+    final attendance = myPerformance?['attendance_rate'] ?? "92%";
+    final completionRate = myPerformance?['completion_rate'] ?? "84.6%";
+    final activeProgress = myPerformance?['active_progress'] ?? "Good";
 
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
@@ -157,9 +159,9 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                           const Divider(height: 24, thickness: 1, color: Color(0xffEEEEEE)),
                           _buildReportRow('Total Assigned Workouts', '$workoutsAssigned'),
                           const Divider(height: 24, thickness: 1, color: Color(0xffEEEEEE)),
-                          _buildReportRow('Workout Completion Rate', '84.6%'),
+                          _buildReportRow('Workout Completion Rate', completionRate),
                           const Divider(height: 24, thickness: 1, color: Color(0xffEEEEEE)),
-                          _buildReportRow('Active Workouts Progress', 'Good'),
+                          _buildReportRow('Active Workouts Progress', activeProgress),
                         ],
                       ),
                     ),
