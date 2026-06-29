@@ -705,6 +705,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
   bool _isLoading = true;
   String _searchQuery = '';
   final Map<int, bool> _submittingMap = {};
+  String _selectedSource = 'library'; // 'library' or 'trainer'
 
   @override
   void initState() {
@@ -721,6 +722,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.workoutPlans,
         queryParameters: {
+          'source': _selectedSource,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),
@@ -746,41 +748,74 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
     }
   }
 
-  Future<void> _assignPlan(int planId) async {
-    final trainerId = context.read<AppCubit>().state.currentUser?.mentor?.id;
-    if (trainerId == null) {
-      Dialogs.showSnack(msg: 'Trainer profile not found.');
-      return;
-    }
+  Future<void> _assignPlan(int planId, String planName) async {
+    if (_submittingMap[planId] == true) return;
 
     setState(() {
       _submittingMap[planId] = true;
     });
 
-    try {
-      // 1. If not assigned to me, assign trainer first
-      if (!widget.isAssignedToMe) {
-        final patchResponse = await DioClient().dio.patch<dynamic>(
-          ApiUris.updateMember(widget.customerId),
-          data: {
-            'trainer_id': trainerId,
-          },
-          options: Options(headers: {'X-Platform': platformSource}),
+    final titleController = TextEditingController(text: planName);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Assign Workout Title',
+            style: AppStyles.text16Px.poppins.w600,
+          ),
+          content: TextField(
+            controller: titleController,
+            decoration: InputDecoration(
+              hintText: 'Enter workout title',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text('Cancel', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text('Assign', style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white)),
+            ),
+          ],
         );
-        if (patchResponse.statusCode != 200) {
-          Dialogs.showSnack(msg: 'Failed to link trainer to customer.');
-          setState(() {
-            _submittingMap[planId] = false;
-          });
-          return;
-        }
-      }
+      },
+    );
 
-      // 2. Assign workout plan
+    if (confirmed != true) {
+      setState(() {
+        _submittingMap[planId] = false;
+      });
+      return;
+    }
+
+    final enteredTitle = titleController.text.trim();
+    final String finalTitle = enteredTitle.isNotEmpty ? enteredTitle : planName;
+
+    final trainerId = context.read<AppCubit>().state.currentUser?.mentor?.id;
+    if (trainerId == null) {
+      setState(() {
+        _submittingMap[planId] = false;
+      });
+      Dialogs.showSnack(msg: 'Trainer profile not found.');
+      return;
+    }
+
+    try {
+      // Assign workout plan directly — backend resolves trainer from auth token
       final response = await DioClient().dio.post<dynamic>(
         ApiUris.assignWorkoutPlan(planId),
         data: {
           'customer_id': widget.customerId,
+          'title': finalTitle,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );
@@ -796,12 +831,51 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
       } else {
         Dialogs.showSnack(msg: 'Failed to assign plan');
       }
+    } on DioException catch (e) {
+      setState(() {
+        _submittingMap[planId] = false;
+      });
+      String errorMsg = 'Error assigning plan';
+      if (e.response?.data is Map) {
+        errorMsg = (e.response!.data as Map)['error']?.toString() ?? errorMsg;
+      }
+      Dialogs.showSnack(msg: errorMsg);
     } catch (e) {
       setState(() {
         _submittingMap[planId] = false;
       });
       Dialogs.showSnack(msg: 'Error assigning plan: ${e.toString()}');
     }
+  }
+
+  Widget _buildTabButton(String label, String sourceValue) {
+    final isSelected = _selectedSource == sourceValue;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (_selectedSource != sourceValue) {
+            setState(() {
+              _selectedSource = sourceValue;
+            });
+            _fetchPlans();
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : const Color(0xFFF1F1F1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: AppStyles.text12Px.poppins.w600.copyWith(
+              color: isSelected ? Colors.white : AppColors.textDark,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -839,6 +913,14 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
                 icon: const Icon(Icons.close),
                 onPressed: () => Navigator.pop(context),
               ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildTabButton('Library', 'library'),
+              const SizedBox(width: 12),
+              _buildTabButton('Own Created', 'trainer'),
             ],
           ),
           const SizedBox(height: 12),
@@ -927,7 +1009,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
                                         child: CircularProgressIndicator(strokeWidth: 2),
                                       )
                                     : ElevatedButton(
-                                        onPressed: () => _assignPlan(planId),
+                                        onPressed: () => _assignPlan(planId, planName),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: const Color(0xFF2E7D32),
                                           foregroundColor: Colors.white,

@@ -441,7 +441,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                         icon: Icons.calendar_today,
                         label: 'Start Date',
                         value:
-                            membership.startDate?.format('dd MMM yyyy') ??
+                            membership.startDate?.toLocal().format('dd MMM yyyy') ??
                             'N/A',
                         color: Colors.blue,
                       ),
@@ -452,7 +452,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                         icon: Icons.event_busy,
                         label: 'End Date',
                         value:
-                            membership.endDate?.format('dd MMM yyyy') ?? 'N/A',
+                            membership.endDate?.toLocal().format('dd MMM yyyy') ?? 'N/A',
                         color: Colors.red,
                       ),
                     ),
@@ -525,7 +525,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                                 icon: Icons.play_circle_outline,
                                 label: 'Trial Start',
                                 value:
-                                    membership.trialStartAt?.format(
+                                    membership.trialStartAt?.toLocal().format(
                                       'dd MMM yyyy',
                                     ) ??
                                     'N/A',
@@ -539,7 +539,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                                 icon: Icons.stop_circle_outlined,
                                 label: 'Trial End',
                                 value:
-                                    membership.trialEndAt?.format(
+                                    membership.trialEndAt?.toLocal().format(
                                       'dd MMM yyyy',
                                     ) ??
                                     'N/A',
@@ -566,7 +566,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Created: ${membership.createdAt?.format('dd MMM yyyy') ?? 'N/A'}',
+                      'Created: ${membership.createdAt?.toLocal().format('dd MMM yyyy') ?? 'N/A'}',
                       style: AppStyles.text12Px.poppins.w400.textGrey,
                     ),
                   ],
@@ -580,8 +580,8 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
   }
 
   Widget _buildMembershipProgress(MembershipDataModel membership) {
-    final startDate = membership.startDate!;
-    final endDate = membership.endDate!;
+    final startDate = membership.startDate!.toLocal();
+    final endDate = membership.endDate!.toLocal();
     final now = DateTime.now();
 
     final totalDays = endDate.difference(startDate).inDays;

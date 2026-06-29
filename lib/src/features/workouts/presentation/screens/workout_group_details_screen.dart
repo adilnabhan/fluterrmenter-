@@ -2,6 +2,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/create_group_button.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/assign_workout_plan_screen.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/assign_to_client_bottom_sheet.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:intl/intl.dart';
 
@@ -309,19 +310,19 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                               builder:
                                                   (context) => WorkoutPlanDetailsScreen(
                                                     planTitle: planName,
+                                                    planId: planId,
                                                   ),
                                             ),
                                           );
                                         },
                                         onAssignTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute<void>(
-                                              builder:
-                                                  (context) => AssignWorkoutPlanScreen(
-                                                    planId: planId,
-                                                    planTitle: planName,
-                                                  ),
+                                          showModalBottomSheet<void>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (context) => AssignToClientBottomSheet(
+                                              planId: planId,
+                                              planTitle: planName,
                                             ),
                                           );
                                         },

@@ -61,7 +61,47 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
     }
   }
 
-  Future<void> _toggleAssignment(int customerId, bool currentAssignedStatus) async {
+  Future<void> _assignWorkout(int customerId) async {
+    final titleController = TextEditingController(text: widget.planTitle);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Assign Workout Title',
+            style: AppStyles.text16Px.poppins.w600,
+          ),
+          content: TextField(
+            controller: titleController,
+            decoration: InputDecoration(
+              hintText: 'Enter workout title',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text('Cancel', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text('Assign', style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    final enteredTitle = titleController.text.trim();
+    final String finalTitle = enteredTitle.isNotEmpty ? enteredTitle : widget.planTitle;
+
     setState(() {
       _assigningMap[customerId] = true;
     });
@@ -71,6 +111,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
         ApiUris.assignWorkoutPlan(widget.planId),
         data: {
           'customer_id': customerId,
+          'title': finalTitle,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );
@@ -80,26 +121,32 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
       });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Toggle the assignment status locally
         setState(() {
           for (var i = 0; i < _customers.length; i++) {
             if (_customers[i]['customer_id'] == customerId) {
-              _customers[i]['is_assigned'] = !currentAssignedStatus;
+              _customers[i]['is_assigned'] = true;
               break;
             }
           }
         });
-        Dialogs.showSnack(
-          msg: currentAssignedStatus ? 'Plan unassigned successfully' : 'Plan assigned successfully',
-        );
+        Dialogs.showSnack(msg: 'Plan assigned successfully');
       } else {
-        Dialogs.showSnack(msg: 'Failed to update plan assignment');
+        Dialogs.showSnack(msg: 'Failed to assign plan');
       }
+    } on DioException catch (e) {
+      setState(() {
+        _assigningMap[customerId] = false;
+      });
+      String errorMsg = 'Error assigning plan';
+      if (e.response?.data is Map) {
+        errorMsg = (e.response!.data as Map)['error']?.toString() ?? errorMsg;
+      }
+      Dialogs.showSnack(msg: errorMsg);
     } catch (e) {
       setState(() {
         _assigningMap[customerId] = false;
       });
-      Dialogs.showSnack(msg: 'Error updating assignment: ${e.toString()}');
+      Dialogs.showSnack(msg: 'Error assigning plan: ${e.toString()}');
     }
   }
 
@@ -219,7 +266,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                                           child: CircularProgressIndicator(strokeWidth: 2),
                                         )
                                       : ElevatedButton(
-                                          onPressed: () => _toggleAssignment(customerId, isAssigned),
+                                          onPressed: () => _assignWorkout(customerId),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: isAssigned
                                                 ? const Color(0xffE2E2E2)
@@ -235,7 +282,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                                             elevation: 0,
                                           ),
                                           child: Text(
-                                            isAssigned ? 'Unassign' : 'Assign',
+                                            isAssigned ? 'Assign Again' : 'Assign',
                                             style: AppStyles.text12Px.poppins.w600,
                                           ),
                                         ),

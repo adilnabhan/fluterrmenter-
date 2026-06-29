@@ -27,7 +27,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     try {
       // Fetch advanced reports from fitnesscenter/reports endpoint for the organization
       final response = await DioClient().dio.get<dynamic>(
-        '${ApiUris.listOrganizations.replaceAll("organization/list/", "reports")}?organization_id=${widget.orgId}',
+        '${ApiUris.reports}?organization_id=${widget.orgId}',
         options: Options(headers: {'X-Platform': platformSource}),
       );
 

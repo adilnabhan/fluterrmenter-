@@ -69,7 +69,8 @@ final class ApiUris {
       '${_v1}fitnesscenter/membership-plans/$id/';
   static String deleteMembershipPackage(int id) =>
       '${_v1}fitnesscenter/membership-plans/$id/';
-  static final paymentHistory = '${_v1}fitnesscenter/customer-payments';
+  static final paymentHistory = '${_v1}fitnesscenter/customer-payments/';
+  static final reports = '${_v1}fitnesscenter/reports/';
   // static String paymentHistory(String orgId) =>
   //     '${_v1}fitnesscenter/customer-payments/$orgId';
 
@@ -89,4 +90,16 @@ final class ApiUris {
   static String workoutGroupDetail(int id) => '${_v1}trainer/workout-groups/$id/';
   static final workoutPlans = '${_v1}trainer/workout-plans/';
   static String workoutPlanDetail(int id) => '${_v1}trainer/workout-plans/$id/';
+  static final muscleGroups = '${_v1}trainer/muscle-groups/';
+  static final equipment = '${_v1}trainer/equipment/';
+  static final exerciseTypes = '${_v1}trainer/exercise-types/';
+  static final workoutExercises = '${_v1}trainer/exercises/';
+
+  // Plan-day exercise endpoints
+  static String planDayExercises(int dayId) => '${_v1}trainer/plan-days/$dayId/exercises/';
+  static String planDayExerciseDetail(int dayId, int exerciseId) => '${_v1}trainer/plan-days/$dayId/exercises/$exerciseId/';
+  static String planDayExercisesReorder(int dayId) => '${_v1}trainer/plan-days/$dayId/exercises/reorder/';
+
+  // Customer workout history
+  static String customerWorkoutHistory(int customerId) => '${_v1}trainer/customers/$customerId/workout-history/';
 }
