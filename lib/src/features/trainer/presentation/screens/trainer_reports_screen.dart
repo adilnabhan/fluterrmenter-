@@ -48,9 +48,9 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final clientsTrained = _reportsData['clients_trained'] ?? 0;
-    final workoutsAssigned = _reportsData['active_plans_assigned'] ?? 0;
-    final workoutsCompleted = _reportsData['workouts_completed'] ?? 0;
+    final clientsTrained = _reportsData['clients_trained_count'] ?? 0;
+    final workoutsAssigned = _reportsData['workout_plans_given_count'] ?? 0;
+    final workoutsCompleted = _reportsData['workouts_completed_count'] ?? 0;
     final attendance = _reportsData['attendance_rate']?.toString() ?? "0%";
     final completionRate = _reportsData['completion_rate']?.toString() ?? "0%";
     final activeProgress = _reportsData['active_progress']?.toString() ?? "Good";
@@ -194,14 +194,23 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
   Widget _buildReportRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textGrey),
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textGrey),
+          ),
         ),
-        Text(
-          value,
-          style: AppStyles.text14Px.poppins.w600.dark,
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 3,
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: AppStyles.text14Px.poppins.w600.dark,
+          ),
         ),
       ],
     );

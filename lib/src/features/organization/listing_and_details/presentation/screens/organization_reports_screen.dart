@@ -274,14 +274,23 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   Widget _buildReportRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textGrey),
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textGrey),
+          ),
         ),
-        Text(
-          value,
-          style: AppStyles.text14Px.poppins.w600.dark,
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 3,
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: AppStyles.text14Px.poppins.w600.dark,
+          ),
         ),
       ],
     );
