@@ -99,7 +99,7 @@ class _AppViewState extends State<AppView> {
         user.mentor?.org != null) {
       return const OrganizationListingScreen();
     } else {
-      return const SentOtpScreen();
+      return const CreateOrganizationBasicDetailsScreen();
     }
   }
 }

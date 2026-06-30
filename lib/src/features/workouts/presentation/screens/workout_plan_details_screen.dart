@@ -987,7 +987,7 @@ class _ExerciseCard extends StatelessWidget {
                             ),
                             child: Text(
                               'Set ${s['set_number']}: ${reps}r × ${weight}kg',
-                              style: AppStyles.text11Px.poppins.w500.copyWith(color: AppColors.textDark),
+                              style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textDark),
                             ),
                           );
                         }).toList(),
