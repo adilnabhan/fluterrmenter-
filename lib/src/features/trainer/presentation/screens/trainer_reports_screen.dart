@@ -24,19 +24,8 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
     });
 
     try {
-      final user = context.read<AppCubit>().state.currentUser;
-      final orgId = user?.mentor?.org?.id;
-
-      if (orgId == null) {
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Fetch advanced reports from fitnesscenter/reports endpoint
       final response = await DioClient().dio.get<dynamic>(
-        '${ApiUris.reports}?organization_id=$orgId',
+        ApiUris.trainerReports,
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -59,26 +48,12 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final trainersPerformance = _reportsData['trainers_performance'] as List<dynamic>? ?? [];
-    final user = context.read<AppCubit>().state.currentUser;
-    final fullName = '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim();
-
-    // Find current trainer's performance report
-    Map<String, dynamic>? myPerformance;
-    for (final item in trainersPerformance) {
-      if (item is Map && item['name']?.toString().toLowerCase() == fullName.toLowerCase()) {
-        myPerformance = Map<String, dynamic>.from(item);
-        break;
-      }
-    }
-
-    // Default stats fallback
-    final clientsTrained = myPerformance?['clients_trained_count'] ?? 0;
-    final workoutsAssigned = myPerformance?['workout_plans_given_count'] ?? 0;
-    final workoutsCompleted = myPerformance?['workouts_completed_count'] ?? (workoutsAssigned * 0.85).round();
-    final attendance = myPerformance?['attendance_rate'] ?? "92%";
-    final completionRate = myPerformance?['completion_rate'] ?? "84.6%";
-    final activeProgress = myPerformance?['active_progress'] ?? "Good";
+    final clientsTrained = _reportsData['clients_trained'] ?? 0;
+    final workoutsAssigned = _reportsData['active_plans_assigned'] ?? 0;
+    final workoutsCompleted = _reportsData['workouts_completed'] ?? 0;
+    final attendance = _reportsData['attendance_rate']?.toString() ?? "0%";
+    final completionRate = _reportsData['completion_rate']?.toString() ?? "0%";
+    final activeProgress = _reportsData['active_progress']?.toString() ?? "Good";
 
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),

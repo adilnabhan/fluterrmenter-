@@ -71,6 +71,7 @@ final class ApiUris {
       '${_v1}fitnesscenter/membership-plans/$id/';
   static final paymentHistory = '${_v1}fitnesscenter/customer-payments/';
   static final reports = '${_v1}fitnesscenter/reports/';
+  static final ownerDashboard = '${_v1}fitnesscenter/owner/dashboard/';
   // static String paymentHistory(String orgId) =>
   //     '${_v1}fitnesscenter/customer-payments/$orgId';
 
@@ -84,6 +85,7 @@ final class ApiUris {
   static final trainerDashboard = '${_v1}trainer/dashboard/';
   static final trainerCustomers = '${_v1}trainer/customers/';
   static String trainerCustomerDetails(int customerId) => '${_v1}trainer/customers/$customerId/';
+  static final trainerReports = '${_v1}trainer/reports/';
 
   ///============================= Workouts =============================\\\
   static final workoutGroups = '${_v1}trainer/workout-groups/';

@@ -25,9 +25,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     });
 
     try {
-      // Fetch advanced reports from fitnesscenter/reports endpoint for the organization
       final response = await DioClient().dio.get<dynamic>(
-        '${ApiUris.reports}?organization_id=${widget.orgId}',
+        ApiUris.ownerDashboard,
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -51,17 +50,14 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   @override
   Widget build(BuildContext context) {
     // Financial metrics
-    final financial = _reportsData['financial_metrics'] as Map<dynamic, dynamic>?;
-    final totalRevenue = financial?['total_revenue'] ?? 0.0;
-    final newSignups = financial?['new_signups'] ?? 0;
-    final churnRate = financial?['churn_rate'] ?? "0%";
+    final double totalRevenue = double.tryParse(_reportsData['total_membership_revenue']?.toString() ?? '0') ?? 0.0;
+    final int newSignups = int.tryParse(_reportsData['new_signups_last_30_days']?.toString() ?? '0') ?? 0;
+    final String churnRate = _reportsData['churn_rate']?.toString() ?? "0%";
 
     // Demographics/Attendance
-    final demographics = _reportsData['client_demographics'] as Map<dynamic, dynamic>?;
-    final totalClients = demographics?['total_clients'] ?? 0;
-
-    final attendance = _reportsData['attendance_patterns'] as Map<dynamic, dynamic>?;
-    final totalCompletedSessions = attendance?['total_completed_sessions'] ?? 0;
+    final int totalClients = int.tryParse(_reportsData['total_registered_customers']?.toString() ?? '0') ?? 0;
+    final int totalCompletedSessions = int.tryParse(_reportsData['completed_sessions']?.toString() ?? '0') ?? 0;
+    final String retentionStatus = _reportsData['member_retention_status']?.toString() ?? "Healthy";
 
     // Trainers performance list
     final trainersPerformance = _reportsData['trainers_performance'] as List<dynamic>? ?? [];
@@ -146,7 +142,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                           const Divider(height: 24, thickness: 1, color: Color(0xffEEEEEE)),
                           _buildReportRow('Total Monthly Revenue', '₹${totalRevenue.toStringAsFixed(2)}'),
                           const Divider(height: 24, thickness: 1, color: Color(0xffEEEEEE)),
-                          _buildReportRow('Member Retention Status', 'Healthy'),
+                          _buildReportRow('Member Retention Status', retentionStatus),
                         ],
                       ),
                     ),
