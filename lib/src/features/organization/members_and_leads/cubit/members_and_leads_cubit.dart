@@ -25,6 +25,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     if (isPagination && (members?.next?.isEmpty ?? true)) {
       return;
     }
+    if (isClosed) return;
     emit(
       state.copyWith(
         members: (
@@ -45,6 +46,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     if (isPagination) {
       await res.fold(
         (l) {
+          if (isClosed) return null;
           emit(
             state.copyWith(
               members: (data: state.members.data, isPagination: false),
@@ -56,6 +58,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
           final data = r.copyWith(
             results: [...?members?.results, ...?r.results],
           );
+          if (isClosed) return;
           emit(
             state.copyWith(
               members: (data: some(right(data)), isPagination: false),
@@ -64,6 +67,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         },
       );
     } else {
+      if (isClosed) return;
       emit(
         state.copyWith(members: (data: some(res), isPagination: isPagination)),
       );
@@ -71,8 +75,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
   }
 
   Future<void> fetchMemberDetails({required int memberId}) async {
+    if (isClosed) return;
     emit(state.copyWith(memberDetails: none()));
     final res = await MembersRepository().memberDetails(id: memberId);
+    if (isClosed) return;
     emit(state.copyWith(memberDetails: some(res)));
   }
 
@@ -81,6 +87,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required MembershipPackageModel membershipPackageModel,
   }) async {
     print('id ---${membershipPackageModel.id}---$orgId');
+    if (isClosed) return;
     emit(
       state.copyWith(
         createOrUpdateMember: none(),
@@ -123,9 +130,11 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       memberId: null,
       body: FormData.fromMap(map),
     );
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: some(res)));
     res.fold((l) {}, (r) {
       Future.delayed(const Duration(seconds: 1), () {
+        if (isClosed) return;
         emit(state.copyWith(memberOnboardedAnimationCompleted: true));
       });
     });
@@ -146,6 +155,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     if (isPagination && (leads?.next?.isEmpty ?? true)) {
       return;
     }
+    if (isClosed) return;
     emit(
       state.copyWith(
         leads: (
@@ -166,6 +176,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     if (isPagination) {
       await res.fold(
         (l) {
+          if (isClosed) return null;
           emit(
             state.copyWith(
               leads: (data: state.leads.data, isPagination: false),
@@ -175,6 +186,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         },
         (r) {
           final data = r.copyWith(results: [...?leads?.results, ...?r.results]);
+          if (isClosed) return;
           emit(
             state.copyWith(
               leads: (data: some(right(data)), isPagination: false),
@@ -183,6 +195,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         },
       );
     } else {
+      if (isClosed) return;
       emit(
         state.copyWith(leads: (data: some(res), isPagination: isPagination)),
       );
@@ -190,8 +203,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
   }
 
   Future<void> fetchLeadDetails({required String leadId}) async {
+    if (isClosed) return;
     emit(state.copyWith(leadDetails: none()));
     final res = await LeadsRepository().leadDetails(id: leadId);
+    if (isClosed) return;
     emit(state.copyWith(leadDetails: some(res)));
   }
 
@@ -210,8 +225,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required List<String>? trainerCertificates,
     required String? profilePicture,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateLead: none()));
     if (fullName?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -221,6 +238,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (mobileNumber?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -230,6 +248,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (email?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -239,6 +258,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (dateOfBirth?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -248,6 +268,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (gender?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -257,6 +278,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (bloodGroup?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -266,6 +288,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (emergencyContactNumber?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -279,6 +302,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (experience == null) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -288,6 +312,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (addressProof?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -297,6 +322,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (trainerCertificates?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -311,6 +337,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       return;
     }
     // else if (profilePicture?.isEmpty ?? true) {
+    if (isClosed) return;
     //   emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Profile picture is required')))));
     //   return;
     // }
@@ -371,6 +398,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       leadId: leadId,
       body: formData,
     );
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
 
@@ -382,8 +410,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required String? gender,
     required String? profilePicture,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateLead: none()));
     if (fullName?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -393,6 +423,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (mobileNumber?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -402,6 +433,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (email?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -411,6 +443,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     } else if (gender?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -443,6 +476,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       leadId: leadId,
       body: formData,
     );
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
 
@@ -454,8 +488,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required String? gender,
     required String? profilePicture,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: none()));
     // if (fullName?.isEmpty ?? true) {
+    if (isClosed) return;
     //   emit(
     //     state.copyWith(
     //       createOrUpdateMember: some(
@@ -465,6 +501,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     //   );
     //   return;
     // } else if (mobileNumber?.isEmpty ?? true) {
+    if (isClosed) return;
     //   emit(
     //     state.copyWith(
     //       createOrUpdateMember: some(
@@ -474,6 +511,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     //   );
     //   return;
     // } else if (email?.isEmpty ?? true) {
+    if (isClosed) return;
     //   emit(
     //     state.copyWith(
     //       createOrUpdateMember: some(
@@ -483,6 +521,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     //   );
     //   return;
     // } else if (gender?.isEmpty ?? true) {
+    if (isClosed) return;
     //   emit(
     //     state.copyWith(
     //       createOrUpdateMember: some(
@@ -557,6 +596,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       memberId: memberId,
       body: formData,
     );
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
@@ -564,8 +604,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required int memberId,
     required String? dob,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: none()));
     if (dob?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateMember: some(
@@ -579,6 +621,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       memberId: memberId,
       body: {'date_of_birth': dob, 'organization_id': orgId},
     );
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
@@ -586,8 +629,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required int memberId,
     required String? height,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: none()));
     if (height?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateMember: some(
@@ -601,6 +646,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       memberId: memberId,
       body: {'height': height, 'organization_id': orgId},
     );
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
@@ -608,8 +654,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required int memberId,
     required String? weight,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: none()));
     if (weight?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateMember: some(
@@ -623,6 +671,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       memberId: memberId,
       body: {'weight': weight, 'organization_id': orgId},
     );
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: some(res)));
   }
 
@@ -630,8 +679,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required int leadId,
     required String? dob,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateLead: none()));
     if (dob?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -645,6 +696,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       leadId: leadId,
       body: {'date_of_birth': dob, 'organization_id': orgId},
     );
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
 
@@ -652,8 +704,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required int leadId,
     required String? experience,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateLead: none()));
     if (experience?.isEmpty ?? true) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrUpdateLead: some(
@@ -667,14 +721,17 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       leadId: leadId,
       body: {'experience': experience, 'organization_id': orgId},
     );
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateLead: some(res)));
   }
 
   // Future<void> fetchExpiringMemberShip() async {
+  //   if (isClosed) return;
   //   emit(state.copyWith(upComingPayments: none()));
   //   final res = await MembershipRepository().listExpiringMembership(
   //     queryParameters: {'organization_id': orgId},
   //   );
+  //   if (isClosed) return;
   //   emit(state.copyWith(upComingPayments: some(res)));
   // }
 
@@ -691,6 +748,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     }
 
     // Emit loading state (preserve previous data if pagination)
+    if (isClosed) return;
     emit(
       state.copyWith(
         upComingPayments: (
@@ -710,6 +768,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     if (isPagination) {
       await res.fold(
         (l) {
+          if (isClosed) return null;
           emit(
             state.copyWith(
               upComingPayments: (
@@ -725,6 +784,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
             results: [...?expiring?.results, ...?r.results],
           );
 
+          if (isClosed) return;
           emit(
             state.copyWith(
               upComingPayments: (data: some(right(data)), isPagination: false),
@@ -735,6 +795,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     }
     // Handle First Load (no pagination)
     else {
+      if (isClosed) return;
       emit(
         state.copyWith(
           upComingPayments: (data: some(res), isPagination: false),
@@ -759,6 +820,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       return;
     }
 
+    if (isClosed) return;
     emit(
       state.copyWith(
         paymentHistory: (
@@ -776,6 +838,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     if (isPagination) {
       await res.fold(
             (l) {
+          if (isClosed) return;
           emit(
             state.copyWith(
               paymentHistory: (
@@ -796,6 +859,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
             ),
           );
 
+          if (isClosed) return;
           emit(
             state.copyWith(
               paymentHistory: (
@@ -807,6 +871,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         },
       );
     } else {
+      if (isClosed) return;
       emit(
         state.copyWith(
           paymentHistory: (

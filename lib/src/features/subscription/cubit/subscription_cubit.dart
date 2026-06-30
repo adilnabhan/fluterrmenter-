@@ -17,23 +17,29 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   final OrganizationDetailsModel orgDetails;
 
   Future<void> fetchSubscriptions() async {
+    if (isClosed) return;
     emit(state.copyWith(plans: none()));
     final res = await SubscriptionRepository().plans();
     res.fold((l) {}, (plans) {
       if (plans.results?.isNotEmpty ?? false) {
+        if (isClosed) return;
         emit(state.copyWith(selectedSubscriptionModel: plans.results!.first));
       }
     });
+    if (isClosed) return;
     emit(state.copyWith(plans: some(res)));
   }
 
   void selectSubscription(SubscriptionPlanModel model) {
+    if (isClosed) return;
     emit(state.copyWith(selectedSubscriptionModel: model));
   }
 
   Future<void> payment() async {
+    if (isClosed) return;
     emit(state.copyWith(payment: none()));
     if (state.selectedSubscriptionModel?.id == null) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           payment: some(
@@ -43,6 +49,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       );
       return;
     } else if (orgDetails.id == null) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           payment: some(
@@ -59,12 +66,14 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       },
     );
     // await res.fold(
+    if (isClosed) return;
     //   (l) async => emit(state.copyWith(payment: some(left(l)))),
     //   (rozarpayOrder) async =>
     //       openRazorpayCheckout(rozarpayOrder: rozarpayOrder),
     // );
     await res.fold(
       (l) async {
+        if (isClosed) return;
         emit(state.copyWith(payment: some(left(l))));
       },
       (rozarpayOrder) async {
@@ -77,6 +86,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
             'FREE_SIGNATURE',
             {},
           );
+          if (isClosed) return;
           emit(state.copyWith(payment: some(right(fakeResponse))));
           return;
         }
@@ -90,6 +100,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   Future<void> openRazorpayCheckout({
     required InitiateRazorpayPaymentModel rozarpayOrder,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(payment: none()));
     final razorpayApiKey = dotenv.get('RAZORPAY_API_KEY');
     try {
@@ -97,6 +108,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
           rozarpayOrder.disciplPlan?.discountedPrice?.toNum ?? 0;
       final rozarpayOrderId = rozarpayOrder.orderId;
       if (discountAmount <= 0) {
+        if (isClosed) return;
         emit(
           state.copyWith(
             payment: some(
@@ -106,6 +118,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         );
         return;
       } else if (rozarpayOrderId == null) {
+        if (isClosed) return;
         emit(
           state.copyWith(
             payment: some(
@@ -136,6 +149,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       };
       _razorpay.open(options);
     } catch (e) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           payment: some(
@@ -149,11 +163,13 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     /// Do something when payment succeeds
     // fetchLastPaymentStatus(response);
+    if (isClosed) return;
     emit(state.copyWith(payment: some(right(response))));
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
     /// Do something when payment fails
+    if (isClosed) return;
     emit(
       state.copyWith(
         payment: some(
@@ -167,6 +183,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     /// Do something when an external wallet is selected
+    if (isClosed) return;
     // emit(state.copyWith(payment: some(left(response))));
   }
 

@@ -40,6 +40,7 @@ class __BankListingViewScreenState extends State<_BankListingViewScreen> {
   Future<void> _onDeleteBank({int? id}) async {
     if (id == null) return;
 
+    if (!context.mounted) return;
     await showDialog(
       context: context,
       builder: (context) {

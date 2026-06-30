@@ -15,8 +15,10 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
     if (state.onboardingUser?.isNone() ?? false) {
       return;
     }
+    if (isClosed) return;
     emit(state.copyWith(onboardingUser: none()));
     if (firstName.isEmpty) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           onboardingUser: some(
@@ -27,6 +29,7 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
       return;
     }
     if (lastName.isEmpty) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           onboardingUser: some(
@@ -37,6 +40,7 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
       return;
     }
     if (email.isEmpty) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           onboardingUser: some(
@@ -59,6 +63,7 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
         'meta': <String, dynamic>{},
       },
     );
+    if (isClosed) return;
     emit(state.copyWith(onboardingUser: some(result)));
   }
 

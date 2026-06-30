@@ -147,6 +147,7 @@ class _SearchCheckboxFieldState<T> extends State<SearchCheckboxField<T>> with Ch
                       : InkWell(
                         onTap: () {
                           _showSheet = !_showSheet;
+                          if (!mounted) return;
                           setState(() {});
                         },
                         child: Row(

@@ -35,6 +35,7 @@ class _GalleryViewScreenState extends State<GalleryViewScreen> {
   }
 
   void _onPageChanged(int index) {
+    if (!mounted) return;
     setState(() {
       _currentIndex = index;
     });
@@ -148,10 +149,7 @@ class _GalleryViewScreenState extends State<GalleryViewScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: Colors.black,
-            ),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
             onPressed: () => Navigator.of(context).pop(),
           ),
           centerTitle: true,

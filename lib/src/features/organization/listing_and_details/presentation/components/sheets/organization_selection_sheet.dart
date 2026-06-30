@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_main_screen.dart';
 
 class OrganizationSelectionSheet extends StatefulWidget {
   const OrganizationSelectionSheet({super.key});
@@ -103,6 +104,64 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                                           Text(
                                             org.name ?? '',
                                             style: AppStyles.text14Px.dark,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const Divider(
+                                    thickness: 1,
+                                    color: Color(0xffDDDDDD),
+                                  ),
+                                ],
+                              );
+                            }),
+
+                            ...?context.watch<AppCubit>().state.accounts.where((a) => a.userRole == 35).map((account) {
+                              return Column(
+                                children: [
+                                  InkWell(
+                                    overlayColor: const WidgetStatePropertyAll(
+                                      Colors.transparent,
+                                    ),
+                                    onTap: () {
+                                      context.read<AppCubit>().switchAccount(account);
+                                      context.pushAndRemoveUntil(const TrainerMainScreen());
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          SizedBox.square(
+                                            dimension: 48,
+                                            child: AbsorbPointer(
+                                              child: ProfileImage(
+                                                isEdit: false,
+                                                radius: 48,
+                                                url: account.profilePicture as String? ?? '',
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '${account.firstName ?? ""} ${account.lastName ?? ""}'.trim().isNotEmpty 
+                                                    ? '${account.firstName ?? ""} ${account.lastName ?? ""}'.trim() 
+                                                    : (account.mobileNumber ?? 'Trainer Profile'),
+                                                style: AppStyles.text14Px.dark,
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'Trainer',
+                                                style: AppStyles.text12Px.poppins.w400.copyWith(
+                                                  color: AppColors.textGrey,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),

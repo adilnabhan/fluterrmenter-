@@ -40,6 +40,7 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
   }
 
   Future<void> fetch({bool isLoading = false, String? q}) async {
+    if (!mounted) return;
     setState(() {
       errorText = '';
       this.isLoading = isLoading;
@@ -65,6 +66,7 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
           ..addAll(_allValues);
       },
     );
+    if (!mounted) return;
     setState(() {
       this.isLoading = false;
     });
@@ -84,6 +86,7 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
           _filteredValues
             ..clear()
             ..addAll(_allValues);
+          if (!mounted) return;
           setState(() {});
         } else {
           _filteredValues
@@ -93,6 +96,7 @@ class _AddAmenitiesSheetState extends State<AddAmenitiesSheet> {
                 (e) => e.label.toLowerCase().contains(q.toLowerCase()),
               ),
             );
+          if (!mounted) return;
           setState(() {});
         }
       },

@@ -29,6 +29,7 @@ class _OrganizationDashboardScaffoldState
   }
 
   void _onTap(int index) {
+    if (!mounted) return;
     setState(() {
       _currentIndex = index;
     });

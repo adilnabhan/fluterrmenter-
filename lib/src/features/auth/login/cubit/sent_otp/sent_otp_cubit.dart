@@ -12,6 +12,7 @@ class SentOtpCubit extends Cubit<SentOtpState> {
       return;
     }
     if (phone.isEmpty) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           sentOtp: some(
@@ -22,6 +23,7 @@ class SentOtpCubit extends Cubit<SentOtpState> {
       return;
     }
     if (phone.length < 10) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           sentOtp: some(
@@ -31,6 +33,7 @@ class SentOtpCubit extends Cubit<SentOtpState> {
       );
       return;
     }
+    if (isClosed) return;
     emit(state.copyWith(sentOtp: none()));
     final response = await AuthRepository().sentOtp(
       body: {
@@ -39,6 +42,7 @@ class SentOtpCubit extends Cubit<SentOtpState> {
         'source': platformSource,
       },
     );
+    if (isClosed) return;
     emit(state.copyWith(sentOtp: some(response)));
   }
 
@@ -47,10 +51,13 @@ class SentOtpCubit extends Cubit<SentOtpState> {
         (state.googleSignIn?.isNone() ?? false)) {
       return;
     }
+    if (isClosed) return;
     emit(state.copyWith(googleSignIn: none()));
     // await Future<void>.delayed(const Duration(seconds: 3));
+    if (isClosed) return;
     emit(state.copyWith(googleSignIn: some(right(null))));
     // final result = await AuthService().login(email, password);
+    if (isClosed) return;
     // emit(state.copyWith(action: some(result)));
   }
 }

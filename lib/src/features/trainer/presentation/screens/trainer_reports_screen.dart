@@ -19,6 +19,7 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
   }
 
   Future<void> _fetchReports() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -28,6 +29,7 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
       final orgId = user?.mentor?.org?.id;
 
       if (orgId == null) {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
@@ -41,16 +43,19 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
       );
 
       if (response.statusCode == 200 && response.data is Map) {
+        if (!mounted) return;
         setState(() {
           _reportsData = Map<String, dynamic>.from(response.data as Map);
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -76,9 +81,9 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
     final clientsTrained = myPerformance?['clients_trained_count'] ?? 0;
     final workoutsAssigned = myPerformance?['workout_plans_given_count'] ?? 0;
     final workoutsCompleted = myPerformance?['workouts_completed_count'] ?? (workoutsAssigned * 0.85).round();
-    final attendance = myPerformance?['attendance_rate'] ?? "92%";
-    final completionRate = myPerformance?['completion_rate'] ?? "84.6%";
-    final activeProgress = myPerformance?['active_progress'] ?? "Good";
+    final attendance = myPerformance?['attendance_rate']?.toString() ?? "92%";
+    final completionRate = myPerformance?['completion_rate']?.toString() ?? "84.6%";
+    final activeProgress = myPerformance?['active_progress']?.toString() ?? "Good";
 
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),

@@ -56,6 +56,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
               keyboardType: TextInputType.name,
               inputFormatters: const [],
               onSave: (value) {
+                if (!mounted) return;
                 setState(() {
                   _basicDetails[0] = copyBasicDetails(value, 0);
                 });
@@ -89,6 +90,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
               keyboardType: TextInputType.streetAddress,
               inputFormatters: const [],
               onSave: (value) {
+                if (!mounted) return;
                 setState(() {
                   _basicDetails[1] = copyBasicDetails(value, 1);
                 });
@@ -117,6 +119,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
               keyboardType: TextInputType.emailAddress,
               inputFormatters: const [],
               onSave: (value) {
+                if (!mounted) return;
                 setState(() {
                   _basicDetails[2] = copyBasicDetails(value, 2);
                 });
@@ -147,6 +150,7 @@ class _GymDetailsScreenState extends State<GymDetailsScreen> {
           //     label: 'Mobile',
           //     hintText: 'Enter Number',
           //     onSave: (value) {
+          if (!mounted) return;
           //       setState(() {
           //         _basicDetails[3] = copyBasicDetails(value, 3);
           //       });

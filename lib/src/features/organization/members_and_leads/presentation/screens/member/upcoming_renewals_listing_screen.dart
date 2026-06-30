@@ -301,4 +301,10 @@ class __UpcomingRenewalsListingScreenState
       ),
     );
   }
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
 }

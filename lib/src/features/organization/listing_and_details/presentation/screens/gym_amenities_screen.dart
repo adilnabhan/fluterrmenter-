@@ -69,6 +69,7 @@ class _GymAmenitiesScreenState extends State<GymAmenitiesScreen> {
                         ),
                       ],
                       onSubmit: (values) {
+                        if (!mounted) return;
                         setState(() {
                           _amenities
                             ..clear()

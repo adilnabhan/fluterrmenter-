@@ -105,6 +105,7 @@ class _WordFieldState extends State<WordField> {
     _stateController = WidgetStatesController();
     _stateController.addListener(() {
       SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+        if (!mounted) return;
         setState(() {});
       });
     });

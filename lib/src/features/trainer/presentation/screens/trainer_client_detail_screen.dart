@@ -36,6 +36,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   }
 
   Future<void> _fetchClientDetails() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -47,6 +48,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
       );
 
       if (response.statusCode == 200 && response.data is Map) {
+        if (!mounted) return;
         setState(() {
           _clientData = Map<String, dynamic>.from(response.data as Map);
           final profile = _clientData['profile'] as Map<dynamic, dynamic>? ?? {};
@@ -54,12 +56,14 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load client details');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -68,6 +72,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   }
 
   Future<void> _fetchWorkoutHistory() async {
+    if (!mounted) return;
     setState(() {
       _isLoadingHistory = true;
     });
@@ -80,16 +85,19 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
 
       if (response.statusCode == 200 && response.data is List) {
         final List<dynamic> data = response.data as List<dynamic>;
+        if (!mounted) return;
         setState(() {
           _workoutHistory = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoadingHistory = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoadingHistory = false;
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoadingHistory = false;
       });
@@ -98,6 +106,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   }
 
   Future<void> _saveNotes() async {
+    if (!mounted) return;
     setState(() {
       _isSavingNotes = true;
     });
@@ -119,6 +128,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     } catch (e) {
       Dialogs.showSnack(msg: 'Error saving remarks: ${e.toString()}');
     } finally {
+      if (!mounted) return;
       setState(() {
         _isSavingNotes = false;
       });
@@ -126,26 +136,31 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   }
 
   Future<void> _toggleDetailAssignment(bool isCurrentlyAssigned) async {
-    final trainerId = context.read<AppCubit>().state.currentUser?.mentor?.id;
+    final user = context.read<AppCubit>().state.currentUser;
+    final trainerId = user?.trainer?.id ?? user?.mentor?.id;
     if (trainerId == null) {
       Dialogs.showSnack(msg: 'Trainer profile not found.');
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
 
     try {
+      final profile = _clientData['profile'] as Map<dynamic, dynamic>? ?? {};
+      final memberId = _clientData['member_id'] ?? profile['member_id'] ?? _clientData['id'] ?? profile['id'] ?? widget.customerId;
+
       final response = await DioClient().dio.patch<dynamic>(
-        ApiUris.updateMember(widget.customerId),
+        ApiUris.updateMember(memberId as int),
         data: {
           'trainer_id': isCurrentlyAssigned ? null : trainerId,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         Dialogs.showSnack(
           msg: isCurrentlyAssigned
               ? 'Client unassigned successfully'
@@ -153,12 +168,22 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         );
         _fetchClientDetails();
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to update assignment');
       }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      final errorData = e.response?.data;
+      final errorMsg = errorData != null ? errorData.toString() : e.message ?? e.toString();
+      Dialogs.showSnack(msg: 'Error: $errorMsg');
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -192,6 +217,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     final isSelected = _selectedTab == index;
     return GestureDetector(
       onTap: () {
+        if (!mounted) return;
         setState(() {
           _selectedTab = index;
         });
@@ -621,41 +647,48 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: logs.map((log) {
-                                final logMap = Map<String, dynamic>.from(log as Map);
-                                final workoutName = logMap['workout_name'] ?? 'Exercise';
-                                final setLogs = logMap['set_logs'] as List<dynamic>? ?? [];
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final itemWidth = (constraints.maxWidth - 12) / 2;
+                                return Wrap(
+                                  spacing: 12,
+                                  runSpacing: 12,
+                                  children: logs.map((log) {
+                                    final logMap = Map<String, dynamic>.from(log as Map);
+                                    final workoutName = logMap['workout_name'] ?? 'Exercise';
+                                    final setLogs = logMap['set_logs'] as List<dynamic>? ?? [];
 
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 10),
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xffF9F9F9),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        workoutName as String,
-                                        style: AppStyles.text13Px.poppins.w600.dark,
+                                    return Container(
+                                      width: itemWidth,
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xffF9F9F9),
+                                        border: Border.all(color: Colors.grey.withValues(alpha: .2)),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      const SizedBox(height: 6),
-                                      ...setLogs.map((set) {
-                                        final setMap = Map<String, dynamic>.from(set as Map);
-                                        final reps = setMap['reps'] ?? 0;
-                                        final weight = setMap['weight_kg'] ?? 0.0;
-                                        return Text(
-                                          'Set ${setMap['set_number']}: $weight kg x $reps reps',
-                                          style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                                        );
-                                      }),
-                                    ],
-                                  ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            workoutName as String,
+                                            style: AppStyles.text13Px.poppins.w600.dark,
+                                          ),
+                                          const SizedBox(height: 6),
+                                          ...setLogs.map((set) {
+                                            final setMap = Map<String, dynamic>.from(set as Map);
+                                            final reps = setMap['reps'] ?? 0;
+                                            final weight = setMap['weight_kg'] ?? 0.0;
+                                            return Text(
+                                              'Set ${setMap['set_number']}: $weight kg x $reps reps',
+                                              style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                            );
+                                          }),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
                                 );
-                              }).toList(),
+                              }
                             ),
                           ),
                         ],
@@ -837,7 +870,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
           ),
           onPressed: () => _toggleDetailAssignment(isAssignedToMe),
           child: Text(
-            isAssignedToMe ? 'Unassign' : 'Assign to me',
+            isAssignedToMe ? 'Unassign' : 'Assign',
             style: AppStyles.text12Px.poppins.w600.copyWith(
               color: isAssignedToMe ? AppColors.primary : const Color(0xFF43A047),
             ),

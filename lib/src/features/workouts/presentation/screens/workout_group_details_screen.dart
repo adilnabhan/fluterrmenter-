@@ -17,7 +17,8 @@ class WorkoutGroupDetailsScreen extends StatefulWidget {
   final String groupTitle;
 
   @override
-  State<WorkoutGroupDetailsScreen> createState() => _WorkoutGroupDetailsScreenState();
+  State<WorkoutGroupDetailsScreen> createState() =>
+      _WorkoutGroupDetailsScreenState();
 }
 
 class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
@@ -92,6 +93,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
   }
 
   Future<void> _fetchPlans() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -108,17 +110,21 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
       if (response.statusCode == 200 && response.data is List) {
         final List<dynamic> data = response.data as List<dynamic>;
+        if (!mounted) return;
         setState(() {
-          _plans = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _plans =
+              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load workout plans');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -127,6 +133,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
   }
 
   Future<void> _createPlan(String privateName, String publicName) async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -150,12 +157,14 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         _planNamePublic.controller?.clear();
         _fetchPlans();
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to create workout plan');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -170,14 +179,18 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
+        centerTitle: true,
+        leading: const PopButton().center,
         title: Text(
           'Workout Plans',
-          style: AppStyles.text20Px.poppins.w600.copyWith(color: Colors.black),
+          style: AppStyles.text16Px.poppins.w600.copyWith(color: Colors.black),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.settings_outlined, color: Colors.black87),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -192,7 +205,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: AppColors.borderGrey),
                   ),
                   child: TextField(
@@ -216,18 +229,6 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    widget.groupTitle.replaceAll('\n', ' '),
-                    style: AppStyles.text18Px.poppins.w600.copyWith(
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                ),
-              ),
               const SizedBox(height: 16),
               Expanded(
                 child: Container(
@@ -238,7 +239,17 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                     ),
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                        child: Text(
+                          widget.groupTitle.replaceAll('\n', ' '),
+                          style: AppStyles.text18Px.poppins.w600.copyWith(
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: Row(
@@ -250,85 +261,106 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                 color: AppColors.textGrey,
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFEAEA),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.filter_list,
-                                    size: 16,
-                                    color: Color(0xFFFF3434),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Sort',
-                                    style: AppStyles.text12Px.poppins.w500
-                                        .copyWith(
-                                          color: const Color(0xFFFF3434),
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            // Container(
+                            //   padding: const EdgeInsets.symmetric(
+                            //     horizontal: 12,
+                            //     vertical: 6,
+                            //   ),
+                            //   decoration: BoxDecoration(
+                            //     color: const Color(0xFFFFEAEA),
+                            //     borderRadius: BorderRadius.circular(20),
+                            //   ),
+                            //   child: Row(
+                            //     children: [
+                            //       const Icon(
+                            //         Icons.filter_alt_outlined,
+                            //         size: 16,
+                            //         color: Color(0xFFFF3434),
+                            //       ),
+                            //       const SizedBox(width: 4),
+                            //       Text(
+                            //         'Sort',
+                            //         style: AppStyles.text12Px.poppins.w500
+                            //             .copyWith(
+                            //               color: const Color(0xFFFF3434),
+                            //             ),
+                            //       ),
+                            //     ],
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
                       Expanded(
-                        child: _isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : _plans.isEmpty
-                                ? const Center(child: Text('No workout plans found.'))
+                        child:
+                            _isLoading
+                                ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                                : _plans.isEmpty
+                                ? const Center(
+                                  child: Text('No workout plans found.'),
+                                )
                                 : ListView.separated(
-                                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                                    itemCount: _plans.length,
-                                    separatorBuilder:
-                                        (context, index) => const SizedBox(height: 16),
-                                    itemBuilder: (context, index) {
-                                      final plan = _plans[index];
-                                      final int planId = plan['id'] as int;
-                                      final String planName = plan['plan_name'] as String? ?? 'Plan';
-                                      final int exerciseCount = plan['exercise_count'] as int? ?? 0;
-                                      final String createdOn = plan['created_at'] != null
-                                          ? DateFormat('dd MMM yyyy').format(DateTime.parse(plan['created_at'] as String))
-                                          : 'N/A';
-
-                                      return _PlanCard(
-                                        title: planName,
-                                        exerciseCount: exerciseCount,
-                                        createdOn: createdOn,
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute<void>(
-                                              builder:
-                                                  (context) => WorkoutPlanDetailsScreen(
-                                                    planTitle: planName,
-                                                    planId: planId,
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                        onAssignTap: () {
-                                          showModalBottomSheet<void>(
-                                            context: context,
-                                            isScrollControlled: true,
-                                            backgroundColor: Colors.transparent,
-                                            builder: (context) => AssignToClientBottomSheet(
-                                              planId: planId,
-                                              planTitle: planName,
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    0,
+                                    16,
+                                    100,
                                   ),
+                                  itemCount: _plans.length,
+                                  separatorBuilder:
+                                      (context, index) =>
+                                          const SizedBox(height: 16),
+                                  itemBuilder: (context, index) {
+                                    final plan = _plans[index];
+                                    final int planId = plan['id'] as int;
+                                    final String planName =
+                                        plan['plan_name'] as String? ?? 'Plan';
+                                    final int exerciseCount =
+                                        plan['exercise_count'] as int? ?? 0;
+                                    final String createdOn =
+                                        plan['created_at'] != null
+                                            ? DateFormat('dd MMM yyyy').format(
+                                              DateTime.parse(
+                                                plan['created_at'] as String,
+                                              ),
+                                            )
+                                            : 'N/A';
+
+                                    return _PlanCard(
+                                      title: planName,
+                                      exerciseCount: exerciseCount,
+                                      createdOn: createdOn,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute<void>(
+                                            builder:
+                                                (context) =>
+                                                    WorkoutPlanDetailsScreen(
+                                                      planTitle: planName,
+                                                      planId: planId,
+                                                    ),
+                                          ),
+                                        );
+                                      },
+                                      onAssignTap: () {
+                                        showModalBottomSheet<void>(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder:
+                                              (context) =>
+                                                  AssignToClientBottomSheet(
+                                                    planId: planId,
+                                                    planTitle: planName,
+                                                  ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
                       ),
                     ],
                   ),
@@ -382,15 +414,49 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  RichText(
+                    text: TextSpan(
+                      text: 'Plan Name ',
+                      style: AppStyles.text14Px.poppins.w500.dark,
+                      children: [
+                        TextSpan(
+                          text: '(only visible to you)',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textGrey),
+                        ),
+                        TextSpan(
+                          text: '*',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.primary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Field(
                     data: _planNamePrivate.copyWith(
-                      label: 'Plan Name (only visible to you)',
+                      label: '',
                     ),
                   ),
                   const SizedBox(height: 16),
+                  RichText(
+                    text: TextSpan(
+                      text: 'Plan Name ',
+                      style: AppStyles.text14Px.poppins.w500.dark,
+                      children: [
+                        TextSpan(
+                          text: '(visible to clients)',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textGrey),
+                        ),
+                        TextSpan(
+                          text: '*',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.primary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Field(
                     data: _planNamePublic.copyWith(
-                      label: 'Plan Name (visible to clients)',
+                      label: '',
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -399,8 +465,10 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
-                          final privateName = _planNamePrivate.controller?.text.trim() ?? '';
-                          final publicName = _planNamePublic.controller?.text.trim() ?? '';
+                          final privateName =
+                              _planNamePrivate.controller?.text.trim() ?? '';
+                          final publicName =
+                              _planNamePublic.controller?.text.trim() ?? '';
                           Navigator.pop(context);
                           if (privateName.isNotEmpty && publicName.isNotEmpty) {
                             _createPlan(privateName, publicName);
@@ -450,13 +518,13 @@ class _PlanCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: .05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -474,14 +542,22 @@ class _PlanCard extends StatelessWidget {
                     color: AppColors.textDark,
                   ),
                 ),
-                const Icon(Icons.edit, size: 18, color: AppColors.textGrey),
+                CircleAvatar(
+                  backgroundColor: AppColors.grey,
+                  radius: 15,
+                  child: const Icon(
+                    Icons.edit,
+                    size: 18,
+                    color: AppColors.textGrey,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
               'No of Exercises: $exerciseCount',
               style: AppStyles.text14Px.poppins.w400.copyWith(
-                color: AppColors.textGrey,
+                color: AppColors.textDark,
               ),
             ),
             const SizedBox(height: 16),
@@ -490,7 +566,7 @@ class _PlanCard extends StatelessWidget {
               children: [
                 Text(
                   'Created on\n$createdOn',
-                  style: AppStyles.text12Px.poppins.w400.copyWith(
+                  style: AppStyles.text12Px.poppins.w500.copyWith(
                     color: AppColors.textGrey,
                   ),
                 ),
@@ -503,9 +579,12 @@ class _PlanCard extends StatelessWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.green.shade50,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFF2E7D32)),
+                      border: Border.all(
+                        color: const Color(0xFF2E7D32),
+                        width: 1.5,
+                      ),
                     ),
                     child: Text(
                       'Assign to',

@@ -12,10 +12,12 @@ class MembershipCubit extends Cubit<MembershipState> {
   final String orgId;
 
   Future<void> fetchMembershipPackages() async {
+    if (isClosed) return;
     emit(state.copyWith(membershipPackages: none()));
     final res = await MembershipRepository().list(
       queryParameters: {'organization_id': orgId},
     );
+    if (isClosed) return;
     emit(state.copyWith(membershipPackages: some(res)));
   }
 
@@ -30,6 +32,7 @@ class MembershipCubit extends Cubit<MembershipState> {
     required bool isEmiAvailable,
     List<EmiOptionsModel>? emiOptions,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdatePackage: none()));
     // final body = {
     //   'organization': orgId,
@@ -63,21 +66,26 @@ class MembershipCubit extends Cubit<MembershipState> {
         (membershipId != null
             ? await MembershipRepository().update(id: membershipId, body: body)
             : await MembershipRepository().create(body: body));
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdatePackage: some(res)));
   }
 
   Future<void> deleteMembershipPackage({required int? id}) async {
     if (id == null) return;
+    if (isClosed) return;
     emit(state.copyWith(isDeleting: true));
     final result = await MembershipRepository().delete(id: id);
+    if (isClosed) return;
     emit(
       state.copyWith(isDeleting: false, createOrUpdatePackage: some(result)),
     );
   }
 
   Future<void> fetchBankAccountList() async {
+    if (isClosed) return;
     emit(state.copyWith(bankDetails: none(), isLoading: true));
     final res = await MembershipRepository().fetchBankDetails(id: orgId);
+    if (isClosed) return;
     emit(state.copyWith(bankDetails: some(res), isLoading: false));
   }
 
@@ -91,6 +99,7 @@ class MembershipCubit extends Cubit<MembershipState> {
     required String panNumber,
     int? detailsId,
   }) async {
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateBank: none(), isLoading: true));
     final body = {
       'account_holder_name': holderName,
@@ -109,6 +118,7 @@ class MembershipCubit extends Cubit<MembershipState> {
               detailsId: detailsId,
             )
             : await MembershipRepository().createBankDetails(body: body));
+    if (isClosed) return;
     emit(state.copyWith(createOrUpdateBank: some(res), isLoading: false));
   }
 }

@@ -32,22 +32,25 @@ class OrganizationListingScreen extends StatelessWidget {
             listenWhen: (p, c) => p.list != c.list,
             listener: (context, state) {
               state.list.fold(() {}, (either) {
-                either.fold((error) {
-                  error.maybeWhen(
-                    notFound: (msg) {
+                either.fold(
+                  (error) {
+                    error.maybeWhen(
+                      notFound: (msg) {
+                        context.pushAndRemoveUntil(
+                          const CreateOrganizationBasicDetailsScreen(),
+                        );
+                      },
+                      orElse: () {},
+                    );
+                  },
+                  (r) {
+                    if (r.result == null || r.result!.isEmpty) {
                       context.pushAndRemoveUntil(
                         const CreateOrganizationBasicDetailsScreen(),
                       );
-                    },
-                    orElse: () {},
-                  );
-                }, (r) {
-                  if (r.result == null || r.result!.isEmpty) {
-                    context.pushAndRemoveUntil(
-                      const CreateOrganizationBasicDetailsScreen(),
-                    );
-                  }
-                });
+                    }
+                  },
+                );
               });
             },
           ),
@@ -117,6 +120,8 @@ class _OrganizationListingAndDetailsScreenState
             appBar:
                 hasData
                     ? AppBar(
+                      centerTitle: false,
+                      titleSpacing: 16,
                       title: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
@@ -143,32 +148,22 @@ class _OrganizationListingAndDetailsScreenState
                           ),
                         ),
                       ),
-                      centerTitle: false,
+
                       actions: [
-                        InkWell(
-                          borderRadius: BorderRadius.circular(999999),
-                          onTap: () {
-                            if (state.selectedOrganization?.id != null) {
-                              context.push(
-                                BlocProvider.value(
-                                  value: _cubit,
-                                  child: OrganizationDetailsScreen(
-                                    orgId: state.selectedOrganization!.id!,
-                                  ),
-                                ),
-                              );
-                            } else {
-                              Dialogs.showSnack(msg: 'Organization not found');
-                            }
-                          },
-                          child: AbsorbPointer(
-                            child: ProfileImage(
-                              isEdit: false,
-                              radius: 48,
-                              url: state.selectedOrganization?.logo ?? '',
-                            ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.notifications_none_rounded,
+                            color: Colors.black87,
                           ),
-                        ).pOnly(right: 16),
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.settings_outlined,
+                            color: Colors.black87,
+                          ),
+                        ).pOnly(right: 4),
                       ],
                     )
                     : null,
@@ -329,7 +324,7 @@ class _OrganizationListingAndDetailsScreenState
                                           crossAxisCount: 2,
                                           mainAxisSpacing: 16,
                                           crossAxisSpacing: 16,
-                                          mainAxisExtent: 128,
+                                          mainAxisExtent: 120,
                                         ),
                                     itemCount: cards.length,
                                     itemBuilder: (
@@ -355,9 +350,9 @@ class _OrganizationListingAndDetailsScreenState
                                                 Text(
                                                   card.count.toString(),
                                                   style: AppStyles
-                                                      .text20Px
+                                                      .text25Px
                                                       .poppins
-                                                      .w800
+                                                      .w700
                                                       .copyWith(
                                                         color: card.color,
                                                       ),
@@ -685,35 +680,20 @@ class _OrganizationListingAndDetailsScreenState
                             ),
                             centerTitle: false,
                             actions: [
-                              //!commented out as settings and notification are to be needed as per new ui
-                              
-                              // InkWell(
-                              //   borderRadius: BorderRadius.circular(999999),
-                              //   onTap: () {
-                              //     if (state.selectedOrganization?.id != null) {
-                              //       context.push(
-                              //         BlocProvider.value(
-                              //           value: _cubit,
-                              //           child: OrganizationDetailsScreen(
-                              //             orgId:
-                              //                 state.selectedOrganization!.id!,
-                              //           ),
-                              //         ),
-                              //       );
-                              //     } else {
-                              //       Dialogs.showSnack(
-                              //         msg: 'Organization not found',
-                              //       );
-                              //     }
-                              //   },
-                              //   child: AbsorbPointer(
-                              //     child: ProfileImage(
-                              //       isEdit: false,
-                              //       radius: 48,
-                              //       url: state.selectedOrganization?.logo ?? '',
-                              //     ),
-                              //   ),
-                              // ).pOnly(right: 16),
+                              IconButton(
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.notifications_none_rounded,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.settings_outlined,
+                                  color: Colors.black87,
+                                ),
+                              ).pOnly(right: 4),
                             ],
                           )
                           : null,
@@ -968,7 +948,7 @@ class _OrganizationListingAndDetailsScreenState
                                   labelColor: const Color(0xff333333),
                                   gradient: null,
                                   borderColor: const Color(0xffEEEEEE),
-                                  iconColor: const Color(0xff666666),
+                                  iconColor: AppColors.dark,
                                   iconBgColor: null,
                                   isChevron: true,
                                   onTap: () {
@@ -993,7 +973,7 @@ class _OrganizationListingAndDetailsScreenState
                                   labelColor: const Color(0xff333333),
                                   gradient: null,
                                   borderColor: const Color(0xffEEEEEE),
-                                  iconColor: const Color(0xff666666),
+                                  iconColor: AppColors.dark,
                                   iconBgColor: null,
                                   isChevron: true,
                                   onTap: () {
@@ -1015,7 +995,7 @@ class _OrganizationListingAndDetailsScreenState
                                   labelColor: const Color(0xff333333),
                                   gradient: null,
                                   borderColor: const Color(0xffEEEEEE),
-                                  iconColor: const Color(0xff666666),
+                                  iconColor: AppColors.dark,
                                   iconBgColor: null,
                                   isChevron: true,
                                   onTap: () {
@@ -1038,7 +1018,7 @@ class _OrganizationListingAndDetailsScreenState
                                   labelColor: const Color(0xff333333),
                                   gradient: null,
                                   borderColor: const Color(0xffEEEEEE),
-                                  iconColor: const Color(0xff666666),
+                                  iconColor: AppColors.dark,
                                   iconBgColor: null,
                                   isChevron: true,
                                   onTap: () {
@@ -1060,7 +1040,7 @@ class _OrganizationListingAndDetailsScreenState
                                   labelColor: const Color(0xff333333),
                                   gradient: null,
                                   borderColor: const Color(0xffEEEEEE),
-                                  iconColor: const Color(0xff666666),
+                                  iconColor: AppColors.dark,
                                   iconBgColor: null,
                                   isChevron: true,
                                   onTap: () {},
@@ -1072,7 +1052,7 @@ class _OrganizationListingAndDetailsScreenState
                                   labelColor: const Color(0xff333333),
                                   gradient: null,
                                   borderColor: const Color(0xffEEEEEE),
-                                  iconColor: const Color(0xff666666),
+                                  iconColor: AppColors.dark,
                                   iconBgColor: null,
                                   isChevron: true,
                                   onTap: () {},
@@ -1117,7 +1097,8 @@ class _OrganizationListingAndDetailsScreenState
                                                 crossAxisCount: 2,
                                                 mainAxisSpacing: 16,
                                                 crossAxisSpacing: 16,
-                                                mainAxisExtent: 128,
+                                                mainAxisExtent:
+                                                    120, // Reduced from 128
                                               ),
                                           itemCount: newCards.length,
                                           itemBuilder: (context, index) {
@@ -1155,8 +1136,8 @@ class _OrganizationListingAndDetailsScreenState
                                                             null)
                                                           BoxShadow(
                                                             color: Colors.black
-                                                                .withOpacity(
-                                                                  0.04,
+                                                                .withValues(
+                                                                  alpha: 0.04,
                                                                 ),
                                                             blurRadius: 10,
                                                             offset:
@@ -1202,7 +1183,7 @@ class _OrganizationListingAndDetailsScreenState
                                                                 card.title,
                                                                 style: AppStyles
                                                                     .text14Px
-                                                                    .w600
+                                                                    .w500
                                                                     .poppins
                                                                     .copyWith(
                                                                       color:
@@ -1353,12 +1334,6 @@ class _OrganizationListingAndDetailsScreenState
                   ),
                 ),
                 GymTrainersScreen(orgDetails: orgDetails!),
-                PaymentUpcomingViewScreen(
-                  orgId: state.selectedOrganization!.id!,
-                ),
-                OrganizationReportsScreen(
-                  orgId: state.selectedOrganization!.id!,
-                ),
                 OrganizationDetailsScreen(
                   orgId: state.selectedOrganization!.id!,
                   canFetch: false,

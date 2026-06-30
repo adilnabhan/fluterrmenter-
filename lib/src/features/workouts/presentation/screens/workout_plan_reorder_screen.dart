@@ -56,6 +56,25 @@ class _WorkoutPlanReorderScreenState extends State<WorkoutPlanReorderScreen> {
           ),
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: ElevatedButton(
+        onPressed: () {
+          Navigator.pop(context, _exercises);
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFD30000),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        child: Text(
+          'Save Changes',
+          style: AppStyles.text14Px.poppins.w600.copyWith(
+            color: Colors.white,
+          ),
+        ),
+      ),
       body: Column(
         children: [
           Expanded(
@@ -69,6 +88,7 @@ class _WorkoutPlanReorderScreenState extends State<WorkoutPlanReorderScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 100),
                 itemCount: _exercises.length,
                 onReorder: (oldIndex, newIndex) {
+                  if (!mounted) return;
                   setState(() {
                     if (oldIndex < newIndex) {
                       newIndex -= 1;
@@ -85,40 +105,6 @@ class _WorkoutPlanReorderScreenState extends State<WorkoutPlanReorderScreen> {
                     exercise: exercise,
                   );
                 },
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 10,
-                  offset: Offset(0, -5),
-                ),
-              ],
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context, _exercises);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD30000),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  'Save Changes',
-                  style: AppStyles.text16Px.poppins.w600.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
               ),
             ),
           ),

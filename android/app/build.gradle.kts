@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "com.discipl.mentor_mobile_app"
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName

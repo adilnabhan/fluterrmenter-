@@ -32,6 +32,7 @@ class _CreateOrganizationPhotosCollectingScreenState
     );
 
     if (pickedImages.isNotEmpty) {
+      if (!mounted) return;
       setState(() {
         _images.addAll(pickedImages);
       });
@@ -134,6 +135,7 @@ class _CreateOrganizationPhotosCollectingScreenState
                             top: 8,
                             child: InkWell(
                               onTap: () {
+                                if (!mounted) return;
                                 setState(() {
                                   _images.removeAt(index);
                                 });
@@ -166,6 +168,7 @@ class _CreateOrganizationPhotosCollectingScreenState
                               allowMultiple: true,
                               needRemove: false,
                               onPickedImages: (images) {
+                                if (!mounted) return;
                                 setState(() {
                                   _images.addAll(images);
                                 });
@@ -282,6 +285,7 @@ class _CreateOrganizationPhotosCollectingScreenState
                                 top: 8,
                                 child: InkWell(
                                   onTap: () {
+                                    if (!mounted) return;
                                     setState(() {
                                       _images.removeAt(index);
                                     });
@@ -312,6 +316,7 @@ class _CreateOrganizationPhotosCollectingScreenState
                               needRemove: false,
                               onPickedImage: (image) {
                                 if (image != null) {
+                                  if (!mounted) return;
                                   setState(() {
                                     _images.add(image);
                                   });
@@ -370,6 +375,7 @@ class _CreateOrganizationPhotosCollectingScreenState
                       //   needRemove: false,
                       //   onPickedImage: (image) {
                       //     if (image != null) {
+                      if (!mounted) return;
                       //       setState(() {
                       //         _images.add(image);
                       //       });

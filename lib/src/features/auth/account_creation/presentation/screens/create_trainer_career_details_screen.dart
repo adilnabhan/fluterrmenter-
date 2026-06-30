@@ -33,6 +33,12 @@ class _CreateTrainerCareerDetailsScreenState extends State<CreateTrainerCareerDe
   ];
 
   @override
+  void dispose() {
+    _payRangeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(leading: const PopButton().center),
@@ -92,6 +98,7 @@ class _CreateTrainerCareerDetailsScreenState extends State<CreateTrainerCareerDe
                     itemBuilder: (context, index) {
                       final center = _trainedCenters[index];
                       return _buildCenterCard(center, () {
+                        if (!mounted) return;
                         setState(() => _trainedCenters.removeAt(index));
                       });
                     },
@@ -233,6 +240,7 @@ class _CreateTrainerCareerDetailsScreenState extends State<CreateTrainerCareerDe
     bool isSelected = _selectedInterests.contains(opt.value);
     return InkWell(
       onTap: () {
+        if (!mounted) return;
         setState(() {
           if (isSelected) {
             _selectedInterests.remove(opt.value);
@@ -349,6 +357,7 @@ class _CreateTrainerCareerDetailsScreenState extends State<CreateTrainerCareerDe
       backgroundColor: Colors.transparent,
       builder: (context) => _AddCenterSheet(
         onAdd: (Map<String, String> center) {
+          if (!mounted) return;
           setState(() => _trainedCenters.add(center));
         },
       ),
@@ -358,6 +367,7 @@ class _CreateTrainerCareerDetailsScreenState extends State<CreateTrainerCareerDe
   void _showAddLocationSheet() {
     // Placeholder using AddCategorySheet structure or similar
     // For now, adding a simple manual entry or dummy data
+    if (!mounted) return;
     setState(() {
       if (!_preferredLocations.contains('Location 1')) {
         _preferredLocations.add('Location 1');
@@ -373,6 +383,7 @@ class _CreateTrainerCareerDetailsScreenState extends State<CreateTrainerCareerDe
       builder: (context) => _AddLanguageSheet(
         onSelect: (String lang) {
           if (!_languagesKnown.contains(lang)) {
+            if (!mounted) return;
             setState(() => _languagesKnown.add(lang));
           }
         },

@@ -72,6 +72,7 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                             );
                             return;
                           }
+                          if (!mounted) return;
                           setState(() {
                             _services.add(_controller.text);
                             _controller.clear();
@@ -115,6 +116,7 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                         Dialogs.showSnack(msg: 'Please enter a service name');
                         return;
                       }
+                      if (!mounted) return;
                       setState(() {
                         _services.add(_controller.text);
                         _controller.clear();
@@ -162,6 +164,7 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
                                       size: 18,
                                     ),
                                     onDeleted: () {
+                                      if (!mounted) return;
                                       setState(() {
                                         _services.remove(service);
                                       });
@@ -209,4 +212,10 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
       ),
     );
   }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
 }

@@ -31,22 +31,22 @@ class _CreateTrainerEarlyBirdOfferScreenState extends State<CreateTrainerEarlyBi
           Positioned(
             top: 20,
             left: 20,
-            child: SvgPicture.asset('assets/images/svg/vectors/shoe.svg', height: 40, color: const Color(0xffFFB2B2).withOpacity(0.5)),
+            child: SvgPicture.asset('assets/images/svg/vectors/shoe.svg', height: 40, colorFilter: ColorFilter.mode(const Color(0xffFFB2B2).withOpacity(0.5), BlendMode.srcIn)),
           ),
           Positioned(
             top: 10,
             right: 20,
-            child: SvgPicture.asset('assets/images/svg/vectors/dumble.svg', height: 40, color: const Color(0xffFFB2B2).withOpacity(0.5)),
+            child: SvgPicture.asset('assets/images/svg/vectors/dumble.svg', height: 40, colorFilter: ColorFilter.mode(const Color(0xffFFB2B2).withOpacity(0.5), BlendMode.srcIn)),
           ),
           Positioned(
             top: 150,
             left: 40,
-            child: SvgPicture.asset('assets/images/svg/vectors/hart.svg', height: 35, color: const Color(0xffFFB2B2).withOpacity(0.5)),
+            child: SvgPicture.asset('assets/images/svg/vectors/hart.svg', height: 35, colorFilter: ColorFilter.mode(const Color(0xffFFB2B2).withOpacity(0.5), BlendMode.srcIn)),
           ),
           Positioned(
             top: 130,
             right: 60,
-            child: SvgPicture.asset('assets/images/svg/vectors/showing_power.svg', height: 40, color: const Color(0xffFFB2B2).withOpacity(0.5)),
+            child: SvgPicture.asset('assets/images/svg/vectors/showing_power.svg', height: 40, colorFilter: ColorFilter.mode(const Color(0xffFFB2B2).withOpacity(0.5), BlendMode.srcIn)),
           ),
 
           SafeArea(

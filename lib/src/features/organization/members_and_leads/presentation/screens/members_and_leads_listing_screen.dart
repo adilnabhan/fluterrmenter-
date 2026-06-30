@@ -256,6 +256,7 @@ class __MembersAndLeadsListingScreenState
                                         _selectedLeadsSorts = values;
                                         _fetchLeads();
                                       }
+                                      if (!mounted) return;
                                       setState(() {});
                                     },
                                     items: _filterOptions,

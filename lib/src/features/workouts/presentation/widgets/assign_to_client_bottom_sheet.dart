@@ -29,6 +29,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
   }
 
   Future<void> _fetchClients() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -71,17 +72,20 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
           };
         }).toList();
 
+        if (!mounted) return;
         setState(() {
           _clients = parsedClients;
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load clients');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -161,30 +165,13 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _submittingMap[customerId] = true;
     });
 
     try {
       final dio = DioClient().dio;
-
-      // 1. Link trainer to client if not already linked
-      if (!isAssignedToMe) {
-        final patchResponse = await dio.patch<dynamic>(
-          ApiUris.updateMember(customerId),
-          data: {
-            'trainer_id': trainerId,
-          },
-          options: Options(headers: {'X-Platform': platformSource}),
-        );
-        if (patchResponse.statusCode != 200) {
-          Dialogs.showSnack(msg: 'Failed to link trainer to customer.');
-          setState(() {
-            _submittingMap[customerId] = false;
-          });
-          return;
-        }
-      }
 
       // 2. Assign workout plan
       final response = await dio.post<dynamic>(
@@ -196,12 +183,14 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
+      if (!mounted) return;
       setState(() {
         _submittingMap[customerId] = false;
       });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Dialogs.showSnack(msg: 'Plan assigned successfully to $customerName');
+        if (!mounted) return;
         setState(() {
           final idx = _clients.indexWhere((c) => c['customer_id'] == customerId);
           if (idx != -1) {
@@ -212,6 +201,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         Dialogs.showSnack(msg: 'Failed to assign plan');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _submittingMap[customerId] = false;
       });
@@ -225,7 +215,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
     final gyms = _gymFilters;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * 0.7,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -255,6 +245,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
           // Search Bar
           TextField(
             onChanged: (val) {
+              if (!mounted) return;
               setState(() {
                 _searchQuery = val;
               });
@@ -290,6 +281,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                     padding: const EdgeInsets.only(right: 8),
                     child: InkWell(
                       onTap: () {
+                        if (!mounted) return;
                         setState(() {
                           _selectedGymFilter = gymName;
                         });

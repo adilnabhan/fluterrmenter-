@@ -44,6 +44,7 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
   Future<void> _onDeletePackage({int? id}) async {
     if (id == null) return;
 
+    if (!context.mounted) return;
     await showDialog(
       context: context,
       builder: (context) {

@@ -56,7 +56,13 @@ class _ActiveMembersListingScreenState
       appBar: AppBar(
         leading: const PopButton().center,
         titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
-        title: const Text('Active Members'),
+        title: const Text('Members'),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.settings_outlined, color: Colors.black87),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -83,15 +89,15 @@ class _ActiveMembersListingScreenState
                     ).center,
               ),
               border: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
+                borderRadius: BorderRadius.all(Radius.circular(16)),
                 borderSide: BorderSide(color: Color(0xffDDDDDD)),
               ),
               focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
+                borderRadius: BorderRadius.all(Radius.circular(16)),
                 borderSide: BorderSide(color: Color(0xffDDDDDD)),
               ),
               enabledBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
+                borderRadius: BorderRadius.all(Radius.circular(16)),
                 borderSide: BorderSide(color: Color(0xffDDDDDD)),
               ),
             ),
@@ -133,6 +139,7 @@ class _ActiveMembersListingScreenState
                                       _sort = ListingSort.recent;
                                     }
                                     _fetch();
+                                    if (!mounted) return;
                                     setState(() {});
                                   },
                                 ),
@@ -241,19 +248,88 @@ class _ActiveMembersListingScreenState
                                                       ),
                                                     ),
                                                     const SizedBox(width: 8),
-                                                    Text(
-                                                      '# ${memberData?.id}'
-                                                                  .length >
-                                                              3
-                                                          ? '${'# ${memberData?.id}'.substring(0, 3)}...'
-                                                          : '# ${memberData?.id}',
-                                                      style:
-                                                          AppStyles
-                                                              .text12Px
-                                                              .poppins
-                                                              .w400
-                                                              .textGrey,
-                                                      maxLines: 1,
+                                                    Builder(
+                                                      builder: (context) {
+                                                        final endDate =
+                                                            memberData
+                                                                ?.activePlan
+                                                                ?.endDate;
+                                                        if (endDate == null)
+                                                          return const SizedBox.shrink();
+                                                        final now =
+                                                            DateTime.now();
+                                                        final today = DateTime(
+                                                          now.year,
+                                                          now.month,
+                                                          now.day,
+                                                        );
+                                                        final end = DateTime(
+                                                          endDate.year,
+                                                          endDate.month,
+                                                          endDate.day,
+                                                        );
+                                                        final difference =
+                                                            end
+                                                                .difference(
+                                                                  today,
+                                                                )
+                                                                .inDays;
+
+                                                        if (difference < 0) {
+                                                          return Text(
+                                                            'Expired',
+                                                            style: AppStyles
+                                                                .text12Px
+                                                                .poppins
+                                                                .w400
+                                                                .copyWith(
+                                                                  color:
+                                                                      AppColors
+                                                                          .error,
+                                                                ),
+                                                          );
+                                                        } else if (difference ==
+                                                            0) {
+                                                          return Text(
+                                                            'Expires today',
+                                                            style: AppStyles
+                                                                .text12Px
+                                                                .poppins
+                                                                .w400
+                                                                .copyWith(
+                                                                  color:
+                                                                      AppColors
+                                                                          .error,
+                                                                ),
+                                                          );
+                                                        } else {
+                                                          return Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .end,
+                                                            children: [
+                                                              Text(
+                                                                'Expires in',
+                                                                style:
+                                                                    AppStyles
+                                                                        .text12Px
+                                                                        .poppins
+                                                                        .w400
+                                                                        .textGrey,
+                                                              ),
+                                                              Text(
+                                                                '$difference Days',
+                                                                style:
+                                                                    AppStyles
+                                                                        .text14Px
+                                                                        .poppins
+                                                                        .w500
+                                                                        .dark,
+                                                              ),
+                                                            ],
+                                                          );
+                                                        }
+                                                      },
                                                     ),
                                                   ],
                                                 ),
@@ -270,7 +346,7 @@ class _ActiveMembersListingScreenState
                                                           '',
                                                       style:
                                                           AppStyles
-                                                              .text12Px
+                                                              .text14Px
                                                               .poppins
                                                               .w500
                                                               .dark,
@@ -301,5 +377,11 @@ class _ActiveMembersListingScreenState
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 }

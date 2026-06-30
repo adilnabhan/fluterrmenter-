@@ -20,6 +20,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   }
 
   Future<void> _fetchReports() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -32,16 +33,19 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       );
 
       if (response.statusCode == 200 && response.data is Map) {
+        if (!mounted) return;
         setState(() {
           _reportsData = Map<String, dynamic>.from(response.data as Map);
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -54,7 +58,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     final financial = _reportsData['financial_metrics'] as Map<dynamic, dynamic>?;
     final totalRevenue = financial?['total_revenue'] ?? 0.0;
     final newSignups = financial?['new_signups'] ?? 0;
-    final churnRate = financial?['churn_rate'] ?? "0%";
+    final churnRate = financial?['churn_rate']?.toString() ?? "0%";
 
     // Demographics/Attendance
     final demographics = _reportsData['client_demographics'] as Map<dynamic, dynamic>?;
@@ -166,7 +170,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                         separatorBuilder: (context, index) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final item = trainersPerformance[index] as Map<dynamic, dynamic>;
-                          final name = item['name'] ?? 'Unknown';
+                          final name = item['name']?.toString() ?? 'Unknown';
                           final clients = item['clients_trained_count'] ?? 0;
                           final completed = item['workouts_completed_count'] ?? 0;
                           final rate = item['completion_rate'] ?? '0.0%';

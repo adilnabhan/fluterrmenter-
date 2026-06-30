@@ -56,6 +56,7 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
     );
 
     if (pickedImages.isNotEmpty) {
+      if (!mounted) return;
       setState(() {
         _images.addAll(
           pickedImages.map((e) => e.path),
@@ -183,6 +184,7 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
                                   top: 16,
                                   child: InkWell(
                                     onTap: () {
+                                      if (!mounted) return;
                                       setState(() {
                                         _images.removeAt(index - 1);
                                       });

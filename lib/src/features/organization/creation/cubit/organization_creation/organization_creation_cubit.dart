@@ -22,6 +22,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
     //  else if (brandLogo?.isEmpty ?? false) {
     //   return 'Brand logo is required';
     // }
+    if (isClosed) return null;
     emit(
       state.copyWith(
         brandDetails: (
@@ -53,6 +54,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
     } else if (picode?.isEmpty ?? false) {
       return 'Pincode is required';
     }
+    if (isClosed) return null;
     emit(
       this.state.copyWith(
         gymLocationDetails: (
@@ -71,6 +73,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
     if (gymPhotos.isEmpty) {
       return 'Gym photos are required';
     }
+    if (isClosed) return null;
     emit(state.copyWith(gymPhotos: gymPhotos));
     return null;
   }
@@ -92,8 +95,10 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
     if (state.createOrg?.isNone() ?? false) {
       return;
     }
+    if (isClosed) return;
     emit(state.copyWith(createOrg: none()));
     if (workingDays.isEmpty) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrg: some(
@@ -103,6 +108,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
       );
       return;
     } else if (morningStartingTime == null) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrg: some(
@@ -116,6 +122,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
       );
       return;
     } else if (morningEndingTime == null) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrg: some(
@@ -129,6 +136,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
       );
       return;
     } else if (eveningStartingTime == null) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrg: some(
@@ -142,6 +150,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
       );
       return;
     } else if (eveningEndingTime == null) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrg: some(
@@ -155,6 +164,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
       );
       return;
     } else if (amenities.isEmpty) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           createOrg: some(
@@ -297,6 +307,7 @@ class OrganizationCreationCubit extends Cubit<OrganizationCreationState> {
         );
       }
     });
+    if (isClosed) return;
     emit(state.copyWith(createOrg: some(response)));
   }
 

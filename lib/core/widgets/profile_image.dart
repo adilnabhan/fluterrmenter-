@@ -43,6 +43,7 @@ class _ProfileImageState extends State<ProfileImage> {
                       } else {
                         _localImage = XFile('');
                       }
+                      if (!mounted) return;
                       setState(() {});
                     },
                   ).show(context)

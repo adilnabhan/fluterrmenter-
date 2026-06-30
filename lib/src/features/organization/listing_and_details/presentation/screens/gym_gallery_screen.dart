@@ -39,8 +39,7 @@ class _GymGalleryScreenState extends State<GymGalleryScreen> {
       listener: (context, state) {
         state.details.fold(
           () {},
-          (t) =>
-              t.fold((l) {}, (r) => setState(() => _images = r.photos ?? [])),
+          (t) => t.fold((l) {}, (r) => setState(() => _images = r.photos ?? [])),
         );
       },
       child: Scaffold(

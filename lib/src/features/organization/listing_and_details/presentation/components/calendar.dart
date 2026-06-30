@@ -20,6 +20,7 @@ class CustomCalendarState extends State<CustomCalendar> {
 
   // Navigate to the previous month
   void _previousMonth() {
+    if (!mounted) return;
     setState(() {
       _currentDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
       _selectedDay = 1; // Reset selected day
@@ -28,6 +29,7 @@ class CustomCalendarState extends State<CustomCalendar> {
 
   // Navigate to the next month
   void _nextMonth() {
+    if (!mounted) return;
     setState(() {
       _currentDate = DateTime(_currentDate.year, _currentDate.month + 1, 1);
       _selectedDay = 1; // Reset selected day
@@ -87,6 +89,7 @@ class CustomCalendarState extends State<CustomCalendar> {
                   isFutureDate
                       ? null // Disable tap for future dates
                       : () {
+                        if (!mounted) return;
                         setState(() {
                           _selectedDay = day;
                         });

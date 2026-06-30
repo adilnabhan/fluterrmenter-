@@ -33,6 +33,7 @@ class _CombinedValueListenableBuilderState<T> extends State<_CombinedValueListen
     _values = widget.valueListenables.map((v) => v.value).toList();
     for (var i = 0; i < widget.valueListenables.length; i++) {
       widget.valueListenables[i].addListener(() {
+        if (!mounted) return;
         setState(() {
           _values[i] = widget.valueListenables[i].value;
         });

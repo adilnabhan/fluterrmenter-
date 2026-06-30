@@ -196,6 +196,7 @@ class DateFieldState extends State<DateField> {
       },
     ).then((newDate) {
       if (newDate != null) {
+        if (!mounted) return;
         setState(() {
           selectedDate = newDate;
           if (widget.dateTimeShowFormat != null) {

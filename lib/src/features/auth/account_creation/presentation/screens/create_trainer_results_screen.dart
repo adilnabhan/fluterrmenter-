@@ -78,6 +78,7 @@ class _CreateTrainerResultsScreenState extends State<CreateTrainerResultsScreen>
                   itemBuilder: (context, index) {
                     if (index < _galleryImages.length) {
                       return _buildImageItem(_galleryImages[index], () {
+                        if (!mounted) return;
                         setState(() => _galleryImages.removeAt(index));
                       });
                     }
@@ -86,6 +87,7 @@ class _CreateTrainerResultsScreenState extends State<CreateTrainerResultsScreen>
                         allowMultiple: true,
                         needRemove: false,
                         onPickedImages: (images) {
+                          if (!mounted) return;
                           setState(() => _galleryImages.addAll(images));
                         },
                       ).show(context);

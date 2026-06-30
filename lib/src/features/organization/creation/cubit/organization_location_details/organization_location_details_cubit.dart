@@ -10,16 +10,21 @@ class OrganizationLocationDetailsCubit
 
   Future<void> searchPlaces({required String q}) async {
     if (q.trim().isEmpty) {
+      if (isClosed) return;
       emit(state.copyWith(placeAutoCompletes: null));
       return;
     }
     try {
+      if (isClosed) return;
       emit(state.copyWith(placeAutoCompletes: none()));
       final res = await GooglePlaceRepo().autocomplete(q);
+      if (isClosed) return;
       emit(state.copyWith(placeAutoCompletes: some(right(res))));
     } on ApiException catch (e) {
+      if (isClosed) return;
       emit(state.copyWith(placeAutoCompletes: some(left(e))));
     } catch (e) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           placeAutoCompletes: some(left(const ApiException.unknown())),
@@ -30,6 +35,7 @@ class OrganizationLocationDetailsCubit
 
   Future<void> getPlaceDetails({required String placeId}) async {
     try {
+      if (isClosed) return;
       emit(
         state.copyWith(selectedPlaceDetails: (data: none(), placeID: placeId)),
       );
@@ -48,18 +54,21 @@ class OrganizationLocationDetailsCubit
           ) ??
           false;
 
+      if (isClosed) return;
       emit(
         state.copyWith(
           selectedPlaceDetails: (data: some(res), placeID: placeId),
         ),
       );
     } on ApiException catch (e) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           selectedPlaceDetails: (data: some(left(e)), placeID: placeId),
         ),
       );
     } catch (e) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           selectedPlaceDetails: (
@@ -73,6 +82,7 @@ class OrganizationLocationDetailsCubit
 
   Future<void> getPlaceDetailsFromCurrentLocation() async {
     try {
+      if (isClosed) return;
       emit(state.copyWith(currentPlaceDetails: none()));
       final currentPosition = await LocationService().getPostion();
       final res = await GoogleGeoCodeRepo().fromLatLong(
@@ -107,6 +117,7 @@ class OrganizationLocationDetailsCubit
           ) ??
           false;
 
+      if (isClosed) return;
       emit(
         state.copyWith(
           currentPlaceDetails: some(res),
@@ -117,8 +128,10 @@ class OrganizationLocationDetailsCubit
         ),
       );
     } on ApiException catch (e) {
+      if (isClosed) return;
       emit(state.copyWith(currentPlaceDetails: some(left(e))));
     } catch (e) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           currentPlaceDetails: some(left(const ApiException.unknown())),
@@ -139,41 +152,54 @@ class OrganizationLocationDetailsCubit
 //
 //   Future<void> searchPlaces({required String q}) async {
 //     if (q.trim().isEmpty) {
+//       if (isClosed) return;
 //       emit(state.copyWith(placeAutoCompletes: null));
 //       return;
 //     }
 //     try {
+//       if (isClosed) return;
 //       emit(state.copyWith(placeAutoCompletes: none()));
 //       final res = await GooglePlaceRepo().autocomplete(q);
+//       if (isClosed) return;
 //       emit(state.copyWith(placeAutoCompletes: some(right(res))));
 //     } on ApiException catch (e) {
+//       if (isClosed) return;
 //       emit(state.copyWith(placeAutoCompletes: some(left(e))));
 //     } catch (e) {
+//       if (isClosed) return;
 //       emit(state.copyWith(placeAutoCompletes: some(left(const ApiException.unknown()))));
 //     }
 //   }
 //
 //   Future<void> getPlaceDetails({required String placeId}) async {
 //     try {
+//       if (isClosed) return;
 //       emit(state.copyWith(selectedPlaceDetails: (data: none(), placeID: placeId)));
 //       final res = await GooglePlaceRepo().placeDetails(placeId);
+//       if (isClosed) return;
 //       emit(state.copyWith(selectedPlaceDetails: (data: some(res), placeID: placeId)));
 //     } on ApiException catch (e) {
+//       if (isClosed) return;
 //       emit(state.copyWith(selectedPlaceDetails: (data: some(left(e)), placeID: placeId)));
 //     } catch (e) {
+//       if (isClosed) return;
 //       emit(state.copyWith(selectedPlaceDetails: (data: some(left(const ApiException.unknown())), placeID: placeId)));
 //     }
 //   }
 //
 //   Future<void> getPlaceDetailsFromCurrentLocation() async {
 //     try {
+//       if (isClosed) return;
 //       emit(state.copyWith(currentPlaceDetails: none()));
 //       final currentPosition = await LocationService().getPostion();
 //       final res = await GoogleGeoCodeRepo().fromLatLong(currentPosition.latitude, currentPosition.longitude);
+//       if (isClosed) return;
 //       emit(state.copyWith(currentPlaceDetails: some(res)));
 //     } on ApiException catch (e) {
+//       if (isClosed) return;
 //       emit(state.copyWith(currentPlaceDetails: some(left(e))));
 //     } catch (e) {
+//       if (isClosed) return;
 //       emit(state.copyWith(currentPlaceDetails: some(left(const ApiException.unknown()))));
 //     }
 //   }

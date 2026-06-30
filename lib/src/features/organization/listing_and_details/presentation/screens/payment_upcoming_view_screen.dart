@@ -425,4 +425,10 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
       ),
     );
   }
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
 }

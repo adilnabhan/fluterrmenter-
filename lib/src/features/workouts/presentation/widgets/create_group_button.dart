@@ -21,7 +21,7 @@ class CreateGroupButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFD30000).withOpacity(0.3),
+              color: const Color(0xFFD30000).withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

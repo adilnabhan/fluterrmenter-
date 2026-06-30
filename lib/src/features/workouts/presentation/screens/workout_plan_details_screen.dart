@@ -31,6 +31,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
   }
 
   Future<void> _fetchPlanDetails() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -66,23 +67,27 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
             );
           }).toList();
 
+          if (!mounted) return;
           setState(() {
             _exercises = List.from(parsedExercises);
             _originalExercises = List.from(parsedExercises);
             _isLoading = false;
           });
         } else {
+          if (!mounted) return;
           setState(() {
             _isLoading = false;
           });
         }
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load plan details');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -96,6 +101,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _isSaving = true;
     });
@@ -176,6 +182,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       Dialogs.showSnack(msg: 'Changes saved successfully');
       _fetchPlanDetails();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isSaving = false;
       });
@@ -195,6 +202,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       builder: (sheetContext) => _SelectExerciseSheetContent(
         existingExercises: _exercises,
         onAddExercise: (WorkoutExercise newEx) {
+          if (!mounted) return;
           setState(() {
             _exercises.add(newEx);
           });
@@ -211,6 +219,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       builder: (sheetContext) => _EditExerciseBottomSheet(
         exercise: ex,
         onSave: (updatedEx) {
+          if (!mounted) return;
           setState(() {
             final index = _exercises.indexWhere((item) => item.id == ex.id);
             if (index != -1) {
@@ -219,6 +228,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
           });
         },
         onDelete: () {
+          if (!mounted) return;
           setState(() {
             _exercises.removeWhere((item) => item.id == ex.id);
           });
@@ -234,29 +244,8 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          widget.planTitle,
-          style: AppStyles.text20Px.poppins.w600.copyWith(color: Colors.black),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(20),
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '${_exercises.length} Exercises',
-                style: AppStyles.text14Px.poppins.w400.copyWith(
-                  color: AppColors.textGrey,
-                ),
-              ),
-            ),
-          ),
-        ),
+        centerTitle: true,
+        leading: const PopButton().center,
       ),
       body: Stack(
         children: [
@@ -266,20 +255,40 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
               color: Color(0xFFF8F9FB),
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _exercises.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No exercises in this plan.\nTap "+" below to add.',
-                          textAlign: TextAlign.center,
-                          style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                        ),
-                      )
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
+                  child: Text(
+                    widget.planTitle,
+                    style: AppStyles.text20Px.poppins.w600.copyWith(color: AppColors.textDark),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                  child: Text(
+                    '${_exercises.length} Exercises',
+                    style: AppStyles.text14Px.poppins.w400.copyWith(
+                      color: AppColors.textGrey,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _exercises.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No exercises in this plan.\nTap "+" below to add.',
+                                textAlign: TextAlign.center,
+                                style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                              ),
+                            )
                     : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
                         itemCount: _exercises.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 16),
+                        separatorBuilder: (context, index) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final item = _exercises[index];
                           return _ExerciseCard(
@@ -289,9 +298,12 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                           );
                         },
                       ),
+                ),
+              ],
+            ),
           ),
           Positioned(
-            bottom: 30,
+            bottom: 40,
             left: 0,
             right: 0,
             child: Padding(
@@ -326,6 +338,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                             ),
                           );
                           if (updatedExercises != null) {
+                            if (!mounted) return;
                             setState(() {
                               _exercises = updatedExercises;
                             });
@@ -393,6 +406,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
   }
 
   Future<void> _fetchExercises() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -408,16 +422,19 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
 
       if (response.statusCode == 200 && response.data is List) {
         final List<dynamic> list = response.data as List<dynamic>;
+        if (!mounted) return;
         setState(() {
           _allExercises = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -452,7 +469,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
     final displayList = _filteredExercises;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * 0.7,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -460,7 +477,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -468,8 +485,8 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Select Exercise',
-                      style: AppStyles.text18Px.poppins.w600.copyWith(
+                      'Select Workout',
+                      style: AppStyles.text16Px.poppins.w600.copyWith(
                         color: AppColors.textDark,
                       ),
                     ),
@@ -484,7 +501,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.borderGrey),
                   ),
                   child: TextField(
@@ -501,7 +518,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                         Icons.search,
                         color: AppColors.textGrey,
                       ),
-                      hintText: 'Search for exercise',
+                      hintText: 'Search for workout',
                       border: InputBorder.none,
                       fillColor: Colors.white,
                       hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
@@ -515,7 +532,10 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => setState(() => _selectedTab = 0),
+                        onTap: () {
+                          if (!mounted) return;
+                          setState(() => _selectedTab = 0);
+                        },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
@@ -528,7 +548,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                           child: Center(
                             child: Text(
                               'Library',
-                              style: AppStyles.text14Px.poppins.w600.copyWith(color: AppColors.textDark),
+                              style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textDark),
                             ),
                           ),
                         ),
@@ -536,7 +556,10 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                     ),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => setState(() => _selectedTab = 1),
+                        onTap: () {
+                          if (!mounted) return;
+                          setState(() => _selectedTab = 1);
+                        },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
@@ -553,7 +576,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                           child: Center(
                             child: Text(
                               'You created',
-                              style: AppStyles.text14Px.poppins.w600.copyWith(color: AppColors.textDark),
+                              style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textDark),
                             ),
                           ),
                         ),
@@ -601,6 +624,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                                     );
                                     widget.onAddExercise(newEx);
                                     Dialogs.showSnack(msg: '${newEx.name} added to plan list');
+                                    if (!mounted) return;
                                     setState(() {}); // Refresh local added check
                                   },
                             child: _SelectExerciseItem(
@@ -671,6 +695,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
       final eRes = await dio.get<dynamic>(ApiUris.equipment);
       final tRes = await dio.get<dynamic>(ApiUris.exerciseTypes);
 
+      if (!mounted) return;
       setState(() {
         _muscles = (mRes.data as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
         _equipments = (eRes.data as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
@@ -678,6 +703,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
         _isLoadingDropdowns = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoadingDropdowns = false;
       });
@@ -692,6 +718,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _isCreating = true;
     });
@@ -716,12 +743,14 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
         widget.onCreated();
         Navigator.pop(context); // Close create form
       } else {
+        if (!mounted) return;
         setState(() {
           _isCreating = false;
         });
         Dialogs.showSnack(msg: 'Failed to create exercise');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isCreating = false;
       });
@@ -739,7 +768,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.9,
+      height: MediaQuery.of(context).size.height * 0.75,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -748,7 +777,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
         20,
         20,
         20,
-        MediaQuery.of(context).viewInsets.bottom + 20,
+        MediaQuery.of(context).viewInsets.bottom + 40,
       ),
       child: _isLoadingDropdowns
           ? const Center(child: CircularProgressIndicator())
@@ -762,7 +791,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
                     children: [
                       Text(
                         'Create new Exercise',
-                        style: AppStyles.text18Px.poppins.w600.copyWith(
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
                           color: AppColors.textDark,
                         ),
                       ),
@@ -778,7 +807,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Workout Name *', style: AppStyles.text12Px.poppins.w600.dark),
+                          Text('Workout Name *', style: AppStyles.text14Px.poppins.w500.dark),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _nameController,
@@ -789,7 +818,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Text('Muscle *', style: AppStyles.text12Px.poppins.w600.dark),
+                          Text('Muscle *', style: AppStyles.text14Px.poppins.w500.dark),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<int>(
                             value: _selectedMuscleId,
@@ -800,13 +829,16 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
                                 child: Text(m['name'] as String),
                               );
                             }).toList(),
-                            onChanged: (val) => setState(() => _selectedMuscleId = val),
+                            onChanged: (val) {
+                              if (!mounted) return;
+                              setState(() => _selectedMuscleId = val);
+                            },
                             decoration: InputDecoration(
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Text('Type *', style: AppStyles.text12Px.poppins.w600.dark),
+                          Text('Type *', style: AppStyles.text14Px.poppins.w500.dark),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
                             value: _selectedType,
@@ -817,13 +849,16 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
                                 child: Text(t['label'] as String),
                               );
                             }).toList(),
-                            onChanged: (val) => setState(() => _selectedType = val),
+                            onChanged: (val) {
+                              if (!mounted) return;
+                              setState(() => _selectedType = val);
+                            },
                             decoration: InputDecoration(
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Text('Equipment *', style: AppStyles.text12Px.poppins.w600.dark),
+                          Text('Equipment *', style: AppStyles.text14Px.poppins.w500.dark),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<int>(
                             value: _selectedEquipmentId,
@@ -834,13 +869,16 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
                                 child: Text(eq['name'] as String),
                               );
                             }).toList(),
-                            onChanged: (val) => setState(() => _selectedEquipmentId = val),
+                            onChanged: (val) {
+                              if (!mounted) return;
+                              setState(() => _selectedEquipmentId = val);
+                            },
                             decoration: InputDecoration(
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Text('YouTube Link', style: AppStyles.text12Px.poppins.w600.dark),
+                          Text('YouTube Link', style: AppStyles.text14Px.poppins.w500.dark),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _youtubeController,
@@ -863,7 +901,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
                             onPressed: _createExercise,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFD30000),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -901,10 +939,10 @@ class _ExerciseCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderGrey),
+        border: Border.all(color: AppColors.borderGrey, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: .05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -918,7 +956,7 @@ class _ExerciseCard extends StatelessWidget {
               width: 50,
               decoration: const BoxDecoration(
                 color: Color(0xFFF5F5F5),
-                border: Border(right: BorderSide(color: AppColors.borderGrey)),
+                border: Border(right: BorderSide(color: AppColors.borderGrey, width: 1.5)),
               ),
               child: Center(
                 child: Text(
@@ -987,7 +1025,7 @@ class _ExerciseCard extends StatelessWidget {
                             ),
                             child: Text(
                               'Set ${s['set_number']}: ${reps}r × ${weight}kg',
-                              style: AppStyles.text11Px.poppins.w500.copyWith(color: AppColors.textDark),
+                              style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textDark),
                             ),
                           );
                         }).toList(),
@@ -1052,7 +1090,7 @@ class _SelectExerciseItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderGrey),
+        border: Border.all(color: isAdded ? const Color(0xFFFF3434) : AppColors.borderGrey),
       ),
       child: Row(
         children: [
@@ -1083,6 +1121,7 @@ class _SelectExerciseItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFFFEAEA),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFFF3434)),
               ),
               child: Text(
                 'Added',
@@ -1144,6 +1183,7 @@ class _EditExerciseBottomSheetState extends State<_EditExerciseBottomSheet> {
   }
 
   void _addSet() {
+    if (!mounted) return;
     setState(() {
       int nextSetNum = _sets.isEmpty ? 1 : (_sets.map((s) => (s['set_number'] as int)).reduce((a, b) => a > b ? a : b) + 1);
       double prevWeight = _sets.isEmpty ? 10.0 : double.tryParse(_sets.last['target_weight'].toString()) ?? 10.0;
@@ -1157,6 +1197,7 @@ class _EditExerciseBottomSheetState extends State<_EditExerciseBottomSheet> {
   }
 
   void _removeSet(int index) {
+    if (!mounted) return;
     setState(() {
       _sets.removeAt(index);
       for (int i = 0; i < _sets.length; i++) {

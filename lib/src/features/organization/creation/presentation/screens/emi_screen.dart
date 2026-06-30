@@ -15,6 +15,7 @@ class _OrganizationEmiScreenState extends State<OrganizationEmiScreen> {
   @override
   void initState() {
     // Future.delayed(const Duration(seconds: 1), () {
+    if (!mounted) return;
     //   setState(() {
     //     completedAnimation = true;
     //   });

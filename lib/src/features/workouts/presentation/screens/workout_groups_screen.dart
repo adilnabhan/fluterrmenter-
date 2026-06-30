@@ -55,6 +55,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
   }
 
   Future<void> _fetchGroups() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -69,20 +70,25 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = (response.data is Map)
-            ? (response.data['results'] as List<dynamic>? ?? [])
-            : (response.data as List<dynamic>);
+        final List<dynamic> data =
+            (response.data is Map)
+                ? (response.data['results'] as List<dynamic>? ?? [])
+                : (response.data as List<dynamic>);
+        if (!mounted) return;
         setState(() {
-          _groups = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _groups =
+              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load workout groups');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -96,6 +102,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
   }
 
   Future<void> _createGroup(String name) async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -105,10 +112,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
     try {
       final response = await DioClient().dio.post<dynamic>(
         ApiUris.workoutGroups,
-        data: {
-          'name': name,
-          'type': groupType,
-        },
+        data: {'name': name, 'type': groupType},
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -117,12 +121,14 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
         _groupName.controller?.clear();
         _fetchGroups();
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to create workout group');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -140,14 +146,18 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Text(
           'Workouts',
-          style: AppStyles.text24Px.poppins.w600.copyWith(color: Colors.black),
+          style: AppStyles.text20Px.poppins.w500.copyWith(color: Colors.black),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, color: Colors.black),
+            onPressed: () {
+              Dialogs.showSnack(msg: 'Settings');
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -162,7 +172,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: AppColors.borderGrey),
                   ),
                   child: TextField(
@@ -186,84 +196,116 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(child: _buildTab('Single-Day Workout', 0)),
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildTab('Multi-Day Workout', 1)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
               Expanded(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF8F9FB),
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '${filtered.length} workout groups',
-                              style: AppStyles.text14Px.poppins.w400.copyWith(
-                                color: AppColors.textGrey,
+                child: Stack(
+                  children: [
+                    Column(
+                      children: [
+                        const SizedBox(height: 44),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8F9FB),
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                width: 1,
+                              ),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(24),
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFEAEA),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.filter_list,
-                                    size: 16,
-                                    color: Color(0xFFFF3434),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '${filtered.length} workout groups',
+                                        style: AppStyles.text14Px.poppins.w400
+                                            .copyWith(
+                                              color: AppColors.textGrey,
+                                            ),
+                                      ),
+                                      // Container(
+                                      //   padding: const EdgeInsets.symmetric(
+                                      //     horizontal: 12,
+                                      //     vertical: 6,
+                                      //   ),
+                                      //   decoration: BoxDecoration(
+                                      //     color: const Color(0xFFFFEAEA),
+                                      //     borderRadius: BorderRadius.circular(
+                                      //       20,
+                                      //     ),
+                                      //   ),
+                                      //   child: Row(
+                                      //     children: [
+                                      //       const Icon(
+                                      //         Icons.filter_list,
+                                      //         size: 16,
+                                      //         color: Color(0xFFFF3434),
+                                      //       ),
+                                      //       const SizedBox(width: 4),
+                                      //       Text(
+                                      //         'Sort',
+                                      //         style: AppStyles
+                                      //             .text12Px
+                                      //             .poppins
+                                      //             .w500
+                                      //             .copyWith(
+                                      //               color: const Color(
+                                      //                 0xFFFF3434,
+                                      //               ),
+                                      //             ),
+                                      //       ),
+                                      //     ],
+                                      //   ),
+                                      // ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Sort',
-                                    style: AppStyles.text12Px.poppins.w500
-                                        .copyWith(
-                                          color: const Color(0xFFFF3434),
-                                        ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                Expanded(
+                                  child:
+                                      _isLoading
+                                          ? const Center(
+                                            child: CircularProgressIndicator(),
+                                          )
+                                          : filtered.isEmpty
+                                          ? const Center(
+                                            child: Text(
+                                              'No workout groups found.',
+                                            ),
+                                          )
+                                          : WorkoutGroupsGrid(groups: filtered),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
+                      ],
+                    ),
+                    Positioned(
+                      top: 1, // Overlaps the container's top border
+                      left: 16,
+                      right: 16,
+                      child: Row(
+                        children: [
+                          Expanded(child: _buildTab('Single-Day Workout', 0)),
+                          // const SizedBox(width: 12),
+                          // Expanded(child: _buildTab('Multi-Day Workout', 1)),
+                        ],
                       ),
-                      Expanded(
-                        child: _isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : filtered.isEmpty
-                                ? const Center(child: Text('No workout groups found.'))
-                                : WorkoutGroupsGrid(groups: filtered),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           Positioned(
-            bottom: 30,
+            bottom: 110,
             left: 0,
             right: 0,
             child: Center(
@@ -282,23 +324,46 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
   Widget _buildTab(String text, int index) {
     final isSelected = _selectedTabIndex == index;
     return GestureDetector(
-      onTap: () => setState(() => _selectedTabIndex = index),
-      child: Container(
+      onTap: () {
+        if (!mounted) return;
+        setState(() => _selectedTabIndex = index);
+      },
+      child: Stack(
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFF4F4F4) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppStyles.text14Px.poppins.w600.copyWith(
-            color: isSelected ? Colors.black : AppColors.textGrey,
+        children: [
+          Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFFF8F9FB) : Colors.transparent,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+              border:
+                  isSelected
+                      ? Border.all(color: Colors.grey.shade300, width: 1)
+                      : Border.all(color: Colors.transparent, width: 1),
+            ),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppStyles.text14Px.poppins.copyWith(
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected ? Colors.black : AppColors.textDark,
+              ),
+            ),
           ),
-        ),
+          if (isSelected)
+            Positioned(
+              bottom: 0,
+              left: 1,
+              right: 1,
+              height: 2,
+              child: Container(color: const Color(0xFFF8F9FB)),
+            ),
+        ],
       ),
     );
   }
@@ -316,9 +381,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
             ),
             padding: EdgeInsets.fromLTRB(
               20,
+              25,
               20,
-              20,
-              MediaQuery.of(context).viewInsets.bottom + 20,
+              MediaQuery.of(context).viewInsets.bottom + 55,
             ),
             child: Form(
               key: _formKey,
@@ -328,7 +393,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                 children: [
                   Text(
                     'Create a Single-Day group',
-                    style: AppStyles.text18Px.poppins.w600.copyWith(
+                    style: AppStyles.text15Px.poppins.w600.copyWith(
                       color: AppColors.textDark,
                     ),
                   ),
@@ -349,14 +414,14 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFD30000),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: Text(
-                        'Create Group',
-                        style: AppStyles.text16Px.poppins.w600.copyWith(
+                        'Create group',
+                        style: AppStyles.text15Px.poppins.w600.copyWith(
                           color: Colors.white,
                         ),
                       ),
@@ -377,12 +442,12 @@ class WorkoutGroupsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+      padding: const EdgeInsets.fromLTRB(22, 0, 22, 100),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 14,
         crossAxisSpacing: 14,
-        childAspectRatio: 1.3,
+        childAspectRatio: 1.5,
       ),
       itemCount: groups.length,
       itemBuilder: (context, index) {
@@ -421,9 +486,10 @@ class _WorkoutGroupCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade300),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: .05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -434,21 +500,25 @@ class _WorkoutGroupCard extends StatelessWidget {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: Text(
                     groupName,
-                    style: AppStyles.text16Px.poppins.w600.copyWith(
+                    style: AppStyles.text15Px.poppins.w500.copyWith(
                       color: AppColors.textDark,
                       height: 1.2,
                     ),
                   ),
                 ),
-                const Icon(
-                  Icons.more_vert,
-                  color: AppColors.textGrey,
-                  size: 20,
+                CircleAvatar(
+                  backgroundColor: Colors.grey.shade100,
+                  radius: 16,
+                  child: const Icon(
+                    Icons.more_vert,
+                    color: AppColors.textGrey,
+                    size: 20,
+                  ),
                 ),
               ],
             ),
@@ -468,8 +538,8 @@ class _WorkoutGroupCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 const Icon(
                   Icons.arrow_forward_ios,
-                  size: 10,
-                  color: AppColors.textGrey,
+                  size: 14,
+                  color: AppColors.textDark,
                 ),
               ],
             ),

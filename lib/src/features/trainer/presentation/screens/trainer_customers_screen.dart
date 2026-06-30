@@ -5,7 +5,9 @@ import 'package:mentor_mobile_app/src/features/organization/members_and_leads/pr
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 
 class TrainerCustomersScreen extends StatefulWidget {
-  const TrainerCustomersScreen({super.key});
+  final bool isPushed;
+
+  const TrainerCustomersScreen({super.key, this.isPushed = false});
 
   @override
   State<TrainerCustomersScreen> createState() => _TrainerCustomersScreenState();
@@ -25,6 +27,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   }
 
   Future<void> _fetchClients() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -43,17 +46,20 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         final List<dynamic> data = (response.data is Map)
             ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
             : (response.data as List<dynamic>);
+        if (!mounted) return;
         setState(() {
           _clients = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load clients');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -92,6 +98,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
+        leading: widget.isPushed ? const PopButton().center : null,
         centerTitle: false,
         title: Text(
           'Clients',
@@ -106,41 +113,20 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
           ),
           const SizedBox(width: 8),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet<dynamic>(
-            context: context,
-            backgroundColor: Colors.transparent,
-            isScrollControlled: true,
-            builder: (context) => const _TrainerQuickActionsSheet(),
-          );
-        },
-        backgroundColor: AppColors.primary,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 24),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. Search Bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(80),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.01),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.borderGrey),
               ),
               child: TextField(
                 onChanged: (val) {
+                  if (!mounted) return;
                   setState(() {
                     _searchQuery = val;
                   });
@@ -151,21 +137,25 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                   );
                 },
                 decoration: InputDecoration(
+                  icon: const Icon(Icons.search, color: AppColors.textGrey),
                   hintText: 'Search for name or phone number',
+                  fillColor: Colors.white,
                   hintStyle: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                  prefixIcon: const Icon(Icons.search, color: AppColors.textGrey, size: 20),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
             ),
           ),
-
+        ),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           // 2. Horizontal Gym Selection Chips
           if (_clients.isNotEmpty)
             Container(
-              height: 38,
-              margin: const EdgeInsets.only(top: 4, bottom: 8),
+              height: 32,
+              margin: const EdgeInsets.only(top: 14, bottom: 10),
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -175,6 +165,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                     padding: const EdgeInsets.only(right: 8),
                     child: InkWell(
                       onTap: () {
+                        if (!mounted) return;
                         setState(() {
                           _selectedGymFilter = gymName;
                         });
@@ -212,6 +203,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
               children: [
                 GestureDetector(
                   onTap: () {
+                    if (!mounted) return;
                     setState(() {
                       _statusFilter = _statusFilter == 'active' ? 'all' : 'active';
                     });
@@ -260,6 +252,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                         const SizedBox(width: 4),
                         GestureDetector(
                           onTap: () {
+                            if (!mounted) return;
                             setState(() {
                               _statusFilter = 'all';
                             });
@@ -277,10 +270,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
 
           // 4. Member Count
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Text(
               '${filtered.length} members',
-              style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textGrey),
+              style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
             ),
           ),
 
@@ -320,7 +313,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.02),
+                                    color: Colors.black.withValues(alpha: .02),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -336,120 +329,128 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                   );
                                   _fetchClients();
                                 },
-                                child: IntrinsicHeight(
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      // Profile picture
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: AppColors.iconBackground,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Top Row
+                                    Row(
+                                      children: [
+                                        // Profile picture
+                                        Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: AppColors.iconBackground,
+                                          ),
+                                          child: ClipOval(
+                                            child: pic != null
+                                                ? Image.network(
+                                                    pic,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (_, __, ___) =>
+                                                        const Icon(Icons.person, color: AppColors.primary),
+                                                  )
+                                                : const Icon(Icons.person, color: AppColors.primary),
+                                          ),
                                         ),
-                                        child: ClipOval(
-                                          child: pic != null
-                                              ? Image.network(
-                                                  pic,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (_, __, ___) =>
-                                                      const Icon(Icons.person, color: AppColors.primary),
-                                                )
-                                              : const Icon(Icons.person, color: AppColors.primary),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      // Middle Column: Name, Specialty, Gym, Goal
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  name,
-                                                  style: AppStyles.text14Px.poppins.w600.dark,
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  category,
-                                                  style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  orgName,
-                                                  style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              'Goal: $goal',
-                                              style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textGrey),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      // Right Column: Assign/Active, Last Active
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          if (isAssignedToMe)
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xffE2F6EA),
-                                                borderRadius: BorderRadius.circular(16),
-                                              ),
-                                              child: Text(
-                                                'Active',
-                                                style: AppStyles.text12Px.poppins.w600.copyWith(
-                                                  color: const Color(0xff27AE60),
-                                                ),
-                                              ),
-                                            )
-                                          else
-                                            OutlinedButton(
-                                              onPressed: () => _showAssignPlanBottomSheet(context, client),
-                                              style: OutlinedButton.styleFrom(
-                                                side: const BorderSide(color: Color(0xFF27AE60), width: 1),
-                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(16),
-                                                ),
-                                              ),
-                                              child: Text(
-                                                'Assign Workout',
-                                                style: AppStyles.text10Px.poppins.w600.copyWith(
-                                                  color: const Color(0xFF27AE60),
-                                                ),
-                                              ),
-                                            ),
-                                          // Last Active
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
+                                        const SizedBox(width: 12),
+                                        // Name and Category
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                'Last Active ',
-                                                style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                                name,
+                                                style: AppStyles.text14Px.poppins.w600.dark,
                                               ),
+                                              const SizedBox(height: 2),
                                               Text(
-                                                lastActive,
-                                                style: AppStyles.text12Px.poppins.w600.dark,
+                                                category,
+                                                style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.dark),
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        // Assign Workout / Active
+                                        if (isAssignedToMe)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xffE2F6EA),
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                            child: Text(
+                                              'Active',
+                                              style: AppStyles.text12Px.poppins.w500.copyWith(
+                                                color: const Color(0xff27AE60),
+                                              ),
+                                            ),
+                                          )
+                                        else
+                                          OutlinedButton(
+                                            onPressed: () => _showAssignPlanBottomSheet(context, client),
+                                            style: OutlinedButton.styleFrom(
+                                              backgroundColor: const Color(0xffE2F6EA),
+                                              side: BorderSide(color: Colors.green.shade700, width: 1.5),
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                              minimumSize: Size.zero,
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(16),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'Assign Workout',
+                                              style: AppStyles.text12Px.poppins.w500.copyWith(
+                                                color: Colors.green.shade700,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // Bottom Row
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        // Org Name and Goal
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                orgName,
+                                                style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.dark),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Goal: $goal',
+                                                style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.dark),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        // Last Active
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              'Last Active',
+                                              style: AppStyles.text10Px.poppins.w500.copyWith(color: AppColors.textGrey),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              lastActive,
+                                              style: AppStyles.text12Px.poppins.w600.dark,
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -487,8 +488,8 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   }
 }
 
-class _TrainerQuickActionsSheet extends StatelessWidget {
-  const _TrainerQuickActionsSheet();
+class TrainerQuickActionsSheet extends StatelessWidget {
+  const TrainerQuickActionsSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -714,6 +715,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
   }
 
   Future<void> _fetchPlans() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -730,17 +732,20 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
 
       if (response.statusCode == 200 && response.data is List) {
         final List<dynamic> data = response.data as List<dynamic>;
+        if (!mounted) return;
         setState(() {
           _plans = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load plans');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -795,6 +800,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _submittingMap[planId] = true;
     });
@@ -810,6 +816,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
+      if (!mounted) return;
       setState(() {
         _submittingMap[planId] = false;
       });
@@ -822,6 +829,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
         Dialogs.showSnack(msg: 'Failed to assign plan');
       }
     } on DioException catch (e) {
+      if (!mounted) return;
       setState(() {
         _submittingMap[planId] = false;
       });
@@ -831,6 +839,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
       }
       Dialogs.showSnack(msg: errorMsg);
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _submittingMap[planId] = false;
       });
@@ -844,6 +853,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
       child: GestureDetector(
         onTap: () {
           if (_selectedSource != sourceValue) {
+            if (!mounted) return;
             setState(() {
               _selectedSource = sourceValue;
             });

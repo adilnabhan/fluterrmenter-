@@ -14,6 +14,7 @@ class GymTrainersScreen extends StatefulWidget {
 class _GymTrainersScreenState extends State<GymTrainersScreen> {
   List<Map<String, dynamic>> _trainers = [];
   bool _isLoading = false;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -22,6 +23,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
   }
 
   Future<void> _fetchTrainers() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -39,17 +41,20 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
         final List<dynamic> data = (response.data is Map)
             ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
             : (response.data as List<dynamic>);
+        if (!mounted) return;
         setState(() {
           _trainers = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load trainers');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -79,11 +84,58 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredTrainers = _trainers.where((trainer) {
+      final name = (trainer['name'] as String? ?? '').toLowerCase();
+      final first = (trainer['first_name'] as String? ?? '').toLowerCase();
+      final last = (trainer['last_name'] as String? ?? '').toLowerCase();
+      return name.contains(_searchQuery.toLowerCase()) || 
+             first.contains(_searchQuery.toLowerCase()) || 
+             last.contains(_searchQuery.toLowerCase());
+    }).toList();
+
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
       appBar: AppBar(
-        leading: const PopButton().center,
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        titleSpacing: 16,
         title: Text('Trainers', style: AppStyles.text16Px.poppins.w500),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.settings_outlined, color: Colors.black87),
+          ),
+          const SizedBox(width: 8),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(68),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search trainers...',
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xffDDDDDD)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xffDDDDDD)),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              onChanged: (value) {
+                if (!mounted) return;
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -123,7 +175,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : _trainers.isEmpty
+                : filteredTrainers.isEmpty
                     ? Center(
                         child: Text(
                           'No Trainers found!',
@@ -131,9 +183,9 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
                         ),
                       )
                     : ListView.builder(
-                        itemCount: _trainers.length,
+                        itemCount: filteredTrainers.length,
                         itemBuilder: (context, index) {
-                          final trainer = _trainers[index];
+                          final trainer = filteredTrainers[index];
                           final int exp = trainer['experience_years'] as int? ?? 0;
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
@@ -226,6 +278,7 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
   }
 
   Future<void> _fetchCustomers() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -243,17 +296,20 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
         final List<dynamic> data = (response.data is Map)
             ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
             : (response.data as List<dynamic>);
+        if (!mounted) return;
         setState(() {
           _customers = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load customers');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -264,6 +320,7 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
   Future<void> _toggleCustomer(Map<String, dynamic> customer, bool isCurrentlyAssigned) async {
     final customerId = customer['id'] as int;
 
+    if (!mounted) return;
     setState(() {
       _updatingMap[customerId] = true;
     });
@@ -282,6 +339,7 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
 
       if (response.statusCode == 200) {
         final updatedCustomer = response.data as Map<String, dynamic>;
+        if (!mounted) return;
         setState(() {
           final index = _customers.indexWhere((c) => c['id'] == customerId);
           if (index != -1) {
@@ -299,6 +357,7 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
     } catch (e) {
       Dialogs.showSnack(msg: 'Error updating assignment: ${e.toString()}');
     } finally {
+      if (!mounted) return;
       setState(() {
         _updatingMap[customerId] = false;
       });

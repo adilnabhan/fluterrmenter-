@@ -112,7 +112,9 @@ class _CreateTrainerAddEditPackageScreenState extends State<CreateTrainerAddEdit
       for (final plan in widget.membershipPackage!.emiPlans) {
         final monthController = TextEditingController(text: plan.month.toString());
         final priceController = TextEditingController(text: plan.price.toString());
+        if (!mounted) return;
         monthController.addListener(() => setState(() {}));
+        if (!mounted) return;
         priceController.addListener(() => setState(() {}));
         
         final monthField = _buildMonthFieldWithController(monthController);
@@ -178,8 +180,12 @@ class _CreateTrainerAddEditPackageScreenState extends State<CreateTrainerAddEdit
   ({FieldData<String> month, FieldData<String> price}) _createEmptyEmiOption() {
     final m = TextEditingController();
     final p = TextEditingController();
-    m.addListener(() => setState(() {}));
-    p.addListener(() => setState(() {}));
+    m.addListener(() {
+      if (mounted) setState(() {});
+    });
+    p.addListener(() {
+      if (mounted) setState(() {});
+    });
     return (month: _buildMonthFieldWithController(m), price: _buildPriceFieldWithController(p));
   }
 
@@ -248,6 +254,7 @@ class _CreateTrainerAddEditPackageScreenState extends State<CreateTrainerAddEdit
                   value: _isEmi,
                   activeColor: AppColors.primary,
                   onChanged: (value) {
+                    if (!mounted) return;
                     setState(() {
                       _isEmi = value;
                       if (!_isEmi) {
@@ -284,6 +291,7 @@ class _CreateTrainerAddEditPackageScreenState extends State<CreateTrainerAddEdit
                           padding: const EdgeInsets.only(left: 8),
                           child: InkWell(
                             onTap: () {
+                              if (!mounted) return;
                               setState(() {
                                 final last = _emiOptions.removeLast();
                                 last.month.controller?.dispose();

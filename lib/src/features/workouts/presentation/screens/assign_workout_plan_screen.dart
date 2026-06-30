@@ -28,6 +28,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
   }
 
   Future<void> _fetchCustomers() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -43,17 +44,20 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
 
       if (response.statusCode == 200 && response.data is List) {
         final List<dynamic> data = response.data as List<dynamic>;
+        if (!mounted) return;
         setState(() {
           _customers = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         Dialogs.showSnack(msg: 'Failed to load customers');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -102,6 +106,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
     final enteredTitle = titleController.text.trim();
     final String finalTitle = enteredTitle.isNotEmpty ? enteredTitle : widget.planTitle;
 
+    if (!mounted) return;
     setState(() {
       _assigningMap[customerId] = true;
     });
@@ -116,11 +121,13 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
+      if (!mounted) return;
       setState(() {
         _assigningMap[customerId] = false;
       });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
         setState(() {
           for (var i = 0; i < _customers.length; i++) {
             if (_customers[i]['customer_id'] == customerId) {
@@ -134,6 +141,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
         Dialogs.showSnack(msg: 'Failed to assign plan');
       }
     } on DioException catch (e) {
+      if (!mounted) return;
       setState(() {
         _assigningMap[customerId] = false;
       });
@@ -143,6 +151,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
       }
       Dialogs.showSnack(msg: errorMsg);
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _assigningMap[customerId] = false;
       });

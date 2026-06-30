@@ -132,6 +132,7 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
       _overlyEntry?.remove();
       _overlyEntry = null;
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         setState(() {});
       });
       return;
@@ -168,6 +169,7 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
                   _overlyEntry?.remove();
                   _overlyEntry = null;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
                     setState(() {});
                   });
                 },
@@ -193,6 +195,7 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
                                   _overlyEntry?.remove();
                                   _overlyEntry = null;
                                   WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (!mounted) return;
                                     setState(() {});
                                   });
                                 },
@@ -228,6 +231,7 @@ class _RadioFieldState<T> extends State<RadioField<T>> {
     if (_overlyEntry != null) {
       overlyState.insert(_overlyEntry!);
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         setState(() {});
       });
     }

@@ -157,6 +157,7 @@ class _CreateTrainerProfessionalDetailsScreenState
                   allowMultiple: true,
                   needRemove: false,
                   onPickedImages: (images) {
+                    if (!mounted) return;
                     setState(() {
                       _certificates.addAll(images);
                     });

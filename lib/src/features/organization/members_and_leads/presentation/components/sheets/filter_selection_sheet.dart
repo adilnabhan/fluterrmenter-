@@ -58,6 +58,7 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> with Single
       return FilledButton.icon(
         style: FilledButton.styleFrom(backgroundColor: const Color(0xffFBEEEE), shape: const StadiumBorder(), foregroundColor: AppColors.primary),
         onPressed: () {
+          if (!mounted) return;
           setState(() {
             _selectedItems = _selectedItems?.where((e) => e != item).toList();
           });
@@ -69,6 +70,7 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> with Single
     return OutlinedButton.icon(
       style: OutlinedButton.styleFrom(backgroundColor: Colors.white, side: const BorderSide(color: Color(0xffDDDDDD)), shape: const StadiumBorder(), foregroundColor: const Color(0xff444444)),
       onPressed: () {
+        if (!mounted) return;
         setState(() {
           _selectedItems = [...?_selectedItems, item];
         });

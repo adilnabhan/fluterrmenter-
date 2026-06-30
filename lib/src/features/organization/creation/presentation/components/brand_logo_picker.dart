@@ -71,11 +71,13 @@ class _BrandLogoPickerState extends State<BrandLogoPicker> {
                         final croppedFile = await _cropImage(image.path);
                         if (croppedFile != null) {
                           widget.onChanged?.call(XFile(croppedFile.path));
+                          if (!mounted) return;
                           setState(() => _localImage = XFile(croppedFile.path));
                         }
                       } else {
                         // User chose to remove the photo
                         widget.onChanged?.call(null);
+                        if (!mounted) return;
                         setState(() => _localImage = null);
                       }
                     },

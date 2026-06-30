@@ -12,6 +12,7 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
       return;
     }
     if (otp.isEmpty) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           verifyOtp: some(
@@ -22,6 +23,7 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
       return;
     }
     if (otp.length != 4) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           verifyOtp: some(
@@ -31,6 +33,7 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
       );
       return;
     }
+    if (isClosed) return;
     emit(state.copyWith(verifyOtp: none()));
     if (state.sentOtpEntity.process == 'registration') {
       final response = await AuthRepository().verifyOtp(
@@ -43,8 +46,14 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
         },
       );
       response.fold(
-        (l) => emit(state.copyWith(verifyOtp: some(left(l)))),
-        (r) => emit(state.copyWith(verifyOtp: some(right(null)))),
+        (l) {
+          if (isClosed) return;
+          emit(state.copyWith(verifyOtp: some(left(l))));
+        },
+        (r) {
+          if (isClosed) return;
+          emit(state.copyWith(verifyOtp: some(right(null))));
+        },
       );
     } else if (state.sentOtpEntity.process == 'login') {
       final response = await AuthRepository().loginWithOtp(
@@ -56,6 +65,7 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
           'mobile_number': state.sentOtpEntity.mobileNumber,
         },
       );
+      if (isClosed) return;
       emit(state.copyWith(verifyOtp: some(response)));
     }
   }
@@ -66,6 +76,7 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
         (state.resentOtpReminigTime > 0)) {
       return;
     }
+    if (isClosed) return;
     emit(state.copyWith(resentOtp: none()));
     final response = await AuthRepository().sentOtp(
       body: {
@@ -76,8 +87,14 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
     );
 
     response.fold(
-      (l) => emit(state.copyWith(resentOtp: some(left(l)))),
-      (r) => emit(state.copyWith(resentOtp: some(right(r)), sentOtpEntity: r)),
+      (l) {
+        if (isClosed) return;
+        emit(state.copyWith(resentOtp: some(left(l))));
+      },
+      (r) {
+        if (isClosed) return;
+        emit(state.copyWith(resentOtp: some(right(r)), sentOtpEntity: r));
+      },
     );
   }
 
@@ -85,11 +102,13 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
     if (state.resentOtpReminigTime > 0) {
       return;
     }
+    if (isClosed) return;
     emit(state.copyWith(resentOtpReminigTime: 60));
     Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.resentOtpReminigTime <= 0) {
         timer.cancel();
       } else {
+        if (isClosed) return;
         emit(
           state.copyWith(resentOtpReminigTime: state.resentOtpReminigTime - 1),
         );

@@ -17,21 +17,37 @@ class TrainerMainScreen extends StatelessWidget {
 
     final isTrainer = user?.userRole == 35;
 
+    final quickActionsFab = FloatingActionButton(
+      onPressed: () {
+        showModalBottomSheet<dynamic>(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (context) => const TrainerQuickActionsSheet(),
+        );
+      },
+      backgroundColor: AppColors.primary,
+      shape: const CircleBorder(),
+      child: const Icon(Icons.add, color: Colors.white, size: 24),
+    );
+
     return OrganizationDashboardScaffold(
       initialIndex: initialIndex,
       profileImageUrl: user?.profilePicture as String?,
+      floatingActionButtons: isTrainer
+          ? [quickActionsFab, null, quickActionsFab, null]
+          : [quickActionsFab, quickActionsFab, null, null],
       pages: isTrainer
           ? const [
               TrainerDashboardScreen(),
               WorkoutGroupsScreen(),
-              TrainerReportsScreen(),
+              TrainerCustomersScreen(),
               TrainerProfileSettingsScreen(),
             ]
           : const [
               TrainerDashboardScreen(),
               TrainerCustomersScreen(),
               WorkoutGroupsScreen(),
-              TrainerReportsScreen(),
               TrainerProfileSettingsScreen(),
             ],
     );

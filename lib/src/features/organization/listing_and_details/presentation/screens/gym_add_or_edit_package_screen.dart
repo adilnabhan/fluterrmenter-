@@ -78,6 +78,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
     final priceController = TextEditingController();
 
     void listener() {
+      if (!mounted) return;
       if (mounted) setState(() {});
     }
 
@@ -317,6 +318,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
 
         // 🔥 FIX: Add listeners so UI updates when editing
         monthController.addListener(() {
+          if (!mounted) return;
           if (mounted) setState(() {});
         });
         priceController.addListener(() {
@@ -489,6 +491,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
               //             value: _isEmi,
               //             activeColor: AppColors.primary,
               //             onChanged: (value) {
+              // if (!mounted) return;
               //               setState(() {
               //                 _isEmi = value;
               //                 if (!_isEmi) {
@@ -538,6 +541,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
               //                           color: Colors.red,
               //                         ),
               //                         onPressed: () {
+              // if (!mounted) return;
               //                           setState(() {
               //                             emi.month.controller?.dispose();
               //                             emi.price.controller?.dispose();
@@ -559,6 +563,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
               //                         ),
               //                         icon: const Icon(Icons.add),
               //                         onPressed: () {
+              // if (!mounted) return;
               //                           setState(() {
               //                             _emiOptions.add(
               //                               _createEmptyEmiOption(),
@@ -633,6 +638,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                     value: _isEmi,
                     activeColor: AppColors.error, // Red color from image
                     onChanged: (value) {
+                      if (!mounted) return;
                       setState(() {
                         _isEmi = value;
                         if (!_isEmi) {
@@ -673,6 +679,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                                 padding: const EdgeInsets.only(left: 8),
                                 child: InkWell(
                                   onTap: () {
+                                    if (!mounted) return;
                                     setState(() {
                                       if (_emiOptions.isNotEmpty) {
                                         final lastEmi =
@@ -764,6 +771,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
                     onPressed: () {
+                      if (!mounted) return;
                       setState(() {
                         _emiOptions.add(_createEmptyEmiOption());
                       });

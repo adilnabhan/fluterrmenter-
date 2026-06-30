@@ -119,6 +119,7 @@ class __SubscriptionSelectionScreenState
                               _membershipPackageModel?.id == membership?.id;
                           return InkWell(
                             onTap: () {
+                              if (!mounted) return;
                               setState(() {
                                 _membershipPackageModel = membership;
                               });

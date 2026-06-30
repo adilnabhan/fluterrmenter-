@@ -29,6 +29,7 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
   }
 
   Future<void> fetch({bool isLoading = false, String? q}) async {
+    if (!mounted) return;
     setState(() {
       errorText = '';
       this.isLoading = isLoading;
@@ -47,6 +48,7 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
           ..addAll(_allValues);
       },
     );
+    if (!mounted) return;
     setState(() {
       this.isLoading = false;
     });
@@ -66,11 +68,13 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
           _filteredValues
             ..clear()
             ..addAll(_allValues);
+          if (!mounted) return;
           setState(() {});
         } else {
           _filteredValues
             ..clear()
             ..addAll(_allValues.where((e) => e.label.toLowerCase().contains(q.toLowerCase())));
+          if (!mounted) return;
           setState(() {});
         }
       },
