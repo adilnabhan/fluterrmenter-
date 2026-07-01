@@ -180,13 +180,15 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       }
 
       Dialogs.showSnack(msg: 'Changes saved successfully');
-      _fetchPlanDetails();
+      await _fetchPlanDetails();
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isSaving = false;
-      });
       Dialogs.showSnack(msg: 'Error saving changes: ${e.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 

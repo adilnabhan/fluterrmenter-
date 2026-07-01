@@ -42,7 +42,7 @@ class AccountSwitcherSheet extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close, color: AppColors.textGrey),
+                icon: const Icon(Icons.close, color: AppColors.textDark),
               ),
             ],
           ),

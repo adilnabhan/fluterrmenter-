@@ -33,10 +33,39 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AppCubit>().state.currentUser;
+    final userName = '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim();
+    final displayName = userName.isNotEmpty ? userName : 'Owner Profile';
+
     return Scaffold(
       appBar: AppBar(
-        leading: const PopButton().center,
-        title: Text('Profile', style: AppStyles.text16Px.poppins.w500),
+        leading: Navigator.canPop(context) ? const PopButton().center : null,
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        titleSpacing: 16,
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              side: const BorderSide(color: Color(0xffDDDDDD)),
+            ),
+            onPressed: () {
+              const AccountSwitcherSheet().show(context);
+            },
+            label: const Icon(
+              Icons.keyboard_arrow_down_sharp,
+              color: Color(0xff222222),
+              size: 20,
+            ),
+            icon: Text(
+              displayName,
+              style: AppStyles.text14Px.poppins.w600.copyWith(
+                color: const Color(0xff222222),
+              ),
+            ),
+          ),
+        ),
       ),
       body: BlocBuilder<
         OrganizationListingAndDetailsCubit,
@@ -189,15 +218,13 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                               ),
                             );
                           }),
+
                           // _buildProfileListItem('Wishes', () {
                           //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
                           // }),
                           // _buildProfileListItem('Permissions', () {
                           //   context.push(BlocProvider.value(value: _cubit, child: GymDetailsScreen(orgDetails: orgDetails)));
                           // }),
-                          _buildProfileListItem('Switch/Add Account', () {
-                            const AccountSwitcherSheet().show(context);
-                          }),
                           _ProfileListItem(
                             label: 'Logout',
                             onTap: () => const LogoutSheet().show(context),

@@ -9,10 +9,40 @@ class TrainerProfileSettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = context.watch<AppCubit>().state.currentUser;
 
+    final trainerName =
+        '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim();
+    final displayName =
+        trainerName.isNotEmpty ? trainerName : 'Trainer Profile';
+
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
       appBar: AppBar(
-        title: Text('Profile', style: AppStyles.text16Px.poppins.w500),
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        titleSpacing: 16,
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              side: const BorderSide(color: Color(0xffDDDDDD)),
+            ),
+            onPressed: () {
+              const AccountSwitcherSheet().show(context);
+            },
+            label: const Icon(
+              Icons.keyboard_arrow_down_sharp,
+              color: Color(0xff222222),
+              size: 20,
+            ),
+            icon: Text(
+              displayName,
+              style: AppStyles.text14Px.poppins.w600.copyWith(
+                color: const Color(0xff222222),
+              ),
+            ),
+          ),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -38,18 +68,25 @@ class TrainerProfileSettingsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim(),
+                        '${user?.firstName ?? ""} ${user?.lastName ?? ""}'
+                            .trim(),
                         style: AppStyles.text16Px.poppins.w600.dark,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         user?.email ?? 'No email address',
-                        style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                        style: AppStyles.text12Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        user?.mobileNumber != null ? user!.mobileNumber.toString() : '',
-                        style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                        user?.mobileNumber != null
+                            ? user!.mobileNumber.toString()
+                            : '',
+                        style: AppStyles.text12Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
                       ),
                     ],
                   ),
@@ -75,28 +112,34 @@ class TrainerProfileSettingsScreen extends StatelessWidget {
                   icon: Icons.verified_user_outlined,
                   onTap: () {},
                 ),
-                const Divider(height: 1, thickness: 1, color: Color(0xffF5F5F5)),
+                const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xffF5F5F5),
+                ),
                 _buildProfileListItem(
                   context,
                   label: 'Terms & Conditions',
                   icon: Icons.description_outlined,
                   onTap: () {},
                 ),
-                const Divider(height: 1, thickness: 1, color: Color(0xffF5F5F5)),
+                const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xffF5F5F5),
+                ),
                 _buildProfileListItem(
                   context,
                   label: 'Privacy Policy',
                   icon: Icons.lock_outline_rounded,
                   onTap: () {},
                 ),
-                const Divider(height: 1, thickness: 1, color: Color(0xffF5F5F5)),
-                _buildProfileListItem(
-                  context,
-                  label: 'Switch/Add Account',
-                  icon: Icons.people_outline,
-                  onTap: () => const AccountSwitcherSheet().show(context),
+                const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xffF5F5F5),
                 ),
-                const Divider(height: 1, thickness: 1, color: Color(0xffF5F5F5)),
+
                 _buildProfileListItem(
                   context,
                   label: 'Logout',
@@ -121,16 +164,26 @@ class TrainerProfileSettingsScreen extends StatelessWidget {
   }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: isLogout ? Colors.red : AppColors.primary, size: 22),
+      leading: Icon(
+        icon,
+        color: isLogout ? Colors.red : AppColors.primary,
+        size: 22,
+      ),
       title: Text(
         label,
-        style: isLogout
-            ? AppStyles.text14Px.poppins.w500.copyWith(color: Colors.red)
-            : AppStyles.text14Px.poppins.w500,
+        style:
+            isLogout
+                ? AppStyles.text14Px.poppins.w500.copyWith(color: Colors.red)
+                : AppStyles.text14Px.poppins.w500,
       ),
-      trailing: isLogout
-          ? null
-          : const Icon(Icons.chevron_right, color: Color(0xffCCCCCC), size: 20),
+      trailing:
+          isLogout
+              ? null
+              : const Icon(
+                Icons.chevron_right,
+                color: Color(0xffCCCCCC),
+                size: 20,
+              ),
       onTap: onTap,
     );
   }

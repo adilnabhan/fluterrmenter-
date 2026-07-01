@@ -193,7 +193,7 @@ class _ActionCard extends StatelessWidget {
                   Text(
                     subtitle,
                     style: AppStyles.text14Px.poppins.w400.copyWith(
-                      color: AppColors.textGrey,
+                      color: AppColors.textDark,
                     ),
                   ),
                 ],

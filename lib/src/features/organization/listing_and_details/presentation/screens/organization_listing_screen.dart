@@ -1,5 +1,8 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/organization_details_screen.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/organization_reports_screen.dart';
+import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
 
 class OrganizationListingScreen extends StatelessWidget {
   const OrganizationListingScreen({super.key});
@@ -84,6 +87,65 @@ class _OrganizationListingAndDetailsScreenState
     _cubit.fetchList(isRefresh: isRefresh);
   }
 
+  int _currentBannerIndex = 0;
+
+  Widget _buildBannerCarousel() {
+    final List<String> banners = [
+      'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
+      'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
+      'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
+    ];
+
+    return Column(
+      children: [
+        CarouselSlider(
+          items:
+              banners.map((url) {
+                return ClipRRect(
+                  borderRadius: const BorderRadius.all(Radius.circular(16)),
+                  child: ImageNetwork(
+                    url,
+                    height: double.maxFinite,
+                    width: double.maxFinite,
+                  ),
+                );
+              }).toList(),
+          options: CarouselOptions(
+            aspectRatio: 16 / 9,
+            viewportFraction: 1,
+            enlargeCenterPage: false,
+            autoPlay: true,
+            onPageChanged: (index, reason) {
+              if (!mounted) return;
+              setState(() {
+                _currentBannerIndex = index;
+              });
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children:
+              banners.asMap().entries.map((entry) {
+                return Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color:
+                        _currentBannerIndex == entry.key
+                            ? AppColors.primary
+                            : Colors.grey.shade300,
+                  ),
+                );
+              }).toList(),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<
@@ -120,35 +182,38 @@ class _OrganizationListingAndDetailsScreenState
             appBar:
                 hasData
                     ? AppBar(
+                      automaticallyImplyLeading: false,
                       centerTitle: false,
                       titleSpacing: 16,
-                      title: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                      title: Align(
+                        alignment: Alignment.centerLeft,
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            side: const BorderSide(color: Color(0xffDDDDDD)),
                           ),
-                          side: const BorderSide(color: Color(0xffDDDDDD)),
-                        ),
-                        onPressed: () {
-                          const OrganizationSelectionSheet().show(
-                            context,
-                            _cubit,
-                          );
-                        },
-                        label: const Icon(
-                          Icons.keyboard_arrow_down_sharp,
-                          color: Color(0xff222222),
-                          size: 20,
-                        ),
-                        icon: Text(
-                          state.selectedOrganization?.name ?? '',
-                          style: AppStyles.text14Px.poppins.copyWith(
-                            color: const Color(0xff222222),
+                          onPressed: () {
+                            const OrganizationSelectionSheet().show(
+                              context,
+                              _cubit,
+                            );
+                          },
+                          label: const Icon(
+                            Icons.keyboard_arrow_down_sharp,
+                            color: Color(0xff222222),
+                            size: 20,
+                          ),
+                          icon: Text(
+                            state.selectedOrganization?.name ?? '',
+                            style: AppStyles.text14Px.poppins.copyWith(
+                              color: const Color(0xff222222),
+                            ),
                           ),
                         ),
                       ),
-
                       actions: [
                         IconButton(
                           onPressed: () {},
@@ -158,7 +223,19 @@ class _OrganizationListingAndDetailsScreenState
                           ),
                         ),
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => SettingsScreen(
+                                      name: state.selectedOrganization?.name,
+                                      email: state.selectedOrganization?.email,
+                                      logoUrl: state.selectedOrganization?.logo,
+                                    ),
+                              ),
+                            );
+                          },
                           icon: const Icon(
                             Icons.settings_outlined,
                             color: Colors.black87,
@@ -396,19 +473,7 @@ class _OrganizationListingAndDetailsScreenState
                                     },
                                   ),
                                   const SizedBox(height: 40),
-                                  const AspectRatio(
-                                    aspectRatio: 16 / 9,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(16),
-                                      ),
-                                      child: ImageNetwork(
-                                        'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
-                                        height: double.maxFinite,
-                                        width: double.maxFinite,
-                                      ),
-                                    ),
-                                  ),
+                                  _buildBannerCarousel(),
                                   const SizedBox(height: 40),
                                   // Customer Support Section
                                   // Container(
@@ -650,35 +715,41 @@ class _OrganizationListingAndDetailsScreenState
                   appBar:
                       hasData
                           ? AppBar(
-                            title: OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
+                            automaticallyImplyLeading: false,
+                            centerTitle: false,
+                            titleSpacing: 16,
+                            title: Align(
+                              alignment: Alignment.centerLeft,
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  side: const BorderSide(
+                                    color: Color(0xffDDDDDD),
+                                  ),
                                 ),
-                                side: const BorderSide(
-                                  color: Color(0xffDDDDDD),
+                                onPressed: () {
+                                  const OrganizationSelectionSheet().show(
+                                    context,
+                                    _cubit,
+                                  );
+                                },
+                                label: const Icon(
+                                  Icons.keyboard_arrow_down_sharp,
+                                  color: Color(0xff222222),
+                                  size: 20,
                                 ),
-                              ),
-                              onPressed: () {
-                                const OrganizationSelectionSheet().show(
-                                  context,
-                                  _cubit,
-                                );
-                              },
-                              label: const Icon(
-                                Icons.keyboard_arrow_down_sharp,
-                                color: Color(0xff222222),
-                                size: 20,
-                              ),
-                              icon: Text(
-                                state.selectedOrganization?.name ?? '',
-                                style: AppStyles.text14Px.poppins.copyWith(
-                                  color: const Color(0xff222222),
+                                icon: Text(
+                                  state.selectedOrganization?.name ?? '',
+                                  style: AppStyles.text14Px.poppins.copyWith(
+                                    color: const Color(0xff222222),
+                                  ),
                                 ),
                               ),
                             ),
-                            centerTitle: false,
+                            // centerTitle: false,
                             actions: [
                               IconButton(
                                 onPressed: () {},
@@ -688,7 +759,28 @@ class _OrganizationListingAndDetailsScreenState
                                 ),
                               ),
                               IconButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => SettingsScreen(
+                                            name:
+                                                state
+                                                    .selectedOrganization
+                                                    ?.name,
+                                            email:
+                                                state
+                                                    .selectedOrganization
+                                                    ?.email,
+                                            logoUrl:
+                                                state
+                                                    .selectedOrganization
+                                                    ?.logo,
+                                          ),
+                                    ),
+                                  );
+                                },
                                 icon: const Icon(
                                   Icons.settings_outlined,
                                   color: Colors.black87,
@@ -1064,21 +1156,9 @@ class _OrganizationListingAndDetailsScreenState
                                   padding: EdgeInsets.zero,
                                   children: [
                                     const SizedBox(height: 10),
-                                    const Padding(
-                                      padding: EdgeInsets.all(20),
-                                      child: AspectRatio(
-                                        aspectRatio: 16 / 9,
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(16),
-                                          ),
-                                          child: ImageNetwork(
-                                            'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
-                                            height: double.maxFinite,
-                                            width: double.maxFinite,
-                                          ),
-                                        ),
-                                      ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: _buildBannerCarousel(),
                                     ),
                                     // const SizedBox(height: 5),
                                     ListView(
@@ -1233,19 +1313,7 @@ class _OrganizationListingAndDetailsScreenState
                                           },
                                         ),
                                         const SizedBox(height: 40),
-                                        const AspectRatio(
-                                          aspectRatio: 16 / 9,
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(16),
-                                            ),
-                                            child: ImageNetwork(
-                                              'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
-                                              height: double.maxFinite,
-                                              width: double.maxFinite,
-                                            ),
-                                          ),
-                                        ),
+                                        _buildBannerCarousel(),
                                         const SizedBox(height: 40),
                                         // const SizedBox(height: 40),
                                       ],
@@ -1612,19 +1680,7 @@ class _OrganizationListingAndDetailsScreenState
                                     },
                                   ),
                                   const SizedBox(height: 40),
-                                  const AspectRatio(
-                                    aspectRatio: 16 / 9,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(16),
-                                      ),
-                                      child: ImageNetwork(
-                                        'https://images.ctfassets.net/0k812o62ndtw/WE3fGLHIvifgzs7iBw9Le/e66c3a58d6558193a49c1eaac72b713d/Gym_-_Kayla_-_7108-1024x683-27c3a53.jpg',
-                                        height: double.maxFinite,
-                                        width: double.maxFinite,
-                                      ),
-                                    ),
-                                  ),
+                                  _buildBannerCarousel(),
                                   const SizedBox(height: 40),
                                   const SizedBox(height: 40),
                                 ],
