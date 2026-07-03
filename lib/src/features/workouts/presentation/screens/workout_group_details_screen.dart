@@ -53,9 +53,19 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       decoration: InputDecoration(
         hintText: 'Enter plan name',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        filled: true,
+        fillColor: Colors.white,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.borderGrey),
+          borderSide: BorderSide(color: AppColors.borderGrey, width: 1.5),
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey, width: 1.5),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
     );
@@ -75,9 +85,19 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       decoration: InputDecoration(
         hintText: 'Enter plan name',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        filled: true,
+        fillColor: Colors.white,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.borderGrey),
+          borderSide: BorderSide(color: AppColors.borderGrey, width: 1.5),
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey, width: 1.5),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
     );
@@ -332,8 +352,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                       title: planName,
                                       exerciseCount: exerciseCount,
                                       createdOn: createdOn,
-                                      onTap: () {
-                                        Navigator.push(
+                                      onTap: () async {
+                                        await Navigator.push(
                                           context,
                                           MaterialPageRoute<void>(
                                             builder:
@@ -344,6 +364,9 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                                     ),
                                           ),
                                         );
+                                        if (mounted) {
+                                          _fetchPlans();
+                                        }
                                       },
                                       onAssignTap: () {
                                         showModalBottomSheet<void>(

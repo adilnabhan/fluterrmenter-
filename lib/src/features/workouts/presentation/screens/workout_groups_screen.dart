@@ -39,9 +39,19 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
       decoration: InputDecoration(
         hintText: 'Enter group name',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+        filled: true,
+        fillColor: Colors.white,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.borderGrey),
+          borderSide: BorderSide(color: AppColors.borderGrey,width: 1.5),
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey,width: 1.5),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.primary,width: 1.5),
         ),
       ),
     );
@@ -279,7 +289,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                                               'No workout groups found.',
                                             ),
                                           )
-                                          : WorkoutGroupsGrid(groups: filtered),
+                                          : WorkoutGroupsGrid(groups: filtered, onReturn: _fetchGroups),
                                 ),
                               ],
                             ),
@@ -436,8 +446,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
 }
 
 class WorkoutGroupsGrid extends StatelessWidget {
-  const WorkoutGroupsGrid({super.key, required this.groups});
+  const WorkoutGroupsGrid({super.key, required this.groups, required this.onReturn});
   final List<Map<String, dynamic>> groups;
+  final VoidCallback onReturn;
 
   @override
   Widget build(BuildContext context) {
@@ -451,15 +462,16 @@ class WorkoutGroupsGrid extends StatelessWidget {
       ),
       itemCount: groups.length,
       itemBuilder: (context, index) {
-        return _WorkoutGroupCard(group: groups[index]);
+        return _WorkoutGroupCard(group: groups[index], onReturn: onReturn);
       },
     );
   }
 }
 
 class _WorkoutGroupCard extends StatelessWidget {
-  const _WorkoutGroupCard({required this.group});
+  const _WorkoutGroupCard({required this.group, required this.onReturn});
   final Map<String, dynamic> group;
+  final VoidCallback onReturn;
 
   @override
   Widget build(BuildContext context) {
@@ -468,8 +480,8 @@ class _WorkoutGroupCard extends StatelessWidget {
     final int planCount = group['plan_count'] as int? ?? 0;
 
     return InkWell(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute<void>(
             builder:
@@ -479,6 +491,7 @@ class _WorkoutGroupCard extends StatelessWidget {
                 ),
           ),
         );
+        onReturn();
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -511,13 +524,73 @@ class _WorkoutGroupCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                CircleAvatar(
-                  backgroundColor: Colors.grey.shade100,
-                  radius: 16,
-                  child: const Icon(
-                    Icons.more_vert,
-                    color: AppColors.textGrey,
-                    size: 20,
+                PopupMenuButton<String>(
+                  color: Colors.white,
+                  padding: EdgeInsets.zero,
+                  onSelected: (value) async {
+                    if (value == 'delete') {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (dialogContext) {
+                          return AlertDialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: Text('Delete Workout Group', style: AppStyles.text16Px.poppins.w600),
+                            content: const Text('Are you sure you want to delete this workout group?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(dialogContext, false),
+                                child: Text('Cancel', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.grey)),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(dialogContext, true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: Text('Delete', style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white)),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirmed == true) {
+                        try {
+                          final response = await DioClient().dio.delete<dynamic>(ApiUris.workoutGroupDetail(groupId));
+                          if (response.statusCode == 200 || response.statusCode == 204) {
+                            Dialogs.showSnack(msg: 'Workout group deleted successfully');
+                            onReturn();
+                          } else {
+                            Dialogs.showSnack(msg: 'Failed to delete workout group');
+                          }
+                        } catch (e) {
+                          Dialogs.showSnack(msg: 'Error deleting workout group: ${e.toString()}');
+                        }
+                      }
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem<String>(
+                      height: 36,
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                          const SizedBox(width: 8),
+                          Text('Delete', style: AppStyles.text14Px.poppins.copyWith(color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey.shade100,
+                    radius: 16,
+                    child: const Icon(
+                      Icons.more_vert,
+                      color: AppColors.textGrey,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],

@@ -18,6 +18,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   bool _isLoading = true;
   bool _isLoadingHistory = false;
   bool _isSavingNotes = false;
+  bool _isPlansExpanded = false;
   int _selectedTab = 0; // 0: General Stats, 1: Workout History
   late final TextEditingController _notesController;
 
@@ -449,51 +450,76 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                       ),
                     )
                   : Column(
-                      children: assignedPlans.map((plan) {
-                        final planName = plan['plan_name'] ?? 'Plan';
-                        final statusStr = plan['status'] ?? 'active';
-                        final days = plan['total_days'] ?? 0;
+                      children: [
+                        ...assignedPlans.take(_isPlansExpanded ? assignedPlans.length : 3).map((plan) {
+                          final planName = plan['plan_name'] ?? 'Plan';
+                          final statusStr = plan['status'] ?? 'active';
+                          final days = plan['total_days'] ?? 0;
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xffF7F7F7),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    planName as String,
-                                    style: AppStyles.text13Px.poppins.w600,
-                                  ),
-                                  Text(
-                                    '$days Days duration',
-                                    style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: statusStr == 'active' ? const Color(0xffE8F5E9) : const Color(0xffE0E0E0),
-                                  borderRadius: BorderRadius.circular(8),
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xffF7F7F7),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      planName as String,
+                                      style: AppStyles.text13Px.poppins.w600,
+                                    ),
+                                    Text(
+                                      '$days Days duration',
+                                      style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                    ),
+                                  ],
                                 ),
-                                child: Text(
-                                  (statusStr as String).toUpperCase(),
-                                  style: AppStyles.text10Px.poppins.w600.copyWith(
-                                    color: statusStr == 'active' ? const Color(0xFF43A047) : Colors.grey.shade700,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: statusStr == 'active' ? const Color(0xffE8F5E9) : const Color(0xffE0E0E0),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    (statusStr as String).toUpperCase(),
+                                    style: AppStyles.text10Px.poppins.w600.copyWith(
+                                      color: statusStr == 'active' ? const Color(0xFF43A047) : Colors.grey.shade700,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                          );
+                        }),
+                        if (assignedPlans.length > 3)
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _isPlansExpanded = !_isPlansExpanded;
+                              });
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              textStyle: AppStyles.text14Px.poppins.w600,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(_isPlansExpanded ? 'Show Less' : 'See all ${assignedPlans.length} plans'),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  _isPlansExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                  size: 18,
+                                ),
+                              ],
+                            ),
                           ),
-                        );
-                      }).toList(),
+                      ],
                     ),
         ),
         const SizedBox(height: 20),

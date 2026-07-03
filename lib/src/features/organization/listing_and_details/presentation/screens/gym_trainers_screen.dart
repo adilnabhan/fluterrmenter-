@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/leads/add_or_edit_lead_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
 
 class GymTrainersScreen extends StatefulWidget {
   const GymTrainersScreen({required this.orgDetails, super.key});
@@ -102,7 +103,14 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
         title: Text('Trainers', style: AppStyles.text16Px.poppins.w500),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
             icon: const Icon(Icons.settings_outlined, color: Colors.black87),
           ),
           const SizedBox(width: 8),

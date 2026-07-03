@@ -328,11 +328,15 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                           final client = filtered[index];
                           final int customerId = client['customer_id'] as int;
                           final String name = client['name'] as String? ?? 'Client';
-                          final String goal = client['target_goal'] as String? ?? '';
+                          final String organizationName = client['organization_name'] as String? ?? 'Direct Client';
                           final bool isAssigned = client['is_assigned'] as bool? ?? false;
                           final bool isAssignedToMe = client['is_assigned_to_me'] as bool? ?? false;
                           final bool isSubmitting = _submittingMap[customerId] ?? false;
                           final imgUrl = client['profile_picture'];
+                          
+                          final String? todayWorkoutName = client['today_workout_name'] as String?;
+                          final String? previousWorkoutName = client['previous_workout_name'] as String?;
+                          final String? previousWorkoutTime = client['previous_workout_time'] as String?;
 
                           return Container(
                             padding: const EdgeInsets.all(12),
@@ -341,66 +345,123 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: AppColors.borderGrey),
                             ),
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: AppColors.iconBackground,
-                                  backgroundImage: imgUrl != null ? NetworkImage(imgUrl as String) : null,
-                                  child: imgUrl == null ? const Icon(Icons.person, color: AppColors.primary) : null,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        name,
-                                        style: AppStyles.text14Px.poppins.w600.dark,
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: AppColors.iconBackground,
+                                      backgroundImage: imgUrl != null ? NetworkImage(imgUrl as String) : null,
+                                      child: imgUrl == null ? const Icon(Icons.person, color: AppColors.primary) : null,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            name,
+                                            style: AppStyles.text14Px.poppins.w600.dark,
+                                          ),
+                                          Text(
+                                            organizationName,
+                                            style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                          ),
+                                        ],
                                       ),
-                                      if (goal.isNotEmpty)
-                                        Text(
-                                          goal,
-                                          style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                                        ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    isSubmitting
+                                        ? const SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          )
+                                        : isAssigned
+                                            ? Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  border: Border.all(color: const Color(0xFFE57373)),
+                                                ),
+                                                child: Text(
+                                                  'Assigned',
+                                                  style: AppStyles.text12Px.poppins.w600.copyWith(color: const Color(0xFFD32F2F)),
+                                                ),
+                                              )
+                                            : ElevatedButton(
+                                                onPressed: () => _assignPlan(customerId, name, isAssignedToMe),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: const Color(0xFFD30000), // Match the red from screenshot
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(20),
+                                                  ),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                  elevation: 0,
+                                                ),
+                                                child: Text(
+                                                  'Assign',
+                                                  style: AppStyles.text12Px.poppins.w600,
+                                                ),
+                                              ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                RichText(
+                                  text: TextSpan(
+                                    text: 'Today: ',
+                                    style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                    children: [
+                                      TextSpan(
+                                        text: todayWorkoutName ?? 'not assigned',
+                                        style: AppStyles.text12Px.poppins.w600.dark,
+                                      ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                isSubmitting
-                                    ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      )
-                                    : isAssigned
-                                        ? Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFF1F1F1),
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: Text(
-                                              'Assigned',
-                                              style: AppStyles.text12Px.poppins.w600.copyWith(color: AppColors.textGrey),
-                                            ),
-                                          )
-                                        : ElevatedButton(
-                                            onPressed: () => _assignPlan(customerId, name, isAssignedToMe),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: AppColors.primary,
-                                              foregroundColor: Colors.white,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(20),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: RichText(
+                                        text: TextSpan(
+                                          text: 'Previous: ',
+                                          style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                          children: [
+                                            if (previousWorkoutName != null) ...[
+                                              TextSpan(
+                                                text: previousWorkoutName,
+                                                style: AppStyles.text12Px.poppins.w600.dark,
                                               ),
-                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                              elevation: 0,
-                                            ),
-                                            child: Text(
-                                              'Assign',
-                                              style: AppStyles.text12Px.poppins.w600,
-                                            ),
-                                          ),
+                                              if (previousWorkoutTime != null)
+                                                TextSpan(
+                                                  text: ' ($previousWorkoutTime)',
+                                                  style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                                ),
+                                            ] else
+                                              TextSpan(
+                                                text: 'no history',
+                                                style: AppStyles.text12Px.poppins.w600.dark,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFF1F1F1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      padding: const EdgeInsets.all(6),
+                                      child: const Icon(Icons.history, size: 16, color: AppColors.textDark),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           );

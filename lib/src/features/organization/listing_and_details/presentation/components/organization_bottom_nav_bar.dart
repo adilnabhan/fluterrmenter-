@@ -138,7 +138,7 @@ class _NavBarItem extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (profileImageUrl != null && label == 'Profile')
+          if (label == 'Profile')
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -147,13 +147,7 @@ class _NavBarItem extends StatelessWidget {
                   width: 2,
                 ),
               ),
-              child: IgnorePointer(
-                child: ProfileImage(
-                  url: profileImageUrl,
-                  radius: 25,
-                  isEdit: false,
-                ),
-              ),
+              child: icon,
             )
           else
             icon,

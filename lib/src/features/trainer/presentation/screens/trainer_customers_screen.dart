@@ -201,69 +201,89 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                GestureDetector(
-                  onTap: () {
+                PopupMenuButton<String>(
+                  onSelected: (String value) {
                     if (!mounted) return;
                     setState(() {
-                      _statusFilter = _statusFilter == 'active' ? 'all' : 'active';
+                      _statusFilter = value;
                     });
                     _fetchClients();
                   },
+                  color: Colors.white,
+                  surfaceTintColor: Colors.white,
+                  position: PopupMenuPosition.under,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'all',
+                      child: Text(
+                        'All Clients',
+                        style: AppStyles.text12Px.poppins.copyWith(
+                          fontWeight: _statusFilter == 'all' ? FontWeight.w600 : FontWeight.w400,
+                          color: _statusFilter == 'all' ? AppColors.primary : AppColors.textDark,
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'active',
+                      child: Text(
+                        'Active Clients',
+                        style: AppStyles.text12Px.poppins.copyWith(
+                          fontWeight: _statusFilter == 'active' ? FontWeight.w600 : FontWeight.w400,
+                          color: _statusFilter == 'active' ? AppColors.primary : AppColors.textDark,
+                        ),
+                      ),
+                    ),
+                  ],
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: _statusFilter != 'all' ? const Color(0xffFFEAEA) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade300),
+                      border: Border.all(
+                        color: _statusFilter != 'all'
+                            ? AppColors.primary.withOpacity(0.2)
+                            : Colors.grey.shade300,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.filter_alt_outlined, size: 13, color: AppColors.textDark),
+                        Icon(
+                          Icons.filter_alt_outlined,
+                          size: 13,
+                          color: _statusFilter != 'all' ? AppColors.primary : AppColors.textDark,
+                        ),
                         const SizedBox(width: 4),
                         Text(
-                          'Filter',
-                          style: AppStyles.text12Px.poppins.w600.dark,
+                          _statusFilter == 'all' ? 'Filter' : 'Active Clients',
+                          style: AppStyles.text12Px.poppins.w600.copyWith(
+                            color: _statusFilter != 'all' ? AppColors.primary : AppColors.textDark,
+                          ),
                         ),
-                        if (_statusFilter == 'active') ...[
+                        if (_statusFilter != 'all') ...[
                           const SizedBox(width: 4),
-                          const Icon(Icons.close, size: 12, color: AppColors.textDark),
+                          GestureDetector(
+                            onTap: () {
+                              if (!mounted) return;
+                              setState(() {
+                                _statusFilter = 'all';
+                              });
+                              _fetchClients();
+                            },
+                            child: const Icon(Icons.close, size: 12, color: AppColors.primary),
+                          ),
+                        ] else ...[
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down, size: 14, color: AppColors.textDark),
                         ],
                       ],
                     ),
                   ),
                 ),
-                if (_statusFilter == 'active') ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xffFFEAEA),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Active Clients',
-                          style: AppStyles.text12Px.poppins.w600.copyWith(color: AppColors.primary),
-                        ),
-                        const SizedBox(width: 4),
-                        GestureDetector(
-                          onTap: () {
-                            if (!mounted) return;
-                            setState(() {
-                              _statusFilter = 'all';
-                            });
-                            _fetchClients();
-                          },
-                          child: const Icon(Icons.close, size: 12, color: AppColors.primary),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -523,7 +543,11 @@ class TrainerQuickActionsSheet extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute<void>(
-                    builder: (context) => AddOrEditMemeberScreen(orgId: orgId),
+                    builder:
+                        (context) => BlocProvider(
+                          create: (context) => MembersAndLeadsCubit(orgId: orgId),
+                          child: AddOrEditMemeberScreen(orgId: orgId),
+                        ),
                   ),
                 );
               } else {
@@ -577,18 +601,7 @@ class TrainerQuickActionsSheet extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 16),
-          _ActionCard(
-            icon: Icons.work_outline,
-            iconColor: Colors.white,
-            iconBgColor: const Color(0xFFFF9800),
-            title: 'Look for Job Offers',
-            subtitle: 'Record recurring or variable costs',
-            onTap: () {
-              Navigator.pop(context);
-              Dialogs.showSnack(msg: 'Look for Job Offers triggered');
-            },
-          ),
+
           const SizedBox(height: 20),
           Align(
             alignment: Alignment.centerRight,

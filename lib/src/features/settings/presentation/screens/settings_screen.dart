@@ -138,7 +138,7 @@ class SettingsScreen extends StatelessWidget {
                         Text(
                           email ?? 'johndoe@gmail.com',
                           style: AppStyles.text12Px.poppins.w400.copyWith(
-                            color: AppColors.textDark.withOpacity(0.5),
+                            color: AppColors.textDark.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
