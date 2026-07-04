@@ -104,4 +104,13 @@ final class ApiUris {
 
   // Customer workout history
   static String customerWorkoutHistory(int customerId) => '${_v1}trainer/customers/$customerId/workout-history/';
+
+  ///============================= Verification =============================\\\
+  static final pendingVerifications = '${_v1}mentor/verification/pending/';
+  static String verifyWorkout(int sessionId) => '${_v1}mentor/verification/verify/$sessionId/';
+  static final verificationHistory = '${_v1}mentor/verification/history/';
+  static String mentorClientCalendar(int customerId) => '${_v1}mentor/clients/$customerId/calendar/';
+  static String mentorClientHistory(int customerId) => '${_v1}mentor/clients/$customerId/history/';
+  static final profileCompleteness = '${_v1}user/profile/completeness/';
+  static final updateMentorProfile = '${_v1}mentor/profile/update/';
 }

@@ -3,6 +3,7 @@ import 'package:mentor_mobile_app/src/features/organization/listing_and_details/
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_customers_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/workout_verification_screen.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
   const TrainerDashboardScreen({super.key});
@@ -128,6 +129,14 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                           icon: Icons.pending_actions,
                           color: const Color(0xFFFFF3E0),
                           iconColor: const Color(0xFFFB8C00),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const WorkoutVerificationScreen(),
+                              ),
+                            );
+                          },
                         ),
                         _buildStatCard(
                           title: 'Workout Plans',

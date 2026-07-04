@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/account_switcher_sheet.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/edit_trainer_profile_screen.dart';
 
 class TrainerProfileSettingsScreen extends StatelessWidget {
   const TrainerProfileSettingsScreen({super.key});
@@ -69,6 +70,20 @@ class TrainerProfileSettingsScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
+                _buildProfileListItem(
+                  context,
+                  label: 'Edit Profile',
+                  icon: Icons.edit_outlined,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EditTrainerProfileScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1, thickness: 1, color: Color(0xffF5F5F5)),
                 _buildProfileListItem(
                   context,
                   label: 'Account Verification',

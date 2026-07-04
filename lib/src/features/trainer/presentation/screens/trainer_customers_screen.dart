@@ -800,7 +800,8 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
     final enteredTitle = titleController.text.trim();
     final String finalTitle = enteredTitle.isNotEmpty ? enteredTitle : planName;
 
-    final trainerId = context.read<AppCubit>().state.currentUser?.mentor?.id;
+    final trainerId = context.read<AppCubit>().state.currentUser?.trainer?.id ??
+                      context.read<AppCubit>().state.currentUser?.mentor?.id;
     if (trainerId == null) {
       setState(() {
         _submittingMap[planId] = false;

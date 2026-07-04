@@ -18,8 +18,13 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   bool _isLoading = true;
   bool _isLoadingHistory = false;
   bool _isSavingNotes = false;
-  int _selectedTab = 0; // 0: General Stats, 1: Workout History
+  int _selectedTab = 0; // 0: General Stats, 1: Workout Calendar, 2: Workout History
   late final TextEditingController _notesController;
+
+  Map<int, Map<String, dynamic>> _calendarData = {};
+  bool _isLoadingCalendar = false;
+  DateTime _calendarMonth = DateTime.now();
+  int? _selectedCalendarDay;
 
   @override
   void initState() {
@@ -27,6 +32,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     _notesController = TextEditingController();
     _fetchClientDetails();
     _fetchWorkoutHistory();
+    _fetchCalendarData();
   }
 
   @override
@@ -126,7 +132,8 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   }
 
   Future<void> _toggleDetailAssignment(bool isCurrentlyAssigned) async {
-    final trainerId = context.read<AppCubit>().state.currentUser?.mentor?.id;
+    final trainerId = context.read<AppCubit>().state.currentUser?.trainer?.id ??
+                      context.read<AppCubit>().state.currentUser?.mentor?.id;
     if (trainerId == null) {
       Dialogs.showSnack(msg: 'Trainer profile not found.');
       return;
@@ -339,36 +346,56 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
           ),
           child: hasActiveMembership
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              ? Builder(
+                  builder: (context) {
+                    final status = membership['status'] as String? ?? 'Pending';
+                    final bool isActive = status.toLowerCase() == 'active' || status.toLowerCase() == 'trial';
+                    final bool isExpired = status.toLowerCase() == 'expired';
+                    
+                    final iconColor = isActive 
+                        ? const Color(0xFF43A047) 
+                        : isExpired 
+                            ? const Color(0xFFD32F2F) 
+                            : Colors.orange.shade800;
+                            
+                    final iconData = isActive 
+                        ? Icons.check_circle_outline 
+                        : isExpired 
+                            ? Icons.cancel_outlined 
+                            : Icons.warning_amber_rounded;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.check_circle_outline, color: Color(0xFF43A047)),
-                        const SizedBox(width: 8),
+                        Row(
+                          children: [
+                            Icon(iconData, color: iconColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${membership['plan_name'] as String? ?? 'Plan'} (${status.toUpperCase()})',
+                              style: AppStyles.text14Px.poppins.w600.copyWith(color: iconColor),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                         Text(
-                          membership['plan_name'] as String? ?? 'Active Plan',
-                          style: AppStyles.text14Px.poppins.w600,
+                          'Gym: ${membership['organization'] ?? "N/A"}',
+                          style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                        ),
+                        Text(
+                          'Valid: ${_formatDateString(membership['start_date'] as String?)} to ${_formatDateString(membership['end_date'] as String?)}',
+                          style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Gym: ${membership['organization'] ?? "N/A"}',
-                      style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                    ),
-                    Text(
-                      'Valid: ${_formatDateString(membership['start_date'] as String?)} to ${_formatDateString(membership['end_date'] as String?)}',
-                      style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                    ),
-                  ],
+                    );
+                  }
                 )
               : Row(
                   children: [
                     const Icon(Icons.warning_amber_rounded, color: AppColors.primary),
                     const SizedBox(width: 8),
                     Text(
-                      'No active membership plan',
+                      'No membership plan configured',
                       style: AppStyles.text14Px.poppins.w600.copyWith(color: AppColors.primary),
                     ),
                   ],
@@ -537,6 +564,260 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                   style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
                 ),
         ),
+      ],
+    );
+  }
+
+  Future<void> _fetchCalendarData() async {
+    setState(() {
+      _isLoadingCalendar = true;
+    });
+    try {
+      final monthStr = DateFormat('yyyy-MM').format(_calendarMonth);
+      final response = await DioClient().dio.get<dynamic>(
+        '${ApiUris.mentorClientCalendar(widget.customerId)}?month=$monthStr',
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (response.statusCode == 200 && response.data is List) {
+        final List<dynamic> list = response.data as List<dynamic>;
+        final Map<int, Map<String, dynamic>> grouped = {};
+        for (final item in list) {
+          final itemMap = Map<String, dynamic>.from(item as Map);
+          final dateStr = itemMap['date'] as String? ?? '';
+          final date = DateTime.tryParse(dateStr);
+          if (date != null) {
+            grouped[date.day] = itemMap;
+          }
+        }
+        setState(() {
+          _calendarData = grouped;
+          _isLoadingCalendar = false;
+        });
+      } else {
+        setState(() {
+          _isLoadingCalendar = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoadingCalendar = false;
+      });
+      Dialogs.showSnack(msg: 'Error loading calendar: ${e.toString()}');
+    }
+  }
+
+  Widget _buildWorkoutCalendarTab() {
+    if (_isLoadingCalendar) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final year = _calendarMonth.year;
+    final month = _calendarMonth.month;
+    final firstDayOfMonth = DateTime(year, month, 1);
+    final lastDayOfMonth = DateTime(year, month + 1, 0);
+    final daysInMonth = lastDayOfMonth.day;
+    final startWeekday = firstDayOfMonth.weekday;
+
+    final monthName = DateFormat('MMMM yyyy').format(_calendarMonth);
+    final Map<String, dynamic>? selectedDayData = _calendarData[_selectedCalendarDay];
+    final List<dynamic> selectedSessions = selectedDayData != null ? (selectedDayData['sessions'] as List? ?? []) : [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left),
+              onPressed: () {
+                setState(() {
+                  _calendarMonth = DateTime(_calendarMonth.year, _calendarMonth.month - 1, 1);
+                  _selectedCalendarDay = null;
+                });
+                _fetchCalendarData();
+              },
+            ),
+            Text(
+              monthName,
+              style: AppStyles.text16Px.poppins.w600.dark,
+            ),
+            IconButton(
+              icon: const Icon(Icons.chevron_right),
+              onPressed: () {
+                setState(() {
+                  _calendarMonth = DateTime(_calendarMonth.year, _calendarMonth.month + 1, 1);
+                  _selectedCalendarDay = null;
+                });
+                _fetchCalendarData();
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 7,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: const [
+            Center(child: Text('M', style: TextStyle(fontWeight: FontWeight.bold))),
+            Center(child: Text('T', style: TextStyle(fontWeight: FontWeight.bold))),
+            Center(child: Text('W', style: TextStyle(fontWeight: FontWeight.bold))),
+            Center(child: Text('T', style: TextStyle(fontWeight: FontWeight.bold))),
+            Center(child: Text('F', style: TextStyle(fontWeight: FontWeight.bold))),
+            Center(child: Text('S', style: TextStyle(fontWeight: FontWeight.bold))),
+            Center(child: Text('S', style: TextStyle(fontWeight: FontWeight.bold))),
+          ],
+        ),
+        const SizedBox(height: 4),
+        GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7,
+            mainAxisSpacing: 6,
+            crossAxisSpacing: 6,
+          ),
+          itemCount: daysInMonth + (startWeekday - 1),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (context, index) {
+            final offset = startWeekday - 1;
+            if (index < offset) {
+              return const SizedBox.shrink();
+            }
+
+            final day = index - offset + 1;
+            final isSelected = _selectedCalendarDay == day;
+            final dayData = _calendarData[day];
+            final sessions = dayData != null ? (dayData['sessions'] as List? ?? []) : [];
+            
+            final bool hasCompleted = sessions.any((s) => s['completed_at'] != null || s['is_completed'] == true);
+            final bool hasVerified = sessions.any((s) => s['is_verified'] == true);
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedCalendarDay = day;
+                });
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : (hasCompleted ? Colors.green.shade50 : Colors.white),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : (hasCompleted ? Colors.green.shade200 : Colors.grey.shade200),
+                    width: 1,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '$day',
+                      style: AppStyles.text14Px.poppins.w600.copyWith(
+                        color: isSelected
+                            ? Colors.white
+                            : (hasCompleted ? Colors.green.shade800 : AppColors.button),
+                      ),
+                    ),
+                    if (hasCompleted) ...[
+                      const SizedBox(height: 2),
+                      Icon(
+                        hasVerified ? Icons.done_all : Icons.check,
+                        color: isSelected
+                            ? Colors.white
+                            : (hasVerified ? Colors.blue : Colors.green),
+                        size: 12,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 20),
+        if (_selectedCalendarDay != null) ...[
+          Text(
+            'Workouts for $monthName ${_selectedCalendarDay}',
+            style: AppStyles.text16Px.poppins.w600.dark,
+          ),
+          const SizedBox(height: 10),
+          if (selectedSessions.isEmpty)
+            Text(
+              'No workouts logged for this day.',
+              style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
+            )
+          else
+            ...selectedSessions.map((s) {
+              final Map<String, dynamic> session = Map<String, dynamic>.from(s as Map);
+              final exercises = session['exercises'] as List? ?? [];
+              final bool isVerified = session['is_verified'] == true;
+
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: ExpansionTile(
+                  title: Text(
+                    session['title'] ?? 'Workout',
+                    style: AppStyles.text16Px.poppins.w600.dark,
+                  ),
+                  subtitle: Row(
+                    children: [
+                      Text(
+                        'Exercises: ${exercises.length}',
+                        style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                      ),
+                      const SizedBox(width: 8),
+                      if (isVerified)
+                        Row(
+                          children: const [
+                            Icon(Icons.verified, color: Colors.blue, size: 14),
+                            SizedBox(width: 4),
+                            Text('Verified', style: TextStyle(color: Colors.blue, fontSize: 12)),
+                          ],
+                        )
+                      else if (session['completed_at'] != null)
+                        Row(
+                          children: const [
+                            Icon(Icons.check_circle, color: Colors.green, size: 14),
+                            SizedBox(width: 4),
+                            Text('Completed', style: TextStyle(color: Colors.green, fontSize: 12)),
+                          ],
+                        ),
+                    ],
+                  ),
+                  children: exercises.isEmpty
+                      ? [
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              'No exercises logged.',
+                              style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                            ),
+                          )
+                        ]
+                      : exercises.map((ex) {
+                          final exMap = Map<String, dynamic>.from(ex as Map);
+                          final sets = exMap['sets'] as List? ?? [];
+                          return ListTile(
+                            title: Text(exMap['exercise_name'] ?? 'Exercise'),
+                            subtitle: Text(
+                              sets.map((setObj) {
+                                final setMap = Map<String, dynamic>.from(setObj as Map);
+                                return '${setMap['reps'] ?? 0} reps @ ${setMap['weight'] ?? 0} kg';
+                              }).join(', '),
+                            ),
+                          );
+                        }).toList(),
+                ),
+              );
+            }).toList(),
+        ],
       ],
     );
   }
@@ -779,8 +1060,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
           // Tab Segment bar
           Row(
             children: [
-              Expanded(child: _buildSegmentTab('General Stats', 0)),
-              Expanded(child: _buildSegmentTab('Workout History', 1)),
+              Expanded(child: _buildSegmentTab('General', 0)),
+              Expanded(child: _buildSegmentTab('Calendar', 1)),
+              Expanded(child: _buildSegmentTab('History', 2)),
             ],
           ),
           Expanded(
@@ -789,7 +1071,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               padding: const EdgeInsets.all(16),
               child: _selectedTab == 0
                   ? _buildGeneralStatsTab(profile, membership, assignedPlans, prRecords, isAssignedToMe, trainerName)
-                  : _buildWorkoutHistoryTab(),
+                  : _selectedTab == 1
+                      ? _buildWorkoutCalendarTab()
+                      : _buildWorkoutHistoryTab(),
             ),
           ),
         ],

@@ -166,7 +166,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
     final enteredTitle = titleController.text.trim();
     final String finalTitle = enteredTitle.isNotEmpty ? enteredTitle : widget.planTitle;
 
-    final trainerId = context.read<AppCubit>().state.currentUser?.mentor?.id;
+    final trainerId = context.read<AppCubit>().state.currentUser?.trainer?.id ??
+                      context.read<AppCubit>().state.currentUser?.mentor?.id;
     if (trainerId == null) {
       setState(() {
         _submittingMap[customerId] = false;
