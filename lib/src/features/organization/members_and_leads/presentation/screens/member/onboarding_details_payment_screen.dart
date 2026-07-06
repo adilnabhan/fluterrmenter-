@@ -165,6 +165,11 @@ class _OnboardingDetailsPaymentScreenState extends State<OnboardingDetailsPaymen
     }
   }
 
+  String _capitalize(String s) {
+    if (s.isEmpty) return '';
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
@@ -268,7 +273,7 @@ class _OnboardingDetailsPaymentScreenState extends State<OnboardingDetailsPaymen
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
-                                      (widget.memberDetails.gender ?? '').capitalize,
+                                      _capitalize(widget.memberDetails.gender ?? ''),
                                       style: AppStyles.text12Px.poppins.w500.copyWith(color: Colors.black54),
                                     ),
                                   ),

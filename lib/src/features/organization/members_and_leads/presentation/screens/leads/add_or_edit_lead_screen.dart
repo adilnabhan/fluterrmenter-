@@ -343,8 +343,8 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
             borderRadius: BorderRadius.all(Radius.circular(8)),
             borderSide: BorderSide(color: AppColors.borderGrey),
           ),
-        ),
-    };
+      ),
+    ];
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_fields[0].focusNode);

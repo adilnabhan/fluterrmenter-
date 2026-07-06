@@ -279,7 +279,7 @@ class __SubscriptionSelectionScreenState
                           BlocProvider.value(
                             value: _cubit,
                             child: OnboardingDetailsPaymentScreen(
-                              orgId: widget.orgId,
+                              orgId: _cubit.orgId,
                               memberDetails: widget.memberDetails,
                               selectedPackage: _membershipPackageModel!,
                               packages: packagesList,
