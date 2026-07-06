@@ -424,7 +424,7 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
             borderSide: BorderSide(color: AppColors.borderGrey),
           ),
         ),
-    };
+    ];
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
