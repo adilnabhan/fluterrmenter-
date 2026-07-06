@@ -149,6 +149,8 @@ _$WorkingDayModelImpl _$$WorkingDayModelImplFromJson(
   morningClosingTime: json['morning_closing_time'] as String?,
   eveningOpeningTime: json['evening_opening_time'] as String?,
   eveningClosingTime: json['evening_closing_time'] as String?,
+  ladiesOpeningTime: json['ladies_opening_time'] as String?,
+  ladiesClosingTime: json['ladies_closing_time'] as String?,
 );
 
 Map<String, dynamic> _$$WorkingDayModelImplToJson(
@@ -160,4 +162,6 @@ Map<String, dynamic> _$$WorkingDayModelImplToJson(
   'morning_closing_time': instance.morningClosingTime,
   'evening_opening_time': instance.eveningOpeningTime,
   'evening_closing_time': instance.eveningClosingTime,
+  'ladies_opening_time': instance.ladiesOpeningTime,
+  'ladies_closing_time': instance.ladiesClosingTime,
 };

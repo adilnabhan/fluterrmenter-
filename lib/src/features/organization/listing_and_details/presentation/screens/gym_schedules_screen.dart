@@ -33,6 +33,10 @@ class _GymSchedulesScreenState extends State<GymSchedulesScreen> {
         widget.orgDetails.workingDays?.firstOrNull?.eveningOpeningTime;
     final eveningClosingTime =
         widget.orgDetails.workingDays?.firstOrNull?.eveningClosingTime;
+    final ladiesOpeningTime =
+        widget.orgDetails.workingDays?.firstOrNull?.ladiesOpeningTime;
+    final ladiesClosingTime =
+        widget.orgDetails.workingDays?.firstOrNull?.ladiesClosingTime;
     _gymWorkingDetailsFields = [
       [
         FieldData<DateTime>(
@@ -114,6 +118,42 @@ class _GymSchedulesScreenState extends State<GymSchedulesScreen> {
             if (value == null) {
               return 'Please select a time';
             }
+            return null;
+          },
+        ),
+      ],
+      [
+        FieldData<DateTime>(
+          type: FieldType.time,
+          controller: TextEditingController(
+            text:
+                ladiesOpeningTime != null
+                    ? DateFormat(
+                      'HH:mm:ss',
+                    ).parse(ladiesOpeningTime).format('HH:mm a')
+                    : null,
+          ),
+          focusNode: FocusNode(),
+          label: 'Ladies Batch',
+          requiredLabel: false,
+          decoration: const InputDecoration(hintText: 'Starting time'),
+          validator: (value) {
+            return null;
+          },
+        ),
+        FieldData<DateTime>(
+          type: FieldType.time,
+          controller: TextEditingController(
+            text:
+                ladiesClosingTime != null
+                    ? DateFormat(
+                      'HH:mm:ss',
+                    ).parse(ladiesClosingTime).format('HH:mm a')
+                    : null,
+          ),
+          focusNode: FocusNode(),
+          decoration: const InputDecoration(hintText: 'Ending time'),
+          validator: (value) {
             return null;
           },
         ),
@@ -263,9 +303,13 @@ class _GymSchedulesScreenState extends State<GymSchedulesScreen> {
                 final morningEndingTime =
                     _gymWorkingDetailsFields.first.last.selectedTime;
                 final eveningStartingTime =
-                    _gymWorkingDetailsFields.last.first.selectedTime;
+                    _gymWorkingDetailsFields[1].first.selectedTime;
                 final eveningEndingTime =
-                    _gymWorkingDetailsFields.last.last.selectedTime;
+                    _gymWorkingDetailsFields[1].last.selectedTime;
+                final ladiesStartingTime =
+                    _gymWorkingDetailsFields[2].first.selectedTime;
+                final ladiesEndingTime =
+                    _gymWorkingDetailsFields[2].last.selectedTime;
                 if (workingDaysInLowercase.isEmpty) {
                   await Dialogs.showSnack(
                     msg: 'Please select at least one working day',
@@ -309,6 +353,10 @@ class _GymSchedulesScreenState extends State<GymSchedulesScreen> {
                               '${eveningStartingTime.hour.toString().padLeft(2, '0')}:${eveningStartingTime.minute.toString().padLeft(2, '0')}',
                           'evening_closing_time':
                               '${eveningEndingTime.hour.toString().padLeft(2, '0')}:${eveningEndingTime.minute.toString().padLeft(2, '0')}',
+                          if (ladiesStartingTime != null) 'ladies_opening_time':
+                              '${ladiesStartingTime.hour.toString().padLeft(2, '0')}:${ladiesStartingTime.minute.toString().padLeft(2, '0')}',
+                          if (ladiesEndingTime != null) 'ladies_closing_time':
+                              '${ladiesEndingTime.hour.toString().padLeft(2, '0')}:${ladiesEndingTime.minute.toString().padLeft(2, '0')}',
                         };
                       }).toList(),
                 };

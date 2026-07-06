@@ -25,14 +25,10 @@ class _MembersAndLeadsListingScreen extends StatefulWidget {
 }
 
 class __MembersAndLeadsListingScreenState
-    extends State<_MembersAndLeadsListingScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+    extends State<_MembersAndLeadsListingScreen> {
   late final ScrollController _scrollController;
-  late final ScrollController _trainerScrollController;
   late final MembersAndLeadsCubit _cubit;
   List<({String label, String value})>? _selectedMembersSorts;
-  List<({String label, String value})>? _selectedLeadsSorts;
   final _filterOptions = const [
     (label: 'Active', value: 'active'),
     (label: 'New', value: 'new'),
@@ -42,29 +38,19 @@ class __MembersAndLeadsListingScreenState
   void initState() {
     super.initState();
     _cubit = context.read<MembersAndLeadsCubit>();
-    _tabController = TabController(length: 2, vsync: this);
     _scrollController = ScrollController();
-    _trainerScrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
         _fetchMembers(isPagination: true);
       }
     });
-    _trainerScrollController.addListener(() {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
-        _fetchLeads(isPagination: true);
-      }
-    });
     _fetchMembers();
-    _fetchLeads();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -86,23 +72,7 @@ class __MembersAndLeadsListingScreenState
     );
   }
 
-  Future<void> _fetchLeads({
-    String? searchQuery,
-    bool isPagination = false,
-  }) async {
-    await _cubit.fetchLeads(
-      sort:
-          (_selectedMembersSorts?.contains(_filterOptions[1]) ?? false)
-              ? ListingSort.recent
-              : null,
-      status:
-          (_selectedMembersSorts?.contains(_filterOptions[0]) ?? false)
-              ? MemberStatus.active
-              : null,
-      searchQuery: searchQuery,
-      isPagination: isPagination,
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -116,21 +86,7 @@ class __MembersAndLeadsListingScreenState
             state.createOrUpdateMember?.fold(
               () => null,
               (either) => either.fold((error) {}, (data) {
-                _tabController.animateTo(0);
                 _fetchMembers();
-              }),
-            );
-          },
-        ),
-        BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
-          listenWhen: (p, c) => p.createOrUpdateLead != c.createOrUpdateLead,
-          bloc: _cubit,
-          listener: (context, state) {
-            state.createOrUpdateLead?.fold(
-              () => null,
-              (either) => either.fold((error) {}, (data) {
-                _tabController.animateTo(1);
-                _fetchLeads();
               }),
             );
           },
@@ -146,12 +102,14 @@ class __MembersAndLeadsListingScreenState
           children: [
             TextField(
               onChanged: (q) {
+                if (q.isEmpty) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                }
                 EasyDebounce.debounce(
                   'members_and_leads_search_query',
                   const Duration(milliseconds: 300),
                   () {
                     _fetchMembers(searchQuery: q);
-                    _fetchLeads(searchQuery: q);
                   },
                 );
               },
@@ -191,89 +149,31 @@ class __MembersAndLeadsListingScreenState
                   children: [
                     SizedBox(
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          SizedBox(
-                            width: 140,
-                            child: TabBar(
-                              controller: _tabController,
-                              tabs: const [
-                                Tab(text: 'Members'),
-                                Tab(text: 'Trainers'),
-                              ],
-                              indicator: const UnderlineTabIndicator(
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: Colors.red,
-                                ), // Red underline for the active tab
-                              ),
-                              padding: EdgeInsets.zero,
-                              labelPadding: EdgeInsets.zero,
-                              indicatorSize: TabBarIndicatorSize.label,
-                              indicatorColor:
-                                  Colors
-                                      .red, // Red color for the active tab underline
-                              unselectedLabelColor:
-                                  Colors
-                                      .grey, // Grey color for the inactive tab underline
-                              labelColor:
-                                  Colors
-                                      .red, // Red color for the active tab text
-                              labelStyle:
-                                  AppStyles
-                                      .text14Px
-                                      .poppins
-                                      .w500, // Style for the active tab text
-                              unselectedLabelStyle:
-                                  AppStyles
-                                      .text14Px
-                                      .poppins
-                                      .w400, // Style for the inactive tab text
-                            ),
-                          ),
-                          ValueListenableBuilder(
-                            valueListenable: _tabController.animation!,
-                            builder: (context, value, child) {
-                              final isMember = _tabController.index == 0;
-                              return FilterButton(
-                                isSelected:
-                                    isMember
-                                        ? (_selectedMembersSorts?.isNotEmpty ??
-                                            false)
-                                        : (_selectedLeadsSorts?.isNotEmpty ??
-                                            false),
-                                onTap: () {
-                                  FilterSelectionSheet(
-                                    selectedFilters:
-                                        (isMember
-                                            ? _selectedMembersSorts
-                                            : _selectedLeadsSorts),
-                                    onFilterSelected: (values) {
-                                      if (isMember) {
-                                        _selectedMembersSorts = values;
-                                        _fetchMembers();
-                                      } else {
-                                        _selectedLeadsSorts = values;
-                                        _fetchLeads();
-                                      }
-                                      if (!mounted) return;
-                                      setState(() {});
-                                    },
-                                    items: _filterOptions,
-                                  ).show(context);
+                          FilterButton(
+                            isSelected: _selectedMembersSorts?.isNotEmpty ?? false,
+                            onTap: () {
+                              FilterSelectionSheet(
+                                selectedFilters: _selectedMembersSorts,
+                                onFilterSelected: (values) {
+                                  _selectedMembersSorts = values;
+                                  _fetchMembers();
+                                  if (!mounted) return;
+                                  setState(() {});
                                 },
-                                sortLabel: 'Filter by',
-                              );
+                                items: _filterOptions,
+                              ).show(context);
                             },
+                            sortLabel: 'Filter by',
                           ),
                         ],
                       ),
                     ),
                     Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
+                      child: 
                           //* Members Listing
+
                           BlocBuilder<
                             MembersAndLeadsCubit,
                             MembersAndLeadsState
@@ -426,7 +326,7 @@ class __MembersAndLeadsListingScreenState
                                                                     height: 4,
                                                                   ),
                                                                   Text(
-                                                                    '+91 ${memberData?.mobileNumber ?? ''}',
+                                                                    memberData?.mobileNumber ?? '',
                                                                     style:
                                                                         AppStyles
                                                                             .text12Px
@@ -437,23 +337,6 @@ class __MembersAndLeadsListingScreenState
                                                                 ],
                                                               ),
                                                             ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8,
-                                                          ),
-                                                          Text(
-                                                            '# ${memberData?.id}'
-                                                                        .length >
-                                                                    3
-                                                                ? '${'# ${memberData?.id}'.substring(0, 3)}...'
-                                                                : '# ${memberData?.id}',
-                                                            style:
-                                                                AppStyles
-                                                                    .text12Px
-                                                                    .poppins
-                                                                    .w400
-                                                                    .textGrey,
-                                                            maxLines: 1,
                                                           ),
                                                         ],
                                                       ),
@@ -493,203 +376,7 @@ class __MembersAndLeadsListingScreenState
                               );
                             },
                           ),
-                          //* Leads Listing
-                          BlocBuilder<
-                            MembersAndLeadsCubit,
-                            MembersAndLeadsState
-                          >(
-                            buildWhen: (p, c) => p.leads != c.leads,
-                            bloc: _cubit,
-                            builder: (context, state) {
-                              return state.leads.data.fold(
-                                () => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                                (either) => either.fold(
-                                  (error) => error.maybeWhen(
-                                    network:
-                                        (e) =>
-                                            ErrorUi.network(onTap: _fetchLeads),
-                                    notFound:
-                                        (e) => ErrorUi.notFound(
-                                          onTap: _fetchLeads,
-                                        ),
-                                    orElse:
-                                        () =>
-                                            ErrorUi.server(onTap: _fetchLeads),
-                                  ),
-                                  (leadsDataum) {
-                                    if (leadsDataum.results?.isEmpty ?? true) {
-                                      return ErrorUi.empty().center;
-                                    }
-                                    return RefreshIndicator.adaptive(
-                                      onRefresh: _fetchLeads,
-                                      child: ListView.separated(
-                                        controller: _trainerScrollController,
-                                        padding: const EdgeInsets.only(
-                                          bottom: 104,
-                                        ),
-                                        itemCount:
-                                            leadsDataum.results?.length ?? 0,
-                                        separatorBuilder: (
-                                          BuildContext context,
-                                          int index,
-                                        ) {
-                                          return const SizedBox(height: 16);
-                                        },
-                                        itemBuilder: (
-                                          BuildContext context,
-                                          int index,
-                                        ) {
-                                          final leadsData =
-                                              leadsDataum.results?[index];
-                                          return InkWell(
-                                            onTap: () {
-                                              if (leadsData?.userId != null) {
-                                                context.push(
-                                                  BlocProvider.value(
-                                                    value: _cubit,
-                                                    child: LeadDetailsScreen(
-                                                      leadData: leadsData!,
-                                                    ),
-                                                  ),
-                                                );
-                                              } else {
-                                                Dialogs.showSnack(
-                                                  msg:
-                                                      'Selected lead is not valid',
-                                                );
-                                              }
-                                            },
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              child: ColoredBox(
-                                                color: Colors.white,
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(
-                                                    16,
-                                                  ),
-                                                  child: Column(
-                                                    spacing: 8,
-                                                    children: [
-                                                      Row(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          ClipRRect(
-                                                            borderRadius:
-                                                                const BorderRadius.all(
-                                                                  Radius.circular(
-                                                                    80000,
-                                                                  ),
-                                                                ),
-                                                            child: ProfileImage(
-                                                              isEdit: false,
-                                                              url:
-                                                                  '${leadsData?.profilePicture ?? ''}',
-                                                              radius: 40,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8,
-                                                          ),
-                                                          Flexible(
-                                                            child: SizedBox(
-                                                              width:
-                                                                  double
-                                                                      .maxFinite,
-                                                              child: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                    leadsData
-                                                                            ?.name ??
-                                                                        '',
-                                                                    style:
-                                                                        AppStyles
-                                                                            .text14Px
-                                                                            .poppins
-                                                                            .w500
-                                                                            .dark,
-                                                                  ),
-                                                                  const SizedBox(
-                                                                    height: 4,
-                                                                  ),
-                                                                  Text(
-                                                                    '+91 ${leadsData?.mobileNumber ?? ''}',
-                                                                    style:
-                                                                        AppStyles
-                                                                            .text12Px
-                                                                            .poppins
-                                                                            .w400
-                                                                            .dark,
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8,
-                                                          ),
-                                                          Text(
-                                                            '# ${leadsData?.id}'
-                                                                        .length >
-                                                                    3
-                                                                ? '${'# ${leadsData?.id}'.substring(0, 3)}...'
-                                                                : '# ${leadsData?.id}',
-                                                            style:
-                                                                AppStyles
-                                                                    .text12Px
-                                                                    .poppins
-                                                                    .w400
-                                                                    .textGrey,
-                                                            maxLines: 1,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            '6 MONTH PLAN + Admission',
-                                                            style:
-                                                                AppStyles
-                                                                    .text12Px
-                                                                    .poppins
-                                                                    .w500
-                                                                    .dark,
-                                                          ),
-                                                          // const SizedBox(height: 4),
-                                                          // Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                        ],
                       ),
-                    ),
                   ],
                 ).pad(16),
               ),

@@ -22,6 +22,10 @@ class LoginSuccessModel with _$LoginSuccessModel {
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
     @JsonKey(name: 'user_role') int? userRole,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'date_of_birth') String? dateOfBirth,
+    @JsonKey(name: 'experience_years') int? experienceYears,
+    @JsonKey(name: 'bio') String? bio,
     @JsonKey(name: 'trainer') TrainerModel? trainer,
   }) = _LoginWithOtpEntity;
 

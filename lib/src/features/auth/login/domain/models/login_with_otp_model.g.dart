@@ -30,6 +30,10 @@ _$LoginWithOtpEntityImpl _$$LoginWithOtpEntityImplFromJson(
   warnings: json['warnings'] as List<dynamic>?,
   isProfileCompleted: json['is_profile_complete'] as bool?,
   userRole: (json['user_role'] as num?)?.toInt(),
+  gender: json['gender'] as String?,
+  dateOfBirth: json['date_of_birth'] as String?,
+  experienceYears: (json['experience_years'] as num?)?.toInt(),
+  bio: json['bio'] as String?,
   trainer:
       json['trainer'] == null
           ? null
@@ -54,6 +58,10 @@ Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
   'warnings': instance.warnings,
   'is_profile_complete': instance.isProfileCompleted,
   'user_role': instance.userRole,
+  'gender': instance.gender,
+  'date_of_birth': instance.dateOfBirth,
+  'experience_years': instance.experienceYears,
+  'bio': instance.bio,
   'trainer': instance.trainer,
 };
 

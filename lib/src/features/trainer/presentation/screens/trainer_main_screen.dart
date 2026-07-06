@@ -4,6 +4,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_customers_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reports_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_screen.dart';
 
 class TrainerMainScreen extends StatelessWidget {
@@ -35,20 +36,21 @@ class TrainerMainScreen extends StatelessWidget {
       initialIndex: initialIndex,
       profileImageUrl: user?.profilePicture as String?,
       floatingActionButtons: isTrainer
-          ? [quickActionsFab, null, quickActionsFab, null]
+          ? [quickActionsFab, null, quickActionsFab, null, null]
           : [quickActionsFab, quickActionsFab, null, null],
       pages: isTrainer
-          ? const [
-              TrainerDashboardScreen(),
-              WorkoutGroupsScreen(),
-              TrainerCustomersScreen(),
-              TrainerProfileSettingsScreen(),
+          ? [
+              const TrainerDashboardScreen(),
+              const WorkoutGroupsScreen(),
+              const TrainerCustomersScreen(),
+              const TrainerReportsScreen(),
+              const TrainerMainProfileScreen(),
             ]
-          : const [
-              TrainerDashboardScreen(),
-              TrainerCustomersScreen(),
-              WorkoutGroupsScreen(),
-              TrainerProfileSettingsScreen(),
+          : [
+              const TrainerDashboardScreen(),
+              const TrainerCustomersScreen(),
+              const WorkoutGroupsScreen(),
+              const TrainerMainProfileScreen(),
             ],
     );
   }

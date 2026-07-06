@@ -369,8 +369,9 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
 
       _commissionMessage =
           amount > 0
-              ? 'After $_razorpayCommissionPercent% payment gateway charges (₹${_calculatedCommission.toStringAsFixed(2)}), '
-                  '₹${_creditedAmount.toStringAsFixed(2)} will be credited to your account.'
+              ? 'After $_razorpayCommissionPercent% payment gateway charges'
+                  /* ' (₹${_calculatedCommission.toStringAsFixed(2)}), '
+                  '₹${_creditedAmount.toStringAsFixed(2)} will be credited to your account.' */
               : '';
     });
   }
@@ -388,8 +389,8 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       _offerCommissionMessage =
           amount > 0
               ? 'After $_razorpayCommissionPercent% payment gateway charges '
-                  '(₹${_offerCalculatedCommission.toStringAsFixed(2)}), '
-                  '₹${_offerCreditedAmount.toStringAsFixed(2)} will be credited to your account.'
+                  /* '(₹${_offerCalculatedCommission.toStringAsFixed(2)}), '
+                  '₹${_offerCreditedAmount.toStringAsFixed(2)} will be credited to your account.' */
               : '';
     });
   }
@@ -603,7 +604,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
               Field(data: _daysField),
               const SizedBox(height: 16),
               Field(data: _actualPriceField),
-              if (_commissionMessage.isNotEmpty) ...[
+              /* if (_commissionMessage.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
                   _commissionMessage,
@@ -612,8 +613,8 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                     color: AppColors.error,
                   ),
                 ),
-              ],
-              const SizedBox(height: 16),
+              ], */
+              /* const SizedBox(height: 16),
               Field(data: _offerPriceField),
               if (_offerCommissionMessage.isNotEmpty) ...[
                 const SizedBox(height: 8),
@@ -624,11 +625,11 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                     color: AppColors.error,
                   ),
                 ),
-              ],
+              ], */
               const SizedBox(height: 16),
               Field(data: _descriptionField),
               const SizedBox(height: 24),
-              Text('Subscription', style: AppStyles.text16Px.w600.dark),
+              /* Text('Subscription', style: AppStyles.text16Px.w600.dark),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -784,7 +785,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                       ),
                     ),
                   ),
-                ),
+                ), */
             ],
           ),
         ),
@@ -868,8 +869,8 @@ String _emiCommissionMessage(String priceText) {
   final credited = price - commission;
 
   return 'After ${4.0}% payment gateway charges '
-      '(₹${commission.toStringAsFixed(2)}), '
-      '₹${credited.toStringAsFixed(2)} will be credited to your account.';
+      /* '(₹${commission.toStringAsFixed(2)}), '
+      '₹${credited.toStringAsFixed(2)} will be credited to your account.' */;
 }
 
 class _Divider extends StatelessWidget {

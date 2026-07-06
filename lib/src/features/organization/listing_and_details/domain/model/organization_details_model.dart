@@ -97,6 +97,8 @@ class WorkingDayModel with _$WorkingDayModel {
     @JsonKey(name: 'morning_closing_time') String? morningClosingTime,
     @JsonKey(name: 'evening_opening_time') String? eveningOpeningTime,
     @JsonKey(name: 'evening_closing_time') String? eveningClosingTime,
+    @JsonKey(name: 'ladies_opening_time') String? ladiesOpeningTime,
+    @JsonKey(name: 'ladies_closing_time') String? ladiesClosingTime,
   }) = _WorkingDayModel;
 
   factory WorkingDayModel.fromJson(Map<String, dynamic> json) => _$WorkingDayModelFromJson(json);

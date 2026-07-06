@@ -88,6 +88,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
         setState(() {
           _groups =
               data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _groups.sort((a, b) => (b['id'] as int).compareTo(a['id'] as int));
           _isLoading = false;
         });
       } else {
@@ -129,7 +130,25 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Dialogs.showSnack(msg: 'Workout group created successfully');
         _groupName.controller?.clear();
-        _fetchGroups();
+        
+        if (response.data is Map && response.data['id'] != null) {
+          final int groupId = response.data['id'] as int;
+          final String createdName = response.data['name'] as String? ?? name;
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder:
+                  (context) => WorkoutGroupDetailsScreen(
+                    groupId: groupId,
+                    groupTitle: createdName,
+                  ),
+            ),
+          ).then((_) {
+            _fetchGroups();
+          });
+        } else {
+          _fetchGroups();
+        }
       } else {
         if (!mounted) return;
         setState(() {
@@ -453,7 +472,7 @@ class WorkoutGroupsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(22, 0, 22, 100),
+      padding: const EdgeInsets.fromLTRB(22, 0, 22, 180),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 14,
@@ -528,7 +547,58 @@ class _WorkoutGroupCard extends StatelessWidget {
                   color: Colors.white,
                   padding: EdgeInsets.zero,
                   onSelected: (value) async {
-                    if (value == 'delete') {
+                    if (value == 'rename') {
+                      final nameController = TextEditingController(text: groupName);
+                      final newName = await showDialog<String>(
+                        context: context,
+                        builder: (dialogContext) {
+                          return AlertDialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: Text('Rename Workout Group', style: AppStyles.text16Px.poppins.w600),
+                            content: TextField(
+                              controller: nameController,
+                              decoration: InputDecoration(
+                                hintText: 'Enter new name',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.primary)),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(dialogContext, null),
+                                child: Text('Cancel', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.grey)),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(dialogContext, nameController.text.trim()),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: Text('Save', style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white)),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (newName != null && newName.isNotEmpty && newName != groupName) {
+                        try {
+                          final response = await DioClient().dio.put<dynamic>(
+                            ApiUris.workoutGroupDetail(groupId),
+                            data: {'name': newName},
+                          );
+                          if (response.statusCode == 200 || response.statusCode == 204) {
+                            Dialogs.showSnack(msg: 'Workout group renamed successfully');
+                            onReturn();
+                          } else {
+                            Dialogs.showSnack(msg: 'Failed to rename workout group');
+                          }
+                        } catch (e) {
+                          Dialogs.showSnack(msg: 'Error renaming workout group: ${e.toString()}');
+                        }
+                      }
+                    } else if (value == 'delete') {
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (dialogContext) {
@@ -571,6 +641,17 @@ class _WorkoutGroupCard extends StatelessWidget {
                     }
                   },
                   itemBuilder: (context) => [
+                    PopupMenuItem<String>(
+                      height: 36,
+                      value: 'rename',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.edit_outlined, color: AppColors.textDark, size: 20),
+                          const SizedBox(width: 8),
+                          Text('Rename', style: AppStyles.text14Px.poppins.copyWith(color: AppColors.textDark)),
+                        ],
+                      ),
+                    ),
                     PopupMenuItem<String>(
                       height: 36,
                       value: 'delete',

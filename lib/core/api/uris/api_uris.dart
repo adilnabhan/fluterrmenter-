@@ -5,11 +5,12 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 final class ApiUris {
   ///* Base Url
   static const _baseUrlEnv = String.fromEnvironment('baseUrl');
-  static final _baseUrl = _baseUrlEnv == ''
-      ? 'https://discipl-backend.onrender.com'
-      : (_baseUrlEnv.endsWith('/')
-          ? _baseUrlEnv.substring(0, _baseUrlEnv.length - 1)
-          : _baseUrlEnv);
+  static final _baseUrl =
+      _baseUrlEnv == ''
+          ? 'https://discipl-backend.onrender.com'
+          : (_baseUrlEnv.endsWith('/')
+              ? _baseUrlEnv.substring(0, _baseUrlEnv.length - 1)
+              : _baseUrlEnv);
   static final _v1 = '$_baseUrl/api/v1/';
 
   ///============================= Authentication =============================\\\
@@ -57,7 +58,8 @@ final class ApiUris {
   static final createLead = '${_v1}mentor/trainers/';
   static String updateLead(int id) => '${_v1}mentor/trainers/$id/';
   static String leadDetails(String id) => '${_v1}mentor/trainers/$id/';
-  static String assignWorkoutPlan(int planId) => '${_v1}trainer/workout-plans/$planId/assign/';
+  static String assignWorkoutPlan(int planId) =>
+      '${_v1}trainer/workout-plans/$planId/assign/';
 
   ///============================= Membership =============================\\\
   static final createMembershipPackage =
@@ -81,13 +83,16 @@ final class ApiUris {
   static final addBankDetails = '${_v1}fitnesscenter/bank-details/';
 
   ///============================= Trainer =============================\\\
+  static final editTrainerBasicDetails = '${_v1}trainers/basic-details/';
   static final trainerDashboard = '${_v1}trainer/dashboard/';
   static final trainerCustomers = '${_v1}trainer/customers/';
-  static String trainerCustomerDetails(int customerId) => '${_v1}trainer/customers/$customerId/';
+  static String trainerCustomerDetails(int customerId) =>
+      '${_v1}trainer/customers/$customerId/';
 
   ///============================= Workouts =============================\\\
   static final workoutGroups = '${_v1}trainer/workout-groups/';
-  static String workoutGroupDetail(int id) => '${_v1}trainer/workout-groups/$id/';
+  static String workoutGroupDetail(int id) =>
+      '${_v1}trainer/workout-groups/$id/';
   static final workoutPlans = '${_v1}trainer/workout-plans/';
   static String workoutPlanDetail(int id) => '${_v1}trainer/workout-plans/$id/';
   static final muscleGroups = '${_v1}trainer/muscle-groups/';
@@ -96,10 +101,26 @@ final class ApiUris {
   static final workoutExercises = '${_v1}trainer/exercises/';
 
   // Plan-day exercise endpoints
-  static String planDayExercises(int dayId) => '${_v1}trainer/plan-days/$dayId/exercises/';
-  static String planDayExerciseDetail(int dayId, int exerciseId) => '${_v1}trainer/plan-days/$dayId/exercises/$exerciseId/';
-  static String planDayExercisesReorder(int dayId) => '${_v1}trainer/plan-days/$dayId/exercises/reorder/';
+  static String planDayExercises(int dayId) =>
+      '${_v1}trainer/plan-days/$dayId/exercises/';
+  static String planDayExerciseDetail(int dayId, int exerciseId) =>
+      '${_v1}trainer/plan-days/$dayId/exercises/$exerciseId/';
+  static String planDayExercisesReorder(int dayId) =>
+      '${_v1}trainer/plan-days/$dayId/exercises/reorder/';
 
   // Customer workout history
-  static String customerWorkoutHistory(int customerId) => '${_v1}trainer/customers/$customerId/workout-history/';
+  static String customerWorkoutHistory(int customerId) =>
+      '${_v1}trainer/customers/$customerId/workout-history/';
+
+  // Client Calendar & History
+  static String clientCalendar(int customerId) =>
+      '${_v1}mentor/clients/$customerId/calendar/';
+
+  ///============================= Verification =============================\\\
+  static final pendingVerifications = '${_v1}mentor/verification/pending/';
+  static String verifyWorkoutSession(int sessionId) =>
+      '${_v1}mentor/verification/verify/$sessionId/';
+  static String workoutSessionDetails(int sessionId) =>
+      '${_v1}mentor/verification/session/$sessionId/';
+  static final verificationHistory = '${_v1}mentor/verification/history/';
 }

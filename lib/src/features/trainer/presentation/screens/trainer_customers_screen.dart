@@ -312,7 +312,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                         onRefresh: _fetchClients,
                         child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final client = filtered[index];

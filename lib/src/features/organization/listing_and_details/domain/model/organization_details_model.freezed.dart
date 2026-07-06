@@ -1793,6 +1793,10 @@ mixin _$WorkingDayModel {
   String? get eveningOpeningTime => throw _privateConstructorUsedError;
   @JsonKey(name: 'evening_closing_time')
   String? get eveningClosingTime => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ladies_opening_time')
+  String? get ladiesOpeningTime => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ladies_closing_time')
+  String? get ladiesClosingTime => throw _privateConstructorUsedError;
 
   /// Serializes this WorkingDayModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1818,6 +1822,8 @@ abstract class $WorkingDayModelCopyWith<$Res> {
     @JsonKey(name: 'morning_closing_time') String? morningClosingTime,
     @JsonKey(name: 'evening_opening_time') String? eveningOpeningTime,
     @JsonKey(name: 'evening_closing_time') String? eveningClosingTime,
+    @JsonKey(name: 'ladies_opening_time') String? ladiesOpeningTime,
+    @JsonKey(name: 'ladies_closing_time') String? ladiesClosingTime,
   });
 }
 
@@ -1842,6 +1848,8 @@ class _$WorkingDayModelCopyWithImpl<$Res, $Val extends WorkingDayModel>
     Object? morningClosingTime = freezed,
     Object? eveningOpeningTime = freezed,
     Object? eveningClosingTime = freezed,
+    Object? ladiesOpeningTime = freezed,
+    Object? ladiesClosingTime = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -1875,6 +1883,16 @@ class _$WorkingDayModelCopyWithImpl<$Res, $Val extends WorkingDayModel>
                     ? _value.eveningClosingTime
                     : eveningClosingTime // ignore: cast_nullable_to_non_nullable
                         as String?,
+            ladiesOpeningTime:
+                freezed == ladiesOpeningTime
+                    ? _value.ladiesOpeningTime
+                    : ladiesOpeningTime // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            ladiesClosingTime:
+                freezed == ladiesClosingTime
+                    ? _value.ladiesClosingTime
+                    : ladiesClosingTime // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -1897,6 +1915,8 @@ abstract class _$$WorkingDayModelImplCopyWith<$Res>
     @JsonKey(name: 'morning_closing_time') String? morningClosingTime,
     @JsonKey(name: 'evening_opening_time') String? eveningOpeningTime,
     @JsonKey(name: 'evening_closing_time') String? eveningClosingTime,
+    @JsonKey(name: 'ladies_opening_time') String? ladiesOpeningTime,
+    @JsonKey(name: 'ladies_closing_time') String? ladiesClosingTime,
   });
 }
 
@@ -1920,6 +1940,8 @@ class __$$WorkingDayModelImplCopyWithImpl<$Res>
     Object? morningClosingTime = freezed,
     Object? eveningOpeningTime = freezed,
     Object? eveningClosingTime = freezed,
+    Object? ladiesOpeningTime = freezed,
+    Object? ladiesClosingTime = freezed,
   }) {
     return _then(
       _$WorkingDayModelImpl(
@@ -1953,6 +1975,16 @@ class __$$WorkingDayModelImplCopyWithImpl<$Res>
                 ? _value.eveningClosingTime
                 : eveningClosingTime // ignore: cast_nullable_to_non_nullable
                     as String?,
+        ladiesOpeningTime:
+            freezed == ladiesOpeningTime
+                ? _value.ladiesOpeningTime
+                : ladiesOpeningTime // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        ladiesClosingTime:
+            freezed == ladiesClosingTime
+                ? _value.ladiesClosingTime
+                : ladiesClosingTime // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -1968,6 +2000,8 @@ class _$WorkingDayModelImpl implements _WorkingDayModel {
     @JsonKey(name: 'morning_closing_time') this.morningClosingTime,
     @JsonKey(name: 'evening_opening_time') this.eveningOpeningTime,
     @JsonKey(name: 'evening_closing_time') this.eveningClosingTime,
+    @JsonKey(name: 'ladies_opening_time') this.ladiesOpeningTime,
+    @JsonKey(name: 'ladies_closing_time') this.ladiesClosingTime,
   });
 
   factory _$WorkingDayModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -1991,10 +2025,16 @@ class _$WorkingDayModelImpl implements _WorkingDayModel {
   @override
   @JsonKey(name: 'evening_closing_time')
   final String? eveningClosingTime;
+  @override
+  @JsonKey(name: 'ladies_opening_time')
+  final String? ladiesOpeningTime;
+  @override
+  @JsonKey(name: 'ladies_closing_time')
+  final String? ladiesClosingTime;
 
   @override
   String toString() {
-    return 'WorkingDayModel(day: $day, isOpen: $isOpen, morningOpeningTime: $morningOpeningTime, morningClosingTime: $morningClosingTime, eveningOpeningTime: $eveningOpeningTime, eveningClosingTime: $eveningClosingTime)';
+    return 'WorkingDayModel(day: $day, isOpen: $isOpen, morningOpeningTime: $morningOpeningTime, morningClosingTime: $morningClosingTime, eveningOpeningTime: $eveningOpeningTime, eveningClosingTime: $eveningClosingTime, ladiesOpeningTime: $ladiesOpeningTime, ladiesClosingTime: $ladiesClosingTime)';
   }
 
   @override
@@ -2011,7 +2051,11 @@ class _$WorkingDayModelImpl implements _WorkingDayModel {
             (identical(other.eveningOpeningTime, eveningOpeningTime) ||
                 other.eveningOpeningTime == eveningOpeningTime) &&
             (identical(other.eveningClosingTime, eveningClosingTime) ||
-                other.eveningClosingTime == eveningClosingTime));
+                other.eveningClosingTime == eveningClosingTime) &&
+            (identical(other.ladiesOpeningTime, ladiesOpeningTime) ||
+                other.ladiesOpeningTime == ladiesOpeningTime) &&
+            (identical(other.ladiesClosingTime, ladiesClosingTime) ||
+                other.ladiesClosingTime == ladiesClosingTime));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2024,6 +2068,8 @@ class _$WorkingDayModelImpl implements _WorkingDayModel {
     morningClosingTime,
     eveningOpeningTime,
     eveningClosingTime,
+    ladiesOpeningTime,
+    ladiesClosingTime,
   );
 
   /// Create a copy of WorkingDayModel
@@ -2051,6 +2097,8 @@ abstract class _WorkingDayModel implements WorkingDayModel {
     @JsonKey(name: 'morning_closing_time') final String? morningClosingTime,
     @JsonKey(name: 'evening_opening_time') final String? eveningOpeningTime,
     @JsonKey(name: 'evening_closing_time') final String? eveningClosingTime,
+    @JsonKey(name: 'ladies_opening_time') final String? ladiesOpeningTime,
+    @JsonKey(name: 'ladies_closing_time') final String? ladiesClosingTime,
   }) = _$WorkingDayModelImpl;
 
   factory _WorkingDayModel.fromJson(Map<String, dynamic> json) =
@@ -2074,6 +2122,12 @@ abstract class _WorkingDayModel implements WorkingDayModel {
   @override
   @JsonKey(name: 'evening_closing_time')
   String? get eveningClosingTime;
+  @override
+  @JsonKey(name: 'ladies_opening_time')
+  String? get ladiesOpeningTime;
+  @override
+  @JsonKey(name: 'ladies_closing_time')
+  String? get ladiesClosingTime;
 
   /// Create a copy of WorkingDayModel
   /// with the given fields replaced by the non-null parameter values.

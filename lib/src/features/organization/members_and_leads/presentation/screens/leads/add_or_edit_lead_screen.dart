@@ -118,6 +118,31 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
       FieldData(
         type: FieldType.word,
         textInputAction: TextInputAction.done,
+        label: 'Location',
+        requiredLabel: true,
+        controller: TextEditingController(),
+        focusNode: FocusNode(),
+        validator: (value) {
+          if (value?.trim().isEmpty ?? true) {
+            return 'Location is required';
+          }
+          return null;
+        },
+        onSubmitted: (value) {
+          _fields[4].focusNode?.requestFocus();
+        },
+        decoration: InputDecoration(
+          hintText: 'Enter Location',
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
+        ),
+      ),
+      FieldData(
+        type: FieldType.word,
+        textInputAction: TextInputAction.done,
         label: 'Expirience',
         requiredLabel: true,
         controller: TextEditingController(),
@@ -135,7 +160,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _fields[4].focusNode?.requestFocus();
+          _fields[5].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: '4',
@@ -215,7 +240,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           _fields[6].focusNode?.requestFocus();
         },
         onSubmitted: (value) {
-          _fields[6].focusNode?.requestFocus();
+          _fields[7].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: 'Select Gender',
@@ -239,7 +264,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _fields[7].focusNode?.requestFocus();
+          _fields[8].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: 'Select Date of Birth',
@@ -306,11 +331,12 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
       final fullName = _fields[0].controller?.text;
       final emailAddress = _fields[1].controller?.text;
       final mobileNo = _fields[2].controller?.text;
-      final experience = _fields[3].controller?.text;
-      final bloodGroup = _fields[4].controller?.text;
-      final gender = _fields[5].controller?.text;
-      final dateOfBirth = _fields[6].selectedDateTime?.format('yyyy-MM-dd');
-      final emergencyContactNo = _fields[7].controller?.text;
+      final experience = _fields[4].controller?.text;
+      final bloodGroup = _fields[5].controller?.text;
+      final gender = _fields[6].controller?.text;
+      final dateOfBirth = _fields[7].selectedDateTime?.format('yyyy-MM-dd');
+      final emergencyContactNo = _fields[8].controller?.text;
+      final location = _fields[3].controller?.text;
       final documents =
           _documents.value
               .where((e) => e?.path?.trim().isNotEmpty ?? false)
@@ -327,6 +353,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
         bloodGroup: bloodGroup,
         emergencyContactNumber: emergencyContactNo,
         experience: experience?.toNum.toInt(),
+        location: location,
         addressProof: proofImage,
         trainerCertificates:
             documents

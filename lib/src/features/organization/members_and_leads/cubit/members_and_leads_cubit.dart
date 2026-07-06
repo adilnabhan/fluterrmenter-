@@ -221,6 +221,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     // required String? emergencyContact,
     required String? emergencyContactNumber,
     required int? experience,
+    required String? location,
     required String? addressProof,
     required List<String>? trainerCertificates,
     required String? profilePicture,
@@ -357,6 +358,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       // 'weight': weight,
       'designation': 'trainer',
       'experience': experience,
+      'location': location,
     });
 
     // Add address proof file if provided

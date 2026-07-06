@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_stats_screen.dart';
 
 class AssignToClientBottomSheet extends StatefulWidget {
   final int planId;
@@ -452,14 +453,27 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                                         ),
                                       ),
                                     ),
-                                    Container(
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFF1F1F1),
-                                        shape: BoxShape.circle,
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => TrainerClientStatsScreen(
+                                                customerId: customerId,
+                                                showAppBar: false,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFF1F1F1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          padding: const EdgeInsets.all(6),
+                                          child: const Icon(Icons.history, size: 16, color: AppColors.textDark),
+                                        ),
                                       ),
-                                      padding: const EdgeInsets.all(6),
-                                      child: const Icon(Icons.history, size: 16, color: AppColors.textDark),
-                                    ),
                                   ],
                                 ),
                               ],

@@ -3,6 +3,7 @@ import 'package:mentor_mobile_app/src/features/organization/members_and_leads/pr
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
 
+
 class GymTrainersScreen extends StatefulWidget {
   const GymTrainersScreen({required this.orgDetails, super.key});
 
@@ -31,7 +32,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
 
     try {
       final response = await DioClient().dio.get<dynamic>(
-        ApiUris.leadsListing,
+        ApiUris.createLead, // Changed from leadsListing to createLead ('mentor/trainers/') to see if new trainers appear
         queryParameters: {
           'organization_id': widget.orgDetails.id,
         },
@@ -89,9 +90,14 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
       final name = (trainer['name'] as String? ?? '').toLowerCase();
       final first = (trainer['first_name'] as String? ?? '').toLowerCase();
       final last = (trainer['last_name'] as String? ?? '').toLowerCase();
+      
+      final dynamic mentorProfile = trainer['mentor_profile'];
+      final loc = (trainer['location'] as String? ?? (mentorProfile != null && mentorProfile is Map ? mentorProfile['location'] as String? : null) ?? 'Balussery').toLowerCase();
+      
       return name.contains(_searchQuery.toLowerCase()) || 
              first.contains(_searchQuery.toLowerCase()) || 
-             last.contains(_searchQuery.toLowerCase());
+             last.contains(_searchQuery.toLowerCase()) ||
+             loc.contains(_searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
@@ -100,7 +106,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
         automaticallyImplyLeading: false,
         centerTitle: false,
         titleSpacing: 16,
-        title: Text('Trainers', style: AppStyles.text16Px.poppins.w500),
+        title: Text('Trainers', style: AppStyles.text16Px.poppins.w600),
         actions: [
           IconButton(
             onPressed: () {
@@ -140,6 +146,9 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
                 setState(() {
                   _searchQuery = value;
                 });
+                if (value.isEmpty) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                }
               },
             ),
           ),
@@ -150,7 +159,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
           Row(
             children: [
               Text(
-                'Available Trainers',
+                'Trainers',
                 style: AppStyles.text16Px.poppins.w600.dark,
               ),
               const Spacer(),
@@ -194,10 +203,19 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
                         itemCount: filteredTrainers.length,
                         itemBuilder: (context, index) {
                           final trainer = filteredTrainers[index];
-                          final int exp = trainer['experience_years'] as int? ?? 0;
+                          final String firstName = trainer['first_name'] as String? ?? '';
+                          final String lastName = trainer['last_name'] as String? ?? '';
+                          final String fallbackName = '$firstName $lastName'.trim();
+                          final String name = trainer['name'] as String? ?? (fallbackName.isEmpty ? 'N/A' : fallbackName);
+                          final String spec = trainer['specialization'] as String? ?? 'Strength';
+                          final String? profilePic = trainer['profile_picture'] as String? ?? 
+                                                     trainer['profile_image'] as String? ?? 
+                                                     trainer['image_url'] as String?;
+                          final int clientsToday = trainer['today_assigned_clients_count'] as int? ?? 0;
+
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
@@ -209,44 +227,58 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
                                 ),
                               ],
                             ),
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppColors.iconBackground,
-                                  ),
-                                  child: ClipOval(
-                                    child: trainer['profile_image'] != null
-                                        ? Image.network(
-                                            trainer['profile_image'] as String,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) =>
-                                                const Icon(Icons.person, color: AppColors.primary),
-                                          )
-                                        : const Icon(Icons.person, color: AppColors.primary),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        trainer['name'] as String? ?? 'N/A',
-                                        style: AppStyles.text14Px.poppins.w600,
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppColors.iconBackground,
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Experience: $exp year${exp == 1 ? "" : "s"}',
-                                        style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                      child: ClipOval(
+                                        child: profilePic != null && profilePic.isNotEmpty
+                                            ? Image.network(
+                                                profilePic,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) =>
+                                                    const Icon(Icons.person, color: AppColors.primary),
+                                              )
+                                            : const Icon(Icons.person, color: AppColors.primary),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            name,
+                                            style: AppStyles.text15Px.poppins.w600,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            spec,
+                                            style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textDark),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Today: $clientsToday',
+                                          style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textDark),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 12),
                               ],
                             ),
                           );

@@ -171,7 +171,7 @@ class __SubscriptionSelectionScreenState
                                     thickness: 1,
                                     color: Color(0xffDDDDDD),
                                   ).pxy(y: 16),
-                                  if (membership?.offerPrice?.isNotEmpty ??
+                                  /* if (membership?.offerPrice?.isNotEmpty ??
                                       false)
                                     Row(
                                       mainAxisAlignment:
@@ -198,7 +198,7 @@ class __SubscriptionSelectionScreenState
                                                   .dark,
                                         ),
                                       ],
-                                    ).pOnly(bottom: 16),
+                                    ).pOnly(bottom: 16), */
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -222,14 +222,14 @@ class __SubscriptionSelectionScreenState
                                             .w500
                                             .dark
                                             .copyWith(
-                                              decoration:
-                                                  membership
-                                                              ?.offerPrice
-                                                              ?.isNotEmpty ??
-                                                          false
-                                                      ? TextDecoration
-                                                          .lineThrough
-                                                      : null,
+                                              // decoration:
+                                              //     membership
+                                              //                 ?.offerPrice
+                                              //                 ?.isNotEmpty ??
+                                              //             false
+                                              //         ? TextDecoration
+                                              //             .lineThrough
+                                              //         : null,
                                             ),
                                       ),
                                     ],

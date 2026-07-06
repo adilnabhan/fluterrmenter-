@@ -175,7 +175,24 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         Dialogs.showSnack(msg: 'Workout plan created successfully');
         _planNamePrivate.controller?.clear();
         _planNamePublic.controller?.clear();
-        _fetchPlans();
+        
+        if (response.data is Map && response.data['id'] != null) {
+          final int planId = response.data['id'] as int;
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder:
+                  (context) => WorkoutPlanDetailsScreen(
+                    planId: planId,
+                    planTitle: publicName,
+                  ),
+            ),
+          ).then((_) {
+            _fetchPlans();
+          });
+        } else {
+          _fetchPlans();
+        }
       } else {
         if (!mounted) return;
         setState(() {

@@ -566,7 +566,7 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                           ),
                                         ],
                                       ),
-                                      if (membership?.offerPrice?.isNotEmpty ??
+                                      /* if (membership?.offerPrice?.isNotEmpty ??
                                           false)
                                         Column(
                                           children: [
@@ -601,7 +601,7 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                               ],
                                             ),
                                           ],
-                                        ),
+                                        ), */
 
                                       // EMI Options Section (if available)
                                       if (membership?.isEmiAvailable == true &&

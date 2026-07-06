@@ -51,6 +51,14 @@ mixin _$LoginSuccessModel {
   bool? get isProfileCompleted => throw _privateConstructorUsedError;
   @JsonKey(name: 'user_role')
   int? get userRole => throw _privateConstructorUsedError;
+  @JsonKey(name: 'gender')
+  String? get gender => throw _privateConstructorUsedError;
+  @JsonKey(name: 'date_of_birth')
+  String? get dateOfBirth => throw _privateConstructorUsedError;
+  @JsonKey(name: 'experience_years')
+  int? get experienceYears => throw _privateConstructorUsedError;
+  @JsonKey(name: 'bio')
+  String? get bio => throw _privateConstructorUsedError;
   @JsonKey(name: 'trainer')
   TrainerModel? get trainer => throw _privateConstructorUsedError;
 
@@ -87,6 +95,10 @@ abstract class $LoginSuccessModelCopyWith<$Res> {
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
     @JsonKey(name: 'user_role') int? userRole,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'date_of_birth') String? dateOfBirth,
+    @JsonKey(name: 'experience_years') int? experienceYears,
+    @JsonKey(name: 'bio') String? bio,
     @JsonKey(name: 'trainer') TrainerModel? trainer,
   });
 
@@ -124,6 +136,10 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
     Object? warnings = freezed,
     Object? isProfileCompleted = freezed,
     Object? userRole = freezed,
+    Object? gender = freezed,
+    Object? dateOfBirth = freezed,
+    Object? experienceYears = freezed,
+    Object? bio = freezed,
     Object? trainer = freezed,
   }) {
     return _then(
@@ -203,6 +219,26 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
                     ? _value.userRole
                     : userRole // ignore: cast_nullable_to_non_nullable
                         as int?,
+            gender:
+                freezed == gender
+                    ? _value.gender
+                    : gender // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            dateOfBirth:
+                freezed == dateOfBirth
+                    ? _value.dateOfBirth
+                    : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            experienceYears:
+                freezed == experienceYears
+                    ? _value.experienceYears
+                    : experienceYears // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            bio:
+                freezed == bio
+                    ? _value.bio
+                    : bio // ignore: cast_nullable_to_non_nullable
+                        as String?,
             trainer:
                 freezed == trainer
                     ? _value.trainer
@@ -267,6 +303,10 @@ abstract class _$$LoginWithOtpEntityImplCopyWith<$Res>
     @JsonKey(name: 'warnings') List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') bool? isProfileCompleted,
     @JsonKey(name: 'user_role') int? userRole,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'date_of_birth') String? dateOfBirth,
+    @JsonKey(name: 'experience_years') int? experienceYears,
+    @JsonKey(name: 'bio') String? bio,
     @JsonKey(name: 'trainer') TrainerModel? trainer,
   });
 
@@ -305,6 +345,10 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
     Object? warnings = freezed,
     Object? isProfileCompleted = freezed,
     Object? userRole = freezed,
+    Object? gender = freezed,
+    Object? dateOfBirth = freezed,
+    Object? experienceYears = freezed,
+    Object? bio = freezed,
     Object? trainer = freezed,
   }) {
     return _then(
@@ -384,6 +428,26 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
                 ? _value.userRole
                 : userRole // ignore: cast_nullable_to_non_nullable
                     as int?,
+        gender:
+            freezed == gender
+                ? _value.gender
+                : gender // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        dateOfBirth:
+            freezed == dateOfBirth
+                ? _value.dateOfBirth
+                : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        experienceYears:
+            freezed == experienceYears
+                ? _value.experienceYears
+                : experienceYears // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        bio:
+            freezed == bio
+                ? _value.bio
+                : bio // ignore: cast_nullable_to_non_nullable
+                    as String?,
         trainer:
             freezed == trainer
                 ? _value.trainer
@@ -413,6 +477,10 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     @JsonKey(name: 'warnings') final List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') this.isProfileCompleted,
     @JsonKey(name: 'user_role') this.userRole,
+    @JsonKey(name: 'gender') this.gender,
+    @JsonKey(name: 'date_of_birth') this.dateOfBirth,
+    @JsonKey(name: 'experience_years') this.experienceYears,
+    @JsonKey(name: 'bio') this.bio,
     @JsonKey(name: 'trainer') this.trainer,
   }) : _warnings = warnings;
 
@@ -473,12 +541,24 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
   @JsonKey(name: 'user_role')
   final int? userRole;
   @override
+  @JsonKey(name: 'gender')
+  final String? gender;
+  @override
+  @JsonKey(name: 'date_of_birth')
+  final String? dateOfBirth;
+  @override
+  @JsonKey(name: 'experience_years')
+  final int? experienceYears;
+  @override
+  @JsonKey(name: 'bio')
+  final String? bio;
+  @override
   @JsonKey(name: 'trainer')
   final TrainerModel? trainer;
 
   @override
   String toString() {
-    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted, userRole: $userRole, trainer: $trainer)';
+    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted, userRole: $userRole, gender: $gender, dateOfBirth: $dateOfBirth, experienceYears: $experienceYears, bio: $bio, trainer: $trainer)';
   }
 
   @override
@@ -511,12 +591,18 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
                 other.isProfileCompleted == isProfileCompleted) &&
             (identical(other.userRole, userRole) ||
                 other.userRole == userRole) &&
+            (identical(other.gender, gender) || other.gender == gender) &&
+            (identical(other.dateOfBirth, dateOfBirth) ||
+                other.dateOfBirth == dateOfBirth) &&
+            (identical(other.experienceYears, experienceYears) ||
+                other.experienceYears == experienceYears) &&
+            (identical(other.bio, bio) || other.bio == bio) &&
             (identical(other.trainer, trainer) || other.trainer == trainer));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     id,
     access,
@@ -533,8 +619,12 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     const DeepCollectionEquality().hash(_warnings),
     isProfileCompleted,
     userRole,
+    gender,
+    dateOfBirth,
+    experienceYears,
+    bio,
     trainer,
-  );
+  ]);
 
   /// Create a copy of LoginSuccessModel
   /// with the given fields replaced by the non-null parameter values.
@@ -570,6 +660,10 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
     @JsonKey(name: 'warnings') final List<dynamic>? warnings,
     @JsonKey(name: 'is_profile_complete') final bool? isProfileCompleted,
     @JsonKey(name: 'user_role') final int? userRole,
+    @JsonKey(name: 'gender') final String? gender,
+    @JsonKey(name: 'date_of_birth') final String? dateOfBirth,
+    @JsonKey(name: 'experience_years') final int? experienceYears,
+    @JsonKey(name: 'bio') final String? bio,
     @JsonKey(name: 'trainer') final TrainerModel? trainer,
   }) = _$LoginWithOtpEntityImpl;
 
@@ -621,6 +715,18 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
   @override
   @JsonKey(name: 'user_role')
   int? get userRole;
+  @override
+  @JsonKey(name: 'gender')
+  String? get gender;
+  @override
+  @JsonKey(name: 'date_of_birth')
+  String? get dateOfBirth;
+  @override
+  @JsonKey(name: 'experience_years')
+  int? get experienceYears;
+  @override
+  @JsonKey(name: 'bio')
+  String? get bio;
   @override
   @JsonKey(name: 'trainer')
   TrainerModel? get trainer;

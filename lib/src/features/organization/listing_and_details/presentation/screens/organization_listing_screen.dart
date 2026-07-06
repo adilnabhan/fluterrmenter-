@@ -911,7 +911,6 @@ class _OrganizationListingAndDetailsScreenState
                                   color: const Color(0xff9C51BF),
                                   gradient: null,
                                   count:
-                                      (orgHomeData.trainerCount ?? 0) +
                                       (orgHomeData.expiredCustomersCount ?? 0) +
                                       (orgHomeData.activeCustomersCount ?? 0),
                                   onTap: () {
@@ -1058,7 +1057,6 @@ class _OrganizationListingAndDetailsScreenState
                                 (
                                   title: 'Total\nMembers',
                                   count:
-                                      (orgHomeData.trainerCount ?? 0) +
                                       (orgHomeData.expiredCustomersCount ?? 0) +
                                       (orgHomeData.activeCustomersCount ?? 0),
                                   countColor: const Color(0xff333333),

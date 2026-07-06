@@ -4,6 +4,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/account_switcher_sheet.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_pending_verifications_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
@@ -15,6 +16,8 @@ class TrainerDashboardScreen extends StatefulWidget {
 
 class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   Map<String, dynamic> _dashboardData = {};
+  int _workoutGroupsCount = 0;
+  int _pendingVerificationsCount = 0;
   bool _isLoading = true;
   int _currentBannerIndex = 0;
 
@@ -36,11 +39,42 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
+      int groupCount = 0;
+      try {
+        final groupsResponse = await DioClient().dio.get<dynamic>(
+          ApiUris.workoutGroups,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+        if (groupsResponse.statusCode == 200) {
+          final List<dynamic> data =
+              (groupsResponse.data is Map)
+                  ? (groupsResponse.data['results'] as List<dynamic>? ?? [])
+                  : (groupsResponse.data as List<dynamic>);
+          groupCount = data.length;
+        }
+      } catch (_) {}
+
+      int pendingCount = 0;
+      try {
+        final pendingResponse = await DioClient().dio.get<dynamic>(
+          ApiUris.pendingVerifications,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+        if (pendingResponse.statusCode == 200 && pendingResponse.data is Map) {
+          final pendingData = pendingResponse.data as Map;
+          final pendingList =
+              pendingData['pending_verifications'] as List<dynamic>? ?? [];
+          pendingCount = pendingList.length;
+        }
+      } catch (_) {}
+
       if (!mounted) return;
 
       if (response.statusCode == 200 && response.data is Map) {
         setState(() {
           _dashboardData = Map<String, dynamic>.from(response.data as Map);
+          _workoutGroupsCount = groupCount;
+          _pendingVerificationsCount = pendingCount;
           _isLoading = false;
         });
       } else {
@@ -63,8 +97,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   Widget build(BuildContext context) {
     final stats = _dashboardData['stats'] as Map<String, dynamic>? ?? {};
     final activeClients = stats['active_clients'] ?? 0;
-    final pendingVerifications = stats['pending_verifications'] ?? 0;
-    final workoutPlansCreated = stats['workout_plans_created'] ?? 0;
+    final pendingVerifications = _pendingVerificationsCount;
+    final workoutGroupsCreated = _workoutGroupsCount;
     final averageRating = stats['average_rating'] ?? 0.0;
 
     final memberInsights =
@@ -188,7 +222,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                               },
                             ),
                             _buildStatCard(
-                              title: 'Expired in\n30 days',
+                              title: 'Pending\nVerifications',
                               value: '$pendingVerifications',
                               valueColor: const Color(0xffC0392B),
                               titleColor: const Color(0xffC0392B),
@@ -198,14 +232,25 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                 end: Alignment.bottomRight,
                                 colors: [Color(0xffFFCDD2), Color(0xffFFAB91)],
                               ),
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) =>
+                                            const TrainerPendingVerificationsScreen(),
+                                  ),
+                                );
+                                _fetchDashboardData();
+                              },
                             ),
                             _buildStatCard(
-                              title: 'Workout Plans\nCreated',
-                              value: '$workoutPlansCreated',
+                              title: 'Workout Groups\nCreated',
+                              value: '$workoutGroupsCreated',
                               valueColor: const Color(0xFFD97706),
                               titleColor: AppColors.textDark,
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder:
@@ -213,6 +258,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                             const WorkoutGroupsScreen(),
                                   ),
                                 );
+                                _fetchDashboardData();
                               },
                             ),
                             _buildStatCard(
