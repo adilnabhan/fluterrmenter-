@@ -79,6 +79,11 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
   Future<void> cerateOrUpdateMemberDetails({
     required MemberDetailsModel memeberDetails,
     required MembershipPackageModel membershipPackageModel,
+    double? discountAmount,
+    double? amountReceived,
+    String? paymentMethod,
+    DateTime? membershipStartDate,
+    int? trainerId,
   }) async {
     print('id ---${membershipPackageModel.id}---$orgId');
     emit(
@@ -100,13 +105,18 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       'user_role': 45,
       'organization_id': orgId,
       'emergency_contact_number':
-          memeberDetails.emergencyContactNumber!.isNotEmpty
+          (memeberDetails.emergencyContactNumber?.isNotEmpty ?? false)
               ? '+91${memeberDetails.emergencyContactNumber}'
               : null,
       'height': memeberDetails.height,
       'weight': memeberDetails.weight,
       'profession': memeberDetails.profession,
       'membership_plan_id': membershipPackageModel.id,
+      if (discountAmount != null) 'discount_amount': discountAmount.toString(),
+      if (amountReceived != null) 'amount_received': amountReceived.toString(),
+      if (paymentMethod != null) 'payment_method': paymentMethod.toLowerCase(),
+      if (membershipStartDate != null) 'membership_start_date': membershipStartDate.format('yyyy-MM-dd'),
+      if (trainerId != null) 'trainer_id': trainerId,
       'profile_picture':
           (memeberDetails.profilePicture?.isNotEmpty ?? false)
               ? await MultipartFile.fromFile(

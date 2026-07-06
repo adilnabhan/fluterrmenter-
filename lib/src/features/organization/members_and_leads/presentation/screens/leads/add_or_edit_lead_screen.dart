@@ -27,8 +27,71 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
   void initState() {
     _cubit = context.read<MembersAndLeadsCubit>();
     _proofImage = ValueNotifier(null);
-    _fields = [
-      FieldData(
+
+    final isEdit = widget.leadeDetails != null;
+
+    if (!isEdit) {
+      _fields = [
+        FieldData(
+          type: FieldType.word,
+          textInputAction: TextInputAction.next,
+          label: 'Full Name',
+          requiredLabel: true,
+          validator: (value) {
+            if (value?.trim().isEmpty ?? true) {
+              return 'Member name is required';
+            }
+            return null;
+          },
+          onSubmitted: (value) {
+            _fields[1].focusNode?.requestFocus();
+          },
+          controller: TextEditingController(),
+          keyboardType: TextInputType.name,
+          decoration: InputDecoration(
+            hintText: 'Enter Name',
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+          ),
+        ),
+        FieldData(
+          type: FieldType.word,
+          textInputAction: TextInputAction.done,
+          label: 'Mobile Number',
+          requiredLabel: true,
+          controller: TextEditingController(),
+          focusNode: FocusNode(),
+          keyboardType: TextInputType.phone,
+          maxLength: 10,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
+          ],
+          validator: (value) {
+            if (value?.trim().length != 10) {
+              return 'Mobile number must be 10 digits';
+            }
+            return null;
+          },
+          onSubmitted: (value) {
+            _onContinue();
+          },
+          decoration: InputDecoration(
+            hintText: 'Enter Mobile Number',
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+          ),
+        ),
+      ];
+    } else {
+      _fields = [
+        FieldData(
         type: FieldType.word,
         textInputAction: TextInputAction.next,
         label: 'Full Name',
@@ -281,8 +344,8 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
             borderSide: BorderSide(color: AppColors.borderGrey),
           ),
         ),
-      ),
-    ];
+    };
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_fields[0].focusNode);
     });
@@ -303,20 +366,22 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
       return;
     }
     if (_formKey.currentState?.validate() ?? false) {
+      final isEdit = widget.leadeDetails != null;
       final fullName = _fields[0].controller?.text;
-      final emailAddress = _fields[1].controller?.text;
-      final mobileNo = _fields[2].controller?.text;
-      final experience = _fields[3].controller?.text;
-      final bloodGroup = _fields[4].controller?.text;
-      final gender = _fields[5].controller?.text;
-      final dateOfBirth = _fields[6].selectedDateTime?.format('yyyy-MM-dd');
-      final emergencyContactNo = _fields[7].controller?.text;
-      final documents =
-          _documents.value
+      final emailAddress = isEdit ? _fields[1].controller?.text : null;
+      final mobileNo = isEdit ? _fields[2].controller?.text : _fields[1].controller?.text;
+      final experience = isEdit ? _fields[3].controller?.text : null;
+      final bloodGroup = isEdit ? _fields[4].controller?.text : null;
+      final gender = isEdit ? _fields[5].controller?.text : null;
+      final dateOfBirth = isEdit ? _fields[6].selectedDateTime?.format('yyyy-MM-dd') : null;
+      final emergencyContactNo = isEdit ? _fields[7].controller?.text : null;
+      final documents = isEdit
+          ? _documents.value
               .where((e) => e?.path?.trim().isNotEmpty ?? false)
-              .toList();
-      final proofImage = _proofImage.value?.path;
-      final profilePicuture = _profilePicture?.path;
+              .toList()
+          : <PlatformFile>[];
+      final proofImage = isEdit ? _proofImage.value?.path : null;
+      final profilePicuture = isEdit ? _profilePicture?.path : null;
       _cubit.createOrUpdateLeadDetails(
         leadId: widget.leadeDetails?.id,
         fullName: fullName,
@@ -328,11 +393,10 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
         emergencyContactNumber: emergencyContactNo,
         experience: experience?.toNum.toInt(),
         addressProof: proofImage,
-        trainerCertificates:
-            documents
-                .map((e) => e?.path ?? '')
-                .where((e) => e.trim().isNotEmpty)
-                .toList(),
+        trainerCertificates: documents
+            .map((e) => e?.path ?? '')
+            .where((e) => e.trim().isNotEmpty)
+            .toList(),
         profilePicture: profilePicuture,
       );
     } else {
@@ -417,8 +481,9 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 22),
-              Text('Documents', style: AppStyles.text14Px.poppins.w500.dark),
+              if (widget.leadeDetails != null) ...[
+                const SizedBox(height: 22),
+                Text('Documents', style: AppStyles.text14Px.poppins.w500.dark),
               const SizedBox(height: 22),
               ValueListenableBuilder(
                 valueListenable: _documents,
@@ -677,7 +742,8 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 22),
+                const SizedBox(height: 22),
+              ],
             ],
           ),
         ),

@@ -24,11 +24,74 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
   void initState() {
     _cubit = context.read<MembersAndLeadsCubit>();
 
-    _fields = [
-      // ---------------------------------------------------------
-      // 0 — FULL NAME
-      // ---------------------------------------------------------
-      FieldData(
+    final isEdit = widget.memberDetails != null;
+
+    if (!isEdit) {
+      _fields = [
+        FieldData(
+          type: FieldType.word,
+          textInputAction: TextInputAction.next,
+          label: 'Full Name',
+          requiredLabel: true,
+          validator: (value) {
+            if (value?.trim().isEmpty ?? true) {
+              return 'Member name is required';
+            }
+            return null;
+          },
+          onSubmitted: (value) {
+            _fields[1].focusNode?.requestFocus();
+          },
+          controller: TextEditingController(),
+          focusNode: FocusNode(),
+          keyboardType: TextInputType.name,
+          decoration: InputDecoration(
+            hintText: 'Enter Name',
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+          ),
+        ),
+        FieldData(
+          type: FieldType.word,
+          textInputAction: TextInputAction.done,
+          label: 'Mobile Number',
+          requiredLabel: true,
+          controller: TextEditingController(),
+          focusNode: FocusNode(),
+          keyboardType: TextInputType.phone,
+          maxLength: 10,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
+          ],
+          validator: (value) {
+            if (value?.trim().length != 10) {
+              return 'Mobile number must be 10 digits';
+            }
+            return null;
+          },
+          onSubmitted: (value) {
+            _onContinue();
+          },
+          decoration: InputDecoration(
+            hintText: 'Enter Mobile Number',
+            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide(color: AppColors.borderGrey),
+            ),
+          ),
+        ),
+      ];
+    } else {
+      _fields = [
+        // ---------------------------------------------------------
+        // 0 — FULL NAME
+        // ---------------------------------------------------------
+        FieldData(
         type: FieldType.word,
         textInputAction: TextInputAction.next,
         label: 'Full Name',
@@ -361,8 +424,8 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
             borderSide: BorderSide(color: AppColors.borderGrey),
           ),
         ),
-      ),
-    ];
+    };
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_fields[0].focusNode);
@@ -387,17 +450,18 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
     }
 
     if (_formKey.currentState?.validate() ?? false) {
+      final isEdit = widget.memberDetails != null;
       final fullName = _fields[0].controller?.text;
-      final email = _fields[1].controller?.text;
-      final mobileNumber = _fields[2].controller?.text;
-      final address = _fields[3].controller?.text;
-      final bloodGroup = _fields[4].controller?.text;
-      final gender = _fields[5].controller?.text.toLowerCase();
-      final dateOfBirth = _fields[6].selectedDateTime;
-      final emergencyContactNumber = _fields[7].controller?.text;
-      final height = _fields[8].controller?.text;
-      final weight = _fields[9].controller?.text;
-      final profession = _fields[10].controller?.text;
+      final email = isEdit ? _fields[1].controller?.text : null;
+      final mobileNumber = isEdit ? _fields[2].controller?.text : _fields[1].controller?.text;
+      final address = isEdit ? _fields[3].controller?.text : null;
+      final bloodGroup = isEdit ? _fields[4].controller?.text : null;
+      final gender = isEdit ? _fields[5].controller?.text.toLowerCase() : null;
+      final dateOfBirth = isEdit ? _fields[6].selectedDateTime : null;
+      final emergencyContactNumber = isEdit ? _fields[7].controller?.text : null;
+      final height = isEdit ? _fields[8].controller?.text : null;
+      final weight = isEdit ? _fields[9].controller?.text : null;
+      final profession = isEdit ? _fields[10].controller?.text : null;
 
       final memberDetails = MemberDetailsModel(
         fullName: fullName,

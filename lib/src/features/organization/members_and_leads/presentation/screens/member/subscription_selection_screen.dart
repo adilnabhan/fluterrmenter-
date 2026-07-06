@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/onboarding_details_payment_screen.dart';
 
 class SubscriptionSelectionScreen extends StatelessWidget {
   const SubscriptionSelectionScreen({
@@ -266,9 +267,24 @@ class __SubscriptionSelectionScreenState
                         );
                         return;
                       } else {
-                        _cubit.cerateOrUpdateMemberDetails(
-                          memeberDetails: widget.memberDetails,
-                          membershipPackageModel: _membershipPackageModel!,
+                        final packagesState = _membershipCubit.state.membershipPackages;
+                        final packagesList = packagesState.fold(
+                          () => <MembershipPackageModel>[],
+                          (either) => either.fold(
+                            (error) => <MembershipPackageModel>[],
+                            (data) => data.results ?? <MembershipPackageModel>[],
+                          ),
+                        );
+                        context.push(
+                          BlocProvider.value(
+                            value: _cubit,
+                            child: OnboardingDetailsPaymentScreen(
+                              orgId: widget.orgId,
+                              memberDetails: widget.memberDetails,
+                              selectedPackage: _membershipPackageModel!,
+                              packages: packagesList,
+                            ),
+                          ),
                         );
                       }
                     },
