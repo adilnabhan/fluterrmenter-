@@ -343,6 +343,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
             borderRadius: BorderRadius.all(Radius.circular(8)),
             borderSide: BorderSide(color: AppColors.borderGrey),
           ),
+        ),
       ),
     ];
     }
