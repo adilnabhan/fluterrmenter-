@@ -135,7 +135,7 @@ final class MembersRepository {
               method: isCreate ? 'POST' : 'PATCH',
               headers: {
                 'X-Platform': platformSource,
-                'Content-Type': 'application/json',
+                if (body is! FormData) 'Content-Type': 'application/json',
               },
             ),
       );
