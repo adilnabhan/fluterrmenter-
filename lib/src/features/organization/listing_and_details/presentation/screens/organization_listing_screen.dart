@@ -793,7 +793,7 @@ class _OrganizationListingAndDetailsScreenState
                                 //   },
                                 // ),
                                 (
-                                  title: 'Expired in 30 Days',
+                                  title: 'Expired in 7 Days',
                                   color: const Color(0xff527F50),
                                   gradient: null,
                                   count: orgHomeData.expiredCustomersCount ?? 0,
@@ -933,7 +933,7 @@ class _OrganizationListingAndDetailsScreenState
                                   },
                                 ),
                                 (
-                                  title: 'Expired in\n30 days',
+                                  title: 'Expired in\n7 days',
                                   count: orgHomeData.expiredCustomersCount ?? 0,
                                   countColor: const Color(0xffC0392B),
                                   labelColor: const Color(0xffC0392B),
