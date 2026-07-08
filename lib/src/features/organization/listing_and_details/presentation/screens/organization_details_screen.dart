@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 
 class OrganizationDetailsScreen extends StatefulWidget {
   const OrganizationDetailsScreen({
@@ -143,6 +144,14 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                                 child: GymPackagesScreen(
                                   orgDetails: orgDetails,
                                 ),
+                              ),
+                            );
+                          }),
+                          _buildProfileListItem('Workouts', () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (context) => const WorkoutGroupsScreen(),
                               ),
                             );
                           }),
