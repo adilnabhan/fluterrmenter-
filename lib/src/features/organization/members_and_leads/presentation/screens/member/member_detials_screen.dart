@@ -47,7 +47,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
               titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
               title: const Text('Member Details'),
               actions: [
-                if (data?.mobileNumber?.isNotEmpty ?? false)
+                if (data?.mobileNumber?.isNotEmpty ?? false) ...[
                   IconButton(
                     onPressed: () {
                       if (data?.mobileNumber?.isNotEmpty ?? false) {
@@ -58,6 +58,24 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     },
                     icon: SvgPicture.asset('assets/images/svg/icons/call.svg'),
                   ),
+                  TextButton(
+                    onPressed: () async {
+                      final phone = data?.mobileNumber ?? '';
+                      final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+                      final formattedPhone = cleanPhone.length == 10 ? '91$cleanPhone' : cleanPhone;
+                      final whatsappUri = Uri.parse('https://api.whatsapp.com/send?phone=$formattedPhone&text=Hello,');
+                      if (!await launchUrl(whatsappUri, mode: LaunchMode.externalApplication)) {
+                        Dialogs.showSnack(msg: "Could not launch WhatsApp");
+                      }
+                    },
+                    child: Text(
+                      'Enquiry',
+                      style: AppStyles.text14Px.poppins.w500.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ).pOnly(right: 8),
+                ],
               ],
             ),
             backgroundColor: AppColors.grey,

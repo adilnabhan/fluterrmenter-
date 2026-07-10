@@ -3,9 +3,16 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class AddOrEditLeadScreen extends StatefulWidget {
-  const AddOrEditLeadScreen({this.leadeDetails, super.key});
+  const AddOrEditLeadScreen({
+    this.leadeDetails,
+    this.prefilledName,
+    this.prefilledMobile,
+    super.key,
+  });
 
   final LeadDetailsModel? leadeDetails;
+  final String? prefilledName;
+  final String? prefilledMobile;
 
   @override
   State<AddOrEditLeadScreen> createState() => _AddOrEditLeadScreenState();
@@ -46,7 +53,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           onSubmitted: (value) {
             _fields[1].focusNode?.requestFocus();
           },
-          controller: TextEditingController(),
+          controller: TextEditingController(text: widget.prefilledName),
           keyboardType: TextInputType.name,
           decoration: InputDecoration(
             hintText: 'Enter Name',
@@ -62,7 +69,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           textInputAction: TextInputAction.done,
           label: 'Mobile Number',
           requiredLabel: true,
-          controller: TextEditingController(),
+          controller: TextEditingController(text: widget.prefilledMobile),
           focusNode: FocusNode(),
           keyboardType: TextInputType.phone,
           maxLength: 10,
