@@ -372,7 +372,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> w
           ),
           Text(
             title,
-            style: AppStyles.text11Px.poppins.w500.copyWith(color: AppColors.textGrey),
+            style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textGrey),
           ),
         ],
       ),
@@ -426,7 +426,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> w
                         const SizedBox(height: 4),
                         Text(
                           'Revenue Share: $percentage',
-                          style: AppStyles.text11Px.poppins.w500.copyWith(color: AppColors.textGrey),
+                          style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textGrey),
                         ),
                       ],
                     ),
@@ -536,7 +536,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> w
           if (injuries.isEmpty)
             Text(
               'None reported.',
-              style: AppStyles.text11Px.poppins.w400.copyWith(color: AppColors.textGrey),
+              style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
             )
           else
             ...injuries.entries.map((e) => Padding(
@@ -559,7 +559,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> w
           if (medicalConditions.isEmpty)
             Text(
               'None reported.',
-              style: AppStyles.text11Px.poppins.w400.copyWith(color: AppColors.textGrey),
+              style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
             )
           else
             ...medicalConditions.entries.map((e) => Padding(
@@ -614,7 +614,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> w
                 ),
                 child: Text(
                   progress,
-                  style: AppStyles.text11Px.poppins.w600.copyWith(color: progressColor),
+                  style: AppStyles.text12Px.poppins.w600.copyWith(color: progressColor),
                 ),
               ),
             ],
