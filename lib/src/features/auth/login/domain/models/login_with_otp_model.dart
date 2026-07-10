@@ -26,6 +26,10 @@ class LoginSuccessModel with _$LoginSuccessModel {
     @JsonKey(name: 'date_of_birth') String? dateOfBirth,
     @JsonKey(name: 'experience_years') int? experienceYears,
     @JsonKey(name: 'bio') String? bio,
+    @JsonKey(name: 'location') String? location,
+    @JsonKey(name: 'instagram') String? instagram,
+    @JsonKey(name: 'facebook') String? facebook,
+    @JsonKey(name: 'youtube') String? youtube,
     @JsonKey(name: 'trainer') TrainerModel? trainer,
   }) = _LoginWithOtpEntity;
 
@@ -50,9 +54,38 @@ class TrainerModel with _$TrainerModel {
     @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'user_type') String? userType,
     @JsonKey(name: 'profile_step') int? profileStep,
+    @JsonKey(name: 'certificates') List<CertificateModel>? certificates,
+    @JsonKey(name: 'portfolio_images') List<PortfolioImageModel>? portfolioImages,
   }) = _TrainerModel;
 
-  factory TrainerModel.fromJson(Map<String, dynamic> json) => _$TrainerModelFromJson(json);
+  factory TrainerModel.fromJson(Map<String, dynamic> json) =>
+      _$TrainerModelFromJson(json);
+}
+
+@freezed
+class CertificateModel with _$CertificateModel {
+  const factory CertificateModel({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'certificate_name') String? name,
+    @JsonKey(name: 'certificate_file') String? certificate,
+    @JsonKey(name: 'issued_date') String? issuedDate,
+    @JsonKey(name: 'issued_by') String? issuingAuthority,
+  }) = _CertificateModel;
+
+  factory CertificateModel.fromJson(Map<String, dynamic> json) =>
+      _$CertificateModelFromJson(json);
+}
+
+@freezed
+class PortfolioImageModel with _$PortfolioImageModel {
+  const factory PortfolioImageModel({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'image') String? image,
+    @JsonKey(name: 'type') String? type,
+  }) = _PortfolioImageModel;
+
+  factory PortfolioImageModel.fromJson(Map<String, dynamic> json) =>
+      _$PortfolioImageModelFromJson(json);
 }
 
 @freezed
@@ -63,6 +96,5 @@ class Org with _$Org {
     @JsonKey(name: 'profile_completeness') int? profileCompleteness,
   }) = _Org;
 
-  factory Org.fromJson(Map<String, dynamic> json) =>
-      _$OrgFromJson(json);
+  factory Org.fromJson(Map<String, dynamic> json) => _$OrgFromJson(json);
 }

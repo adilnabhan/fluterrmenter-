@@ -50,6 +50,10 @@ _$OrganizationDetailsModelImpl _$$OrganizationDetailsModelImplFromJson(
           .toList(),
   packages: json['packages'] as List<dynamic>?,
   subscriptionDetails: json['subscription_details'],
+  trainersCount: (json['trainers_count'] as num?)?.toInt(),
+  membersCount: (json['members_count'] as num?)?.toInt(),
+  rating: json['rating'],
+  ratingCount: (json['rating_count'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$$OrganizationDetailsModelImplToJson(
@@ -75,6 +79,10 @@ Map<String, dynamic> _$$OrganizationDetailsModelImplToJson(
   'photos': instance.photos,
   'packages': instance.packages,
   'subscription_details': instance.subscriptionDetails,
+  'trainers_count': instance.trainersCount,
+  'members_count': instance.membersCount,
+  'rating': instance.rating,
+  'rating_count': instance.ratingCount,
 };
 
 _$AmenityModelImpl _$$AmenityModelImplFromJson(Map<String, dynamic> json) =>

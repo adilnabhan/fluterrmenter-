@@ -24,6 +24,10 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
   late TextEditingController _dobController;
   late TextEditingController _experienceController;
   late TextEditingController _bioController;
+  late TextEditingController _locationController;
+  late TextEditingController _instagramController;
+  late TextEditingController _facebookController;
+  late TextEditingController _youtubeController;
 
   String _selectedGender = 'male';
   File? _selectedImage;
@@ -41,7 +45,10 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
       text: user?.experienceYears?.toString() ?? '',
     );
     _bioController = TextEditingController(text: user?.bio ?? '');
-
+    _locationController = TextEditingController(text: user?.location ?? '');
+    _instagramController = TextEditingController(text: user?.instagram ?? '');
+    _facebookController = TextEditingController(text: user?.facebook ?? '');
+    _youtubeController = TextEditingController(text: user?.youtube ?? '');
     final currentGender = user?.gender?.toLowerCase() ?? 'male';
     if (['male', 'female', 'other'].contains(currentGender)) {
       _selectedGender = currentGender;
@@ -56,6 +63,10 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     _dobController.dispose();
     _experienceController.dispose();
     _bioController.dispose();
+    _locationController.dispose();
+    _instagramController.dispose();
+    _facebookController.dispose();
+    _youtubeController.dispose();
     super.dispose();
   }
 
@@ -89,6 +100,10 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
         'experience_years':
             int.tryParse(_experienceController.text.trim()) ?? 0,
         'bio': _bioController.text.trim(),
+        'location': _locationController.text.trim(),
+        'instagram': _instagramController.text.trim(),
+        'facebook': _facebookController.text.trim(),
+        'youtube': _youtubeController.text.trim(),
         'user_type': 'trainer',
       });
 
@@ -110,26 +125,61 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
       if ((response.statusCode == 200 || response.statusCode == 201) &&
           response.data != null) {
         if (mounted) {
-          final updatedUser = LoginSuccessModel.fromJson(
-            response.data as Map<String, dynamic>,
-          );
+          final responseData = response.data as Map<String, dynamic>;
+          final updatedUser = LoginSuccessModel.fromJson(responseData);
+          final String? newProfilePic =
+              (responseData['profile_picture']?.toString() ??
+              responseData['profile_image']?.toString() ??
+              responseData['data']?['profile_picture']?.toString() ??
+              responseData['data']?['profile_image']?.toString() ??
+              updatedUser.profilePicture) as String?;
 
           final currentUser = context.read<AppCubit>().state.currentUser;
           if (currentUser != null) {
             final mergedUser = currentUser.copyWith(
-              id: updatedUser.id ?? currentUser.id,
-              firstName: updatedUser.firstName ?? currentUser.firstName,
-              lastName: updatedUser.lastName ?? currentUser.lastName,
-              email: updatedUser.email ?? currentUser.email,
+              firstName:
+                  _firstNameController.text.trim().isNotEmpty
+                      ? _firstNameController.text.trim()
+                      : currentUser.firstName,
+              lastName:
+                  _lastNameController.text.trim().isNotEmpty
+                      ? _lastNameController.text.trim()
+                      : currentUser.lastName,
+              email:
+                  _emailController.text.trim().isNotEmpty
+                      ? _emailController.text.trim()
+                      : currentUser.email,
               mobileNumber:
                   updatedUser.mobileNumber ?? currentUser.mobileNumber,
-              gender: updatedUser.gender ?? currentUser.gender,
-              dateOfBirth: updatedUser.dateOfBirth ?? currentUser.dateOfBirth,
+              gender: _selectedGender,
+              dateOfBirth:
+                  _dobController.text.trim().isNotEmpty
+                      ? _dobController.text.trim()
+                      : currentUser.dateOfBirth,
               experienceYears:
-                  updatedUser.experienceYears ?? currentUser.experienceYears,
-              bio: updatedUser.bio ?? currentUser.bio,
-              profilePicture:
-                  updatedUser.profilePicture ?? currentUser.profilePicture,
+                  int.tryParse(_experienceController.text.trim()) ??
+                  currentUser.experienceYears,
+              bio:
+                  _bioController.text.trim().isNotEmpty
+                      ? _bioController.text.trim()
+                      : currentUser.bio,
+              location:
+                  _locationController.text.trim().isNotEmpty
+                      ? _locationController.text.trim()
+                      : currentUser.location,
+              instagram:
+                  _instagramController.text.trim().isNotEmpty
+                      ? _instagramController.text.trim()
+                      : currentUser.instagram,
+              facebook:
+                  _facebookController.text.trim().isNotEmpty
+                      ? _facebookController.text.trim()
+                      : currentUser.facebook,
+              youtube:
+                  _youtubeController.text.trim().isNotEmpty
+                      ? _youtubeController.text.trim()
+                      : currentUser.youtube,
+              profilePicture: newProfilePic ?? currentUser.profilePicture,
             );
             context.read<AppCubit>().addUser(mergedUser);
           } else {
@@ -310,6 +360,23 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 16),
 
+              Text('Location', style: AppStyles.text14Px.poppins.w500),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _locationController,
+                decoration: InputDecoration(
+                  hintText: 'Enter location',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
               Row(
                 children: [
                   Expanded(
@@ -422,6 +489,60 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
                 maxLines: 4,
                 decoration: InputDecoration(
                   hintText: 'Tell us a bit about yourself...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              
+              Text('Social Links', style: AppStyles.text16Px.poppins.w600),
+              const SizedBox(height: 16),
+              
+              Text('Instagram', style: AppStyles.text14Px.poppins.w500),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _instagramController,
+                decoration: InputDecoration(
+                  hintText: 'Instagram Profile URL',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              Text('Facebook', style: AppStyles.text14Px.poppins.w500),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _facebookController,
+                decoration: InputDecoration(
+                  hintText: 'Facebook Profile URL',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              Text('YouTube', style: AppStyles.text14Px.poppins.w500),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _youtubeController,
+                decoration: InputDecoration(
+                  hintText: 'YouTube Channel URL',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

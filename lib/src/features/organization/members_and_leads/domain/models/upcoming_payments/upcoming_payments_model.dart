@@ -40,6 +40,7 @@ class CustomerDetails with _$CustomerDetails {
     @JsonKey(name: "profile_picture") String? profilePicture,
     @JsonKey(name: "joined_date") required String joinedDate,
     @JsonKey(name: "active_plan") required ActivePlans activePlans,
+    @JsonKey(name: 'whatsapp_link') String? whatsappLink,
   }) = _CustomerDetails;
 
   factory CustomerDetails.fromJson(Map<String, dynamic> json) =>

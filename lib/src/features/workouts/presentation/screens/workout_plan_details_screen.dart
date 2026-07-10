@@ -63,6 +63,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
               equipment: workout['equipment_name'] as String? ?? 'None',
               type: workout['type'] as String? ?? 'Other',
               videoLink: item['video_url'] as String? ?? workout['video_url'] as String? ?? '',
+              trackBy: workout['track_by'] as String? ?? 'reps',
               sets: setsList,
             );
           }).toList();
@@ -414,9 +415,12 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
     });
 
     try {
+      final String sourceValue = _selectedTab == 0 ? 'library' : (_selectedTab == 1 ? 'me' : 'gym');
+
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.workoutExercises,
         queryParameters: {
+          'source': sourceValue,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),
@@ -445,12 +449,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
   }
 
   List<Map<String, dynamic>> get _filteredExercises {
-    return _allExercises.where((item) {
-      final isGlobal = item['is_global'] as bool? ?? true;
-      if (_selectedTab == 0 && !isGlobal) return false;
-      if (_selectedTab == 1 && isGlobal) return false;
-      return true;
-    }).toList();
+    return _allExercises;
   }
 
   void _showCreateExerciseSheet(BuildContext context) {
@@ -536,7 +535,10 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                       child: GestureDetector(
                         onTap: () {
                           if (!mounted) return;
-                          setState(() => _selectedTab = 0);
+                          if (_selectedTab != 0) {
+                            setState(() => _selectedTab = 0);
+                            _fetchExercises();
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -560,24 +562,50 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                       child: GestureDetector(
                         onTap: () {
                           if (!mounted) return;
-                          setState(() => _selectedTab = 1);
+                          if (_selectedTab != 1) {
+                            setState(() => _selectedTab = 1);
+                            _fetchExercises();
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
                             color: _selectedTab == 1 ? const Color(0xFFF1F1F1) : Colors.white,
-                            borderRadius: const BorderRadius.horizontal(
-                              right: Radius.circular(20),
-                            ),
                             border: const Border(
                               top: BorderSide(color: AppColors.borderGrey),
-                              right: BorderSide(color: AppColors.borderGrey),
                               bottom: BorderSide(color: AppColors.borderGrey),
                             ),
                           ),
                           child: Center(
                             child: Text(
                               'You created',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textDark),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          if (!mounted) return;
+                          if (_selectedTab != 2) {
+                            setState(() => _selectedTab = 2);
+                            _fetchExercises();
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: _selectedTab == 2 ? const Color(0xFFF1F1F1) : Colors.white,
+                            borderRadius: const BorderRadius.horizontal(
+                              right: Radius.circular(20),
+                            ),
+                            border: Border.all(color: AppColors.borderGrey),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Gym created',
                               style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textDark),
                             ),
                           ),
@@ -620,6 +648,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                                       equipment: item['equipment_name'] as String? ?? 'None',
                                       type: item['type'] as String? ?? 'Other',
                                       videoLink: item['video_url'] as String? ?? '',
+                                      trackBy: item['track_by']?.toString().toLowerCase() ?? 'reps',
                                       sets: const [
                                         {'set_number': 1, 'target_reps': 10, 'target_weight': 15.0}
                                       ],
@@ -638,6 +667,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                                 equipment: item['equipment_name'] as String? ?? 'None',
                                 type: item['type'] as String? ?? 'Other',
                                 videoLink: item['video_url'] as String? ?? '',
+                                trackBy: item['track_by']?.toString().toLowerCase() ?? 'reps',
                                 sets: const [],
                               ),
                               isAdded: isAdded,
@@ -678,8 +708,10 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
   List<Map<String, dynamic>> _types = [];
 
   int? _selectedMuscleId;
+  List<int> _selectedSecondaryMuscleIds = [];
   int? _selectedEquipmentId;
   String? _selectedType;
+  String? _selectedTrackBy;
 
   bool _isLoadingDropdowns = true;
   bool _isCreating = false;
@@ -731,8 +763,10 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
         data: {
           'name': _nameController.text.trim(),
           'primary_muscle_group': _selectedMuscleId,
+          'secondary_muscle_group': _selectedSecondaryMuscleIds,
           'equipment': _selectedEquipmentId,
           'type': _selectedType,
+          'track_by': _selectedTrackBy,
           'video_url': _youtubeController.text.trim(),
           'instructions': '',
           'status': true,
@@ -758,6 +792,67 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
       });
       Dialogs.showSnack(msg: 'Error creating exercise: ${e.toString()}');
     }
+  }
+
+  Future<Map<String, dynamic>?> _showAddNewDialog(String title, String endpoint) async {
+    final controller = TextEditingController();
+    bool isSaving = false;
+    return showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text('Add New $title'),
+            content: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: 'Enter name',
+                border: const OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSaving ? null : () => Navigator.pop(context, null),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        final name = controller.text.trim();
+                        if (name.isEmpty) return;
+                        setDialogState(() => isSaving = true);
+                        try {
+                          final res = await DioClient().dio.post<dynamic>(
+                            endpoint,
+                            data: {'name': name},
+                          );
+                          if (res.statusCode == 200 || res.statusCode == 201) {
+                            Navigator.pop(context, res.data);
+                          } else {
+                            Dialogs.showSnack(msg: 'Failed to create');
+                            setDialogState(() => isSaving = false);
+                          }
+                        } catch (e) {
+                          Dialogs.showSnack(msg: 'Error: ${e.toString()}');
+                          setDialogState(() => isSaving = false);
+                        }
+                      },
+                child: isSaving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Save'),
+              ),
+            ],
+          );
+        });
+      },
+    );
   }
 
   @override
@@ -825,18 +920,129 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
                           DropdownButtonFormField<int>(
                             value: _selectedMuscleId,
                             hint: const Text('Select the muscle'),
-                            items: _muscles.map((m) {
-                              return DropdownMenuItem<int>(
-                                value: m['id'] as int,
-                                child: Text(m['name'] as String),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (!mounted) return;
-                              setState(() => _selectedMuscleId = val);
+                            items: [
+                              ..._muscles.map((m) {
+                                return DropdownMenuItem<int>(
+                                  value: m['id'] as int,
+                                  child: Text(m['name'] as String),
+                                );
+                              }),
+                              const DropdownMenuItem<int>(
+                                value: -1,
+                                child: Text('+ Add New Muscle...', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                            onChanged: (val) async {
+                              if (val == -1) {
+                                final newMuscle = await _showAddNewDialog('Muscle Group', ApiUris.muscleGroups);
+                                if (newMuscle != null && mounted) {
+                                  setState(() {
+                                    _muscles.add(newMuscle);
+                                    _selectedMuscleId = newMuscle['id'] as int;
+                                  });
+                                } else {
+                                  setState(() {}); // Reset if cancelled
+                                }
+                              } else {
+                                if (!mounted) return;
+                                setState(() => _selectedMuscleId = val);
+                              }
                             },
                             decoration: InputDecoration(
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text('Secondary Muscle', style: AppStyles.text14Px.poppins.w500.dark),
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: () {
+                              showModalBottomSheet<void>(
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (ctx) {
+                                  return StatefulBuilder(
+                                    builder: (context, setModalState) {
+                                      return Container(
+                                        height: MediaQuery.of(context).size.height * 0.5,
+                                        padding: const EdgeInsets.all(20),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Select Secondary Muscles', style: AppStyles.text16Px.poppins.w600.dark),
+                                            const SizedBox(height: 16),
+                                            Expanded(
+                                              child: ListView.builder(
+                                                itemCount: _muscles.length,
+                                                itemBuilder: (context, index) {
+                                                  final m = _muscles[index];
+                                                  final mId = m['id'] as int;
+                                                  final isSelected = _selectedSecondaryMuscleIds.contains(mId);
+                                                  return CheckboxListTile(
+                                                    title: Text(m['name'] as String, style: AppStyles.text14Px.poppins.w500.dark),
+                                                    value: isSelected,
+                                                    activeColor: AppColors.primary,
+                                                    onChanged: (val) {
+                                                      setModalState(() {
+                                                        if (val == true) {
+                                                          _selectedSecondaryMuscleIds.add(mId);
+                                                        } else {
+                                                          _selectedSecondaryMuscleIds.remove(mId);
+                                                        }
+                                                      });
+                                                      setState(() {}); // Update parent UI
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: ElevatedButton(
+                                                onPressed: () => Navigator.pop(context),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: AppColors.primary,
+                                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                ),
+                                                child: Text('Done', style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white)),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade400), // Match the standard Dropdown border
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _selectedSecondaryMuscleIds.isEmpty 
+                                          ? 'Select the secondary muscles' 
+                                          : _selectedSecondaryMuscleIds.map((id) => _muscles.firstWhere((m) => m['id'] == id, orElse: () => {'name': ''})['name']).join(', '),
+                                      style: AppStyles.text14Px.poppins.w400.copyWith(
+                                        color: _selectedSecondaryMuscleIds.isEmpty ? Colors.grey.shade600 : AppColors.textDark,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -860,20 +1066,58 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
                             ),
                           ),
                           const SizedBox(height: 16),
+                          Text('Track By *', style: AppStyles.text14Px.poppins.w500.dark),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<String>(
+                            value: _selectedTrackBy,
+                            hint: const Text('Select track by'),
+                            items: ['Reps', 'Time', 'Distance'].map((t) {
+                              return DropdownMenuItem<String>(
+                                value: t.toLowerCase(),
+                                child: Text(t),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              if (!mounted) return;
+                              setState(() => _selectedTrackBy = val);
+                            },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
                           Text('Equipment *', style: AppStyles.text14Px.poppins.w500.dark),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<int>(
                             value: _selectedEquipmentId,
                             hint: const Text('Select the equipment used'),
-                            items: _equipments.map((eq) {
-                              return DropdownMenuItem<int>(
-                                value: eq['id'] as int,
-                                child: Text(eq['name'] as String),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (!mounted) return;
-                              setState(() => _selectedEquipmentId = val);
+                            items: [
+                              ..._equipments.map((eq) {
+                                return DropdownMenuItem<int>(
+                                  value: eq['id'] as int,
+                                  child: Text(eq['name'] as String),
+                                );
+                              }),
+                              const DropdownMenuItem<int>(
+                                value: -1,
+                                child: Text('+ Add New Equipment...', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                            onChanged: (val) async {
+                              if (val == -1) {
+                                final newEquipment = await _showAddNewDialog('Equipment', ApiUris.equipment);
+                                if (newEquipment != null && mounted) {
+                                  setState(() {
+                                    _equipments.add(newEquipment);
+                                    _selectedEquipmentId = newEquipment['id'] as int;
+                                  });
+                                } else {
+                                  setState(() {}); // Reset if cancelled
+                                }
+                              } else {
+                                if (!mounted) return;
+                                setState(() => _selectedEquipmentId = val);
+                              }
                             },
                             decoration: InputDecoration(
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -1018,6 +1262,12 @@ class _ExerciseCard extends StatelessWidget {
                         children: exercise.sets.map((s) {
                           final reps = s['target_reps'] ?? 0;
                           final weight = s['target_weight'] ?? 0.0;
+                          String unit = 'r';
+                          if (exercise.trackBy == 'time') {
+                            unit = 's';
+                          } else if (exercise.trackBy == 'distance') {
+                            unit = 'm';
+                          }
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
@@ -1026,7 +1276,7 @@ class _ExerciseCard extends StatelessWidget {
                               border: Border.all(color: AppColors.borderGrey.withOpacity(0.6)),
                             ),
                             child: Text(
-                              'Set ${s['set_number']}: ${reps}r × ${weight}kg',
+                              'Set ${s['set_number']}: $reps$unit × ${weight}kg',
                               style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textDark),
                             ),
                           );
@@ -1063,6 +1313,7 @@ class WorkoutExercise {
   final String equipment;
   final String type;
   final String videoLink;
+  final String trackBy;
   final List<Map<String, dynamic>> sets;
 
   const WorkoutExercise({
@@ -1073,6 +1324,7 @@ class WorkoutExercise {
     required this.equipment,
     required this.type,
     required this.videoLink,
+    this.trackBy = 'reps',
     required this.sets,
   });
 
@@ -1298,7 +1550,9 @@ class _EditExerciseBottomSheetState extends State<_EditExerciseBottomSheet> {
                                   initialValue: s['target_reps']?.toString() ?? '',
                                   keyboardType: const TextInputType.numberWithOptions(decimal: false),
                                   decoration: InputDecoration(
-                                    labelText: 'Reps',
+                                    labelText: widget.exercise.trackBy == 'time' 
+                                        ? 'Time (sec)' 
+                                        : (widget.exercise.trackBy == 'distance' ? 'Distance' : 'Reps'),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                   ),
@@ -1366,6 +1620,7 @@ class _EditExerciseBottomSheetState extends State<_EditExerciseBottomSheet> {
                       equipment: widget.exercise.equipment,
                       type: widget.exercise.type,
                       videoLink: _linkController.text.trim(),
+                      trackBy: widget.exercise.trackBy,
                       sets: _sets,
                     ));
                     Navigator.pop(context);

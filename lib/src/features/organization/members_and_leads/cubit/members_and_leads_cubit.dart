@@ -737,7 +737,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
   //   emit(state.copyWith(upComingPayments: some(res)));
   // }
 
-  Future<void> fetchExpiringMemberShip({bool isPagination = false}) async {
+  Future<void> fetchExpiringMemberShip({
+    bool isPagination = false,
+    String? status,
+  }) async {
     // Extract existing data for pagination
     final expiring = state.upComingPayments.data.fold(
       () => null,
@@ -762,7 +765,10 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
 
     // API Call
     final res = await MembershipRepository().listExpiringMembership(
-      queryParameters: {'organization_id': orgId},
+      queryParameters: {
+        'organization_id': orgId,
+        if (status != null) 'status': status,
+      },
       nextUrl: isPagination ? expiring?.next : null,
     );
 

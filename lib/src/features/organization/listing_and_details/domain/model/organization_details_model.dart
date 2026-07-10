@@ -30,6 +30,10 @@ class OrganizationDetailsModel with _$OrganizationDetailsModel {
     @JsonKey(name: 'photos') List<PhotoModel>? photos,
     @JsonKey(name: 'packages') List<dynamic>? packages,
     @JsonKey(name: 'subscription_details') dynamic subscriptionDetails,
+    @JsonKey(name: 'trainers_count') int? trainersCount,
+    @JsonKey(name: 'members_count') int? membersCount,
+    @JsonKey(name: 'rating') dynamic rating,
+    @JsonKey(name: 'rating_count') int? ratingCount,
   }) = _OrganizationDetailsModel;
 
   factory OrganizationDetailsModel.fromJson(Map<String, dynamic> json) => _$OrganizationDetailsModelFromJson(json);

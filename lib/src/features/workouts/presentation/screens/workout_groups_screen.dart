@@ -2,6 +2,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/create_group_button.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_group_details_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 
 class WorkoutGroupsScreen extends StatefulWidget {
   const WorkoutGroupsScreen({super.key});
@@ -18,6 +19,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
   List<Map<String, dynamic>> _groups = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  String _filterType = 'all'; // 'all' or 'org'
 
   @override
   void initState() {
@@ -34,6 +36,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
         }
         return null;
       },
+      maxLength: 30,
       controller: TextEditingController(),
       focusNode: FocusNode(),
       decoration: InputDecoration(
@@ -108,8 +111,97 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
   }
 
   List<Map<String, dynamic>> get _filteredGroups {
+    final user = context.read<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+
     final typeFilter = _selectedTabIndex == 0 ? 'single_day' : 'multi_day';
-    return _groups.where((g) => g['type'] == typeFilter).toList();
+    var filtered = _groups.where((g) => g['type'] == typeFilter).toList();
+    
+    if (!isTrainer) {
+      filtered = filtered.where((g) => g['source'] == 'gym' || g['source'] == 'organization').toList();
+    } else {
+      if (_filterType == 'org') {
+        filtered = filtered.where((g) => g['source'] == 'gym' || g['source'] == 'organization').toList();
+      } else if (_filterType == 'trainer') {
+        filtered = filtered.where((g) => g['source'] == 'trainer').toList();
+      }
+    }
+    return filtered;
+  }
+
+  void _showFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              Text('Filter Workouts', style: AppStyles.text16Px.poppins.w600.dark),
+              const SizedBox(height: 16),
+              ListTile(
+                title: const Text('All Workouts'),
+                trailing: _filterType == 'all' ? const Icon(Icons.check, color: AppColors.primary) : null,
+                onTap: () {
+                  setState(() => _filterType = 'all');
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: const Text('Organization Workouts'),
+                trailing: _filterType == 'org' ? const Icon(Icons.check, color: AppColors.primary) : null,
+                onTap: () {
+                  setState(() => _filterType = 'org');
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: const Text('My Workouts'),
+                trailing: _filterType == 'trainer' ? const Icon(Icons.check, color: AppColors.primary) : null,
+                onTap: () {
+                  setState(() => _filterType = 'trainer');
+                  Navigator.pop(context);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterButton(bool isTrainer) {
+    if (!isTrainer) return const SizedBox();
+    
+    String filterText = 'All';
+    if (_filterType == 'org') filterText = 'Organization';
+    if (_filterType == 'trainer') filterText = 'My Workouts';
+
+    return InkWell(
+      onTap: () => _showFilterSheet(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFEAEA),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.filter_list, size: 16, color: Color(0xFFFF3434)),
+            const SizedBox(width: 4),
+            Text(
+              filterText,
+              style: AppStyles.text12Px.poppins.w500.copyWith(color: const Color(0xFFFF3434)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _createGroup(String name) async {
@@ -118,13 +210,23 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
       _isLoading = true;
     });
 
+    final user = context.read<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
     final groupType = _selectedTabIndex == 0 ? 'single_day' : 'multi_day';
+    final source = isTrainer ? 'trainer' : 'organization';
 
     try {
       final response = await DioClient().dio.post<dynamic>(
         ApiUris.workoutGroups,
-        data: {'name': name, 'type': groupType},
-        options: Options(headers: {'X-Platform': platformSource}),
+        data: {
+          'name': name,
+          'type': groupType,
+          'source': source,
+        },
+        options: Options(headers: {
+          'X-Platform': platformSource,
+          'Connection': 'close',
+        }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -167,6 +269,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+    
     final filtered = _filteredGroups;
 
     return Scaffold(
@@ -183,7 +288,12 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: Colors.black),
             onPressed: () {
-              Dialogs.showSnack(msg: 'Settings');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TrainerProfileSettingsScreen(),
+                ),
+              );
             },
           ),
         ],
@@ -197,32 +307,94 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                   horizontal: 16,
                   vertical: 8,
                 ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.borderGrey),
-                  ),
-                  child: TextField(
-                    onChanged: (val) {
-                      _searchQuery = val;
-                      EasyDebounce.debounce(
-                        'groups-search',
-                        const Duration(milliseconds: 400),
-                        () => _fetchGroups(),
-                      );
-                    },
-                    decoration: InputDecoration(
-                      icon: const Icon(Icons.search, color: AppColors.textGrey),
-                      hintText: 'Search for workout group',
-                      fillColor: Colors.white,
-                      hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-                        color: AppColors.textGrey,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.borderGrey),
+                        ),
+                        child: TextField(
+                          onChanged: (val) {
+                            _searchQuery = val;
+                            EasyDebounce.debounce(
+                              'groups-search',
+                              const Duration(milliseconds: 400),
+                              () => _fetchGroups(),
+                            );
+                          },
+                          decoration: InputDecoration(
+                            icon: const Icon(Icons.search, color: AppColors.textGrey),
+                            hintText: 'Search for workout group',
+                            fillColor: Colors.white,
+                            hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                            border: InputBorder.none,
+                          ),
+                        ),
                       ),
-                      border: InputBorder.none,
                     ),
-                  ),
+                    if (isTrainer) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.borderGrey),
+                        ),
+                        child: PopupMenuButton<String>(
+                          icon: const Icon(Icons.sort, color: Colors.black87),
+                          offset: const Offset(0, 45),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          onSelected: (val) {
+                            setState(() {
+                              _filterType = val;
+                            });
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: 'all',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.all_inclusive, size: 20, color: _filterType == 'all' ? AppColors.primary : Colors.grey),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'All Groups',
+                                    style: AppStyles.text14Px.poppins.copyWith(
+                                      fontWeight: _filterType == 'all' ? FontWeight.w600 : FontWeight.normal,
+                                      color: _filterType == 'all' ? AppColors.primary : AppColors.textDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'org',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.business, size: 20, color: _filterType == 'org' ? AppColors.primary : Colors.grey),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Organization Created',
+                                    style: AppStyles.text14Px.poppins.copyWith(
+                                      fontWeight: _filterType == 'org' ? FontWeight.w600 : FontWeight.normal,
+                                      color: _filterType == 'org' ? AppColors.primary : AppColors.textDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(height: 10),
@@ -259,40 +431,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                                               color: AppColors.textGrey,
                                             ),
                                       ),
-                                      // Container(
-                                      //   padding: const EdgeInsets.symmetric(
-                                      //     horizontal: 12,
-                                      //     vertical: 6,
-                                      //   ),
-                                      //   decoration: BoxDecoration(
-                                      //     color: const Color(0xFFFFEAEA),
-                                      //     borderRadius: BorderRadius.circular(
-                                      //       20,
-                                      //     ),
-                                      //   ),
-                                      //   child: Row(
-                                      //     children: [
-                                      //       const Icon(
-                                      //         Icons.filter_list,
-                                      //         size: 16,
-                                      //         color: Color(0xFFFF3434),
-                                      //       ),
-                                      //       const SizedBox(width: 4),
-                                      //       Text(
-                                      //         'Sort',
-                                      //         style: AppStyles
-                                      //             .text12Px
-                                      //             .poppins
-                                      //             .w500
-                                      //             .copyWith(
-                                      //               color: const Color(
-                                      //                 0xFFFF3434,
-                                      //               ),
-                                      //             ),
-                                      //       ),
-                                      //     ],
-                                      //   ),
-                                      // ),
+                                      _buildFilterButton(isTrainer),
                                     ],
                                   ),
                                 ),
@@ -535,12 +674,33 @@ class _WorkoutGroupCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Text(
-                    groupName,
-                    style: AppStyles.text15Px.poppins.w500.copyWith(
-                      color: AppColors.textDark,
-                      height: 1.2,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        groupName,
+                        style: AppStyles.text15Px.poppins.w500.copyWith(
+                          color: AppColors.textDark,
+                          height: 1.2,
+                        ),
+                      ),
+                      if (group['source'] == 'organization') ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Organization Created',
+                            style: AppStyles.text10Px.poppins.w500.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 PopupMenuButton<String>(

@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reports_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_stats_screen.dart';
 
 class AssignToClientBottomSheet extends StatefulWidget {
@@ -190,6 +191,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
       });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        reportsRefreshTrigger.value++;
         Dialogs.showSnack(msg: 'Plan assigned successfully to $customerName');
         if (!mounted) return;
         setState(() {

@@ -66,6 +66,8 @@ mixin _$MemberDetailsModel {
   String? get userRole => throw _privateConstructorUsedError;
   @JsonKey(name: 'hash_of_user_phone_number')
   String? get hashOfUserPhoneNumber => throw _privateConstructorUsedError;
+  @JsonKey(name: 'whatsapp_link')
+  String? get whatsappLink => throw _privateConstructorUsedError;
 
   /// Serializes this MemberDetailsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -107,6 +109,7 @@ abstract class $MemberDetailsModelCopyWith<$Res> {
     @JsonKey(name: 'blood_group') String? bloodGroup,
     @JsonKey(name: 'user_role') String? userRole,
     @JsonKey(name: 'hash_of_user_phone_number') String? hashOfUserPhoneNumber,
+    @JsonKey(name: 'whatsapp_link') String? whatsappLink,
   });
 }
 
@@ -147,6 +150,7 @@ class _$MemberDetailsModelCopyWithImpl<$Res, $Val extends MemberDetailsModel>
     Object? bloodGroup = freezed,
     Object? userRole = freezed,
     Object? hashOfUserPhoneNumber = freezed,
+    Object? whatsappLink = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -260,6 +264,11 @@ class _$MemberDetailsModelCopyWithImpl<$Res, $Val extends MemberDetailsModel>
                     ? _value.hashOfUserPhoneNumber
                     : hashOfUserPhoneNumber // ignore: cast_nullable_to_non_nullable
                         as String?,
+            whatsappLink:
+                freezed == whatsappLink
+                    ? _value.whatsappLink
+                    : whatsappLink // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -298,6 +307,7 @@ abstract class _$$MemberDetailsModelImplCopyWith<$Res>
     @JsonKey(name: 'blood_group') String? bloodGroup,
     @JsonKey(name: 'user_role') String? userRole,
     @JsonKey(name: 'hash_of_user_phone_number') String? hashOfUserPhoneNumber,
+    @JsonKey(name: 'whatsapp_link') String? whatsappLink,
   });
 }
 
@@ -337,6 +347,7 @@ class __$$MemberDetailsModelImplCopyWithImpl<$Res>
     Object? bloodGroup = freezed,
     Object? userRole = freezed,
     Object? hashOfUserPhoneNumber = freezed,
+    Object? whatsappLink = freezed,
   }) {
     return _then(
       _$MemberDetailsModelImpl(
@@ -450,6 +461,11 @@ class __$$MemberDetailsModelImplCopyWithImpl<$Res>
                 ? _value.hashOfUserPhoneNumber
                 : hashOfUserPhoneNumber // ignore: cast_nullable_to_non_nullable
                     as String?,
+        whatsappLink:
+            freezed == whatsappLink
+                ? _value.whatsappLink
+                : whatsappLink // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -481,6 +497,7 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
     @JsonKey(name: 'blood_group') this.bloodGroup,
     @JsonKey(name: 'user_role') this.userRole,
     @JsonKey(name: 'hash_of_user_phone_number') this.hashOfUserPhoneNumber,
+    @JsonKey(name: 'whatsapp_link') this.whatsappLink,
   }) : _memberships = memberships;
 
   factory _$MemberDetailsModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -560,10 +577,13 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
   @override
   @JsonKey(name: 'hash_of_user_phone_number')
   final String? hashOfUserPhoneNumber;
+  @override
+  @JsonKey(name: 'whatsapp_link')
+  final String? whatsappLink;
 
   @override
   String toString() {
-    return 'MemberDetailsModel(id: $id, profilePicture: $profilePicture, emergencyContactName: $emergencyContactName, emergencyContactNumber: $emergencyContactNumber, height: $height, weight: $weight, address: $address, profession: $profession, isActiveMember: $isActiveMember, memberships: $memberships, fullName: $fullName, created: $created, modified: $modified, mobileNumber: $mobileNumber, firstName: $firstName, lastName: $lastName, email: $email, dateOfBirth: $dateOfBirth, gender: $gender, bloodGroup: $bloodGroup, userRole: $userRole, hashOfUserPhoneNumber: $hashOfUserPhoneNumber)';
+    return 'MemberDetailsModel(id: $id, profilePicture: $profilePicture, emergencyContactName: $emergencyContactName, emergencyContactNumber: $emergencyContactNumber, height: $height, weight: $weight, address: $address, profession: $profession, isActiveMember: $isActiveMember, memberships: $memberships, fullName: $fullName, created: $created, modified: $modified, mobileNumber: $mobileNumber, firstName: $firstName, lastName: $lastName, email: $email, dateOfBirth: $dateOfBirth, gender: $gender, bloodGroup: $bloodGroup, userRole: $userRole, hashOfUserPhoneNumber: $hashOfUserPhoneNumber, whatsappLink: $whatsappLink)';
   }
 
   @override
@@ -609,7 +629,9 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
             (identical(other.userRole, userRole) ||
                 other.userRole == userRole) &&
             (identical(other.hashOfUserPhoneNumber, hashOfUserPhoneNumber) ||
-                other.hashOfUserPhoneNumber == hashOfUserPhoneNumber));
+                other.hashOfUserPhoneNumber == hashOfUserPhoneNumber) &&
+            (identical(other.whatsappLink, whatsappLink) ||
+                other.whatsappLink == whatsappLink));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -638,6 +660,7 @@ class _$MemberDetailsModelImpl implements _MemberDetailsModel {
     bloodGroup,
     userRole,
     hashOfUserPhoneNumber,
+    whatsappLink,
   ]);
 
   /// Create a copy of MemberDetailsModel
@@ -683,6 +706,7 @@ abstract class _MemberDetailsModel implements MemberDetailsModel {
     @JsonKey(name: 'user_role') final String? userRole,
     @JsonKey(name: 'hash_of_user_phone_number')
     final String? hashOfUserPhoneNumber,
+    @JsonKey(name: 'whatsapp_link') final String? whatsappLink,
   }) = _$MemberDetailsModelImpl;
 
   factory _MemberDetailsModel.fromJson(Map<String, dynamic> json) =
@@ -754,6 +778,9 @@ abstract class _MemberDetailsModel implements MemberDetailsModel {
   @override
   @JsonKey(name: 'hash_of_user_phone_number')
   String? get hashOfUserPhoneNumber;
+  @override
+  @JsonKey(name: 'whatsapp_link')
+  String? get whatsappLink;
 
   /// Create a copy of MemberDetailsModel
   /// with the given fields replaced by the non-null parameter values.

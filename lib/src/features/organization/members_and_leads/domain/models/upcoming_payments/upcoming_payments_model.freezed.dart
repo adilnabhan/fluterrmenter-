@@ -560,6 +560,8 @@ mixin _$CustomerDetails {
   String get joinedDate => throw _privateConstructorUsedError;
   @JsonKey(name: "active_plan")
   ActivePlans get activePlans => throw _privateConstructorUsedError;
+  @JsonKey(name: 'whatsapp_link')
+  String? get whatsappLink => throw _privateConstructorUsedError;
 
   /// Serializes this CustomerDetails to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -585,6 +587,7 @@ abstract class $CustomerDetailsCopyWith<$Res> {
     @JsonKey(name: "profile_picture") String? profilePicture,
     @JsonKey(name: "joined_date") String joinedDate,
     @JsonKey(name: "active_plan") ActivePlans activePlans,
+    @JsonKey(name: 'whatsapp_link') String? whatsappLink,
   });
 
   $ActivePlansCopyWith<$Res> get activePlans;
@@ -611,6 +614,7 @@ class _$CustomerDetailsCopyWithImpl<$Res, $Val extends CustomerDetails>
     Object? profilePicture = freezed,
     Object? joinedDate = null,
     Object? activePlans = null,
+    Object? whatsappLink = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -644,6 +648,11 @@ class _$CustomerDetailsCopyWithImpl<$Res, $Val extends CustomerDetails>
                     ? _value.activePlans
                     : activePlans // ignore: cast_nullable_to_non_nullable
                         as ActivePlans,
+            whatsappLink:
+                freezed == whatsappLink
+                    ? _value.whatsappLink
+                    : whatsappLink // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -676,6 +685,7 @@ abstract class _$$CustomerDetailsImplCopyWith<$Res>
     @JsonKey(name: "profile_picture") String? profilePicture,
     @JsonKey(name: "joined_date") String joinedDate,
     @JsonKey(name: "active_plan") ActivePlans activePlans,
+    @JsonKey(name: 'whatsapp_link') String? whatsappLink,
   });
 
   @override
@@ -702,6 +712,7 @@ class __$$CustomerDetailsImplCopyWithImpl<$Res>
     Object? profilePicture = freezed,
     Object? joinedDate = null,
     Object? activePlans = null,
+    Object? whatsappLink = freezed,
   }) {
     return _then(
       _$CustomerDetailsImpl(
@@ -735,6 +746,11 @@ class __$$CustomerDetailsImplCopyWithImpl<$Res>
                 ? _value.activePlans
                 : activePlans // ignore: cast_nullable_to_non_nullable
                     as ActivePlans,
+        whatsappLink:
+            freezed == whatsappLink
+                ? _value.whatsappLink
+                : whatsappLink // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -750,6 +766,7 @@ class _$CustomerDetailsImpl implements _CustomerDetails {
     @JsonKey(name: "profile_picture") this.profilePicture,
     @JsonKey(name: "joined_date") required this.joinedDate,
     @JsonKey(name: "active_plan") required this.activePlans,
+    @JsonKey(name: 'whatsapp_link') this.whatsappLink,
   });
 
   factory _$CustomerDetailsImpl.fromJson(Map<String, dynamic> json) =>
@@ -773,10 +790,13 @@ class _$CustomerDetailsImpl implements _CustomerDetails {
   @override
   @JsonKey(name: "active_plan")
   final ActivePlans activePlans;
+  @override
+  @JsonKey(name: 'whatsapp_link')
+  final String? whatsappLink;
 
   @override
   String toString() {
-    return 'CustomerDetails(id: $id, name: $name, mobileNumber: $mobileNumber, profilePicture: $profilePicture, joinedDate: $joinedDate, activePlans: $activePlans)';
+    return 'CustomerDetails(id: $id, name: $name, mobileNumber: $mobileNumber, profilePicture: $profilePicture, joinedDate: $joinedDate, activePlans: $activePlans, whatsappLink: $whatsappLink)';
   }
 
   @override
@@ -793,7 +813,9 @@ class _$CustomerDetailsImpl implements _CustomerDetails {
             (identical(other.joinedDate, joinedDate) ||
                 other.joinedDate == joinedDate) &&
             (identical(other.activePlans, activePlans) ||
-                other.activePlans == activePlans));
+                other.activePlans == activePlans) &&
+            (identical(other.whatsappLink, whatsappLink) ||
+                other.whatsappLink == whatsappLink));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -806,6 +828,7 @@ class _$CustomerDetailsImpl implements _CustomerDetails {
     profilePicture,
     joinedDate,
     activePlans,
+    whatsappLink,
   );
 
   /// Create a copy of CustomerDetails
@@ -833,6 +856,7 @@ abstract class _CustomerDetails implements CustomerDetails {
     @JsonKey(name: "profile_picture") final String? profilePicture,
     @JsonKey(name: "joined_date") required final String joinedDate,
     @JsonKey(name: "active_plan") required final ActivePlans activePlans,
+    @JsonKey(name: 'whatsapp_link') final String? whatsappLink,
   }) = _$CustomerDetailsImpl;
 
   factory _CustomerDetails.fromJson(Map<String, dynamic> json) =
@@ -856,6 +880,9 @@ abstract class _CustomerDetails implements CustomerDetails {
   @override
   @JsonKey(name: "active_plan")
   ActivePlans get activePlans;
+  @override
+  @JsonKey(name: 'whatsapp_link')
+  String? get whatsappLink;
 
   /// Create a copy of CustomerDetails
   /// with the given fields replaced by the non-null parameter values.

@@ -43,6 +43,7 @@ _$MemberDetailsModelImpl _$$MemberDetailsModelImplFromJson(
   bloodGroup: json['blood_group'] as String?,
   userRole: json['user_role'] as String?,
   hashOfUserPhoneNumber: json['hash_of_user_phone_number'] as String?,
+  whatsappLink: json['whatsapp_link'] as String?,
 );
 
 Map<String, dynamic> _$$MemberDetailsModelImplToJson(
@@ -70,6 +71,7 @@ Map<String, dynamic> _$$MemberDetailsModelImplToJson(
   'blood_group': instance.bloodGroup,
   'user_role': instance.userRole,
   'hash_of_user_phone_number': instance.hashOfUserPhoneNumber,
+  'whatsapp_link': instance.whatsappLink,
 };
 
 _$MembershipDataModelImpl _$$MembershipDataModelImplFromJson(

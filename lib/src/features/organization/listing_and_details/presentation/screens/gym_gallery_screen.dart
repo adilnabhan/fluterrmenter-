@@ -105,12 +105,10 @@ class _GymGalleryScreenState extends State<GymGalleryScreen> {
                       return GestureDetector(
                         onTap: () {
                           context.push(
-                            BlocProvider.value(
-                              value: _cubit,
-                              child: GalleryViewScreen(
-                                orgDetails: widget.orgDetails,
-                                initialIndex: index,
-                              ),
+                            GalleryViewScreen(
+                              orgDetails: widget.orgDetails,
+                              initialIndex: index,
+                              cubit: _cubit,
                             ),
                           );
                         },

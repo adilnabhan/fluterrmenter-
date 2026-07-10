@@ -20,7 +20,13 @@ class AccountSwitcherSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final appCubit = context.watch<AppCubit>();
     final currentUser = appCubit.state.currentUser;
-    final accounts = appCubit.state.accounts;
+    final rawAccounts = appCubit.state.accounts;
+    final accounts = rawAccounts.fold<List<LoginSuccessModel>>([], (prev, acc) {
+      if (!prev.any((a) => a.mobileNumber == acc.mobileNumber && a.userRole == acc.userRole)) {
+        prev.add(acc);
+      }
+      return prev;
+    });
 
     return Padding(
       padding: EdgeInsets.only(

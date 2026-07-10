@@ -237,6 +237,20 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         title: Text('Details', style: AppStyles.text16Px.poppins.w600.dark),
         centerTitle: true,
         actions: [
+          if (profile['whatsapp_link']?.toString().isNotEmpty ?? false)
+            IconButton(
+              icon: SvgPicture.asset(
+                'assets/images/svg/icons/whatsapp.svg',
+                height: 24,
+                width: 24,
+              ),
+              onPressed: () {
+                launchUrl(
+                  Uri.parse(profile['whatsapp_link']!.toString()),
+                  mode: LaunchMode.externalApplication,
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(
               Icons.settings_outlined,

@@ -47,6 +47,20 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
               titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
               title: const Text('Member Details'),
               actions: [
+                if (data?.whatsappLink?.isNotEmpty ?? false)
+                  IconButton(
+                    onPressed: () {
+                      launchUrl(
+                        Uri.parse(data!.whatsappLink!),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    },
+                    icon: SvgPicture.asset(
+                      'assets/images/svg/icons/whatsapp.svg',
+                      height: 24,
+                      width: 24,
+                    ),
+                  ),
                 if (data?.mobileNumber?.isNotEmpty ?? false)
                   IconButton(
                     onPressed: () {

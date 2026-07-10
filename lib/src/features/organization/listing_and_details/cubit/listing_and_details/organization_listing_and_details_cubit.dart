@@ -115,9 +115,9 @@ class OrganizationListingAndDetailsCubit
     );
   }
 
-  Future<void> fetchDetails({required int orgId}) async {
+  Future<void> fetchDetails({required int orgId, bool isRefresh = false}) async {
     if (isClosed) return;
-    emit(state.copyWith(details: none()));
+    if (!isRefresh) emit(state.copyWith(details: none()));
     final res = await OrganizationListAndDetailsRepository().fetchDetails(
       orgId: orgId,
     );

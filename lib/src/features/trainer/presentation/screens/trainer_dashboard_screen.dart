@@ -6,6 +6,7 @@ import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/wor
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/account_switcher_sheet.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_pending_verifications_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
   const TrainerDashboardScreen({super.key});
@@ -158,7 +159,14 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TrainerProfileSettingsScreen(),
+                ),
+              );
+            },
             icon: const Icon(Icons.settings_outlined, color: Colors.black87),
           ),
         ],

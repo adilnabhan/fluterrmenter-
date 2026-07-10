@@ -40,8 +40,12 @@ class AuthInterceptor extends Interceptor {
         final newToken = _appCubit.state.currentUser?.access;
         if (newToken != null) {
           requestOptions.headers['Authorization'] = 'JWT $newToken';
-          final response = await _dio.fetch(requestOptions);
-          handler.resolve(response);
+          try {
+            final response = await _dio.fetch<dynamic>(requestOptions);
+            handler.resolve(response);
+          } on DioException catch (e) {
+            handler.reject(e);
+          }
         }
       });
       return;
@@ -58,19 +62,25 @@ class AuthInterceptor extends Interceptor {
       return handler.next(err);
     }
 
-    // 🔁 Retry original request
-    requestOptions.headers['Authorization'] = 'JWT $newToken';
-    final response = await _dio.fetch(requestOptions);
+    try {
+      // 🔁 Retry original request
+      requestOptions.headers['Authorization'] = 'JWT $newToken';
+      final response = await _dio.fetch<dynamic>(requestOptions);
 
-    // 🔁 Retry queued requests
-    for (final retry in _retryQueue) {
-      retry();
+      // 🔁 Retry queued requests
+      for (final retry in _retryQueue) {
+        retry();
+      }
+      _retryQueue.clear();
+
+      _isRefreshing = false;
+
+      handler.resolve(response);
+    } on DioException catch (e) {
+      _retryQueue.clear();
+      _isRefreshing = false;
+      handler.reject(e);
     }
-    _retryQueue.clear();
-
-    _isRefreshing = false;
-
-    handler.resolve(response);
   }
 }
  

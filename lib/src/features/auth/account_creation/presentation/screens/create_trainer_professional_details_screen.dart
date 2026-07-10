@@ -12,10 +12,11 @@ class _CreateTrainerProfessionalDetailsScreenState
     extends State<CreateTrainerProfessionalDetailsScreen> {
   final _formKey = GlobalKey<FormState>();
   late final FieldData<String> _specializations;
-    late final FieldData<dynamic> _experience;
+  late final FieldData<dynamic> _experience;
   late final FieldData<dynamic> _bio;
   final List<XFile> _certificates = [];
-  final ValueNotifier<List<({String label, String value})>> _selectedSpecializations =
+  final ValueNotifier<List<({String label, String value})>>
+  _selectedSpecializations =
       ValueNotifier<List<({String label, String value})>>([]);
 
   @override
@@ -27,9 +28,7 @@ class _CreateTrainerProfessionalDetailsScreenState
       focusNode: FocusNode(),
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      decoration: const InputDecoration(
-        hintText: 'Year of Experience',
-      ),
+      decoration: const InputDecoration(hintText: 'Year of Experience'),
     );
 
     _specializations = FieldData<String>(
@@ -40,9 +39,7 @@ class _CreateTrainerProfessionalDetailsScreenState
       controller: TextEditingController(),
       focusNode: FocusNode(),
       selectedValues: _selectedSpecializations,
-      decoration: const InputDecoration(
-        hintText: 'Select categories',
-      ),
+      decoration: const InputDecoration(hintText: 'Select categories'),
     );
 
     _bio = FieldData(
@@ -51,9 +48,7 @@ class _CreateTrainerProfessionalDetailsScreenState
       controller: TextEditingController(),
       focusNode: FocusNode(),
       maxLines: 5,
-      decoration: const InputDecoration(
-        hintText: '150 words',
-      ),
+      decoration: const InputDecoration(hintText: '150 words'),
     );
 
     super.initState();
@@ -97,14 +92,16 @@ class _CreateTrainerProfessionalDetailsScreenState
                     Container(
                       width: 25,
                       height: 1,
-                      color: isActive ? AppColors.primary : AppColors.borderGrey,
+                      color:
+                          isActive ? AppColors.primary : AppColors.borderGrey,
                     ),
                     Transform.rotate(
                       angle: 0.785398,
                       child: Container(
                         width: 8,
                         height: 8,
-                        color: isActive ? AppColors.primary : AppColors.borderGrey,
+                        color:
+                            isActive ? AppColors.primary : AppColors.borderGrey,
                       ),
                     ),
                   ],
@@ -133,7 +130,8 @@ class _CreateTrainerProfessionalDetailsScreenState
                 onTap: () async {
                   FocusScope.of(context).unfocus();
                   await AddCategorySheet(
-                    selectedValues: _specializations.selectedValues?.value ?? [],
+                    selectedValues:
+                        _specializations.selectedValues?.value ?? [],
                     onSubmit: (values) {
                       _specializations.selectedValues?.value = [...values];
                     },
@@ -145,10 +143,7 @@ class _CreateTrainerProfessionalDetailsScreenState
               ),
             ),
             const SizedBox(height: 24),
-            Text(
-              'Certifications',
-              style: AppStyles.text14Px.poppins.w500.dark,
-            ),
+            Text('Certifications', style: AppStyles.text14Px.poppins.w500.dark),
             const SizedBox(height: 8),
             // Certification Upload Box
             InkWell(
@@ -241,7 +236,12 @@ class _CreateTrainerProfessionalDetailsScreenState
                                         file.name,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: AppStyles.text12Px.poppins.w400.dark,
+                                        style:
+                                            AppStyles
+                                                .text12Px
+                                                .poppins
+                                                .w400
+                                                .dark,
                                       ),
                                     ),
                                   ],
@@ -254,7 +254,10 @@ class _CreateTrainerProfessionalDetailsScreenState
                           right: 8,
                           top: 8,
                           child: InkWell(
-                            onTap: () => setState(() => _certificates.removeAt(index)),
+                            onTap:
+                                () => setState(
+                                  () => _certificates.removeAt(index),
+                                ),
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: const BoxDecoration(

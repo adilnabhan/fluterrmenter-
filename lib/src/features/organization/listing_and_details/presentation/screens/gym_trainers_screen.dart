@@ -2,7 +2,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/leads/add_or_edit_lead_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
-
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_screen.dart';
 
 class GymTrainersScreen extends StatefulWidget {
   const GymTrainersScreen({required this.orgDetails, super.key});
@@ -32,20 +32,23 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
 
     try {
       final response = await DioClient().dio.get<dynamic>(
-        ApiUris.createLead, // Changed from leadsListing to createLead ('mentor/trainers/') to see if new trainers appear
-        queryParameters: {
-          'organization_id': widget.orgDetails.id,
-        },
+        ApiUris
+            .createLead, // Changed from leadsListing to createLead ('mentor/trainers/') to see if new trainers appear
+        queryParameters: {'organization_id': widget.orgDetails.id},
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = (response.data is Map)
-            ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
-            : (response.data as List<dynamic>);
+        final List<dynamic> data =
+            (response.data is Map)
+                ? (List<dynamic>.from(
+                  (response.data as Map)['results'] as List? ?? [],
+                ))
+                : (response.data as List<dynamic>);
         if (!mounted) return;
         setState(() {
-          _trainers = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _trainers =
+              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
@@ -86,19 +89,26 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredTrainers = _trainers.where((trainer) {
-      final name = (trainer['name'] as String? ?? '').toLowerCase();
-      final first = (trainer['first_name'] as String? ?? '').toLowerCase();
-      final last = (trainer['last_name'] as String? ?? '').toLowerCase();
-      
-      final dynamic mentorProfile = trainer['mentor_profile'];
-      final loc = (trainer['location'] as String? ?? (mentorProfile != null && mentorProfile is Map ? mentorProfile['location'] as String? : null) ?? 'Balussery').toLowerCase();
-      
-      return name.contains(_searchQuery.toLowerCase()) || 
-             first.contains(_searchQuery.toLowerCase()) || 
-             last.contains(_searchQuery.toLowerCase()) ||
-             loc.contains(_searchQuery.toLowerCase());
-    }).toList();
+    final filteredTrainers =
+        _trainers.where((trainer) {
+          final name = (trainer['name'] as String? ?? '').toLowerCase();
+          final first = (trainer['first_name'] as String? ?? '').toLowerCase();
+          final last = (trainer['last_name'] as String? ?? '').toLowerCase();
+
+          final dynamic mentorProfile = trainer['mentor_profile'];
+          final loc =
+              (trainer['location'] as String? ??
+                      (mentorProfile != null && mentorProfile is Map
+                          ? mentorProfile['location'] as String?
+                          : null) ??
+                      'Balussery')
+                  .toLowerCase();
+
+          return name.contains(_searchQuery.toLowerCase()) ||
+              first.contains(_searchQuery.toLowerCase()) ||
+              last.contains(_searchQuery.toLowerCase()) ||
+              loc.contains(_searchQuery.toLowerCase());
+        }).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
@@ -113,7 +123,16 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute<void>(
-                  builder: (context) => const SettingsScreen(),
+                  builder: (ctx) {
+                    return SettingsScreen(
+                      orgId: widget.orgDetails.id,
+                      name: widget.orgDetails.name,
+                      email: widget.orgDetails.email,
+                      logoUrl: widget.orgDetails.logo,
+                      orgDetailsCubit:
+                          context.read<OrganizationListingAndDetailsCubit>(),
+                    );
+                  },
                 ),
               );
             },
@@ -124,12 +143,20 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(68),
           child: Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 8,
+              bottom: 16,
+            ),
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search trainers...',
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Color(0xffDDDDDD)),
@@ -158,20 +185,21 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
         children: [
           Row(
             children: [
-              Text(
-                'Trainers',
-                style: AppStyles.text16Px.poppins.w600.dark,
-              ),
+              Text('Trainers', style: AppStyles.text16Px.poppins.w600.dark),
               const Spacer(),
               FilledButton.icon(
                 onPressed: () async {
                   await Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (context) => BlocProvider(
-                        create: (context) => MembersAndLeadsCubit(orgId: widget.orgDetails.id ?? 0),
-                        child: const AddOrEditLeadScreen(),
-                      ),
+                      builder:
+                          (context) => BlocProvider(
+                            create:
+                                (context) => MembersAndLeadsCubit(
+                                  orgId: widget.orgDetails.id ?? 0,
+                                ),
+                            child: const AddOrEditLeadScreen(),
+                          ),
                     ),
                   );
                   _fetchTrainers();
@@ -190,100 +218,144 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredTrainers.isEmpty
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : filteredTrainers.isEmpty
                     ? Center(
-                        child: Text(
-                          'No Trainers found!',
-                          style: AppStyles.text14Px.poppins.w400.dark,
-                        ),
-                      )
+                      child: Text(
+                        'No Trainers found!',
+                        style: AppStyles.text14Px.poppins.w400.dark,
+                      ),
+                    )
                     : ListView.builder(
-                        itemCount: filteredTrainers.length,
-                        itemBuilder: (context, index) {
-                          final trainer = filteredTrainers[index];
-                          final String firstName = trainer['first_name'] as String? ?? '';
-                          final String lastName = trainer['last_name'] as String? ?? '';
-                          final String fallbackName = '$firstName $lastName'.trim();
-                          final String name = trainer['name'] as String? ?? (fallbackName.isEmpty ? 'N/A' : fallbackName);
-                          final String spec = trainer['specialization'] as String? ?? 'Strength';
-                          final String? profilePic = trainer['profile_picture'] as String? ?? 
-                                                     trainer['profile_image'] as String? ?? 
-                                                     trainer['image_url'] as String?;
-                          final int clientsToday = trainer['today_assigned_clients_count'] as int? ?? 0;
+                      itemCount: filteredTrainers.length,
+                      itemBuilder: (context, index) {
+                        final trainer = filteredTrainers[index];
+                        final String firstName =
+                            trainer['first_name'] as String? ?? '';
+                        final String lastName =
+                            trainer['last_name'] as String? ?? '';
+                        final String fallbackName =
+                            '$firstName $lastName'.trim();
+                        final String name =
+                            trainer['name'] as String? ??
+                            (fallbackName.isEmpty ? 'N/A' : fallbackName);
+                        final String spec =
+                            trainer['specialization'] as String? ?? '';
+                        final String? profilePic =
+                            trainer['profile_picture'] as String? ??
+                            trainer['profile_image'] as String? ??
+                            trainer['image_url'] as String?;
+                        final int clientsToday =
+                            trainer['today_assigned_clients_count'] as int? ??
+                            0;
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TrainerMainProfileScreen(
+                                  trainerId: trainer['id']?.toString(),
+                                  isViewOnly: true,
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: AppColors.iconBackground,
-                                      ),
-                                      child: ClipOval(
-                                        child: profilePic != null && profilePic.isNotEmpty
-                                            ? Image.network(
+                              ),
+                            );
+                          },
+                          child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppColors.iconBackground,
+                                    ),
+                                    child: ClipOval(
+                                      child:
+                                          profilePic != null &&
+                                                  profilePic.isNotEmpty
+                                              ? Image.network(
                                                 profilePic,
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) =>
-                                                    const Icon(Icons.person, color: AppColors.primary),
+                                                errorBuilder:
+                                                    (_, __, ___) => const Icon(
+                                                      Icons.person,
+                                                      color: AppColors.primary,
+                                                    ),
                                               )
-                                            : const Icon(Icons.person, color: AppColors.primary),
-                                      ),
+                                              : const Icon(
+                                                Icons.person,
+                                                color: AppColors.primary,
+                                              ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            name,
-                                            style: AppStyles.text15Px.poppins.w600,
-                                          ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          name,
+                                          style:
+                                              AppStyles.text15Px.poppins.w600,
+                                        ),
+                                        if (spec.isNotEmpty) ...[
                                           const SizedBox(height: 4),
                                           Text(
                                             spec,
-                                            style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textDark),
+                                            style: AppStyles
+                                                .text14Px
+                                                .poppins
+                                                .w400
+                                                .copyWith(
+                                                  color: AppColors.textDark,
+                                                ),
                                           ),
                                         ],
-                                      ),
-                                    ),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'Today: $clientsToday',
-                                          style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textDark),
-                                        ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Today: $clientsToday',
+                                        style: AppStyles.text12Px.poppins.w500
+                                            .copyWith(
+                                              color: AppColors.textDark,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        );
+                      },
+                    ),
           ),
         ],
       ).pad(16),
@@ -303,7 +375,8 @@ class _AssignClientsBottomSheet extends StatefulWidget {
   final VoidCallback onComplete;
 
   @override
-  State<_AssignClientsBottomSheet> createState() => _AssignClientsBottomSheetState();
+  State<_AssignClientsBottomSheet> createState() =>
+      _AssignClientsBottomSheetState();
 }
 
 class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
@@ -326,19 +399,21 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
     try {
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.membersListing,
-        queryParameters: {
-          'organization_id': widget.orgId,
-        },
+        queryParameters: {'organization_id': widget.orgId},
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = (response.data is Map)
-            ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
-            : (response.data as List<dynamic>);
+        final List<dynamic> data =
+            (response.data is Map)
+                ? (List<dynamic>.from(
+                  (response.data as Map)['results'] as List? ?? [],
+                ))
+                : (response.data as List<dynamic>);
         if (!mounted) return;
         setState(() {
-          _customers = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _customers =
+              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
@@ -357,7 +432,10 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
     }
   }
 
-  Future<void> _toggleCustomer(Map<String, dynamic> customer, bool isCurrentlyAssigned) async {
+  Future<void> _toggleCustomer(
+    Map<String, dynamic> customer,
+    bool isCurrentlyAssigned,
+  ) async {
     final customerId = customer['id'] as int;
 
     if (!mounted) return;
@@ -367,13 +445,12 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
 
     try {
       // Toggle logic: assign to trainer id, or unassign (set trainer_id to null)
-      final int? newTrainerId = isCurrentlyAssigned ? null : (widget.trainer['id'] as int);
+      final int? newTrainerId =
+          isCurrentlyAssigned ? null : (widget.trainer['id'] as int);
 
       final response = await DioClient().dio.patch<dynamic>(
         ApiUris.updateMember(customerId),
-        data: {
-          'trainer_id': newTrainerId,
-        },
+        data: {'trainer_id': newTrainerId},
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -387,9 +464,10 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
           }
         });
         Dialogs.showSnack(
-          msg: isCurrentlyAssigned
-              ? 'Unassigned ${customer['full_name']} from ${widget.trainer['name']}'
-              : 'Assigned ${customer['full_name']} to ${widget.trainer['name']}',
+          msg:
+              isCurrentlyAssigned
+                  ? 'Unassigned ${customer['full_name']} from ${widget.trainer['name']}'
+                  : 'Assigned ${customer['full_name']} to ${widget.trainer['name']}',
         );
       } else {
         Dialogs.showSnack(msg: 'Failed to update assignment');
@@ -433,109 +511,137 @@ class _AssignClientsBottomSheetState extends State<_AssignClientsBottomSheet> {
           ),
           const SizedBox(height: 12),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _customers.isEmpty
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _customers.isEmpty
                     ? Center(
-                        child: Text(
-                          'No customers found in this gym.',
-                          style: AppStyles.text14Px.poppins.w400.dark,
-                        ),
-                      )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: _customers.length,
-                        itemBuilder: (context, index) {
-                          final customer = _customers[index];
-                          final customerId = customer['id'] as int;
-                          final isUpdating = _updatingMap[customerId] ?? false;
-
-                          // Check if currently assigned to this trainer
-                          final assignedTrainer = customer['assigned_trainer'] as Map<dynamic, dynamic>?;
-                          final bool isAssignedToThisTrainer =
-                              assignedTrainer != null && assignedTrainer['id'] == trainerId;
-
-                          String trainerLabel = '';
-                          if (assignedTrainer != null) {
-                            trainerLabel = isAssignedToThisTrainer
-                                ? 'Assigned'
-                                : 'Assigned to ${assignedTrainer['name']}';
-                          } else {
-                            trainerLabel = 'Unassigned';
-                          }
-
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xffF7F7F7),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: isAssignedToThisTrainer ? AppColors.primary.withOpacity(0.3) : Colors.transparent,
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                  ),
-                                  child: ClipOval(
-                                    child: customer['profile_picture'] != null
-                                        ? Image.network(
-                                            customer['profile_picture'] as String,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) =>
-                                                const Icon(Icons.person, color: AppColors.primary),
-                                          )
-                                        : const Icon(Icons.person, color: AppColors.primary),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        customer['full_name'] as String? ?? 'N/A',
-                                        style: AppStyles.text14Px.poppins.w600,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        trainerLabel,
-                                        style: AppStyles.text12Px.poppins.w400.copyWith(
-                                          color: isAssignedToThisTrainer
-                                              ? AppColors.primary
-                                              : (assignedTrainer != null ? Colors.amber.shade800 : AppColors.textGrey),
-                                          fontWeight: isAssignedToThisTrainer ? FontWeight.w600 : FontWeight.normal,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                isUpdating
-                                    ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      )
-                                    : Checkbox(
-                                        value: isAssignedToThisTrainer,
-                                        activeColor: AppColors.primary,
-                                        onChanged: (val) {
-                                          _toggleCustomer(customer, isAssignedToThisTrainer);
-                                        },
-                                      ),
-                              ],
-                            ),
-                          );
-                        },
+                      child: Text(
+                        'No customers found in this gym.',
+                        style: AppStyles.text14Px.poppins.w400.dark,
                       ),
+                    )
+                    : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _customers.length,
+                      itemBuilder: (context, index) {
+                        final customer = _customers[index];
+                        final customerId = customer['id'] as int;
+                        final isUpdating = _updatingMap[customerId] ?? false;
+
+                        // Check if currently assigned to this trainer
+                        final assignedTrainer =
+                            customer['assigned_trainer']
+                                as Map<dynamic, dynamic>?;
+                        final bool isAssignedToThisTrainer =
+                            assignedTrainer != null &&
+                            assignedTrainer['id'] == trainerId;
+
+                        String trainerLabel = '';
+                        if (assignedTrainer != null) {
+                          trainerLabel =
+                              isAssignedToThisTrainer
+                                  ? 'Assigned'
+                                  : 'Assigned to ${assignedTrainer['name']}';
+                        } else {
+                          trainerLabel = 'Unassigned';
+                        }
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffF7F7F7),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color:
+                                  isAssignedToThisTrainer
+                                      ? AppColors.primary.withOpacity(0.3)
+                                      : Colors.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                ),
+                                child: ClipOval(
+                                  child:
+                                      customer['profile_picture'] != null
+                                          ? Image.network(
+                                            customer['profile_picture']
+                                                as String,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (_, __, ___) => const Icon(
+                                                  Icons.person,
+                                                  color: AppColors.primary,
+                                                ),
+                                          )
+                                          : const Icon(
+                                            Icons.person,
+                                            color: AppColors.primary,
+                                          ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      customer['full_name'] as String? ?? 'N/A',
+                                      style: AppStyles.text14Px.poppins.w600,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      trainerLabel,
+                                      style: AppStyles.text12Px.poppins.w400
+                                          .copyWith(
+                                            color:
+                                                isAssignedToThisTrainer
+                                                    ? AppColors.primary
+                                                    : (assignedTrainer != null
+                                                        ? Colors.amber.shade800
+                                                        : AppColors.textGrey),
+                                            fontWeight:
+                                                isAssignedToThisTrainer
+                                                    ? FontWeight.w600
+                                                    : FontWeight.normal,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              isUpdating
+                                  ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : Checkbox(
+                                    value: isAssignedToThisTrainer,
+                                    activeColor: AppColors.primary,
+                                    onChanged: (val) {
+                                      _toggleCustomer(
+                                        customer,
+                                        isAssignedToThisTrainer,
+                                      );
+                                    },
+                                  ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
           ),
         ],
       ),

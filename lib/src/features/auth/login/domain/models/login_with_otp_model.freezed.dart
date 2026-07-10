@@ -59,6 +59,14 @@ mixin _$LoginSuccessModel {
   int? get experienceYears => throw _privateConstructorUsedError;
   @JsonKey(name: 'bio')
   String? get bio => throw _privateConstructorUsedError;
+  @JsonKey(name: 'location')
+  String? get location => throw _privateConstructorUsedError;
+  @JsonKey(name: 'instagram')
+  String? get instagram => throw _privateConstructorUsedError;
+  @JsonKey(name: 'facebook')
+  String? get facebook => throw _privateConstructorUsedError;
+  @JsonKey(name: 'youtube')
+  String? get youtube => throw _privateConstructorUsedError;
   @JsonKey(name: 'trainer')
   TrainerModel? get trainer => throw _privateConstructorUsedError;
 
@@ -99,6 +107,10 @@ abstract class $LoginSuccessModelCopyWith<$Res> {
     @JsonKey(name: 'date_of_birth') String? dateOfBirth,
     @JsonKey(name: 'experience_years') int? experienceYears,
     @JsonKey(name: 'bio') String? bio,
+    @JsonKey(name: 'location') String? location,
+    @JsonKey(name: 'instagram') String? instagram,
+    @JsonKey(name: 'facebook') String? facebook,
+    @JsonKey(name: 'youtube') String? youtube,
     @JsonKey(name: 'trainer') TrainerModel? trainer,
   });
 
@@ -140,6 +152,10 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
     Object? dateOfBirth = freezed,
     Object? experienceYears = freezed,
     Object? bio = freezed,
+    Object? location = freezed,
+    Object? instagram = freezed,
+    Object? facebook = freezed,
+    Object? youtube = freezed,
     Object? trainer = freezed,
   }) {
     return _then(
@@ -239,6 +255,26 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
                     ? _value.bio
                     : bio // ignore: cast_nullable_to_non_nullable
                         as String?,
+            location:
+                freezed == location
+                    ? _value.location
+                    : location // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            instagram:
+                freezed == instagram
+                    ? _value.instagram
+                    : instagram // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            facebook:
+                freezed == facebook
+                    ? _value.facebook
+                    : facebook // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            youtube:
+                freezed == youtube
+                    ? _value.youtube
+                    : youtube // ignore: cast_nullable_to_non_nullable
+                        as String?,
             trainer:
                 freezed == trainer
                     ? _value.trainer
@@ -307,6 +343,10 @@ abstract class _$$LoginWithOtpEntityImplCopyWith<$Res>
     @JsonKey(name: 'date_of_birth') String? dateOfBirth,
     @JsonKey(name: 'experience_years') int? experienceYears,
     @JsonKey(name: 'bio') String? bio,
+    @JsonKey(name: 'location') String? location,
+    @JsonKey(name: 'instagram') String? instagram,
+    @JsonKey(name: 'facebook') String? facebook,
+    @JsonKey(name: 'youtube') String? youtube,
     @JsonKey(name: 'trainer') TrainerModel? trainer,
   });
 
@@ -349,6 +389,10 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
     Object? dateOfBirth = freezed,
     Object? experienceYears = freezed,
     Object? bio = freezed,
+    Object? location = freezed,
+    Object? instagram = freezed,
+    Object? facebook = freezed,
+    Object? youtube = freezed,
     Object? trainer = freezed,
   }) {
     return _then(
@@ -448,6 +492,26 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
                 ? _value.bio
                 : bio // ignore: cast_nullable_to_non_nullable
                     as String?,
+        location:
+            freezed == location
+                ? _value.location
+                : location // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        instagram:
+            freezed == instagram
+                ? _value.instagram
+                : instagram // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        facebook:
+            freezed == facebook
+                ? _value.facebook
+                : facebook // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        youtube:
+            freezed == youtube
+                ? _value.youtube
+                : youtube // ignore: cast_nullable_to_non_nullable
+                    as String?,
         trainer:
             freezed == trainer
                 ? _value.trainer
@@ -481,6 +545,10 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     @JsonKey(name: 'date_of_birth') this.dateOfBirth,
     @JsonKey(name: 'experience_years') this.experienceYears,
     @JsonKey(name: 'bio') this.bio,
+    @JsonKey(name: 'location') this.location,
+    @JsonKey(name: 'instagram') this.instagram,
+    @JsonKey(name: 'facebook') this.facebook,
+    @JsonKey(name: 'youtube') this.youtube,
     @JsonKey(name: 'trainer') this.trainer,
   }) : _warnings = warnings;
 
@@ -553,12 +621,24 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
   @JsonKey(name: 'bio')
   final String? bio;
   @override
+  @JsonKey(name: 'location')
+  final String? location;
+  @override
+  @JsonKey(name: 'instagram')
+  final String? instagram;
+  @override
+  @JsonKey(name: 'facebook')
+  final String? facebook;
+  @override
+  @JsonKey(name: 'youtube')
+  final String? youtube;
+  @override
   @JsonKey(name: 'trainer')
   final TrainerModel? trainer;
 
   @override
   String toString() {
-    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted, userRole: $userRole, gender: $gender, dateOfBirth: $dateOfBirth, experienceYears: $experienceYears, bio: $bio, trainer: $trainer)';
+    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted, userRole: $userRole, gender: $gender, dateOfBirth: $dateOfBirth, experienceYears: $experienceYears, bio: $bio, location: $location, instagram: $instagram, facebook: $facebook, youtube: $youtube, trainer: $trainer)';
   }
 
   @override
@@ -597,6 +677,13 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
             (identical(other.experienceYears, experienceYears) ||
                 other.experienceYears == experienceYears) &&
             (identical(other.bio, bio) || other.bio == bio) &&
+            (identical(other.location, location) ||
+                other.location == location) &&
+            (identical(other.instagram, instagram) ||
+                other.instagram == instagram) &&
+            (identical(other.facebook, facebook) ||
+                other.facebook == facebook) &&
+            (identical(other.youtube, youtube) || other.youtube == youtube) &&
             (identical(other.trainer, trainer) || other.trainer == trainer));
   }
 
@@ -623,6 +710,10 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     dateOfBirth,
     experienceYears,
     bio,
+    location,
+    instagram,
+    facebook,
+    youtube,
     trainer,
   ]);
 
@@ -664,6 +755,10 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
     @JsonKey(name: 'date_of_birth') final String? dateOfBirth,
     @JsonKey(name: 'experience_years') final int? experienceYears,
     @JsonKey(name: 'bio') final String? bio,
+    @JsonKey(name: 'location') final String? location,
+    @JsonKey(name: 'instagram') final String? instagram,
+    @JsonKey(name: 'facebook') final String? facebook,
+    @JsonKey(name: 'youtube') final String? youtube,
     @JsonKey(name: 'trainer') final TrainerModel? trainer,
   }) = _$LoginWithOtpEntityImpl;
 
@@ -727,6 +822,18 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
   @override
   @JsonKey(name: 'bio')
   String? get bio;
+  @override
+  @JsonKey(name: 'location')
+  String? get location;
+  @override
+  @JsonKey(name: 'instagram')
+  String? get instagram;
+  @override
+  @JsonKey(name: 'facebook')
+  String? get facebook;
+  @override
+  @JsonKey(name: 'youtube')
+  String? get youtube;
   @override
   @JsonKey(name: 'trainer')
   TrainerModel? get trainer;
@@ -983,6 +1090,12 @@ mixin _$TrainerModel {
   String? get userType => throw _privateConstructorUsedError;
   @JsonKey(name: 'profile_step')
   int? get profileStep => throw _privateConstructorUsedError;
+  @JsonKey(name: 'certificates')
+  List<CertificateModel>? get certificates =>
+      throw _privateConstructorUsedError;
+  @JsonKey(name: 'portfolio_images')
+  List<PortfolioImageModel>? get portfolioImages =>
+      throw _privateConstructorUsedError;
 
   /// Serializes this TrainerModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1005,6 +1118,9 @@ abstract class $TrainerModelCopyWith<$Res> {
     @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'user_type') String? userType,
     @JsonKey(name: 'profile_step') int? profileStep,
+    @JsonKey(name: 'certificates') List<CertificateModel>? certificates,
+    @JsonKey(name: 'portfolio_images')
+    List<PortfolioImageModel>? portfolioImages,
   });
 }
 
@@ -1026,6 +1142,8 @@ class _$TrainerModelCopyWithImpl<$Res, $Val extends TrainerModel>
     Object? id = freezed,
     Object? userType = freezed,
     Object? profileStep = freezed,
+    Object? certificates = freezed,
+    Object? portfolioImages = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -1044,6 +1162,16 @@ class _$TrainerModelCopyWithImpl<$Res, $Val extends TrainerModel>
                     ? _value.profileStep
                     : profileStep // ignore: cast_nullable_to_non_nullable
                         as int?,
+            certificates:
+                freezed == certificates
+                    ? _value.certificates
+                    : certificates // ignore: cast_nullable_to_non_nullable
+                        as List<CertificateModel>?,
+            portfolioImages:
+                freezed == portfolioImages
+                    ? _value.portfolioImages
+                    : portfolioImages // ignore: cast_nullable_to_non_nullable
+                        as List<PortfolioImageModel>?,
           )
           as $Val,
     );
@@ -1063,6 +1191,9 @@ abstract class _$$TrainerModelImplCopyWith<$Res>
     @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'user_type') String? userType,
     @JsonKey(name: 'profile_step') int? profileStep,
+    @JsonKey(name: 'certificates') List<CertificateModel>? certificates,
+    @JsonKey(name: 'portfolio_images')
+    List<PortfolioImageModel>? portfolioImages,
   });
 }
 
@@ -1083,6 +1214,8 @@ class __$$TrainerModelImplCopyWithImpl<$Res>
     Object? id = freezed,
     Object? userType = freezed,
     Object? profileStep = freezed,
+    Object? certificates = freezed,
+    Object? portfolioImages = freezed,
   }) {
     return _then(
       _$TrainerModelImpl(
@@ -1101,6 +1234,16 @@ class __$$TrainerModelImplCopyWithImpl<$Res>
                 ? _value.profileStep
                 : profileStep // ignore: cast_nullable_to_non_nullable
                     as int?,
+        certificates:
+            freezed == certificates
+                ? _value._certificates
+                : certificates // ignore: cast_nullable_to_non_nullable
+                    as List<CertificateModel>?,
+        portfolioImages:
+            freezed == portfolioImages
+                ? _value._portfolioImages
+                : portfolioImages // ignore: cast_nullable_to_non_nullable
+                    as List<PortfolioImageModel>?,
       ),
     );
   }
@@ -1113,7 +1256,11 @@ class _$TrainerModelImpl implements _TrainerModel {
     @JsonKey(name: 'id') this.id,
     @JsonKey(name: 'user_type') this.userType,
     @JsonKey(name: 'profile_step') this.profileStep,
-  });
+    @JsonKey(name: 'certificates') final List<CertificateModel>? certificates,
+    @JsonKey(name: 'portfolio_images')
+    final List<PortfolioImageModel>? portfolioImages,
+  }) : _certificates = certificates,
+       _portfolioImages = portfolioImages;
 
   factory _$TrainerModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$TrainerModelImplFromJson(json);
@@ -1127,10 +1274,31 @@ class _$TrainerModelImpl implements _TrainerModel {
   @override
   @JsonKey(name: 'profile_step')
   final int? profileStep;
+  final List<CertificateModel>? _certificates;
+  @override
+  @JsonKey(name: 'certificates')
+  List<CertificateModel>? get certificates {
+    final value = _certificates;
+    if (value == null) return null;
+    if (_certificates is EqualUnmodifiableListView) return _certificates;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<PortfolioImageModel>? _portfolioImages;
+  @override
+  @JsonKey(name: 'portfolio_images')
+  List<PortfolioImageModel>? get portfolioImages {
+    final value = _portfolioImages;
+    if (value == null) return null;
+    if (_portfolioImages is EqualUnmodifiableListView) return _portfolioImages;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
 
   @override
   String toString() {
-    return 'TrainerModel(id: $id, userType: $userType, profileStep: $profileStep)';
+    return 'TrainerModel(id: $id, userType: $userType, profileStep: $profileStep, certificates: $certificates, portfolioImages: $portfolioImages)';
   }
 
   @override
@@ -1142,12 +1310,27 @@ class _$TrainerModelImpl implements _TrainerModel {
             (identical(other.userType, userType) ||
                 other.userType == userType) &&
             (identical(other.profileStep, profileStep) ||
-                other.profileStep == profileStep));
+                other.profileStep == profileStep) &&
+            const DeepCollectionEquality().equals(
+              other._certificates,
+              _certificates,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._portfolioImages,
+              _portfolioImages,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, userType, profileStep);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    userType,
+    profileStep,
+    const DeepCollectionEquality().hash(_certificates),
+    const DeepCollectionEquality().hash(_portfolioImages),
+  );
 
   /// Create a copy of TrainerModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1168,6 +1351,9 @@ abstract class _TrainerModel implements TrainerModel {
     @JsonKey(name: 'id') final int? id,
     @JsonKey(name: 'user_type') final String? userType,
     @JsonKey(name: 'profile_step') final int? profileStep,
+    @JsonKey(name: 'certificates') final List<CertificateModel>? certificates,
+    @JsonKey(name: 'portfolio_images')
+    final List<PortfolioImageModel>? portfolioImages,
   }) = _$TrainerModelImpl;
 
   factory _TrainerModel.fromJson(Map<String, dynamic> json) =
@@ -1182,12 +1368,520 @@ abstract class _TrainerModel implements TrainerModel {
   @override
   @JsonKey(name: 'profile_step')
   int? get profileStep;
+  @override
+  @JsonKey(name: 'certificates')
+  List<CertificateModel>? get certificates;
+  @override
+  @JsonKey(name: 'portfolio_images')
+  List<PortfolioImageModel>? get portfolioImages;
 
   /// Create a copy of TrainerModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$TrainerModelImplCopyWith<_$TrainerModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+CertificateModel _$CertificateModelFromJson(Map<String, dynamic> json) {
+  return _CertificateModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$CertificateModel {
+  @JsonKey(name: 'id')
+  int? get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'certificate_name')
+  String? get name => throw _privateConstructorUsedError;
+  @JsonKey(name: 'certificate_file')
+  String? get certificate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'issued_date')
+  String? get issuedDate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'issued_by')
+  String? get issuingAuthority => throw _privateConstructorUsedError;
+
+  /// Serializes this CertificateModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of CertificateModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $CertificateModelCopyWith<CertificateModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $CertificateModelCopyWith<$Res> {
+  factory $CertificateModelCopyWith(
+    CertificateModel value,
+    $Res Function(CertificateModel) then,
+  ) = _$CertificateModelCopyWithImpl<$Res, CertificateModel>;
+  @useResult
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'certificate_name') String? name,
+    @JsonKey(name: 'certificate_file') String? certificate,
+    @JsonKey(name: 'issued_date') String? issuedDate,
+    @JsonKey(name: 'issued_by') String? issuingAuthority,
+  });
+}
+
+/// @nodoc
+class _$CertificateModelCopyWithImpl<$Res, $Val extends CertificateModel>
+    implements $CertificateModelCopyWith<$Res> {
+  _$CertificateModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of CertificateModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? name = freezed,
+    Object? certificate = freezed,
+    Object? issuedDate = freezed,
+    Object? issuingAuthority = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            name:
+                freezed == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            certificate:
+                freezed == certificate
+                    ? _value.certificate
+                    : certificate // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            issuedDate:
+                freezed == issuedDate
+                    ? _value.issuedDate
+                    : issuedDate // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            issuingAuthority:
+                freezed == issuingAuthority
+                    ? _value.issuingAuthority
+                    : issuingAuthority // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$CertificateModelImplCopyWith<$Res>
+    implements $CertificateModelCopyWith<$Res> {
+  factory _$$CertificateModelImplCopyWith(
+    _$CertificateModelImpl value,
+    $Res Function(_$CertificateModelImpl) then,
+  ) = __$$CertificateModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'certificate_name') String? name,
+    @JsonKey(name: 'certificate_file') String? certificate,
+    @JsonKey(name: 'issued_date') String? issuedDate,
+    @JsonKey(name: 'issued_by') String? issuingAuthority,
+  });
+}
+
+/// @nodoc
+class __$$CertificateModelImplCopyWithImpl<$Res>
+    extends _$CertificateModelCopyWithImpl<$Res, _$CertificateModelImpl>
+    implements _$$CertificateModelImplCopyWith<$Res> {
+  __$$CertificateModelImplCopyWithImpl(
+    _$CertificateModelImpl _value,
+    $Res Function(_$CertificateModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of CertificateModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? name = freezed,
+    Object? certificate = freezed,
+    Object? issuedDate = freezed,
+    Object? issuingAuthority = freezed,
+  }) {
+    return _then(
+      _$CertificateModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        name:
+            freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        certificate:
+            freezed == certificate
+                ? _value.certificate
+                : certificate // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        issuedDate:
+            freezed == issuedDate
+                ? _value.issuedDate
+                : issuedDate // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        issuingAuthority:
+            freezed == issuingAuthority
+                ? _value.issuingAuthority
+                : issuingAuthority // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$CertificateModelImpl implements _CertificateModel {
+  const _$CertificateModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'certificate_name') this.name,
+    @JsonKey(name: 'certificate_file') this.certificate,
+    @JsonKey(name: 'issued_date') this.issuedDate,
+    @JsonKey(name: 'issued_by') this.issuingAuthority,
+  });
+
+  factory _$CertificateModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$CertificateModelImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'id')
+  final int? id;
+  @override
+  @JsonKey(name: 'certificate_name')
+  final String? name;
+  @override
+  @JsonKey(name: 'certificate_file')
+  final String? certificate;
+  @override
+  @JsonKey(name: 'issued_date')
+  final String? issuedDate;
+  @override
+  @JsonKey(name: 'issued_by')
+  final String? issuingAuthority;
+
+  @override
+  String toString() {
+    return 'CertificateModel(id: $id, name: $name, certificate: $certificate, issuedDate: $issuedDate, issuingAuthority: $issuingAuthority)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CertificateModelImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.certificate, certificate) ||
+                other.certificate == certificate) &&
+            (identical(other.issuedDate, issuedDate) ||
+                other.issuedDate == issuedDate) &&
+            (identical(other.issuingAuthority, issuingAuthority) ||
+                other.issuingAuthority == issuingAuthority));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    name,
+    certificate,
+    issuedDate,
+    issuingAuthority,
+  );
+
+  /// Create a copy of CertificateModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CertificateModelImplCopyWith<_$CertificateModelImpl> get copyWith =>
+      __$$CertificateModelImplCopyWithImpl<_$CertificateModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$CertificateModelImplToJson(this);
+  }
+}
+
+abstract class _CertificateModel implements CertificateModel {
+  const factory _CertificateModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'certificate_name') final String? name,
+    @JsonKey(name: 'certificate_file') final String? certificate,
+    @JsonKey(name: 'issued_date') final String? issuedDate,
+    @JsonKey(name: 'issued_by') final String? issuingAuthority,
+  }) = _$CertificateModelImpl;
+
+  factory _CertificateModel.fromJson(Map<String, dynamic> json) =
+      _$CertificateModelImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'id')
+  int? get id;
+  @override
+  @JsonKey(name: 'certificate_name')
+  String? get name;
+  @override
+  @JsonKey(name: 'certificate_file')
+  String? get certificate;
+  @override
+  @JsonKey(name: 'issued_date')
+  String? get issuedDate;
+  @override
+  @JsonKey(name: 'issued_by')
+  String? get issuingAuthority;
+
+  /// Create a copy of CertificateModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$CertificateModelImplCopyWith<_$CertificateModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+PortfolioImageModel _$PortfolioImageModelFromJson(Map<String, dynamic> json) {
+  return _PortfolioImageModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$PortfolioImageModel {
+  @JsonKey(name: 'id')
+  int? get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'image')
+  String? get image => throw _privateConstructorUsedError;
+  @JsonKey(name: 'type')
+  String? get type => throw _privateConstructorUsedError;
+
+  /// Serializes this PortfolioImageModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of PortfolioImageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $PortfolioImageModelCopyWith<PortfolioImageModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $PortfolioImageModelCopyWith<$Res> {
+  factory $PortfolioImageModelCopyWith(
+    PortfolioImageModel value,
+    $Res Function(PortfolioImageModel) then,
+  ) = _$PortfolioImageModelCopyWithImpl<$Res, PortfolioImageModel>;
+  @useResult
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'image') String? image,
+    @JsonKey(name: 'type') String? type,
+  });
+}
+
+/// @nodoc
+class _$PortfolioImageModelCopyWithImpl<$Res, $Val extends PortfolioImageModel>
+    implements $PortfolioImageModelCopyWith<$Res> {
+  _$PortfolioImageModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of PortfolioImageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? image = freezed,
+    Object? type = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            image:
+                freezed == image
+                    ? _value.image
+                    : image // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            type:
+                freezed == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$PortfolioImageModelImplCopyWith<$Res>
+    implements $PortfolioImageModelCopyWith<$Res> {
+  factory _$$PortfolioImageModelImplCopyWith(
+    _$PortfolioImageModelImpl value,
+    $Res Function(_$PortfolioImageModelImpl) then,
+  ) = __$$PortfolioImageModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'image') String? image,
+    @JsonKey(name: 'type') String? type,
+  });
+}
+
+/// @nodoc
+class __$$PortfolioImageModelImplCopyWithImpl<$Res>
+    extends _$PortfolioImageModelCopyWithImpl<$Res, _$PortfolioImageModelImpl>
+    implements _$$PortfolioImageModelImplCopyWith<$Res> {
+  __$$PortfolioImageModelImplCopyWithImpl(
+    _$PortfolioImageModelImpl _value,
+    $Res Function(_$PortfolioImageModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PortfolioImageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? image = freezed,
+    Object? type = freezed,
+  }) {
+    return _then(
+      _$PortfolioImageModelImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        image:
+            freezed == image
+                ? _value.image
+                : image // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        type:
+            freezed == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$PortfolioImageModelImpl implements _PortfolioImageModel {
+  const _$PortfolioImageModelImpl({
+    @JsonKey(name: 'id') this.id,
+    @JsonKey(name: 'image') this.image,
+    @JsonKey(name: 'type') this.type,
+  });
+
+  factory _$PortfolioImageModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PortfolioImageModelImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'id')
+  final int? id;
+  @override
+  @JsonKey(name: 'image')
+  final String? image;
+  @override
+  @JsonKey(name: 'type')
+  final String? type;
+
+  @override
+  String toString() {
+    return 'PortfolioImageModel(id: $id, image: $image, type: $type)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$PortfolioImageModelImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.image, image) || other.image == image) &&
+            (identical(other.type, type) || other.type == type));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, image, type);
+
+  /// Create a copy of PortfolioImageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$PortfolioImageModelImplCopyWith<_$PortfolioImageModelImpl> get copyWith =>
+      __$$PortfolioImageModelImplCopyWithImpl<_$PortfolioImageModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$PortfolioImageModelImplToJson(this);
+  }
+}
+
+abstract class _PortfolioImageModel implements PortfolioImageModel {
+  const factory _PortfolioImageModel({
+    @JsonKey(name: 'id') final int? id,
+    @JsonKey(name: 'image') final String? image,
+    @JsonKey(name: 'type') final String? type,
+  }) = _$PortfolioImageModelImpl;
+
+  factory _PortfolioImageModel.fromJson(Map<String, dynamic> json) =
+      _$PortfolioImageModelImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'id')
+  int? get id;
+  @override
+  @JsonKey(name: 'image')
+  String? get image;
+  @override
+  @JsonKey(name: 'type')
+  String? get type;
+
+  /// Create a copy of PortfolioImageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$PortfolioImageModelImplCopyWith<_$PortfolioImageModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

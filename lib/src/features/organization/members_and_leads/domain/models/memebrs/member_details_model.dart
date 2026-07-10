@@ -29,6 +29,7 @@ class MemberDetailsModel with _$MemberDetailsModel {
     @JsonKey(name: 'blood_group') String? bloodGroup,
     @JsonKey(name: 'user_role') String? userRole,
     @JsonKey(name: 'hash_of_user_phone_number') String? hashOfUserPhoneNumber,
+    @JsonKey(name: 'whatsapp_link') String? whatsappLink,
   }) = _MemberDetailsModel;
 
   factory MemberDetailsModel.fromJson(Map<String, dynamic> json) =>

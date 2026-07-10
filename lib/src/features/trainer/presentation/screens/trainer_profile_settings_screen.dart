@@ -1,10 +1,82 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
-import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/account_switcher_sheet.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/edit_trainer_profile_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:mentor_mobile_app/src/features/settings/presentation/screens/contact_support_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/bank_listing_view_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/domain/model/organization_details_model.dart';
+import 'package:mentor_mobile_app/src/features/settings/presentation/screens/faq_screen.dart';
 
 class TrainerProfileSettingsScreen extends StatelessWidget {
   const TrainerProfileSettingsScreen({super.key});
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8, top: 20),
+      child: Text(
+        title,
+        style: AppStyles.text13Px.poppins.w500.copyWith(
+          color: AppColors.textDark.withOpacity(0.6),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsItem({
+    IconData? icon,
+    String? svgIconPath,
+    required String title,
+    bool isFirst = false,
+    bool isLast = false,
+    Color? iconColor,
+    Color? textColor,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(
+            top: isFirst ? const Radius.circular(12) : Radius.zero,
+            bottom: isLast ? const Radius.circular(12) : Radius.zero,
+          ),
+          border:
+              isLast
+                  ? null
+                  : Border(bottom: BorderSide(color: Colors.grey.shade100)),
+        ),
+        child: Row(
+          children: [
+            if (svgIconPath != null)
+              SvgPicture.asset(
+                svgIconPath,
+                width: 20,
+                height: 20,
+              )
+            else if (icon != null)
+              Icon(
+                icon,
+                size: 20,
+                color: iconColor ?? AppColors.textDark.withValues(alpha: 0.8),
+              ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: textColor ?? AppColors.textDark,
+                ),
+              ),
+            ),
+            if (textColor == null)
+              Icon(Icons.chevron_right, size: 20, color: AppColors.textDark),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,195 +84,200 @@ class TrainerProfileSettingsScreen extends StatelessWidget {
 
     final trainerName =
         '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim();
-    final displayName =
-        trainerName.isNotEmpty ? trainerName : 'Trainer Profile';
 
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+      backgroundColor: const Color(0xFFF7F7F7),
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        centerTitle: false,
-        titleSpacing: 0,
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              side: const BorderSide(color: Color(0xffDDDDDD)),
-            ),
-            onPressed: () {
-              const AccountSwitcherSheet().show(context);
-            },
-            label: const Icon(
-              Icons.keyboard_arrow_down_sharp,
-              color: Color(0xff222222),
-              size: 20,
-            ),
-            icon: Text(
-              displayName,
-              style: AppStyles.text14Px.poppins.w600.copyWith(
-                color: const Color(0xff222222),
-              ),
-            ),
-          ),
-        ),
+        leading: const PopButton().center,
+        title: Text('Settings', style: AppStyles.text16Px.poppins.w600.dark),
+        centerTitle: true,
+        backgroundColor: const Color(0xFFF7F7F7),
+        elevation: 0,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Profile header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xffEEEEEE)),
-            ),
-            child: Row(
-              children: [
-                ProfileImage(
-                  isEdit: false,
-                  radius: 80.w,
-                  url: user?.profilePicture as String? ?? '',
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${user?.firstName ?? ""} ${user?.lastName ?? ""}'
-                            .trim(),
-                        style: AppStyles.text16Px.poppins.w600.dark,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.email ?? 'No email address',
-                        style: AppStyles.text12Px.poppins.w400.copyWith(
-                          color: AppColors.textGrey,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.mobileNumber != null
-                            ? user!.mobileNumber.toString()
-                            : '',
-                        style: AppStyles.text12Px.poppins.w400.copyWith(
-                          color: AppColors.textGrey,
-                        ),
-                      ),
-                    ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Profile Card
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.grey, size: 20),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EditTrainerProfileScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Menu items list
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xffEEEEEE)),
-            ),
-            child: Column(
-              children: [
-                _buildProfileListItem(
-                  context,
-                  label: 'Account Verification',
-                  icon: Icons.verified_user_outlined,
-                  onTap: () {},
-                ),
-                const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Color(0xffF5F5F5),
-                ),
-                _buildProfileListItem(
-                  context,
-                  label: 'Terms & Conditions',
-                  icon: Icons.description_outlined,
-                  onTap: () {},
-                ),
-                const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Color(0xffF5F5F5),
-                ),
-                _buildProfileListItem(
-                  context,
-                  label: 'Privacy Policy',
-                  icon: Icons.lock_outline_rounded,
-                  onTap: () {},
-                ),
-                const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Color(0xffF5F5F5),
-                ),
-
-                _buildProfileListItem(
-                  context,
-                  label: 'Logout',
-                  icon: Icons.logout,
-                  isLogout: true,
-                  onTap: () => const LogoutSheet().show(context),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileListItem(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required VoidCallback onTap,
-    bool isLogout = false,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(
-        icon,
-        color: isLogout ? Colors.red : AppColors.primary,
-        size: 22,
-      ),
-      title: Text(
-        label,
-        style:
-            isLogout
-                ? AppStyles.text14Px.poppins.w500.copyWith(color: Colors.red)
-                : AppStyles.text14Px.poppins.w500,
-      ),
-      trailing:
-          isLogout
-              ? null
-              : const Icon(
-                Icons.chevron_right,
-                color: Color(0xffCCCCCC),
-                size: 20,
+                ],
               ),
-      onTap: onTap,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Logo
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: (user?.profilePicture as String?) != null && (user!.profilePicture as String).isNotEmpty
+                        ? Image.network(
+                            user.profilePicture as String,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person,
+                              color: AppColors.primary,
+                              size: 40,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            color: AppColors.primary,
+                            size: 40,
+                          ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          trainerName.isNotEmpty ? trainerName : 'Trainer Profile',
+                          style: AppStyles.text16Px.poppins.w600.dark,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          user?.email ?? 'No email address',
+                          style: AppStyles.text12Px.poppins.w400.copyWith(
+                            color: AppColors.textDark.withValues(alpha: 0.5),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            _buildSectionHeader('Account & Security'),
+            _buildSettingsItem(
+              icon: Icons.person_outline,
+              title: 'Manage Trainer Profile',
+              isFirst: true,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditTrainerProfileScreen(),
+                  ),
+                );
+              },
+            ),
+            _buildSettingsItem(
+              icon: Icons.phone_outlined,
+              title: 'Change Phone number',
+            ),
+            _buildSettingsItem(
+              icon: Icons.credit_card_outlined,
+              title: 'Bank Account Details',
+              isLast: true,
+              onTap: () {
+                if (user?.mentor?.org?.id != null) {
+                  final orgDetails = OrganizationDetailsModel(
+                    id: user!.mentor!.org!.id,
+                    name: user.mentor!.org!.name,
+                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => BankListingViewScreen(orgDetails: orgDetails)));
+                }
+              },
+            ),
+
+            _buildSectionHeader('Preferences'),
+            _buildSettingsItem(
+              svgIconPath: 'assets/images/svg/icons/discipl_logo.svg',
+              title: 'About Us',
+              isFirst: true,
+              onTap: () {
+                launchUrl(Uri.parse('https://thediscipl.com/'));
+              },
+            ),
+            _buildSettingsItem(
+              icon: Icons.notifications_outlined,
+              title: 'Notifications',
+            ),
+            _buildSettingsItem(
+              icon: Icons.contrast,
+              title: 'Themes',
+              isLast: true,
+            ),
+
+            _buildSectionHeader('Support & Legal'),
+            _buildSettingsItem(
+              icon: Icons.help_outline,
+              title: 'Help Center / FAQ',
+              isFirst: true,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FaqScreen()),
+                );
+              },
+            ),
+            _buildSettingsItem(
+              icon: Icons.headset_mic_outlined,
+              title: 'Contact Support',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ContactSupportScreen(),
+                  ),
+                );
+              },
+            ),
+            _buildSettingsItem(
+              icon: Icons.description_outlined,
+              title: 'Terms & Conditions',
+              onTap: () {
+                launchUrl(Uri.parse('https://thediscipl.com/terms-conditions'));
+              },
+            ),
+            _buildSettingsItem(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Privacy Policy',
+              isLast: true,
+              onTap: () {
+                launchUrl(Uri.parse('https://thediscipl.com/privacy-policy'));
+              },
+            ),
+
+            const SizedBox(height: 24),
+            // Logout
+            _buildSettingsItem(
+              icon: Icons.logout,
+              title: 'Logout',
+              isFirst: true,
+              isLast: true,
+              iconColor: const Color(0xFFE53935),
+              textColor: const Color(0xFFE53935),
+              onTap: () {
+                const LogoutSheet().show(context);
+              },
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reports_screen.dart';
 
 class AssignWorkoutPlanScreen extends StatefulWidget {
   final int planId;
@@ -136,6 +137,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
             }
           }
         });
+        reportsRefreshTrigger.value++;
         Dialogs.showSnack(msg: 'Plan assigned successfully');
       } else {
         Dialogs.showSnack(msg: 'Failed to assign plan');

@@ -48,20 +48,30 @@ class _AddGymGalleryPhotosSheetState extends State<AddGymGalleryPhotosSheet> {
   //   ).show(context);
   // }
 
+  bool _isPickingImage = false;
+
   Future<void> _pickImageDialog() async {
-    final ImagePicker picker = ImagePicker();
+    if (_isPickingImage) return;
+    _isPickingImage = true;
+    try {
+      final ImagePicker picker = ImagePicker();
 
-    final List<XFile> pickedImages = await picker.pickMultiImage(
-      imageQuality: 80,
-    );
+      final List<XFile> pickedImages = await picker.pickMultiImage(
+        imageQuality: 80,
+      );
 
-    if (pickedImages.isNotEmpty) {
-      if (!mounted) return;
-      setState(() {
-        _images.addAll(
-          pickedImages.map((e) => e.path),
-        );
-      });
+      if (pickedImages.isNotEmpty) {
+        if (!mounted) return;
+        setState(() {
+          _images.addAll(
+            pickedImages.map((e) => e.path),
+          );
+        });
+      }
+    } catch (e) {
+      // Ignore image picker already_active exceptions
+    } finally {
+      _isPickingImage = false;
     }
   }
 

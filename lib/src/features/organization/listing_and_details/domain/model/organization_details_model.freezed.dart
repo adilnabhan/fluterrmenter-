@@ -63,6 +63,14 @@ mixin _$OrganizationDetailsModel {
   List<dynamic>? get packages => throw _privateConstructorUsedError;
   @JsonKey(name: 'subscription_details')
   dynamic get subscriptionDetails => throw _privateConstructorUsedError;
+  @JsonKey(name: 'trainers_count')
+  int? get trainersCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'members_count')
+  int? get membersCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'rating')
+  dynamic get rating => throw _privateConstructorUsedError;
+  @JsonKey(name: 'rating_count')
+  int? get ratingCount => throw _privateConstructorUsedError;
 
   /// Serializes this OrganizationDetailsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -102,6 +110,10 @@ abstract class $OrganizationDetailsModelCopyWith<$Res> {
     @JsonKey(name: 'photos') List<PhotoModel>? photos,
     @JsonKey(name: 'packages') List<dynamic>? packages,
     @JsonKey(name: 'subscription_details') dynamic subscriptionDetails,
+    @JsonKey(name: 'trainers_count') int? trainersCount,
+    @JsonKey(name: 'members_count') int? membersCount,
+    @JsonKey(name: 'rating') dynamic rating,
+    @JsonKey(name: 'rating_count') int? ratingCount,
   });
 
   $LocationModelCopyWith<$Res>? get location;
@@ -145,6 +157,10 @@ class _$OrganizationDetailsModelCopyWithImpl<
     Object? photos = freezed,
     Object? packages = freezed,
     Object? subscriptionDetails = freezed,
+    Object? trainersCount = freezed,
+    Object? membersCount = freezed,
+    Object? rating = freezed,
+    Object? ratingCount = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -248,6 +264,26 @@ class _$OrganizationDetailsModelCopyWithImpl<
                     ? _value.subscriptionDetails
                     : subscriptionDetails // ignore: cast_nullable_to_non_nullable
                         as dynamic,
+            trainersCount:
+                freezed == trainersCount
+                    ? _value.trainersCount
+                    : trainersCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            membersCount:
+                freezed == membersCount
+                    ? _value.membersCount
+                    : membersCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            rating:
+                freezed == rating
+                    ? _value.rating
+                    : rating // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            ratingCount:
+                freezed == ratingCount
+                    ? _value.ratingCount
+                    : ratingCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
           )
           as $Val,
     );
@@ -298,6 +334,10 @@ abstract class _$$OrganizationDetailsModelImplCopyWith<$Res>
     @JsonKey(name: 'photos') List<PhotoModel>? photos,
     @JsonKey(name: 'packages') List<dynamic>? packages,
     @JsonKey(name: 'subscription_details') dynamic subscriptionDetails,
+    @JsonKey(name: 'trainers_count') int? trainersCount,
+    @JsonKey(name: 'members_count') int? membersCount,
+    @JsonKey(name: 'rating') dynamic rating,
+    @JsonKey(name: 'rating_count') int? ratingCount,
   });
 
   @override
@@ -342,6 +382,10 @@ class __$$OrganizationDetailsModelImplCopyWithImpl<$Res>
     Object? photos = freezed,
     Object? packages = freezed,
     Object? subscriptionDetails = freezed,
+    Object? trainersCount = freezed,
+    Object? membersCount = freezed,
+    Object? rating = freezed,
+    Object? ratingCount = freezed,
   }) {
     return _then(
       _$OrganizationDetailsModelImpl(
@@ -445,6 +489,26 @@ class __$$OrganizationDetailsModelImplCopyWithImpl<$Res>
                 ? _value.subscriptionDetails
                 : subscriptionDetails // ignore: cast_nullable_to_non_nullable
                     as dynamic,
+        trainersCount:
+            freezed == trainersCount
+                ? _value.trainersCount
+                : trainersCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        membersCount:
+            freezed == membersCount
+                ? _value.membersCount
+                : membersCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        rating:
+            freezed == rating
+                ? _value.rating
+                : rating // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        ratingCount:
+            freezed == ratingCount
+                ? _value.ratingCount
+                : ratingCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
       ),
     );
   }
@@ -474,6 +538,10 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
     @JsonKey(name: 'photos') final List<PhotoModel>? photos,
     @JsonKey(name: 'packages') final List<dynamic>? packages,
     @JsonKey(name: 'subscription_details') this.subscriptionDetails,
+    @JsonKey(name: 'trainers_count') this.trainersCount,
+    @JsonKey(name: 'members_count') this.membersCount,
+    @JsonKey(name: 'rating') this.rating,
+    @JsonKey(name: 'rating_count') this.ratingCount,
   }) : _workingDays = workingDays,
        _socialMedia = socialMedia,
        _services = services,
@@ -601,10 +669,22 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
   @override
   @JsonKey(name: 'subscription_details')
   final dynamic subscriptionDetails;
+  @override
+  @JsonKey(name: 'trainers_count')
+  final int? trainersCount;
+  @override
+  @JsonKey(name: 'members_count')
+  final int? membersCount;
+  @override
+  @JsonKey(name: 'rating')
+  final dynamic rating;
+  @override
+  @JsonKey(name: 'rating_count')
+  final int? ratingCount;
 
   @override
   String toString() {
-    return 'OrganizationDetailsModel(id: $id, name: $name, description: $description, email: $email, logo: $logo, phoneNumber: $phoneNumber, isPublic: $isPublic, active: $active, isSubscribed: $isSubscribed, takeFreeTrial: $takeFreeTrial, isOnFreeTrial: $isOnFreeTrial, location: $location, workingDays: $workingDays, socialMedia: $socialMedia, services: $services, amenities: $amenities, categories: $categories, photos: $photos, packages: $packages, subscriptionDetails: $subscriptionDetails)';
+    return 'OrganizationDetailsModel(id: $id, name: $name, description: $description, email: $email, logo: $logo, phoneNumber: $phoneNumber, isPublic: $isPublic, active: $active, isSubscribed: $isSubscribed, takeFreeTrial: $takeFreeTrial, isOnFreeTrial: $isOnFreeTrial, location: $location, workingDays: $workingDays, socialMedia: $socialMedia, services: $services, amenities: $amenities, categories: $categories, photos: $photos, packages: $packages, subscriptionDetails: $subscriptionDetails, trainersCount: $trainersCount, membersCount: $membersCount, rating: $rating, ratingCount: $ratingCount)';
   }
 
   @override
@@ -653,7 +733,14 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
             const DeepCollectionEquality().equals(
               other.subscriptionDetails,
               subscriptionDetails,
-            ));
+            ) &&
+            (identical(other.trainersCount, trainersCount) ||
+                other.trainersCount == trainersCount) &&
+            (identical(other.membersCount, membersCount) ||
+                other.membersCount == membersCount) &&
+            const DeepCollectionEquality().equals(other.rating, rating) &&
+            (identical(other.ratingCount, ratingCount) ||
+                other.ratingCount == ratingCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -680,6 +767,10 @@ class _$OrganizationDetailsModelImpl implements _OrganizationDetailsModel {
     const DeepCollectionEquality().hash(_photos),
     const DeepCollectionEquality().hash(_packages),
     const DeepCollectionEquality().hash(subscriptionDetails),
+    trainersCount,
+    membersCount,
+    const DeepCollectionEquality().hash(rating),
+    ratingCount,
   ]);
 
   /// Create a copy of OrganizationDetailsModel
@@ -720,6 +811,10 @@ abstract class _OrganizationDetailsModel implements OrganizationDetailsModel {
     @JsonKey(name: 'photos') final List<PhotoModel>? photos,
     @JsonKey(name: 'packages') final List<dynamic>? packages,
     @JsonKey(name: 'subscription_details') final dynamic subscriptionDetails,
+    @JsonKey(name: 'trainers_count') final int? trainersCount,
+    @JsonKey(name: 'members_count') final int? membersCount,
+    @JsonKey(name: 'rating') final dynamic rating,
+    @JsonKey(name: 'rating_count') final int? ratingCount,
   }) = _$OrganizationDetailsModelImpl;
 
   factory _OrganizationDetailsModel.fromJson(Map<String, dynamic> json) =
@@ -785,6 +880,18 @@ abstract class _OrganizationDetailsModel implements OrganizationDetailsModel {
   @override
   @JsonKey(name: 'subscription_details')
   dynamic get subscriptionDetails;
+  @override
+  @JsonKey(name: 'trainers_count')
+  int? get trainersCount;
+  @override
+  @JsonKey(name: 'members_count')
+  int? get membersCount;
+  @override
+  @JsonKey(name: 'rating')
+  dynamic get rating;
+  @override
+  @JsonKey(name: 'rating_count')
+  int? get ratingCount;
 
   /// Create a copy of OrganizationDetailsModel
   /// with the given fields replaced by the non-null parameter values.

@@ -25,6 +25,7 @@ final class ApiUris {
   ///============================= Common =============================\\\
   static final categories = '${_v1}fitnesscenter/categories/';
   static final amenities = '${_v1}fitnesscenter/amenities/';
+  static String fitnessCenterReviews(int orgId) => '${_v1}fitnesscenter/organization/$orgId/reviews/';
 
   ///============================= Organization =============================\\\
   ///
@@ -65,8 +66,8 @@ final class ApiUris {
   static final createMembershipPackage =
       '${_v1}fitnesscenter/membership-plans/';
   static final listMembershipPackages = '${_v1}fitnesscenter/membership-plans/';
-  static final expiringMembershipPackages =
-      '${_v1}fitnesscenter/expiring-memberships/';
+  static final customerRenewals =
+      '${_v1}fitnesscenter/customer_renewals/';
   static String updateMembershipPackage(int id) =>
       '${_v1}fitnesscenter/membership-plans/$id/';
   static String deleteMembershipPackage(int id) =>
@@ -83,13 +84,23 @@ final class ApiUris {
   static final addBankDetails = '${_v1}fitnesscenter/bank-details/';
 
   ///============================= Trainer =============================\\\
-  static final editTrainerBasicDetails = '${_v1}trainers/basic-details/';
+  static final editTrainerBasicDetails = '${_v1}trainer/trainers/basic-details/';
   static final trainerDashboard = '${_v1}trainer/dashboard/';
   static final trainerCustomers = '${_v1}trainer/customers/';
   static String trainerCustomerDetails(int customerId) =>
       '${_v1}trainer/customers/$customerId/';
+  static final trainerReports = '${_v1}trainer/reports/';
+
+  ///============================= Certificates & Portfolio =============================\\\
+  static final certificates = '${_v1}trainer/certificates/';
+  static String deleteCertificate(int id) => '${_v1}trainer/certificates/$id/';
+  static final portfolioImages = '${_v1}trainer/portfolio-images/';
+  static String deletePortfolioImage(int id) =>
+      '${_v1}trainer/portfolio-images/$id/';
 
   ///============================= Workouts =============================\\\
+  static final gymExercises = '${_v1}fitnesscenter/exercises/';
+  static final createGymExercise = '${_v1}fitnesscenter/exercises/create/';
   static final workoutGroups = '${_v1}trainer/workout-groups/';
   static String workoutGroupDetail(int id) =>
       '${_v1}trainer/workout-groups/$id/';

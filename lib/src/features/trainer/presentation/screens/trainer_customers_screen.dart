@@ -3,6 +3,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/add_or_edit_memeber_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 
 class TrainerCustomersScreen extends StatefulWidget {
   final bool isPushed;
@@ -107,7 +108,12 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              Dialogs.showSnack(msg: 'Settings triggered');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TrainerProfileSettingsScreen(),
+                ),
+              );
             },
             icon: const Icon(Icons.settings_outlined, color: AppColors.textDark),
           ),
@@ -323,7 +329,6 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                             final String category = client['category'] as String? ?? 'Strength';
                             final String orgName = client['organization_name'] as String? ?? 'Direct Client';
                             final String goal = client['target_goal'] as String? ?? 'General Fitness';
-                            final String lastActive = client['last_active'] as String? ?? '05:30 AM';
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),
@@ -452,22 +457,6 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                             ],
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
-                                        // Last Active
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              'Last Active',
-                                              style: AppStyles.text10Px.poppins.w500.copyWith(color: AppColors.textGrey),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              lastActive,
-                                              style: AppStyles.text12Px.poppins.w600.dark,
-                                            ),
-                                          ],
-                                        ),
                                       ],
                                     ),
                                   ],
@@ -530,6 +519,8 @@ class TrainerQuickActionsSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
+          // TODO: Uncomment when 'Add Client Directly' feature is needed
+          /*
           _ActionCard(
             icon: Icons.person_add_alt_1,
             iconColor: Colors.white,
@@ -556,6 +547,7 @@ class TrainerQuickActionsSheet extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
+          */
           _ActionCard(
             icon: Icons.assignment_outlined,
             iconColor: Colors.white,
@@ -719,7 +711,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
   bool _isLoading = true;
   String _searchQuery = '';
   final Map<int, bool> _submittingMap = {};
-  String _selectedSource = 'library'; // 'library' or 'trainer'
+  String _selectedSource = 'gym'; // 'gym' or 'trainer'
 
   @override
   void initState() {
@@ -931,7 +923,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
           const SizedBox(height: 12),
           Row(
             children: [
-              _buildTabButton('Library', 'library'),
+              _buildTabButton('Library', 'gym'),
               const SizedBox(width: 12),
               _buildTabButton('Own Created', 'trainer'),
             ],

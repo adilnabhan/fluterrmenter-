@@ -229,9 +229,11 @@ class _OrganizationListingAndDetailsScreenState
                               MaterialPageRoute(
                                 builder:
                                     (context) => SettingsScreen(
+                                      orgId: state.selectedOrganization?.id,
                                       name: state.selectedOrganization?.name,
                                       email: state.selectedOrganization?.email,
                                       logoUrl: state.selectedOrganization?.logo,
+                                      orgDetailsCubit: _cubit,
                                     ),
                               ),
                             );
@@ -316,8 +318,10 @@ class _OrganizationListingAndDetailsScreenState
                             onTap: () {
                               if (state.selectedOrganization?.id != null) {
                                 context.push(
-                                  ExpiredMembersListingScreen(
+                                  PaymentUpcomingViewScreen(
                                     orgId: state.selectedOrganization!.id!,
+                                    status: 'expired',
+                                    title: 'Expired Memberships',
                                   ),
                                 );
                               } else {
@@ -334,8 +338,10 @@ class _OrganizationListingAndDetailsScreenState
                             onTap: () {
                               if (state.selectedOrganization?.id != null) {
                                 context.push(
-                                  UpcomingRenewalsListingScreen(
+                                  PaymentUpcomingViewScreen(
                                     orgId: state.selectedOrganization!.id!,
+                                    status: 'upcoming_renewals',
+                                    title: 'Upcoming Renewals',
                                   ),
                                 );
                               } else {
@@ -765,6 +771,8 @@ class _OrganizationListingAndDetailsScreenState
                                     MaterialPageRoute(
                                       builder:
                                           (context) => SettingsScreen(
+                                            orgId:
+                                                state.selectedOrganization?.id,
                                             name:
                                                 state
                                                     .selectedOrganization
@@ -777,6 +785,7 @@ class _OrganizationListingAndDetailsScreenState
                                                 state
                                                     .selectedOrganization
                                                     ?.logo,
+                                            orgDetailsCubit: _cubit,
                                           ),
                                     ),
                                   );
@@ -865,7 +874,7 @@ class _OrganizationListingAndDetailsScreenState
                                 //   },
                                 // ),
                                 (
-                                  title: 'Expired in 30 Days',
+                                  title: 'Expired Members',
                                   color: const Color(0xff527F50),
                                   gradient: null,
                                   count: orgHomeData.expiredCustomersCount ?? 0,
@@ -1004,7 +1013,7 @@ class _OrganizationListingAndDetailsScreenState
                                   },
                                 ),
                                 (
-                                  title: 'Expired in\n30 days',
+                                  title: 'Expired\nMembers',
                                   count: orgHomeData.expiredCustomersCount ?? 0,
                                   countColor: const Color(0xffC0392B),
                                   labelColor: const Color(0xffC0392B),

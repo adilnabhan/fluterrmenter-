@@ -222,21 +222,34 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class PaymentUpcomingViewScreen extends StatelessWidget {
-  const PaymentUpcomingViewScreen({required this.orgId, super.key});
+  const PaymentUpcomingViewScreen({
+    required this.orgId,
+    this.status = 'upcoming_payments',
+    this.title = 'Upcoming EMIs',
+    super.key,
+  });
   final int orgId;
+  final String status;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => MembersAndLeadsCubit(orgId: orgId),
-      child: _PaymentUpComing(orgId: orgId),
+      child: _PaymentUpComing(orgId: orgId, status: status, title: title),
     );
   }
 }
 
 class _PaymentUpComing extends StatefulWidget {
-  const _PaymentUpComing({required this.orgId});
+  const _PaymentUpComing({
+    required this.orgId,
+    required this.status,
+    required this.title,
+  });
   final int orgId;
+  final String status;
+  final String title;
 
   @override
   State<_PaymentUpComing> createState() => _PaymentUpComingState();
@@ -256,13 +269,16 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 100) {
-        _cubit.fetchExpiringMemberShip(isPagination: true);
+        _cubit.fetchExpiringMemberShip(
+          isPagination: true,
+          status: widget.status,
+        );
       }
     });
   }
 
   Future<void> _fetch() async {
-    await _cubit.fetchExpiringMemberShip();
+    await _cubit.fetchExpiringMemberShip(status: widget.status);
   }
 
   @override
@@ -274,7 +290,7 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
         elevation: 0,
         leading: const PopButton().center,
         title: Text(
-          'Upcoming EMIs',
+          widget.title,
           style: AppStyles.text16Px.poppins.w600.copyWith(
             color: Colors.black87,
           ),
@@ -425,10 +441,10 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
       ),
     );
   }
+
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
-
 }

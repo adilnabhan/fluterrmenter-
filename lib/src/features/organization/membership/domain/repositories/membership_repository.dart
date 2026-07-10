@@ -358,7 +358,7 @@ final class MembershipRepository {
     try {
       return await Feggy.async(
         call: _dio.get<dynamic>(
-          nextUrl ?? ApiUris.expiringMembershipPackages,
+          nextUrl ?? ApiUris.customerRenewals,
           queryParameters: queryParameters,
           options: Options(headers: {'X-Platform': platformSource}).token,
         ),

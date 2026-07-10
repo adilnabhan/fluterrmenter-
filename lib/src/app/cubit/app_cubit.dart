@@ -27,7 +27,7 @@ class AppCubit extends HydratedCubit<AppState> {
     LocalStorageService().saveUser(user);
     final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
     final existingIndex = currentAccounts.indexWhere(
-      (a) => a.id == user.id && a.userRole == user.userRole,
+      (a) => (a.id == user.id || a.mobileNumber == user.mobileNumber) && a.userRole == user.userRole,
     );
     if (existingIndex != -1) {
       currentAccounts[existingIndex] = user;
@@ -47,7 +47,7 @@ class AppCubit extends HydratedCubit<AppState> {
     final user = state.currentUser;
     if (user != null) {
       currentAccounts.removeWhere(
-        (a) => a.id == user.id && a.userRole == user.userRole,
+        (a) => (a.id == user.id || a.mobileNumber == user.mobileNumber) && a.userRole == user.userRole,
       );
     }
 
@@ -59,6 +59,14 @@ class AppCubit extends HydratedCubit<AppState> {
       LocalStorageService().clearUser();
       emit(state.copyWith(currentUser: null, accounts: []));
     }
+  }
+
+  void removeSpecificAccount(LoginSuccessModel account) {
+    final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
+    currentAccounts.removeWhere(
+      (a) => (a.id == account.id || a.mobileNumber == account.mobileNumber) && a.userRole == account.userRole,
+    );
+    emit(state.copyWith(accounts: currentAccounts));
   }
 
   @override
@@ -79,6 +87,19 @@ class AppCubit extends HydratedCubit<AppState> {
     if (accounts.isEmpty && currentUser != null) {
       accounts = [currentUser];
     }
+
+    // 🛡️ Deduplicate accounts to fix duplicate entries in UI
+    final uniqueAccounts = <LoginSuccessModel>[];
+    final seen = <String>{};
+    for (final acc in accounts.reversed) {
+      // Reverse to keep the latest added/updated account
+      final key = '${acc.mobileNumber}_${acc.userRole}';
+      if (!seen.contains(key)) {
+        seen.add(key);
+        uniqueAccounts.add(acc);
+      }
+    }
+    accounts = uniqueAccounts.reversed.toList();
 
     // 🛡️ Fallback: Check Hive if HydratedBloc lost the user (e.g. cache cleared)
     if (currentUser == null) {

@@ -158,6 +158,10 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       _isLoading = true;
     });
 
+    final user = context.read<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+    final source = isTrainer ? 'trainer' : 'organization';
+
     try {
       final response = await DioClient().dio.post<dynamic>(
         ApiUris.workoutPlans,
@@ -167,6 +171,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
           'group': widget.groupId,
           'total_weeks': 1,
           'total_days': 1,
+          'source': source,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );

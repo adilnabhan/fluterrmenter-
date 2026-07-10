@@ -58,6 +58,7 @@ _$CustomerDetailsImpl _$$CustomerDetailsImplFromJson(
   activePlans: ActivePlans.fromJson(
     json['active_plan'] as Map<String, dynamic>,
   ),
+  whatsappLink: json['whatsapp_link'] as String?,
 );
 
 Map<String, dynamic> _$$CustomerDetailsImplToJson(
@@ -69,6 +70,7 @@ Map<String, dynamic> _$$CustomerDetailsImplToJson(
   'profile_picture': instance.profilePicture,
   'joined_date': instance.joinedDate,
   'active_plan': instance.activePlans,
+  'whatsapp_link': instance.whatsappLink,
 };
 
 _$ActivePlansImpl _$$ActivePlansImplFromJson(Map<String, dynamic> json) =>
