@@ -10,7 +10,15 @@ import 'package:url_launcher/url_launcher.dart';
 
 class TrainerCertificatesScreen extends StatefulWidget {
   final String? trainerId;
-  const TrainerCertificatesScreen({super.key, this.trainerId});
+  final bool isViewOnly;
+  final List<CertificateModel>? initialCertificates;
+
+  const TrainerCertificatesScreen({
+    super.key, 
+    this.trainerId,
+    this.isViewOnly = false,
+    this.initialCertificates,
+  });
 
   @override
   State<TrainerCertificatesScreen> createState() =>
@@ -24,7 +32,11 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchCertificates();
+    if (widget.initialCertificates != null) {
+      _certificates = widget.initialCertificates!;
+    } else {
+      _fetchCertificates();
+    }
   }
 
   void _uploadCertificate() {
@@ -32,15 +44,21 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _AddCertificateSheet(
-        onSubmit: (file, name, issuedBy, issuedDate) {
-          _submitCertificate(file, name, issuedBy, issuedDate);
-        },
-      ),
+      builder:
+          (context) => _AddCertificateSheet(
+            onSubmit: (file, name, issuedBy, issuedDate) {
+              _submitCertificate(file, name, issuedBy, issuedDate);
+            },
+          ),
     );
   }
 
-  Future<void> _submitCertificate(File file, String name, String issuedBy, String issuedDate) async {
+  Future<void> _submitCertificate(
+    File file,
+    String name,
+    String issuedBy,
+    String issuedDate,
+  ) async {
     setState(() => _isLoading = true);
     try {
       final formData = FormData.fromMap({
@@ -127,15 +145,16 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
   Future<void> _fetchCertificates() async {
     setState(() => _isLoading = true);
     try {
-      final uri = widget.trainerId != null 
-          ? '${ApiUris.certificates}?trainer_id=${widget.trainerId}' 
-          : ApiUris.certificates;
-          
+      final uri =
+          widget.trainerId != null
+              ? '${ApiUris.certificates}?trainer_id=${widget.trainerId}'
+              : ApiUris.certificates;
+
       final response = await DioClient().dio.get<dynamic>(
         uri,
         options: Options(headers: {'X-Platform': platformSource}).token,
       );
-      
+
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data;
         List<dynamic> certList = [];
@@ -146,10 +165,16 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
         } else if (data is Map && data.containsKey('data')) {
           certList = data['data'] as List;
         }
-        
+
         if (mounted) {
           setState(() {
-            _certificates = certList.map((e) => CertificateModel.fromJson(e as Map<String, dynamic>)).toList();
+            _certificates =
+                certList
+                    .map(
+                      (e) =>
+                          CertificateModel.fromJson(e as Map<String, dynamic>),
+                    )
+                    .toList();
           });
         }
       }
@@ -187,11 +212,14 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
               : certificates.isEmpty
               ? _buildEmptyState()
               : _buildCertificatesList(certificates),
-      floatingActionButton: widget.trainerId == null ? FloatingActionButton(
-        onPressed: _isLoading ? null : _uploadCertificate,
-        backgroundColor: Colors.red,
-        child: const Icon(Icons.add, color: Colors.white),
-      ) : null,
+      floatingActionButton:
+          !widget.isViewOnly
+              ? FloatingActionButton(
+                onPressed: _isLoading ? null : _uploadCertificate,
+                backgroundColor: Colors.red,
+                child: const Icon(Icons.add, color: Colors.white),
+              )
+              : null,
     );
   }
 
@@ -285,10 +313,13 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
                       ),
                     )
                     : null,
-            trailing: widget.trainerId == null ? IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: () => _deleteCertificate(cert.id!),
-            ) : null,
+            trailing:
+                !widget.isViewOnly
+                    ? IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () => _deleteCertificate(cert.id!),
+                    )
+                    : null,
             onTap: () async {
               if (cert.certificate == null || cert.certificate!.isEmpty) {
                 Fluttertoast.showToast(msg: 'Certificate file is missing');
@@ -296,7 +327,7 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
               }
 
               Fluttertoast.showToast(msg: 'Opening certificate...');
-              
+
               var urlString = cert.certificate!;
               if (urlString.startsWith('/')) {
                 urlString = 'https://discipl-backend.onrender.com$urlString';
@@ -312,7 +343,9 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
                     mode: LaunchMode.externalApplication,
                   );
                   if (!launched) {
-                    Fluttertoast.showToast(msg: 'Could not find an app to open: $urlString');
+                    Fluttertoast.showToast(
+                      msg: 'Could not find an app to open: $urlString',
+                    );
                   }
                 } catch (e) {
                   Fluttertoast.showToast(msg: 'Error launching: $e');
@@ -329,7 +362,8 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
 }
 
 class _AddCertificateSheet extends StatefulWidget {
-  final Function(File file, String name, String issuedBy, String issuedDate) onSubmit;
+  final Function(File file, String name, String issuedBy, String issuedDate)
+  onSubmit;
 
   const _AddCertificateSheet({required this.onSubmit});
 
@@ -373,7 +407,8 @@ class _AddCertificateSheetState extends State<_AddCertificateSheet> {
     );
     if (picked != null) {
       setState(() {
-        _issuedDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        _issuedDateController.text =
+            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -424,68 +459,94 @@ class _AddCertificateSheetState extends State<_AddCertificateSheet> {
                       ),
                     ),
                   ),
-                const SizedBox(height: 24),
-                Text(
-                  'Add Certificate',
-                  style: AppStyles.text18Px.poppins.w600.dark,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Certificate Name',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Add Certificate',
+                    style: AppStyles.text18Px.poppins.w600.dark,
+                    textAlign: TextAlign.center,
                   ),
-                  validator: (val) => val == null || val.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _issuedByController,
-                  decoration: InputDecoration(
-                    labelText: 'Issued By',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Certificate Name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator:
+                        (val) => val == null || val.isEmpty ? 'Required' : null,
                   ),
-                  validator: (val) => val == null || val.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _issuedDateController,
-                  readOnly: true,
-                  onTap: _selectDate,
-                  decoration: InputDecoration(
-                    labelText: 'Issued Date (YYYY-MM-DD)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    suffixIcon: const Icon(Icons.calendar_today),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _issuedByController,
+                    decoration: InputDecoration(
+                      labelText: 'Issued By',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator:
+                        (val) => val == null || val.isEmpty ? 'Required' : null,
                   ),
-                  validator: (val) => val == null || val.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: _pickFile,
-                  icon: const Icon(Icons.upload_file),
-                  label: Text(_selectedFile == null ? 'Select Certificate File' : _selectedFile!.path.split('\\').last.split('/').last),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _issuedDateController,
+                    readOnly: true,
+                    onTap: _selectDate,
+                    decoration: InputDecoration(
+                      labelText: 'Issued Date (YYYY-MM-DD)',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      suffixIcon: const Icon(Icons.calendar_today),
+                    ),
+                    validator:
+                        (val) => val == null || val.isEmpty ? 'Required' : null,
                   ),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: _pickFile,
+                    icon: const Icon(Icons.upload_file),
+                    label: Text(
+                      _selectedFile == null
+                          ? 'Select Certificate File'
+                          : _selectedFile!.path
+                              .split('\\')
+                              .last
+                              .split('/')
+                              .last,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
-                  child: Text('Upload Certificate', style: AppStyles.text16Px.poppins.w600.copyWith(color: Colors.white)),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Upload Certificate',
+                      style: AppStyles.text16Px.poppins.w600.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 }

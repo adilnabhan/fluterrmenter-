@@ -126,6 +126,13 @@ class AccountSwitcherSheet extends StatelessWidget {
                             Icons.check_circle,
                             color: AppColors.primary,
                             size: 24,
+                          )
+                        else
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                            onPressed: () {
+                              appCubit.removeSpecificAccount(account);
+                            },
                           ),
                       ],
                     ),

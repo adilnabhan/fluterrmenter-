@@ -82,6 +82,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
               mentorData?['experience']?.toString() ??
               mentorData?['designation']?.toString() ??
               '',
+          location: data['location']?.toString(),
+          instagram: data['instagram']?.toString(),
+          facebook: data['facebook']?.toString(),
+          youtube: data['youtube']?.toString(),
           trainer: TrainerModel(
             certificates: mappedCerts,
             portfolioImages: mappedPortfolio,
@@ -133,6 +137,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           lastName: data['last_name']?.toString() ?? currentUser.lastName,
           profilePicture: data['profile_picture']?.toString() ?? currentUser.profilePicture,
           bio: data['bio']?.toString() ?? currentUser.bio,
+          location: data['location']?.toString() ?? currentUser.location,
+          instagram: data['instagram']?.toString() ?? currentUser.instagram,
+          facebook: data['facebook']?.toString() ?? currentUser.facebook,
+          youtube: data['youtube']?.toString() ?? currentUser.youtube,
         );
 
         appCubit.addUser(updatedUser);
@@ -157,18 +165,19 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     super.dispose();
   }
 
-  void _openFullScreen(BuildContext context, int initialIndex) {
-    if (!widget.isViewOnly) {
-      Navigator.push(
-        context,
-        MaterialPageRoute<void>(
-          builder: (_) => TrainerPortfolioScreen(
-            heroImages: _heroImages,
-            initialIndex: initialIndex,
-          ),
+  void _openFullScreen(BuildContext context, int initialIndex, LoginSuccessModel? user) {
+    final portfolioImages = user?.trainer?.portfolioImages;
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => TrainerPortfolioScreen(
+          heroImages: _heroImages,
+          initialIndex: initialIndex,
+          isViewOnly: widget.isViewOnly,
+          initialPortfolioImages: portfolioImages,
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -189,6 +198,12 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim();
     final displayName =
         trainerName.isNotEmpty ? trainerName : 'Trainer Profile';
+
+    final portfolioImages = user?.trainer?.portfolioImages ?? [];
+    final heroCarousel = portfolioImages.isNotEmpty 
+        ? portfolioImages.map((e) => e.image ?? '').where((img) => img.isNotEmpty).toList()
+        : _heroImages;
+    if (heroCarousel.isEmpty) heroCarousel.addAll(_heroImages);
 
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
@@ -221,14 +236,14 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                     children: [
                       PageView.builder(
                         controller: _heroPagerController,
-                        itemCount: _heroImages.length,
+                        itemCount: heroCarousel.length,
                         onPageChanged:
                             (i) => setState(() => _heroCurrentIndex = i),
                         itemBuilder: (context, index) {
                           return GestureDetector(
-                            onTap: () => _openFullScreen(context, index),
+                            onTap: () => _openFullScreen(context, index, user),
                             child: Image.network(
-                              _heroImages[index],
+                              heroCarousel[index],
                               fit: BoxFit.cover,
                               loadingBuilder:
                                   (_, child, progress) =>
@@ -385,7 +400,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(_heroImages.length, (i) {
+                              children: List.generate(heroCarousel.length, (i) {
                                 final isActive = i == _heroCurrentIndex;
                                 return AnimatedContainer(
                                   duration: const Duration(milliseconds: 250),
@@ -438,6 +453,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                           builder:
                               (context) => TrainerCertificatesScreen(
                                 trainerId: widget.trainerId,
+                                isViewOnly: widget.isViewOnly,
+                                initialCertificates: user?.trainer?.certificates,
                               ),
                         ),
                       );
@@ -445,8 +462,6 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                     child: _buildCertificatesButton(),
                   ),
 
-                  const SizedBox(height: 16),
-                  _buildReviewsSection(),
                   const SizedBox(height: 100),
                 ],
               ),
@@ -491,17 +506,23 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                   ],
                 ),
                 child: ClipOval(
-                  child: Image.network(
-                    user?.profilePicture?.toString() ??
-                        'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.network(
-                        'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  ),
+                  child: user?.profilePicture?.toString().isNotEmpty == true
+                      ? Image.network(
+                          user!.profilePicture!.toString(),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.person,
+                              size: 40,
+                              color: Colors.grey,
+                            );
+                          },
+                        )
+                      : const Icon(
+                          Icons.person,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
                 ),
               ),
               const SizedBox(width: 16),

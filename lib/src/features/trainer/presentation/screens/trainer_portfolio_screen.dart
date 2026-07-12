@@ -9,10 +9,18 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/auth/login/domain/models/login_with_otp_model.dart';
 
 class TrainerPortfolioScreen extends StatefulWidget {
-  const TrainerPortfolioScreen({super.key, this.heroImages, this.initialIndex});
-  
   final List<String>? heroImages;
   final int? initialIndex;
+  final bool isViewOnly;
+  final List<PortfolioImageModel>? initialPortfolioImages;
+
+  const TrainerPortfolioScreen({
+    super.key, 
+    this.heroImages, 
+    this.initialIndex,
+    this.isViewOnly = false,
+    this.initialPortfolioImages,
+  });
 
   @override
   State<TrainerPortfolioScreen> createState() => _TrainerPortfolioScreenState();
@@ -63,7 +71,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Fluttertoast.showToast(msg: 'Portfolio image uploaded');
-        _fetchTrainerDetails(); // Refresh to get the new image
+        // _fetchTrainerDetails(); // Refresh to get the new image
       } else {
         Fluttertoast.showToast(msg: 'Failed to upload image');
       }
@@ -148,7 +156,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AppCubit>().state.currentUser;
-    var portfolioImages = user?.trainer?.portfolioImages ?? [];
+    var portfolioImages = widget.initialPortfolioImages ?? user?.trainer?.portfolioImages ?? [];
     final hasNoRealImages = portfolioImages.isEmpty;
 
     // Use hero images as a fallback to preview the UI if there are no real images
@@ -194,7 +202,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                         icon: Icons.arrow_back_ios_new,
                         onTap: () => Navigator.pop(context),
                       ),
-                      if (portfolioImages.isNotEmpty)
+                      if (portfolioImages.isNotEmpty && !widget.isViewOnly)
                         _buildGlassCircle(
                           icon: Icons.delete_outline,
                           iconColor: Colors.redAccent,
@@ -336,14 +344,15 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                         ),
                         const SizedBox(width: 16),
                         // Floating Action Button
-                        FloatingActionButton(
-                          heroTag: 'upload_trainer_portfolio_btn',
-                          onPressed: _uploadPortfolioImage,
-                          backgroundColor: Colors.red,
-                          elevation: 0,
-                          mini: true,
-                          child: const Icon(Icons.add, color: Colors.white),
-                        ),
+                        if (!widget.isViewOnly)
+                          FloatingActionButton(
+                            heroTag: 'upload_trainer_portfolio_btn',
+                            onPressed: _uploadPortfolioImage,
+                            backgroundColor: Colors.red,
+                            elevation: 0,
+                            mini: true,
+                            child: const Icon(Icons.add, color: Colors.white),
+                          ),
                       ],
                     ),
                   ),
@@ -397,12 +406,13 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
             style: AppStyles.text16Px.poppins.w600.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Tap the button below to upload a portfolio image.',
-            style: AppStyles.text14Px.poppins.w400.copyWith(
-              color: Colors.white70,
+          if (!widget.isViewOnly)
+            Text(
+              'Tap the button below to upload a portfolio image.',
+              style: AppStyles.text14Px.poppins.w400.copyWith(
+                color: Colors.white70,
+              ),
             ),
-          ),
         ],
       ),
     );

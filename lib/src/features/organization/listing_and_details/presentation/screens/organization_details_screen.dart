@@ -753,11 +753,14 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Tabs row
-          Row(
-            children: [
-              Expanded(child: _buildCustomTab('Amenities', 0)),
-              Expanded(child: _buildCustomTab('Schedule', 1)),
-            ],
+          Transform.translate(
+            offset: const Offset(0, 1),
+            child: Row(
+              children: [
+                Expanded(child: _buildCustomTab('Amenities', 0)),
+                Expanded(child: _buildCustomTab('Schedule', 1)),
+              ],
+            ),
           ),
           // Content container
           Container(
@@ -776,6 +779,14 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                 bottomLeft: const Radius.circular(20),
                 bottomRight: const Radius.circular(20),
               ),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child:
                 _selectedTabIndex == 0
@@ -796,6 +807,11 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: isSelected ? Border(
+            top: BorderSide(color: Colors.grey.shade200),
+            left: BorderSide(color: Colors.grey.shade200),
+            right: BorderSide(color: Colors.grey.shade200),
+          ) : null,
         ),
         child: Center(
           child: Text(
@@ -914,7 +930,8 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
   // Transformation (Before / After)
   // ────────────────────────────────────────────
   Widget _buildTransformationSection(OrganizationDetailsModel orgDetails) {
-    return _TransformationCarousel(photos: orgDetails.photos ?? []);
+    // Temporarily pass empty list until the transformation API is available
+    return const _TransformationCarousel(photos: []);
   }
 
 
@@ -934,9 +951,8 @@ class _TransformationCarouselState extends State<_TransformationCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.photos.length < 2) return const SizedBox.shrink();
-
-    final pageCount = (widget.photos.length / 2).ceil();
+    int pageCount = (widget.photos.length / 2).ceil();
+    if (pageCount == 0) pageCount = 1; // Always show at least 1 empty page
 
     return Column(
       children: [
@@ -961,16 +977,17 @@ class _TransformationCarouselState extends State<_TransformationCarousel> {
                         widget.photos.length > beforeIdx
                             ? widget.photos[beforeIdx].image
                             : null,
-                        'Transformation\nBefore Pic',
+                        'Add Before',
                         isBefore: true,
                       ),
                     ),
+                    Container(width: 2, color: Colors.white),
                     Expanded(
                       child: _buildTransformImage(
                         widget.photos.length > afterIdx
                             ? widget.photos[afterIdx].image
                             : null,
-                        'Transformation\nAfter Pic',
+                        'Add After',
                         isBefore: false,
                       ),
                     ),
@@ -1025,15 +1042,22 @@ class _TransformationCarouselState extends State<_TransformationCarousel> {
       ),
       child: Stack(
         children: [
-          // Fallback text
+          // Fallback + icon
           if (imageUrl == null || imageUrl.isEmpty)
             Center(
-              child: Text(
-                fallbackText,
-                textAlign: TextAlign.center,
-                style: AppStyles.text13Px.poppins.w600.copyWith(
-                  color: AppColors.textDark,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.add_circle_outline, color: Colors.grey, size: 36),
+                  const SizedBox(height: 8),
+                  Text(
+                    fallbackText,
+                    textAlign: TextAlign.center,
+                    style: AppStyles.text13Px.poppins.w600.copyWith(
+                      color: AppColors.textGrey,
+                    ),
+                  ),
+                ],
               ),
             ),
           // Pill
