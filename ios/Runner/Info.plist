@@ -49,6 +49,10 @@
 		<string>Your location is required to provide accurate service and determine your current position for delivery services.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Your location is required to provide accurate service and determine your current position for delivery services.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>We use your location to show nearby gyms and fitness centers.</string
+		<key>NSCameraUsageDescription</key>
+		<string>We use the camera to let you capture and upload photos in the app.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
 	</dict>
