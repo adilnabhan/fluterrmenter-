@@ -42,6 +42,7 @@ final class ApiUris {
       '${_v1}fitnesscenter/organization/$orgId/update/';
   static String deletePhoto(int orgId, int photoId) =>
       '${_v1}fitnesscenter/organization/$orgId/photos/$photoId/delete';
+  static final fcOrganizationReviews = '${_v1}fitnesscenter/organization/reviews/';
 
   ///============================= Subscription =============================\\\
   static final plans = '${_v1}subscription/discipl-subscription-plans/';
@@ -53,6 +54,7 @@ final class ApiUris {
   static final createMember = '${_v1}customer/manage/create/';
   static String updateMember(int id) => '${_v1}customer/manage/$id/update/';
   static String memberDetails(int id) => '${_v1}customer/manage/$id/';
+  static final searchCustomer = '${_v1}customer/search/';
 
   ///============================= Trainers =============================\\\
   static final leadsListing = '${_v1}fitnesscenter/trainers/';
@@ -90,6 +92,7 @@ final class ApiUris {
   static String trainerCustomerDetails(int customerId) =>
       '${_v1}trainer/customers/$customerId/';
   static final trainerReports = '${_v1}trainer/reports/';
+  static final trainerReviews = '${_v1}trainer/reviews/';
 
   ///============================= Certificates & Portfolio =============================\\\
   static final certificates = '${_v1}trainer/certificates/';
@@ -101,6 +104,8 @@ final class ApiUris {
   ///============================= Workouts =============================\\\
   static final gymExercises = '${_v1}fitnesscenter/exercises/';
   static final createGymExercise = '${_v1}fitnesscenter/exercises/create/';
+  static final gymWorkoutLibrary = '${_v1}fitnesscenter/workout-library/';
+  static String gymWorkoutLibraryDetail(int id) => '${_v1}fitnesscenter/workout-library/$id/';
   static final workoutGroups = '${_v1}trainer/workout-groups/';
   static String workoutGroupDetail(int id) =>
       '${_v1}trainer/workout-groups/$id/';

@@ -26,13 +26,32 @@ class _OrganizationWorkoutLibraryScreenState
   }
 
   Future<void> _fetchGymExercises() async {
+    setState(() => _isLoading = true);
     try {
-      final res = await DioClient().dio.get<dynamic>(ApiUris.gymExercises);
+      final resCustom = await DioClient().dio.get<dynamic>(ApiUris.gymExercises);
+      final resOverrides = await DioClient().dio.get<dynamic>(ApiUris.gymWorkoutLibrary);
       if (!mounted) return;
       
-      final dataList = res.data as List;
+      final customList = resCustom.data as List? ?? [];
+      final overrideList = resOverrides.data as List? ?? [];
+
+      final mappedCustom = customList.map((e) {
+        final m = Map<String, dynamic>.from(e as Map);
+        m['isOverride'] = false;
+        return m;
+      }).toList();
+
+      final mappedOverrides = overrideList.map((e) {
+        final m = Map<String, dynamic>.from(e as Map);
+        m['isOverride'] = true;
+        // Map override fields to standard fields for UI
+        m['id'] = m['override_id'];
+        m['name'] = m['workout_name'];
+        return m;
+      }).toList();
+
       setState(() {
-        _orgExercises = dataList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        _orgExercises = [...mappedCustom, ...mappedOverrides];
         _filteredExercises = List.from(_orgExercises);
         _isLoading = false;
       });
@@ -57,6 +76,33 @@ class _OrganizationWorkoutLibraryScreenState
     });
   }
 
+  Future<void> _deleteOverride(int overrideId) async {
+    try {
+      final res = await DioClient().dio.delete(ApiUris.gymWorkoutLibraryDetail(overrideId));
+      if (res.statusCode == 204 || res.statusCode == 200) {
+        Dialogs.showSnack(msg: 'Exercise override deleted');
+        _fetchGymExercises();
+      } else {
+        Dialogs.showSnack(msg: 'Failed to delete exercise override');
+      }
+    } catch (e) {
+      Dialogs.showSnack(msg: 'Failed to delete exercise override');
+    }
+  }
+
+  void _showEditOverrideSheet(Map<String, dynamic> ex) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _EditOverrideSheet(
+        exercise: ex,
+        onExerciseUpdated: _fetchGymExercises,
+      ),
+    );
+  }
+
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -68,7 +114,10 @@ class _OrganizationWorkoutLibraryScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const _SelectExerciseSheet(),
+      builder: (context) => _SelectExerciseSheet(
+        orgId: widget.orgDetails.id!,
+        onExerciseAdded: _fetchGymExercises,
+      ),
     );
   }
 
@@ -183,7 +232,22 @@ class _OrganizationWorkoutLibraryScreenState
                                 ],
                               ),
                             ),
-                            const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                            if (ex['isOverride'] == true)
+                              PopupMenuButton<String>(
+                                onSelected: (value) {
+                                  if (value == 'edit') {
+                                    _showEditOverrideSheet(ex);
+                                  } else if (value == 'delete') {
+                                    _deleteOverride(ex['override_id'] as int);
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                                  const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                                ],
+                              )
+                            else
+                              const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
                           ],
                         ),
                       );
@@ -217,7 +281,13 @@ class _OrganizationWorkoutLibraryScreenState
 }
 
 class _SelectExerciseSheet extends StatefulWidget {
-  const _SelectExerciseSheet();
+  final int orgId;
+  final VoidCallback onExerciseAdded;
+
+  const _SelectExerciseSheet({
+    required this.orgId,
+    required this.onExerciseAdded,
+  });
 
   @override
   State<_SelectExerciseSheet> createState() => _SelectExerciseSheetState();
@@ -267,6 +337,30 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
       }).toList();
     });
   }
+
+  Future<void> _addExerciseToLibrary(Map<String, dynamic> ex) async {
+    setState(() => ex['isAdded'] = true);
+    try {
+      final res = await DioClient().dio.post(
+        ApiUris.gymWorkoutLibrary,
+        data: {
+          "organization_id": widget.orgId,
+          "workout_id": ex['id'],
+          "is_visible": true,
+        },
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        widget.onExerciseAdded();
+      } else {
+        setState(() => ex['isAdded'] = false);
+        Dialogs.showSnack(msg: 'Failed to add exercise');
+      }
+    } catch (e) {
+      setState(() => ex['isAdded'] = false);
+      Dialogs.showSnack(msg: 'Failed to add exercise');
+    }
+  }
+
 
   void _showCreateExerciseSheet() {
     Navigator.pop(context); // Close the current sheet
@@ -381,9 +475,7 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
                           InkWell(
                             onTap: () {
                               if (!isAdded) {
-                                setState(() {
-                                  ex['isAdded'] = true;
-                                });
+                                _addExerciseToLibrary(ex);
                               }
                             },
                             child: Container(
@@ -786,6 +878,130 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                   ],
                 ),
               ),
+      ),
+    );
+  }
+}
+
+
+class _EditOverrideSheet extends StatefulWidget {
+  final Map<String, dynamic> exercise;
+  final VoidCallback onExerciseUpdated;
+
+  const _EditOverrideSheet({
+    required this.exercise,
+    required this.onExerciseUpdated,
+  });
+
+  @override
+  State<_EditOverrideSheet> createState() => _EditOverrideSheetState();
+}
+
+class _EditOverrideSheetState extends State<_EditOverrideSheet> {
+  final _videoUrlController = TextEditingController();
+  final _instructionsController = TextEditingController();
+  bool _isVisible = true;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _videoUrlController.text = widget.exercise['gym_video_url']?.toString() ?? '';
+    _instructionsController.text = widget.exercise['gym_instructions']?.toString() ?? '';
+    _isVisible = widget.exercise['is_visible'] == true;
+  }
+
+  Future<void> _saveOverride() async {
+    setState(() => _isSaving = true);
+    try {
+      final overrideId = widget.exercise['override_id'] as int;
+      final res = await DioClient().dio.put(
+        ApiUris.gymWorkoutLibraryDetail(overrideId),
+        data: {
+          'video_url': _videoUrlController.text.trim(),
+          'instructions': _instructionsController.text.trim(),
+          'is_visible': _isVisible,
+        },
+      );
+      if (res.statusCode == 200 || res.statusCode == 204) {
+        widget.onExerciseUpdated();
+        if (mounted) Navigator.pop(context);
+      } else {
+        Dialogs.showSnack(msg: 'Failed to update exercise override');
+      }
+    } catch (e) {
+      Dialogs.showSnack(msg: 'Failed to update exercise override');
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 20, right: 20, top: 20,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Edit Exercise Override', style: AppStyles.text16Px.poppins.w600),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Icon(Icons.close),
+              )
+            ],
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _videoUrlController,
+            decoration: InputDecoration(
+              labelText: 'Video URL (Optional)',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _instructionsController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              labelText: 'Gym Instructions (Optional)',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SwitchListTile(
+            title: const Text('Visible to Gym Members'),
+            value: _isVisible,
+            onChanged: (val) => setState(() => _isVisible = val),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSaving ? null : _saveOverride,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _isSaving
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : Text('Save Changes', style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white)),
+            ),
+          ),
+          const SizedBox(height: 30),
+        ],
       ),
     );
   }
