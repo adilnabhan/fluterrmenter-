@@ -49,7 +49,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     setState(() => _isLoadingReviews = true);
     try {
       final uri = (widget.isViewOnly && widget.trainerId != null)
-          ? '?trainer_id='
+          ? '${ApiUris.trainerReviews}?trainer_id=${widget.trainerId}'
           : ApiUris.trainerReviews;
       final res = await DioClient().dio.get(uri);
       if (res.statusCode == 200) {
