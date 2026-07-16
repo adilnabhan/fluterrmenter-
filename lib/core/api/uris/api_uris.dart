@@ -25,7 +25,8 @@ final class ApiUris {
   ///============================= Common =============================\\\
   static final categories = '${_v1}fitnesscenter/categories/';
   static final amenities = '${_v1}fitnesscenter/amenities/';
-  static String fitnessCenterReviews(int orgId) => '${_v1}fitnesscenter/organization/$orgId/reviews/';
+  static String fitnessCenterReviews(int orgId) =>
+      '${_v1}fitnesscenter/organization/$orgId/reviews/';
 
   ///============================= Organization =============================\\\
   ///
@@ -42,7 +43,8 @@ final class ApiUris {
       '${_v1}fitnesscenter/organization/$orgId/update/';
   static String deletePhoto(int orgId, int photoId) =>
       '${_v1}fitnesscenter/organization/$orgId/photos/$photoId/delete';
-  static final fcOrganizationReviews = '${_v1}fitnesscenter/organization/reviews/';
+  static final fcOrganizationReviews =
+      '${_v1}fitnesscenter/organization/reviews/';
 
   ///============================= Subscription =============================\\\
   static final plans = '${_v1}subscription/discipl-subscription-plans/';
@@ -68,8 +70,7 @@ final class ApiUris {
   static final createMembershipPackage =
       '${_v1}fitnesscenter/membership-plans/';
   static final listMembershipPackages = '${_v1}fitnesscenter/membership-plans/';
-  static final customerRenewals =
-      '${_v1}fitnesscenter/customer_renewals/';
+  static final customerRenewals = '${_v1}fitnesscenter/customer_renewals/';
   static String updateMembershipPackage(int id) =>
       '${_v1}fitnesscenter/membership-plans/$id/';
   static String deleteMembershipPackage(int id) =>
@@ -86,7 +87,8 @@ final class ApiUris {
   static final addBankDetails = '${_v1}fitnesscenter/bank-details/';
 
   ///============================= Trainer =============================\\\
-  static final editTrainerBasicDetails = '${_v1}trainer/trainers/basic-details/';
+  static final editTrainerBasicDetails =
+      '${_v1}trainer/trainers/basic-details/';
   static final trainerDashboard = '${_v1}trainer/dashboard/';
   static final trainerCustomers = '${_v1}trainer/customers/';
   static String trainerCustomerDetails(int customerId) =>
