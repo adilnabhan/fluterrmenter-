@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/add_or_edit_memeber_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/add_customer_search_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/leads/add_or_edit_lead_screen.dart';
 
 class QuickActionsFab extends StatelessWidget {
@@ -83,9 +84,12 @@ class _QuickActionsSheet extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                    create: (context) => MembersAndLeadsCubit(orgId: orgId),
-                    child: AddOrEditMemeberScreen(orgId: orgId),
+                  builder: (context) => MultiBlocProvider(
+                    providers: [
+                      BlocProvider(create: (context) => MembersAndLeadsCubit(orgId: orgId)),
+                      BlocProvider(create: (context) => MembershipCubit(orgId: orgId.toString())),
+                    ],
+                    child: AddCustomerSearchScreen(orgId: orgId),
                   ),
                 ),
               );

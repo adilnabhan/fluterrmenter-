@@ -23,23 +23,44 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
   String _searchQuery = '';
   String _selectedGymFilter = 'All';
   final Map<int, bool> _submittingMap = {};
+  
+  String? _nextUrl;
+  bool _isFetchingMore = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _fetchClients();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        _fetchMoreClients();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchClients() async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
+      _nextUrl = null;
     });
 
     try {
       // 1. Fetch clients list
       final clientsResponse = await DioClient().dio.get<dynamic>(
         ApiUris.trainerCustomers,
+        queryParameters: {
+          'page_size': 10000,
+          if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
+        },
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -52,20 +73,39 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
       final Set<int> assignedCustomerIds = {};
       if (assignedResponse.statusCode == 200 && assignedResponse.data is List) {
         final List<dynamic> assignedList = assignedResponse.data as List<dynamic>;
+        final now = DateTime.now();
         for (var item in assignedList) {
           final map = Map<String, dynamic>.from(item as Map);
           if (map['is_assigned'] == true) {
-            assignedCustomerIds.add(map['customer_id'] as int);
+            bool isRecent = true;
+            final dateStr = map['assigned_at'] ?? map['created_at'] ?? map['date'] ?? map['updated_at'];
+            if (dateStr != null && dateStr is String && dateStr.isNotEmpty) {
+              final parsedDate = DateTime.tryParse(dateStr);
+              if (parsedDate != null) {
+                if (now.difference(parsedDate).inHours >= 12) {
+                  isRecent = false;
+                }
+              }
+            }
+            if (isRecent) {
+              assignedCustomerIds.add(map['customer_id'] as int);
+            }
           }
         }
       }
 
       if (clientsResponse.statusCode == 200) {
-        final List<dynamic> data = (clientsResponse.data is Map)
-            ? (List<dynamic>.from((clientsResponse.data as Map)['results'] as List? ?? []))
-            : (clientsResponse.data as List<dynamic>);
+        final data = clientsResponse.data;
+        List<dynamic> results = [];
+        if (data is Map) {
+          results = List<dynamic>.from(data['results'] as List? ?? []);
+          _nextUrl = data['next']?.toString();
+        } else if (data is List) {
+          results = data;
+          _nextUrl = null;
+        }
 
-        final parsedClients = data.map((e) {
+        final parsedClients = results.map((e) {
           final map = Map<String, dynamic>.from(e as Map);
           final customerId = map['customer_id'] as int;
           return {
@@ -92,6 +132,87 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         _isLoading = false;
       });
       Dialogs.showSnack(msg: 'Error loading clients: ${e.toString()}');
+    }
+  }
+
+  Future<void> _fetchMoreClients() async {
+    if (_isFetchingMore || _nextUrl == null || !mounted) return;
+
+    setState(() {
+      _isFetchingMore = true;
+    });
+
+    try {
+      final clientsResponse = await DioClient().dio.get<dynamic>(
+        _nextUrl!,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      final assignedResponse = await DioClient().dio.get<dynamic>(
+        ApiUris.assignWorkoutPlan(widget.planId),
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      final Set<int> assignedCustomerIds = {};
+      if (assignedResponse.statusCode == 200 && assignedResponse.data is List) {
+        final List<dynamic> assignedList = assignedResponse.data as List<dynamic>;
+        final now = DateTime.now();
+        for (var item in assignedList) {
+          final map = Map<String, dynamic>.from(item as Map);
+          if (map['is_assigned'] == true) {
+            bool isRecent = true;
+            final dateStr = map['assigned_at'] ?? map['created_at'] ?? map['date'] ?? map['updated_at'];
+            if (dateStr != null && dateStr is String && dateStr.isNotEmpty) {
+              final parsedDate = DateTime.tryParse(dateStr);
+              if (parsedDate != null) {
+                if (now.difference(parsedDate).inHours >= 12) {
+                  isRecent = false;
+                }
+              }
+            }
+            if (isRecent) {
+              assignedCustomerIds.add(map['customer_id'] as int);
+            }
+          }
+        }
+      }
+
+      if (clientsResponse.statusCode == 200) {
+        final data = clientsResponse.data;
+        List<dynamic> results = [];
+        if (data is Map) {
+          results = List<dynamic>.from(data['results'] as List? ?? []);
+          _nextUrl = data['next']?.toString();
+        } else if (data is List) {
+          results = data;
+          _nextUrl = null;
+        }
+
+        final parsedClients = results.map((e) {
+          final map = Map<String, dynamic>.from(e as Map);
+          final customerId = map['customer_id'] as int;
+          return {
+            ...map,
+            'is_assigned': assignedCustomerIds.contains(customerId),
+          };
+        }).toList();
+
+        if (!mounted) return;
+        setState(() {
+          _clients.addAll(parsedClients);
+          _isFetchingMore = false;
+        });
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _isFetchingMore = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isFetchingMore = false;
+      });
     }
   }
 
@@ -252,6 +373,11 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
               setState(() {
                 _searchQuery = val;
               });
+              EasyDebounce.debounce(
+                'assign-clients-search',
+                const Duration(milliseconds: 400),
+                () => _fetchClients(),
+              );
             },
             decoration: InputDecoration(
               hintText: "Search by client's name",
@@ -325,9 +451,16 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                         ),
                       )
                     : ListView.separated(
-                        itemCount: filtered.length,
+                        controller: _scrollController,
+                        itemCount: filtered.length + (_isFetchingMore ? 1 : 0),
                         separatorBuilder: (context, index) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
+                          if (index == filtered.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
                           final client = filtered[index];
                           final int customerId = client['customer_id'] as int;
                           final String name = client['name'] as String? ?? 'Client';
@@ -383,16 +516,20 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                                             child: CircularProgressIndicator(strokeWidth: 2),
                                           )
                                         : isAssigned
-                                            ? Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius: BorderRadius.circular(20),
-                                                  border: Border.all(color: const Color(0xFFE57373)),
-                                                ),
-                                                child: Text(
-                                                  'Assigned',
-                                                  style: AppStyles.text12Px.poppins.w600.copyWith(color: const Color(0xFFD32F2F)),
+                                            ? InkWell(
+                                                onTap: () => _assignPlan(customerId, name, isAssignedToMe),
+                                                borderRadius: BorderRadius.circular(20),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(20),
+                                                    border: Border.all(color: const Color(0xFFE57373)),
+                                                  ),
+                                                  child: Text(
+                                                    'Assigned',
+                                                    style: AppStyles.text12Px.poppins.w600.copyWith(color: const Color(0xFFD32F2F)),
+                                                  ),
                                                 ),
                                               )
                                             : ElevatedButton(

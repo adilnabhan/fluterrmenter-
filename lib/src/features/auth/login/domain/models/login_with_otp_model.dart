@@ -56,6 +56,8 @@ class TrainerModel with _$TrainerModel {
     @JsonKey(name: 'profile_step') int? profileStep,
     @JsonKey(name: 'certificates') List<CertificateModel>? certificates,
     @JsonKey(name: 'portfolio_images') List<PortfolioImageModel>? portfolioImages,
+    @JsonKey(name: 'clients_count') int? clientsCount,
+    @JsonKey(name: 'verified_workouts_count') int? verifiedWorkoutsCount,
   }) = _TrainerModel;
 
   factory TrainerModel.fromJson(Map<String, dynamic> json) =>

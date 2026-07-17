@@ -57,167 +57,225 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
             builder:
                 (context, state) => state.list.fold(
                   () => const Center(child: CircularProgressIndicator()),
-                  (either) => either.fold(
-                    (error) => const Center(child: Text('Error')),
-                    (orgsList) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.disabledButton),
-                        ),
-                        child: ListView(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          children: [
-                            ...?orgsList.result?.map((org) {
-                              return Column(
-                                children: [
-                                  InkWell(
-                                    overlayColor: const WidgetStatePropertyAll(
-                                      Colors.transparent,
+                  (
+                    either,
+                  ) => either.fold((error) => const Center(child: Text('Error')), (
+                    orgsList,
+                  ) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.disabledButton),
+                      ),
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        children: [
+                          ...?orgsList.result?.map((org) {
+                            return Column(
+                              children: [
+                                InkWell(
+                                  overlayColor: const WidgetStatePropertyAll(
+                                    Colors.transparent,
+                                  ),
+                                  onTap: () {
+                                    _cubit.selectOrganization(org);
+                                    context.pop();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
                                     ),
-                                    onTap: () {
-                                      _cubit.selectOrganization(org);
-                                      context.pop();
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          SizedBox.square(
-                                            dimension: 48,
-                                            child: AbsorbPointer(
-                                              child: ProfileImage(
-                                                isEdit: false,
-                                                radius: 48,
-                                                url: org.logo ?? '',
-                                              ),
+                                    child: Row(
+                                      children: [
+                                        SizedBox.square(
+                                          dimension: 48,
+                                          child: AbsorbPointer(
+                                            child: ProfileImage(
+                                              isEdit: false,
+                                              radius: 48,
+                                              url: org.logo ?? '',
                                             ),
                                           ),
-                                          const SizedBox(width: 16),
-                                          Text(
-                                            org.name ?? '',
-                                            style: AppStyles.text14Px.dark,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const Divider(
-                                    thickness: 1,
-                                    color: Color(0xffDDDDDD),
-                                  ),
-                                ],
-                              );
-                            }),
-
-                            ...?context.watch<AppCubit>().state.accounts.where((a) => a.userRole == 35).map((account) {
-                              return Column(
-                                children: [
-                                  InkWell(
-                                    overlayColor: const WidgetStatePropertyAll(
-                                      Colors.transparent,
-                                    ),
-                                    onTap: () {
-                                      context.read<AppCubit>().switchAccount(account);
-                                      context.pushAndRemoveUntil(const TrainerMainScreen());
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          SizedBox.square(
-                                            dimension: 48,
-                                            child: AbsorbPointer(
-                                              child: ProfileImage(
-                                                isEdit: false,
-                                                radius: 48,
-                                                url: account.profilePicture as String? ?? '',
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '${account.firstName ?? ""} ${account.lastName ?? ""}'.trim().isNotEmpty 
-                                                    ? '${account.firstName ?? ""} ${account.lastName ?? ""}'.trim() 
-                                                    : (account.mobileNumber ?? 'Trainer Profile'),
-                                                style: AppStyles.text14Px.dark,
-                                              ),
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                'Trainer',
-                                                style: AppStyles.text12Px.poppins.w400.copyWith(
-                                                  color: AppColors.textGrey,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const Divider(
-                                    thickness: 1,
-                                    color: Color(0xffDDDDDD),
-                                  ),
-                                ],
-                              );
-                            }),
-
-                            ///* Add button
-                            InkWell(
-                              onTap: () {
-                                context
-                                  ..pop()
-                                  ..push(
-                                    const SentOtpScreen(),
-                                  );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary.withValues(alpha: 
-                                          0.1,
                                         ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.add,
-                                        color: AppColors.primary,
-                                      ),
+                                        const SizedBox(width: 16),
+                                        Text(
+                                          org.name ?? '',
+                                          style: AppStyles.text14Px.dark,
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 16),
-                                    Text(
-                                      'Add Account',
-                                      style: AppStyles.text14Px.dark,
-                                    ),
-                                  ],
+                                  ),
                                 ),
+                                const Divider(
+                                  thickness: 1,
+                                  color: Color(0xffDDDDDD),
+                                ),
+                              ],
+                            );
+                          }),
+
+                          ...(() {
+                            final appState = context.watch<AppCubit>().state;
+                            final rawAccounts = appState.accounts;
+                            
+                            final accounts = rawAccounts.fold<List<LoginSuccessModel>>([], (prev, acc) {
+                              if (acc.userRole == 35 && !prev.any((a) => a.mobileNumber == acc.mobileNumber && a.userRole == acc.userRole)) {
+                                prev.add(acc);
+                              }
+                              return prev;
+                            });
+
+                            return accounts.map((account) {
+                              final roleLabel =
+                                  account.userRole == 35
+                                      ? 'Trainer'
+                                      : 'Fitness Center Owner';
+                              return Column(
+                                children: [
+                                  InkWell(
+                                    overlayColor: const WidgetStatePropertyAll(
+                                      Colors.transparent,
+                                    ),
+                                    onTap: () {
+                                      context.read<AppCubit>().switchAccount(
+                                        account,
+                                      );
+                                      final target =
+                                          account.userRole == 35
+                                              ? const TrainerMainScreen()
+                                              : const OrganizationListingScreen();
+                                      context.pushAndRemoveUntil(target);
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          SizedBox.square(
+                                            dimension: 48,
+                                            child: AbsorbPointer(
+                                              child: ProfileImage(
+                                                isEdit: false,
+                                                radius: 48,
+                                                url:
+                                                    account.profilePicture
+                                                        as String? ??
+                                                    '',
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '${account.firstName ?? ""} ${account.lastName ?? ""}'
+                                                          .trim()
+                                                          .isNotEmpty
+                                                      ? '${account.firstName ?? ""} ${account.lastName ?? ""}'
+                                                          .trim()
+                                                      : (account.mobileNumber ??
+                                                          'User'),
+                                                  style: AppStyles.text14Px.dark,
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  roleLabel,
+                                                  style: AppStyles
+                                                      .text12Px
+                                                      .poppins
+                                                      .w400
+                                                      .copyWith(
+                                                        color: AppColors.textGrey,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.logout, color: Colors.red),
+                                            onPressed: () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (ctx) => AlertDialog(
+                                                  title: const Text('Logout Account'),
+                                                  content: const Text('Are you sure you want to logout from this account?'),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(ctx),
+                                                      child: const Text('Cancel'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(ctx);
+                                                        context.read<AppCubit>().removeSpecificAccount(account);
+                                                      },
+                                                      child: const Text('Logout', style: TextStyle(color: Colors.red)),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const Divider(
+                                    thickness: 1,
+                                    color: Color(0xffDDDDDD),
+                                  ),
+                                ],
+                              );
+                            });
+                          }()),
+
+                          ///* Add button
+                          InkWell(
+                            onTap: () {
+                              context
+                                ..pop()
+                                ..push(const SentOtpScreen());
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.add,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Text(
+                                    'Add Account',
+                                    style: AppStyles.text14Px.dark,
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
                 ),
           ),
         ),

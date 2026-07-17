@@ -354,7 +354,7 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                                   CircleAvatar(
                                     radius: 24,
                                     backgroundImage: NetworkImage(
-                                      member.customerDetails.profilePicture ??
+                                      member.customerDetails?.profilePicture ??
                                           '',
                                     ),
                                   ),
@@ -367,12 +367,12 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          member.customerDetails.name,
+                                          member.customerDetails?.name ?? '',
                                           style: AppStyles.text14Px.poppins.w600
                                               .copyWith(color: Colors.black87),
                                         ),
                                         Text(
-                                          member.customerDetails.mobileNumber,
+                                          member.customerDetails?.mobileNumber ?? '',
                                           style: AppStyles.text12Px.copyWith(
                                             color: Colors.grey.shade700,
                                           ),
@@ -381,8 +381,8 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                                         Text(
                                           member
                                               .customerDetails
-                                              .activePlans
-                                              .planName,
+                                              ?.activePlans
+                                              ?.planName ?? '',
                                           style: AppStyles.text12Px.copyWith(
                                             color: Colors.grey.shade600,
                                           ),
@@ -416,7 +416,7 @@ class _PaymentUpComingState extends State<_PaymentUpComing> {
                                         ),
                                         const SizedBox(width: 5),
                                         Text(
-                                          'Expiring in ${member.daysUntilExpire} days',
+                                          'Expiring in ${member.daysUntilExpire ?? 0} days',
                                           style: AppStyles.text12Px.poppins.w500
                                               .copyWith(
                                                 color: Colors.orange.shade800,

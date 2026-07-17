@@ -21,16 +21,53 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   String _statusFilter = 'all'; // 'active' or 'all'
   String _selectedGymFilter = 'All'; // Selected gym capsule filter
 
+  String? _nextUrl;
+  bool _isFetchingMore = false;
+  final ScrollController _scrollController = ScrollController();
+
+  // Static cache to avoid refetching on every screen visit
+  static List<Map<String, dynamic>>? _cachedClients;
+  static String? _cachedNextUrl;
+
   @override
   void initState() {
     super.initState();
     _fetchClients();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        _fetchMoreClients();
+      }
+    });
   }
 
-  Future<void> _fetchClients() async {
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchClients({bool forceRefresh = false}) async {
     if (!mounted) return;
+
+    if (!forceRefresh &&
+        _cachedClients != null &&
+        _searchQuery.trim().isEmpty &&
+        _statusFilter == 'all') {
+      setState(() {
+        _clients = List.from(_cachedClients!);
+        _nextUrl = _cachedNextUrl;
+        _isLoading = false;
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
+      if (forceRefresh) {
+        _clients = [];
+        _nextUrl = null;
+      }
     });
 
     try {
@@ -38,19 +75,34 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         ApiUris.trainerCustomers,
         queryParameters: {
           'status': _statusFilter,
+          'page_size': 10000,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = (response.data is Map)
-            ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
-            : (response.data as List<dynamic>);
+        final data = response.data;
+        List<dynamic> results = [];
+        if (data is Map) {
+          results = List<dynamic>.from(data['results'] as List? ?? []);
+          _nextUrl = data['next']?.toString();
+        } else if (data is List) {
+          results = data;
+          _nextUrl = null;
+        }
+        
         if (!mounted) return;
         setState(() {
-          _clients = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _clients =
+              results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
+
+          // Cache the baseline data
+          if (_searchQuery.trim().isEmpty && _statusFilter == 'all') {
+            _cachedClients = List.from(_clients);
+            _cachedNextUrl = _nextUrl;
+          }
         });
       } else {
         if (!mounted) return;
@@ -65,6 +117,51 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         _isLoading = false;
       });
       Dialogs.showSnack(msg: 'Error loading clients: ${e.toString()}');
+    }
+  }
+
+  Future<void> _fetchMoreClients() async {
+    if (_isFetchingMore || _nextUrl == null || !mounted) return;
+
+    setState(() {
+      _isFetchingMore = true;
+    });
+
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        _nextUrl!,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        List<dynamic> results = [];
+        if (data is Map) {
+          results = List<dynamic>.from(data['results'] as List? ?? []);
+          _nextUrl = data['next']?.toString();
+        } else if (data is List) {
+          results = data;
+          _nextUrl = null;
+        }
+
+        if (!mounted) return;
+        setState(() {
+          _clients.addAll(
+            results.map((e) => Map<String, dynamic>.from(e as Map)),
+          );
+          _isFetchingMore = false;
+        });
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _isFetchingMore = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isFetchingMore = false;
+      });
     }
   }
 
@@ -101,10 +198,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         automaticallyImplyLeading: false,
         leading: widget.isPushed ? const PopButton().center : null,
         centerTitle: false,
-        title: Text(
-          'Clients',
-          style: AppStyles.text20Px.poppins.w600.dark,
-        ),
+        title: Text('Clients', style: AppStyles.text20Px.poppins.w600.dark),
         actions: [
           IconButton(
             onPressed: () {
@@ -115,7 +209,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                 ),
               );
             },
-            icon: const Icon(Icons.settings_outlined, color: AppColors.textDark),
+            icon: const Icon(
+              Icons.settings_outlined,
+              color: AppColors.textDark,
+            ),
           ),
           const SizedBox(width: 8),
         ],
@@ -146,7 +243,9 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                   icon: const Icon(Icons.search, color: AppColors.textGrey),
                   hintText: 'Search for name or phone number',
                   fillColor: Colors.white,
-                  hintStyle: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                  hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                    color: AppColors.textGrey,
+                  ),
                   border: InputBorder.none,
                 ),
               ),
@@ -165,40 +264,51 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: _gymFilters.map((gymName) {
-                  final isSelected = _selectedGymFilter == gymName;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: InkWell(
-                      onTap: () {
-                        if (!mounted) return;
-                        setState(() {
-                          _selectedGymFilter = gymName;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected ? AppColors.primary : Colors.white,
+                children:
+                    _gymFilters.map((gymName) {
+                      final isSelected = _selectedGymFilter == gymName;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: InkWell(
+                          onTap: () {
+                            if (!mounted) return;
+                            setState(() {
+                              _selectedGymFilter = gymName;
+                            });
+                          },
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected ? AppColors.primary : Colors.grey.shade300,
-                            width: 1,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            gymName,
-                            style: AppStyles.text12Px.poppins.w600.copyWith(
-                              color: isSelected ? Colors.white : AppColors.textDark,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected ? AppColors.primary : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color:
+                                    isSelected
+                                        ? AppColors.primary
+                                        : Colors.grey.shade300,
+                                width: 1,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                gymName,
+                                style: AppStyles.text12Px.poppins.w600.copyWith(
+                                  color:
+                                      isSelected
+                                          ? Colors.white
+                                          : AppColors.textDark,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
               ),
             ),
 
@@ -222,37 +332,57 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(color: Colors.grey.shade200),
                   ),
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: 'all',
-                      child: Text(
-                        'All Clients',
-                        style: AppStyles.text12Px.poppins.copyWith(
-                          fontWeight: _statusFilter == 'all' ? FontWeight.w600 : FontWeight.w400,
-                          color: _statusFilter == 'all' ? AppColors.primary : AppColors.textDark,
+                  itemBuilder:
+                      (BuildContext context) => <PopupMenuEntry<String>>[
+                        PopupMenuItem<String>(
+                          value: 'all',
+                          child: Text(
+                            'All Clients',
+                            style: AppStyles.text12Px.poppins.copyWith(
+                              fontWeight:
+                                  _statusFilter == 'all'
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                              color:
+                                  _statusFilter == 'all'
+                                      ? AppColors.primary
+                                      : AppColors.textDark,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'active',
-                      child: Text(
-                        'Active Clients',
-                        style: AppStyles.text12Px.poppins.copyWith(
-                          fontWeight: _statusFilter == 'active' ? FontWeight.w600 : FontWeight.w400,
-                          color: _statusFilter == 'active' ? AppColors.primary : AppColors.textDark,
+                        PopupMenuItem<String>(
+                          value: 'active',
+                          child: Text(
+                            'Active Clients',
+                            style: AppStyles.text12Px.poppins.copyWith(
+                              fontWeight:
+                                  _statusFilter == 'active'
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                              color:
+                                  _statusFilter == 'active'
+                                      ? AppColors.primary
+                                      : AppColors.textDark,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
+                      ],
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: _statusFilter != 'all' ? const Color(0xffFFEAEA) : Colors.white,
+                      color:
+                          _statusFilter != 'all'
+                              ? const Color(0xffFFEAEA)
+                              : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: _statusFilter != 'all'
-                            ? AppColors.primary.withOpacity(0.2)
-                            : Colors.grey.shade300,
+                        color:
+                            _statusFilter != 'all'
+                                ? AppColors.primary.withOpacity(0.2)
+                                : Colors.grey.shade300,
                       ),
                     ),
                     child: Row(
@@ -261,13 +391,19 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                         Icon(
                           Icons.filter_alt_outlined,
                           size: 13,
-                          color: _statusFilter != 'all' ? AppColors.primary : AppColors.textDark,
+                          color:
+                              _statusFilter != 'all'
+                                  ? AppColors.primary
+                                  : AppColors.textDark,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           _statusFilter == 'all' ? 'Filter' : 'Active Clients',
                           style: AppStyles.text12Px.poppins.w600.copyWith(
-                            color: _statusFilter != 'all' ? AppColors.primary : AppColors.textDark,
+                            color:
+                                _statusFilter != 'all'
+                                    ? AppColors.primary
+                                    : AppColors.textDark,
                           ),
                         ),
                         if (_statusFilter != 'all') ...[
@@ -280,11 +416,19 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                               });
                               _fetchClients();
                             },
-                            child: const Icon(Icons.close, size: 12, color: AppColors.primary),
+                            child: const Icon(
+                              Icons.close,
+                              size: 12,
+                              color: AppColors.primary,
+                            ),
                           ),
                         ] else ...[
                           const SizedBox(width: 4),
-                          const Icon(Icons.keyboard_arrow_down, size: 14, color: AppColors.textDark),
+                          const Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 14,
+                            color: AppColors.textDark,
+                          ),
                         ],
                       ],
                     ),
@@ -299,186 +443,277 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Text(
               '${filtered.length} members',
-              style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
+              style: AppStyles.text14Px.poppins.w400.copyWith(
+                color: AppColors.textGrey,
+              ),
             ),
           ),
 
           // 5. Clients list
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filtered.isEmpty
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : filtered.isEmpty
                     ? Center(
-                        child: Text(
-                          'No clients found!',
-                          style: AppStyles.text14Px.poppins.w400.dark,
-                        ),
-                      )
+                      child: Text(
+                        'No clients found!',
+                        style: AppStyles.text14Px.poppins.w400.dark,
+                      ),
+                    )
                     : RefreshIndicator(
-                        onRefresh: _fetchClients,
-                        child: ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final client = filtered[index];
-                            final bool isAssignedToMe = client['is_assigned_to_me'] as bool? ?? false;
-                            final int customerId = client['customer_id'] as int;
-                            final String name = client['name'] as String? ?? 'N/A';
-                            final String? pic = client['profile_picture'] as String?;
-                            final String category = client['category'] as String? ?? 'Strength';
-                            final String orgName = client['organization_name'] as String? ?? 'Direct Client';
-                            final String goal = client['target_goal'] as String? ?? 'General Fitness';
+                      onRefresh: () => _fetchClients(forceRefresh: true),
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                        itemCount: filtered.length + (_isFetchingMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == filtered.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+                          final client = filtered[index];
+                          final bool isAssignedToMe =
+                              client['is_assigned_to_me'] as bool? ?? false;
+                          final int customerId = client['customer_id'] as int;
+                          final String name =
+                              client['name'] as String? ?? 'N/A';
+                          final String? pic =
+                              client['profile_picture'] as String?;
+                          final String category =
+                              client['category'] as String? ?? 'Strength';
+                          final String orgName =
+                              client['organization_name'] as String? ??
+                              'Direct Client';
+                          final String goal =
+                              client['target_goal'] as String? ??
+                              'General Fitness';
 
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: .02),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: .02),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: InkWell(
+                              onTap: () async {
+                                final result = await Navigator.push<dynamic>(
+                                  context,
+                                  MaterialPageRoute<dynamic>(
+                                    builder:
+                                        (context) => TrainerClientDetailScreen(
+                                          customerId: customerId,
+                                        ),
+                                  ),
+                                );
+                                if (result == true) {
+                                  _fetchClients(forceRefresh: true);
+                                }
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Top Row
+                                  Row(
+                                    children: [
+                                      // Profile picture
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.iconBackground,
+                                        ),
+                                        child: ClipOval(
+                                          child:
+                                              pic != null
+                                                  ? Image.network(
+                                                    pic,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder:
+                                                        (_, __, ___) =>
+                                                            const Icon(
+                                                              Icons.person,
+                                                              color:
+                                                                  AppColors
+                                                                      .primary,
+                                                            ),
+                                                  )
+                                                  : const Icon(
+                                                    Icons.person,
+                                                    color: AppColors.primary,
+                                                  ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      // Name and Category
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              name,
+                                              style:
+                                                  AppStyles
+                                                      .text14Px
+                                                      .poppins
+                                                      .w600
+                                                      .dark,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              category,
+                                              style: AppStyles
+                                                  .text12Px
+                                                  .poppins
+                                                  .w500
+                                                  .copyWith(
+                                                    color: AppColors.dark,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      // Assign Workout / Active
+                                      if (isAssignedToMe)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xffE2F6EA),
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'Active',
+                                            style: AppStyles
+                                                .text12Px
+                                                .poppins
+                                                .w500
+                                                .copyWith(
+                                                  color: const Color(
+                                                    0xff27AE60,
+                                                  ),
+                                                ),
+                                          ),
+                                        )
+                                      else
+                                        OutlinedButton(
+                                          onPressed:
+                                              () => _showAssignPlanBottomSheet(
+                                                context,
+                                                client,
+                                              ),
+                                          style: OutlinedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xffE2F6EA,
+                                            ),
+                                            side: BorderSide(
+                                              color: Colors.green.shade700,
+                                              width: 1.5,
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
+                                            minimumSize: Size.zero,
+                                            tapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'Assign Workout',
+                                            style: AppStyles
+                                                .text12Px
+                                                .poppins
+                                                .w500
+                                                .copyWith(
+                                                  color: Colors.green.shade700,
+                                                ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Bottom Row
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      // Org Name and Goal
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              orgName,
+                                              style: AppStyles
+                                                  .text12Px
+                                                  .poppins
+                                                  .w500
+                                                  .copyWith(
+                                                    color: AppColors.dark,
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Goal: $goal',
+                                              style: AppStyles
+                                                  .text12Px
+                                                  .poppins
+                                                  .w500
+                                                  .copyWith(
+                                                    color: AppColors.dark,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              child: InkWell(
-                                onTap: () async {
-                                  await Navigator.push<dynamic>(
-                                    context,
-                                    MaterialPageRoute<dynamic>(
-                                      builder: (context) => TrainerClientDetailScreen(customerId: customerId),
-                                    ),
-                                  );
-                                  _fetchClients();
-                                },
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Top Row
-                                    Row(
-                                      children: [
-                                        // Profile picture
-                                        Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: AppColors.iconBackground,
-                                          ),
-                                          child: ClipOval(
-                                            child: pic != null
-                                                ? Image.network(
-                                                    pic,
-                                                    fit: BoxFit.cover,
-                                                    errorBuilder: (_, __, ___) =>
-                                                        const Icon(Icons.person, color: AppColors.primary),
-                                                  )
-                                                : const Icon(Icons.person, color: AppColors.primary),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        // Name and Category
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                name,
-                                                style: AppStyles.text14Px.poppins.w600.dark,
-                                              ),
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                category,
-                                                style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.dark),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        // Assign Workout / Active
-                                        if (isAssignedToMe)
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xffE2F6EA),
-                                              borderRadius: BorderRadius.circular(16),
-                                            ),
-                                            child: Text(
-                                              'Active',
-                                              style: AppStyles.text12Px.poppins.w500.copyWith(
-                                                color: const Color(0xff27AE60),
-                                              ),
-                                            ),
-                                          )
-                                        else
-                                          OutlinedButton(
-                                            onPressed: () => _showAssignPlanBottomSheet(context, client),
-                                            style: OutlinedButton.styleFrom(
-                                              backgroundColor: const Color(0xffE2F6EA),
-                                              side: BorderSide(color: Colors.green.shade700, width: 1.5),
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                              minimumSize: Size.zero,
-                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(16),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              'Assign Workout',
-                                              style: AppStyles.text12Px.poppins.w500.copyWith(
-                                                color: Colors.green.shade700,
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    // Bottom Row
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        // Org Name and Goal
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                orgName,
-                                                style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.dark),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                'Goal: $goal',
-                                                style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.dark),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        },
                       ),
+                    ),
           ),
         ],
       ),
     );
   }
 
-
-
-  void _showAssignPlanBottomSheet(BuildContext context, Map<String, dynamic> client) {
+  void _showAssignPlanBottomSheet(
+    BuildContext context,
+    Map<String, dynamic> client,
+  ) {
     final int customerId = client['customer_id'] as int;
     final String name = client['name'] as String? ?? 'N/A';
     final bool isAssignedToMe = client['is_assigned_to_me'] as bool? ?? false;
-    
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -489,7 +724,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
           customerName: name,
           isAssignedToMe: isAssignedToMe,
           onSuccess: () {
-            _fetchClients();
+            _fetchClients(forceRefresh: true);
           },
         );
       },
@@ -703,10 +938,12 @@ class _AssignPlanBottomSheetContent extends StatefulWidget {
   });
 
   @override
-  State<_AssignPlanBottomSheetContent> createState() => _AssignPlanBottomSheetContentState();
+  State<_AssignPlanBottomSheetContent> createState() =>
+      _AssignPlanBottomSheetContentState();
 }
 
-class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetContent> {
+class _AssignPlanBottomSheetContentState
+    extends State<_AssignPlanBottomSheetContent> {
   List<Map<String, dynamic>> _plans = [];
   bool _isLoading = true;
   String _searchQuery = '';
@@ -739,7 +976,8 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
         final List<dynamic> data = response.data as List<dynamic>;
         if (!mounted) return;
         setState(() {
-          _plans = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _plans =
+              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _isLoading = false;
         });
       } else {
@@ -764,7 +1002,9 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Text(
             'Assign Workout Title',
             style: AppStyles.text16Px.poppins.w600,
@@ -773,21 +1013,35 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
             controller: titleController,
             decoration: InputDecoration(
               hintText: 'Enter workout title',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text('Cancel', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.grey)),
+              child: Text(
+                'Cancel',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: Colors.grey,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              child: Text('Assign', style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white)),
+              child: Text(
+                'Assign',
+                style: AppStyles.text14Px.poppins.w600.copyWith(
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         );
@@ -814,10 +1068,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
       // Assign workout plan directly — backend resolves trainer from auth token
       final response = await DioClient().dio.post<dynamic>(
         ApiUris.assignWorkoutPlan(planId),
-        data: {
-          'customer_id': widget.customerId,
-          'title': finalTitle,
-        },
+        data: {'customer_id': widget.customerId, 'title': finalTitle},
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -940,8 +1191,14 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
             },
             decoration: InputDecoration(
               hintText: 'Search for workout plan',
-              hintStyle: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
-              prefixIcon: const Icon(Icons.search, color: AppColors.textGrey, size: 20),
+              hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                color: AppColors.textGrey,
+              ),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: AppColors.textGrey,
+                size: 20,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.grey.shade200),
@@ -959,84 +1216,94 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _plans.isEmpty
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _plans.isEmpty
                     ? Center(
-                        child: Text(
-                          'No workout plans found',
-                          style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                      child: Text(
+                        'No workout plans found',
+                        style: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
                         ),
-                      )
-                    : ListView.separated(
-                        itemCount: _plans.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final plan = _plans[index];
-                          final int planId = plan['id'] as int;
-                          final String planName = plan['plan_name'] as String;
-                          final String groupName = plan['group_name'] as String? ?? 'General';
-                          final int exerciseCount = plan['exercise_count'] as int? ?? 0;
-                          final bool isSubmitting = _submittingMap[planId] ?? false;
-
-                          return Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.borderGrey),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        planName,
-                                        style: AppStyles.text14Px.poppins.w600.dark,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Group: $groupName | Exercises: $exerciseCount',
-                                        style: AppStyles.text12Px.poppins.w400.copyWith(
-                                          color: AppColors.textGrey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                isSubmitting
-                                    ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      )
-                                    : ElevatedButton(
-                                        onPressed: () => _assignPlan(planId, planName),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF2E7D32),
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(20),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 8,
-                                          ),
-                                          elevation: 0,
-                                        ),
-                                        child: Text(
-                                          'Assign',
-                                          style: AppStyles.text12Px.poppins.w600,
-                                        ),
-                                      ),
-                              ],
-                            ),
-                          );
-                        },
                       ),
+                    )
+                    : ListView.separated(
+                      itemCount: _plans.length,
+                      separatorBuilder:
+                          (context, index) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final plan = _plans[index];
+                        final int planId = plan['id'] as int;
+                        final String planName = plan['plan_name'] as String;
+                        final String groupName =
+                            plan['group_name'] as String? ?? 'General';
+                        final int exerciseCount =
+                            plan['exercise_count'] as int? ?? 0;
+                        final bool isSubmitting =
+                            _submittingMap[planId] ?? false;
+
+                        return Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.borderGrey),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      planName,
+                                      style:
+                                          AppStyles.text14Px.poppins.w600.dark,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Group: $groupName | Exercises: $exerciseCount',
+                                      style: AppStyles.text12Px.poppins.w400
+                                          .copyWith(color: AppColors.textGrey),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              isSubmitting
+                                  ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : ElevatedButton(
+                                    onPressed:
+                                        () => _assignPlan(planId, planName),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF2E7D32),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    child: Text(
+                                      'Assign',
+                                      style: AppStyles.text12Px.poppins.w600,
+                                    ),
+                                  ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
           ),
         ],
       ),

@@ -1,4 +1,10 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:dio/dio.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mentor_mobile_app/src/features/organization/creation/presentation/components/brand_logo_picker.dart';
 
 class CreateTrainerProfessionalDetailsScreen extends StatefulWidget {
   const CreateTrainerProfessionalDetailsScreen({super.key});
@@ -15,6 +21,7 @@ class _CreateTrainerProfessionalDetailsScreenState
   late final FieldData<dynamic> _experience;
   late final FieldData<dynamic> _bio;
   final List<XFile> _certificates = [];
+  XFile? _profileImage;
   final ValueNotifier<List<({String label, String value})>>
   _selectedSpecializations =
       ValueNotifier<List<({String label, String value})>>([]);
@@ -66,10 +73,70 @@ class _CreateTrainerProfessionalDetailsScreenState
     super.dispose();
   }
 
-  void _onNext() {
-    // Collect data and move to success or next screen
-    // API calls commented out as per user request
-    context.push(const CreateTrainerResultsScreen());
+  bool _isLoading = false;
+
+  Future<void> _onNext() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final user = LocalStorageService().getUser();
+      // Update bio and experience
+      final formData = FormData.fromMap({
+        'experience_years': int.tryParse(_experience.controller?.text.trim() ?? '0') ?? 0,
+        'bio': _bio.controller?.text.trim() ?? '',
+        'user_type': 'trainer',
+      });
+      
+      if (_profileImage != null) {
+        formData.files.add(
+          MapEntry(
+            'profile_image',
+            await MultipartFile.fromFile(_profileImage!.path),
+          ),
+        );
+      }      
+      final response = await DioClient().dio.put<dynamic>(
+        ApiUris.editTrainerBasicDetails,
+        data: formData,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = response.data as Map<String, dynamic>;
+        final updatedUser = LoginSuccessModel.fromJson(responseData);
+        if (user != null) {
+          final mergedUser = user.copyWith(
+            experienceYears: updatedUser.experienceYears,
+            bio: updatedUser.bio,
+          );
+          LocalStorageService().saveUser(mergedUser);
+        }
+      }
+
+      // Upload Certificates
+      for (final file in _certificates) {
+        final certFormData = FormData.fromMap({
+          'certificate_name': file.name,
+          'issued_by': 'Trainer',
+          'issued_date': DateTime.now().toIso8601String().split('T').first,
+          'certificate_file': await MultipartFile.fromFile(file.path),
+        });
+        await DioClient().dio.post<dynamic>(
+          ApiUris.certificates,
+          data: certFormData,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        );
+      }
+
+      if (mounted) {
+        context.push(const CreateTrainerResultsScreen());
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Failed to upload details. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -107,6 +174,24 @@ class _CreateTrainerProfessionalDetailsScreenState
                   ],
                 );
               }),
+            ),
+            const SizedBox(height: 40),
+            Center(
+              child: BrandLogoPicker(
+                isEdit: true,
+                onChanged: (image) {
+                  setState(() {
+                    _profileImage = image;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: Text(
+                'Upload Profile Photo',
+                style: AppStyles.text14Px.poppins.w500.dark,
+              ),
             ),
             const SizedBox(height: 40),
             Text(
@@ -147,17 +232,21 @@ class _CreateTrainerProfessionalDetailsScreenState
             const SizedBox(height: 8),
             // Certification Upload Box
             InkWell(
-              onTap: () {
-                ImagePickerDialog(
+              onTap: () async {
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
                   allowMultiple: true,
-                  needRemove: false,
-                  onPickedImages: (images) {
-                    if (!mounted) return;
-                    setState(() {
-                      _certificates.addAll(images);
-                    });
-                  },
-                ).show(context);
+                );
+                
+                if (result != null && result.files.isNotEmpty) {
+                  if (!mounted) return;
+                  setState(() {
+                    _certificates.addAll(
+                      result.files.map((file) => XFile(file.path!)).toList(),
+                    );
+                  });
+                }
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 24),
@@ -206,13 +295,25 @@ class _CreateTrainerProfessionalDetailsScreenState
                           child: Column(
                             children: [
                               Expanded(
-                                child: Center(
-                                  child: Icon(
-                                    Icons.picture_as_pdf,
-                                    color: AppColors.primary.withOpacity(0.5),
-                                    size: 40,
-                                  ),
-                                ),
+                                child: file.name.toLowerCase().endsWith('.pdf')
+                                    ? Center(
+                                        child: Icon(
+                                          Icons.picture_as_pdf,
+                                          color: AppColors.primary.withOpacity(0.5),
+                                          size: 40,
+                                        ),
+                                      )
+                                    : ClipRRect(
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(12),
+                                          topRight: Radius.circular(12),
+                                        ),
+                                        child: Image.file(
+                                          File(file.path),
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                        ),
+                                      ),
                               ),
                               Container(
                                 padding: const EdgeInsets.all(8),
@@ -225,8 +326,10 @@ class _CreateTrainerProfessionalDetailsScreenState
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(
-                                      Icons.picture_as_pdf,
+                                    Icon(
+                                      file.name.toLowerCase().endsWith('.pdf')
+                                          ? Icons.picture_as_pdf
+                                          : Icons.image,
                                       color: AppColors.primary,
                                       size: 16,
                                     ),
@@ -284,6 +387,7 @@ class _CreateTrainerProfessionalDetailsScreenState
             Button.filled(
               title: 'Next',
               ontap: _onNext,
+              isLoading: _isLoading,
               buttonColor: AppColors.primary,
             ),
             const SizedBox(height: 20),

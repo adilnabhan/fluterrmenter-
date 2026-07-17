@@ -1,9 +1,9 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class MemberDetialsScreen extends StatefulWidget {
-  const MemberDetialsScreen({required this.memberData, super.key});
+  const MemberDetialsScreen({required this.memberId, super.key});
 
-  final MemberDataModel memberData;
+  final int memberId;
 
   @override
   State<MemberDetialsScreen> createState() => _MemberDetialsScreenState();
@@ -20,7 +20,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
   }
 
   Future<void> _fetch() async {
-    await _cubit.fetchMemberDetails(memberId: widget.memberData.id ?? 0);
+    await _cubit.fetchMemberDetails(memberId: widget.memberId);
   }
 
   @override
@@ -479,11 +479,11 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                   children: [
                     Expanded(
                       child: _buildDetailItem(
-                        icon: Icons.attach_money,
+                        icon: Icons.currency_rupee,
                         label: 'Amount',
                         value:
                             membership.amount != null
-                                ? '\$${membership.amount}'
+                                ? '₹${membership.amount}'
                                 : 'N/A',
                         color: Colors.green,
                       ),

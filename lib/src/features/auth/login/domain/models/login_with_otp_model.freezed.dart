@@ -1096,6 +1096,10 @@ mixin _$TrainerModel {
   @JsonKey(name: 'portfolio_images')
   List<PortfolioImageModel>? get portfolioImages =>
       throw _privateConstructorUsedError;
+  @JsonKey(name: 'clients_count')
+  int? get clientsCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'verified_workouts_count')
+  int? get verifiedWorkoutsCount => throw _privateConstructorUsedError;
 
   /// Serializes this TrainerModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1121,6 +1125,8 @@ abstract class $TrainerModelCopyWith<$Res> {
     @JsonKey(name: 'certificates') List<CertificateModel>? certificates,
     @JsonKey(name: 'portfolio_images')
     List<PortfolioImageModel>? portfolioImages,
+    @JsonKey(name: 'clients_count') int? clientsCount,
+    @JsonKey(name: 'verified_workouts_count') int? verifiedWorkoutsCount,
   });
 }
 
@@ -1144,6 +1150,8 @@ class _$TrainerModelCopyWithImpl<$Res, $Val extends TrainerModel>
     Object? profileStep = freezed,
     Object? certificates = freezed,
     Object? portfolioImages = freezed,
+    Object? clientsCount = freezed,
+    Object? verifiedWorkoutsCount = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -1172,6 +1180,16 @@ class _$TrainerModelCopyWithImpl<$Res, $Val extends TrainerModel>
                     ? _value.portfolioImages
                     : portfolioImages // ignore: cast_nullable_to_non_nullable
                         as List<PortfolioImageModel>?,
+            clientsCount:
+                freezed == clientsCount
+                    ? _value.clientsCount
+                    : clientsCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            verifiedWorkoutsCount:
+                freezed == verifiedWorkoutsCount
+                    ? _value.verifiedWorkoutsCount
+                    : verifiedWorkoutsCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
           )
           as $Val,
     );
@@ -1194,6 +1212,8 @@ abstract class _$$TrainerModelImplCopyWith<$Res>
     @JsonKey(name: 'certificates') List<CertificateModel>? certificates,
     @JsonKey(name: 'portfolio_images')
     List<PortfolioImageModel>? portfolioImages,
+    @JsonKey(name: 'clients_count') int? clientsCount,
+    @JsonKey(name: 'verified_workouts_count') int? verifiedWorkoutsCount,
   });
 }
 
@@ -1216,6 +1236,8 @@ class __$$TrainerModelImplCopyWithImpl<$Res>
     Object? profileStep = freezed,
     Object? certificates = freezed,
     Object? portfolioImages = freezed,
+    Object? clientsCount = freezed,
+    Object? verifiedWorkoutsCount = freezed,
   }) {
     return _then(
       _$TrainerModelImpl(
@@ -1244,6 +1266,16 @@ class __$$TrainerModelImplCopyWithImpl<$Res>
                 ? _value._portfolioImages
                 : portfolioImages // ignore: cast_nullable_to_non_nullable
                     as List<PortfolioImageModel>?,
+        clientsCount:
+            freezed == clientsCount
+                ? _value.clientsCount
+                : clientsCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        verifiedWorkoutsCount:
+            freezed == verifiedWorkoutsCount
+                ? _value.verifiedWorkoutsCount
+                : verifiedWorkoutsCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
       ),
     );
   }
@@ -1259,6 +1291,8 @@ class _$TrainerModelImpl implements _TrainerModel {
     @JsonKey(name: 'certificates') final List<CertificateModel>? certificates,
     @JsonKey(name: 'portfolio_images')
     final List<PortfolioImageModel>? portfolioImages,
+    @JsonKey(name: 'clients_count') this.clientsCount,
+    @JsonKey(name: 'verified_workouts_count') this.verifiedWorkoutsCount,
   }) : _certificates = certificates,
        _portfolioImages = portfolioImages;
 
@@ -1297,8 +1331,15 @@ class _$TrainerModelImpl implements _TrainerModel {
   }
 
   @override
+  @JsonKey(name: 'clients_count')
+  final int? clientsCount;
+  @override
+  @JsonKey(name: 'verified_workouts_count')
+  final int? verifiedWorkoutsCount;
+
+  @override
   String toString() {
-    return 'TrainerModel(id: $id, userType: $userType, profileStep: $profileStep, certificates: $certificates, portfolioImages: $portfolioImages)';
+    return 'TrainerModel(id: $id, userType: $userType, profileStep: $profileStep, certificates: $certificates, portfolioImages: $portfolioImages, clientsCount: $clientsCount, verifiedWorkoutsCount: $verifiedWorkoutsCount)';
   }
 
   @override
@@ -1318,7 +1359,11 @@ class _$TrainerModelImpl implements _TrainerModel {
             const DeepCollectionEquality().equals(
               other._portfolioImages,
               _portfolioImages,
-            ));
+            ) &&
+            (identical(other.clientsCount, clientsCount) ||
+                other.clientsCount == clientsCount) &&
+            (identical(other.verifiedWorkoutsCount, verifiedWorkoutsCount) ||
+                other.verifiedWorkoutsCount == verifiedWorkoutsCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1330,6 +1375,8 @@ class _$TrainerModelImpl implements _TrainerModel {
     profileStep,
     const DeepCollectionEquality().hash(_certificates),
     const DeepCollectionEquality().hash(_portfolioImages),
+    clientsCount,
+    verifiedWorkoutsCount,
   );
 
   /// Create a copy of TrainerModel
@@ -1354,6 +1401,8 @@ abstract class _TrainerModel implements TrainerModel {
     @JsonKey(name: 'certificates') final List<CertificateModel>? certificates,
     @JsonKey(name: 'portfolio_images')
     final List<PortfolioImageModel>? portfolioImages,
+    @JsonKey(name: 'clients_count') final int? clientsCount,
+    @JsonKey(name: 'verified_workouts_count') final int? verifiedWorkoutsCount,
   }) = _$TrainerModelImpl;
 
   factory _TrainerModel.fromJson(Map<String, dynamic> json) =
@@ -1374,6 +1423,12 @@ abstract class _TrainerModel implements TrainerModel {
   @override
   @JsonKey(name: 'portfolio_images')
   List<PortfolioImageModel>? get portfolioImages;
+  @override
+  @JsonKey(name: 'clients_count')
+  int? get clientsCount;
+  @override
+  @JsonKey(name: 'verified_workouts_count')
+  int? get verifiedWorkoutsCount;
 
   /// Create a copy of TrainerModel
   /// with the given fields replaced by the non-null parameter values.

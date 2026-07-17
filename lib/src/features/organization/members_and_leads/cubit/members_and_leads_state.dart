@@ -13,6 +13,7 @@ class MembersAndLeadsState with _$MembersAndLeadsState {
     @Default(None())
     Option<Either<ApiException, MemberDetailsModel>> memberDetails,
     Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
+    Option<Either<ApiException, MemberDetailsModel>>? searchedCustomer,
     bool? memberOnboardedAnimationCompleted,
 
     //* Leads
@@ -28,6 +29,13 @@ class MembersAndLeadsState with _$MembersAndLeadsState {
     @Default((data: None(), isPagination: false))
     ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
     paymentHistory,
+    // upcomingRenewals
+    @Default((data: None(), isPagination: false))
+    ({
+      Option<Either<ApiException, UpcomingRenewalResponseModel>> data,
+      bool isPagination,
+    })
+    upcomingRenewals,
   }) = _MembersAndLeadsState;
 }
 

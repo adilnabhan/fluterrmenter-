@@ -4,11 +4,13 @@ class AddOrEditMemeberScreen extends StatefulWidget {
   const AddOrEditMemeberScreen({
     required this.orgId,
     this.memberDetails,
+    this.isFromSearch = false,
     super.key,
   });
 
   final MemberDetailsModel? memberDetails;
   final int orgId;
+  final bool isFromSearch;
 
   @override
   State<AddOrEditMemeberScreen> createState() => _AddOrEditMemeberScreenState();
@@ -414,15 +416,19 @@ class _AddOrEditMemeberScreenState extends State<AddOrEditMemeberScreen> {
         profilePicture: _profilePicture?.path,
       );
       print('member is---$memberDetails');
-      context.push(
-        BlocProvider.value(
-          value: _cubit,
-          child: SubscriptionSelectionScreen(
-            orgId: widget.orgId,
-            memberDetails: memberDetails,
+      if (widget.isFromSearch) {
+        Navigator.pop(context, memberDetails);
+      } else {
+        context.push(
+          BlocProvider.value(
+            value: _cubit,
+            child: SubscriptionSelectionScreen(
+              orgId: widget.orgId,
+              memberDetails: memberDetails,
+            ),
           ),
-        ),
-      );
+        );
+      }
     } else {
       Dialogs.showSnack(msg: 'Please fill all the fields');
     }

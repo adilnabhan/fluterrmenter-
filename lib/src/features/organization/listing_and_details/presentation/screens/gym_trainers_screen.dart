@@ -32,8 +32,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
 
     try {
       final response = await DioClient().dio.get<dynamic>(
-        ApiUris
-            .createLead, // Changed from leadsListing to createLead ('mentor/trainers/') to see if new trainers appear
+        ApiUris.leadsListing,
         queryParameters: {'organization_id': widget.orgDetails.id},
         options: Options(headers: {'X-Platform': platformSource}),
       );

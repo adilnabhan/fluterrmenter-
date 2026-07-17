@@ -56,6 +56,37 @@ final class MembersRepository {
     }
   }
 
+  Future<Either<ApiException, MemberDetailsModel>> searchCustomerByNumber({
+    required String mobileNumber,
+  }) async {
+    try {
+      return await Feggy.async(
+        call: DioClient().dio.get<dynamic>(
+          ApiUris.searchCustomer,
+          queryParameters: {'mobile_number': mobileNumber},
+          options: Options(headers: {'X-Platform': platformSource}),
+        ),
+        onSuccess: (res) {
+          if (res.statusCode == 200) {
+            if (res.data != null && res.data is Map) {
+              return right(
+                MemberDetailsModel.fromJson(res.data as Map<String, dynamic>),
+              );
+            }
+          }
+          return left(const ApiException.unknown(msg: 'User not found.'));
+        },
+      );
+    } on ApiException catch (e) {
+      return left(e);
+    } catch (e) {
+      if (e is DioException && e.response?.statusCode == 404) {
+        return left(const ApiException.unknown(msg: 'User not found.'));
+      }
+      return left(const ApiException.unknown());
+    }
+  }
+
   /// @api {POST https://discipl-backend.onrender.com/api/v1/customer/manage/create} https://discipl-backend.onrender.com/api/v1/customer/manage/create
   /// @apiName create_member
   /// @apiGroup Members

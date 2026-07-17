@@ -139,6 +139,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           trainer: TrainerModel(
             certificates: mappedCerts,
             portfolioImages: mappedPortfolio,
+            clientsCount: data['clients_count'] as int?,
+            verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
           ),
           mentor: Mentor(
             org: Org(name: mentorData?['organization']?['name']?.toString()),
@@ -149,6 +151,23 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         setState(() {
           _fetchedUser = fetched;
           _isLoading = false;
+          
+          final ratingVal = data['avg_rating'] ?? data['average_rating'] ?? data['rating'];
+          if (ratingVal != null) {
+            _averageRating = (ratingVal is num) ? ratingVal.toDouble() : double.tryParse(ratingVal.toString()) ?? 0.0;
+          }
+          
+          final countVal = data['review_count'] ?? data['reviews_count'];
+          if (countVal != null) {
+             _reviewsCount = (countVal is num) ? countVal.toInt() : int.tryParse(countVal.toString()) ?? 0;
+          }
+          
+          if (data['reviews'] is List) {
+            _reviews = (data['reviews'] as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+            if (countVal == null) {
+              _reviewsCount = _reviews.length;
+            }
+          }
         });
       } else {
         if (!mounted) return;
@@ -182,6 +201,18 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
       if (res.statusCode == 200) {
         final data = res.data as Map<String, dynamic>;
 
+        final portfolioRaw =
+            data['portfolio_images'] is List
+                ? data['portfolio_images'] as List
+                : [];
+        final mappedPortfolio =
+            portfolioRaw.map((e) {
+              if (e is Map<String, dynamic>) {
+                return PortfolioImageModel.fromJson(e);
+              }
+              return const PortfolioImageModel();
+            }).toList();
+
         final updatedUser = currentUser!.copyWith(
           firstName: data['first_name']?.toString() ?? currentUser.firstName,
           lastName: data['last_name']?.toString() ?? currentUser.lastName,
@@ -192,6 +223,15 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           instagram: data['instagram']?.toString() ?? currentUser.instagram,
           facebook: data['facebook']?.toString() ?? currentUser.facebook,
           youtube: data['youtube']?.toString() ?? currentUser.youtube,
+          trainer: currentUser.trainer?.copyWith(
+            clientsCount: data['clients_count'] as int?,
+            verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
+            portfolioImages: mappedPortfolio,
+          ) ?? TrainerModel(
+            clientsCount: data['clients_count'] as int?,
+            verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
+            portfolioImages: mappedPortfolio,
+          ),
         );
 
         appCubit.addUser(updatedUser);
@@ -617,8 +657,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildStatItem('0', 'Clients'),
-                        _buildStatItem('0', 'Verified\nWorkouts'),
+                        _buildStatItem('${user?.trainer?.clientsCount ?? 0}', 'Clients'),
+                        _buildStatItem('${user?.trainer?.verifiedWorkoutsCount ?? 0}', 'Verified\nWorkouts'),
                         _buildStatItem(_averageRating.toStringAsFixed(1), 'Rating', isRating: true),
                       ],
                     ),

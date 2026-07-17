@@ -1,4 +1,5 @@
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 ///
@@ -59,17 +60,14 @@ class LocationService {
     throw ApiException.unknown(msg: _errorMsg);
   }
 
-  //*Handling
-  // Future<List<Placemark>> currentLocation() async {
-  //   try {
-  //     final position = await _getPostion();
-  //     return await placemarkFromCoordinates(position.latitude, position.longitude);
-  //   } catch (e) {
-  //     write('location error is : $e');
-  //     if (_errorMsg == '$e') {
-  //       rethrow;
-  //     }
-  //     throw 'Something went wrong ! please try again later .';
-  //   }
-  // }
+  ///*Handling
+  Future<List<Placemark>> currentLocation() async {
+    try {
+      final position = await getPostion();
+      return await placemarkFromCoordinates(position.latitude, position.longitude);
+    } catch (e) {
+      // Throw the actual error so we can see what went wrong (e.g., permissions, location disabled, geocoder unavailable)
+      throw 'Something went wrong ! please try again later .';
+    }
+  }
 }

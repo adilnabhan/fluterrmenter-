@@ -397,10 +397,13 @@ class _SelectExerciseSheetContent extends StatefulWidget {
 }
 
 class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent> {
-  int _selectedTab = 0; // 0 for Library, 1 for You Created
+  int _selectedTab = 0; // 0 for Gym Created, 1 for You Created, 2 for Library
   List<Map<String, dynamic>> _allExercises = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  
+  // Cache for each tab: 0 -> Gym Created, 1 -> You Created, 2 -> Library
+  final Map<int, List<Map<String, dynamic>>> _cachedExercises = {};
 
   @override
   void initState() {
@@ -410,12 +413,21 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
 
   Future<void> _fetchExercises() async {
     if (!mounted) return;
+
+    if (_searchQuery.trim().isEmpty && _cachedExercises.containsKey(_selectedTab)) {
+      setState(() {
+        _allExercises = _cachedExercises[_selectedTab]!;
+        _isLoading = false;
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final String sourceValue = _selectedTab == 0 ? 'library' : (_selectedTab == 1 ? 'me' : 'gym');
+      final String sourceValue = _selectedTab == 0 ? 'gym' : (_selectedTab == 1 ? 'me' : 'library');
 
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.workoutExercises,
@@ -431,6 +443,9 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
         if (!mounted) return;
         setState(() {
           _allExercises = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          if (_searchQuery.trim().isEmpty) {
+            _cachedExercises[_selectedTab] = _allExercises;
+          }
           _isLoading = false;
         });
       } else {
@@ -452,13 +467,52 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
     return _allExercises;
   }
 
-  void _showCreateExerciseSheet(BuildContext context) {
+  Future<void> _deleteGymExercise(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Exercise'),
+        content: const Text('Are you sure you want to delete this custom exercise?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+
+    try {
+      await DioClient().dio.delete<dynamic>(ApiUris.deleteGymExercise(id));
+      Dialogs.showSnack(msg: 'Exercise deleted successfully');
+      _cachedExercises.clear();
+      _fetchExercises();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      Dialogs.showSnack(msg: 'Failed to delete exercise');
+    }
+  }
+
+  void _showCreateExerciseSheet(BuildContext context, [Map<String, dynamic>? exercise]) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => _CreateExerciseBottomSheet(
+        editExercise: exercise,
+        isGymExercise: _selectedTab == 0,
         onCreated: () {
+          _cachedExercises.clear();
           _fetchExercises();
         },
       ),
@@ -551,7 +605,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                           ),
                           child: Center(
                             child: Text(
-                              'Library',
+                              'Gym created',
                               style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textDark),
                             ),
                           ),
@@ -605,7 +659,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                           ),
                           child: Center(
                             child: Text(
-                              'Gym created',
+                              'Library',
                               style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textDark),
                             ),
                           ),
@@ -650,7 +704,7 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                                       videoLink: item['video_url'] as String? ?? '',
                                       trackBy: item['track_by']?.toString().toLowerCase() ?? 'reps',
                                       sets: const [
-                                        {'set_number': 1, 'target_reps': 10, 'target_weight': 15.0}
+                                        {'set_number': 1}
                                       ],
                                     );
                                     widget.onAddExercise(newEx);
@@ -671,6 +725,16 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
                                 sets: const [],
                               ),
                               isAdded: isAdded,
+                              onEdit: _selectedTab == 0
+                                  ? () => _showCreateExerciseSheet(context, item)
+                                  : null,
+                              onDelete: _selectedTab == 0
+                                  ? () {
+                                      if (item['id'] != null) {
+                                        _deleteGymExercise(item['id'] as int);
+                                      }
+                                    }
+                                  : null,
                             ),
                           );
                         },
@@ -691,8 +755,14 @@ class _SelectExerciseSheetContentState extends State<_SelectExerciseSheetContent
 
 class _CreateExerciseBottomSheet extends StatefulWidget {
   final VoidCallback onCreated;
+  final Map<String, dynamic>? editExercise;
+  final bool isGymExercise;
 
-  const _CreateExerciseBottomSheet({required this.onCreated});
+  const _CreateExerciseBottomSheet({
+    required this.onCreated,
+    this.editExercise,
+    this.isGymExercise = false,
+  });
 
   @override
   State<_CreateExerciseBottomSheet> createState() => _CreateExerciseBottomSheetState();
@@ -719,6 +789,23 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
   @override
   void initState() {
     super.initState();
+    if (widget.editExercise != null) {
+      _nameController.text = widget.editExercise!['name']?.toString() ?? '';
+      _youtubeController.text = widget.editExercise!['video_url']?.toString() ??
+          widget.editExercise!['youtube_link']?.toString() ??
+          '';
+
+      final muscle = widget.editExercise!['primary_muscle_group_id'] ??
+          widget.editExercise!['primary_muscle_group'] ??
+          widget.editExercise!['muscle_group_id'];
+      if (muscle != null) _selectedMuscleId = int.tryParse(muscle.toString());
+
+      final equipment = widget.editExercise!['equipment_id'] ?? widget.editExercise!['equipment'];
+      if (equipment != null) _selectedEquipmentId = int.tryParse(equipment.toString());
+
+      _selectedType = widget.editExercise!['exercise_type_id']?.toString() ?? widget.editExercise!['type']?.toString();
+      _selectedTrackBy = widget.editExercise!['track_by']?.toString();
+    }
     _fetchDropdownData();
   }
 
@@ -758,24 +845,33 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
     });
 
     try {
-      final response = await DioClient().dio.post<dynamic>(
-        ApiUris.workoutExercises,
-        data: {
-          'name': _nameController.text.trim(),
-          'primary_muscle_group': _selectedMuscleId,
-          'secondary_muscle_group': _selectedSecondaryMuscleIds,
-          'equipment': _selectedEquipmentId,
-          'type': _selectedType,
-          'track_by': _selectedTrackBy,
-          'video_url': _youtubeController.text.trim(),
-          'instructions': '',
-          'status': true,
-        },
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+      final isEditingGym = widget.editExercise != null && widget.isGymExercise;
+      final data = {
+        'name': _nameController.text.trim(),
+        'primary_muscle_group': _selectedMuscleId,
+        'secondary_muscle_group': _selectedSecondaryMuscleIds,
+        'equipment': _selectedEquipmentId,
+        'type': _selectedType,
+        'track_by': _selectedTrackBy,
+        'video_url': _youtubeController.text.trim(),
+        'instructions': '',
+        'status': true,
+      };
+
+      final response = isEditingGym
+          ? await DioClient().dio.put<dynamic>(
+              ApiUris.editGymExercise(widget.editExercise!['id'] as int),
+              data: data,
+              options: Options(headers: {'X-Platform': platformSource}),
+            )
+          : await DioClient().dio.post<dynamic>(
+              ApiUris.workoutExercises,
+              data: data,
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Dialogs.showSnack(msg: 'Exercise created successfully');
+        Dialogs.showSnack(msg: isEditingGym ? 'Exercise updated successfully' : 'Exercise created successfully');
         widget.onCreated();
         Navigator.pop(context); // Close create form
       } else {
@@ -783,7 +879,7 @@ class _CreateExerciseBottomSheetState extends State<_CreateExerciseBottomSheet> 
         setState(() {
           _isCreating = false;
         });
-        Dialogs.showSnack(msg: 'Failed to create exercise');
+        Dialogs.showSnack(msg: isEditingGym ? 'Failed to update exercise' : 'Failed to create exercise');
       }
     } catch (e) {
       if (!mounted) return;
@@ -1260,8 +1356,8 @@ class _ExerciseCard extends StatelessWidget {
                         spacing: 6,
                         runSpacing: 4,
                         children: exercise.sets.map((s) {
-                          final reps = s['target_reps'] ?? 0;
-                          final weight = s['target_weight'] ?? 0.0;
+                          final reps = s['target_reps']?.toString() ?? '-';
+                          final weight = s['target_weight']?.toString() ?? '-';
                           String unit = 'r';
                           if (exercise.trackBy == 'time') {
                             unit = 's';
@@ -1332,10 +1428,17 @@ class WorkoutExercise {
 }
 
 class _SelectExerciseItem extends StatelessWidget {
-  const _SelectExerciseItem({required this.exercise, required this.isAdded});
+  const _SelectExerciseItem({
+    required this.exercise,
+    required this.isAdded,
+    this.onEdit,
+    this.onDelete,
+  });
 
   final WorkoutExercise exercise;
   final bool isAdded;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -1398,6 +1501,30 @@ class _SelectExerciseItem extends StatelessWidget {
                 ),
               ),
             ),
+          if (onEdit != null || onDelete != null) ...[
+            const SizedBox(width: 8),
+            PopupMenuButton<String>(
+              color: Colors.white,
+              surfaceTintColor: Colors.white,
+              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+              onSelected: (value) {
+                if (value == 'edit') onEdit?.call();
+                if (value == 'delete') onDelete?.call();
+              },
+              itemBuilder: (context) => [
+                if (onEdit != null)
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit'),
+                  ),
+                if (onDelete != null)
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Text('Delete', style: TextStyle(color: Colors.red)),
+                  ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -1440,12 +1567,12 @@ class _EditExerciseBottomSheetState extends State<_EditExerciseBottomSheet> {
     if (!mounted) return;
     setState(() {
       int nextSetNum = _sets.isEmpty ? 1 : (_sets.map((s) => (s['set_number'] as int)).reduce((a, b) => a > b ? a : b) + 1);
-      double prevWeight = _sets.isEmpty ? 10.0 : double.tryParse(_sets.last['target_weight'].toString()) ?? 10.0;
-      int prevReps = _sets.isEmpty ? 10 : int.tryParse(_sets.last['target_reps'].toString()) ?? 10;
+      double? prevWeight = _sets.isEmpty ? null : double.tryParse(_sets.last['target_weight'].toString());
+      int? prevReps = _sets.isEmpty ? null : int.tryParse(_sets.last['target_reps'].toString());
       _sets.add({
         'set_number': nextSetNum,
-        'target_reps': prevReps,
-        'target_weight': prevWeight,
+        if (prevReps != null) 'target_reps': prevReps,
+        if (prevWeight != null) 'target_weight': prevWeight,
       });
     });
   }
@@ -1557,7 +1684,7 @@ class _EditExerciseBottomSheetState extends State<_EditExerciseBottomSheet> {
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                   ),
                                   onChanged: (val) {
-                                    s['target_reps'] = int.tryParse(val) ?? 0;
+                                    s['target_reps'] = int.tryParse(val);
                                   },
                                 ),
                               ),
@@ -1566,14 +1693,14 @@ class _EditExerciseBottomSheetState extends State<_EditExerciseBottomSheet> {
                                 child: TextFormField(
                                   initialValue: s['target_weight']?.toString() ?? '',
                                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  onChanged: (val) => s['target_weight'] = double.tryParse(val),
                                   decoration: InputDecoration(
                                     labelText: 'Weight (kg)',
+                                    filled: true,
+                                    fillColor: const Color(0xFFF5F5F5),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
                                   ),
-                                  onChanged: (val) {
-                                    s['target_weight'] = double.tryParse(val) ?? 0.0;
-                                  },
                                 ),
                               ),
                               const SizedBox(width: 8),

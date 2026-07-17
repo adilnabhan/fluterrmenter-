@@ -722,13 +722,7 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
             // Description
             if (orgDetails.description != null &&
                 orgDetails.description!.isNotEmpty) ...[
-              Text(
-                orgDetails.description!,
-                style: AppStyles.text13Px.poppins.w400.copyWith(
-                  color: AppColors.textDark,
-                  height: 1.5,
-                ),
-              ),
+              _ReadMoreText(text: orgDetails.description!),
               const SizedBox(height: 20),
             ],
 
@@ -1298,10 +1292,20 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
     _fetchReviews();
   }
 
+  String _period = 'latest';
+
   Future<void> _fetchReviews() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       final response = await DioClient().dio.get<dynamic>(
-        ApiUris.fitnessCenterReviews(widget.orgId),
+        ApiUris.fcOrganizationReviews,
+        queryParameters: {
+          'organization_id': widget.orgId,
+          if (_period != 'latest') 'period': _period,
+        },
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -1365,9 +1369,42 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Rating & Reviews',
-            style: AppStyles.text18Px.poppins.w600.copyWith(color: AppColors.textDark),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Rating & Reviews',
+                style: AppStyles.text18Px.poppins.w600.copyWith(color: AppColors.textDark),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _period,
+                    isDense: true,
+                    icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                    style: AppStyles.text13Px.poppins.w500.copyWith(color: AppColors.textDark),
+                    onChanged: (String? newValue) {
+                      if (newValue != null && newValue != _period) {
+                        _period = newValue;
+                        _fetchReviews();
+                      }
+                    },
+                    items: const [
+                      DropdownMenuItem(value: 'latest', child: Text('Latest')),
+                      DropdownMenuItem(value: 'last_3_months', child: Text('Last 3 Months')),
+                      DropdownMenuItem(value: 'last_6_months', child: Text('Last 6 Months')),
+                      DropdownMenuItem(value: 'last_12_months', child: Text('Last 12 Months')),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           Row(
@@ -1470,6 +1507,68 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
           }).toList(),
         ],
       ),
+    );
+  }
+}
+
+class _ReadMoreText extends StatefulWidget {
+  final String text;
+  const _ReadMoreText({required this.text});
+
+  @override
+  State<_ReadMoreText> createState() => _ReadMoreTextState();
+}
+
+class _ReadMoreTextState extends State<_ReadMoreText> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppStyles.text13Px.poppins.w400.copyWith(
+      color: AppColors.textDark,
+      height: 1.5,
+    );
+
+    return LayoutBuilder(
+      builder: (context, size) {
+        final span = TextSpan(text: widget.text, style: style);
+        final tp = TextPainter(
+          text: span,
+          maxLines: 3,
+          textDirection: Directionality.of(context),
+        );
+        tp.layout(maxWidth: size.maxWidth);
+
+        if (tp.didExceedMaxLines) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.text,
+                maxLines: _isExpanded ? null : 3,
+                overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                style: style,
+              ),
+              const SizedBox(height: 4),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+                child: Text(
+                  _isExpanded ? 'Read less' : 'Read more',
+                  style: AppStyles.text13Px.poppins.w600.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          );
+        } else {
+          return Text(widget.text, style: style);
+        }
+      },
     );
   }
 }

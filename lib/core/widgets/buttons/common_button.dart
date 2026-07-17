@@ -90,14 +90,15 @@ class _ButtonState extends State<Button> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.maxFinite,
+      width: widget.size?.width ?? double.maxFinite,
+      height: widget.size?.height,
       child:
           widget.outlined ?? false
               ? GestureDetector(
                 onTap: widget.ontap,
                 child: Container(
-                  height: 48.h,
-                  width: context.width,
+                  height: widget.size?.height ?? 48.h,
+                  width: widget.size?.width ?? context.width,
                   decoration: BoxDecoration(border: Border.all(color: AppColors.disabledButton), color: Colors.transparent, borderRadius: BorderRadius.circular(widget.raduis)),
                   child: Center(
                     child:
@@ -116,8 +117,8 @@ class _ButtonState extends State<Button> {
               : GestureDetector(
                 onTap: (!widget.isLoading && !widget.isDisabled) ? () => widget.ontap() : null,
                 child: Container(
-                  height: 48.h,
-                  width: context.width,
+                  height: widget.size?.height ?? 48.h,
+                  width: widget.size?.width ?? context.width,
                   decoration: BoxDecoration(border: Border.all(color: widget.color), color: widget.color, borderRadius: BorderRadius.circular(widget.raduis)),
                   child: Center(
                     child:

@@ -42,15 +42,21 @@ class _TrainerPendingVerificationsScreenState
         options: Options(headers: {'X-Platform': platformSource}),
       );
       if (response.statusCode == 200) {
-        final List<dynamic> data = (response.data is Map)
-            ? (List<dynamic>.from((response.data as Map)['results'] as List? ?? []))
-            : (response.data as List<dynamic>);
+        final List<dynamic> data =
+            (response.data is Map)
+                ? (List<dynamic>.from(
+                  (response.data as Map)['results'] as List? ?? [],
+                ))
+                : (response.data as List<dynamic>);
         final Map<String, String> byName = {};
         final Map<int, String> byId = {};
         for (final e in data) {
           if (e is Map) {
             final String name = e['name'] as String? ?? '';
-            final String pic = e['profile_picture'] as String? ?? e['image_url'] as String? ?? '';
+            final String pic =
+                e['profile_picture'] as String? ??
+                e['image_url'] as String? ??
+                '';
             final int id = e['id'] as int? ?? 0;
             if (name.isNotEmpty && pic.isNotEmpty) {
               byName[name] = pic;
@@ -88,7 +94,10 @@ class _TrainerPendingVerificationsScreenState
 
   Future<void> _fetchPendingVerifications() async {
     if (!mounted) return;
-    setState(() => _isLoadingPending = true);
+    setState(() {
+      _isLoadingPending = true;
+      _pendingVerifications = [];
+    });
 
     try {
       final response = await DioClient().dio.get<dynamic>(
@@ -120,7 +129,10 @@ class _TrainerPendingVerificationsScreenState
 
   Future<void> _fetchVerificationHistory() async {
     if (!mounted) return;
-    setState(() => _isLoadingHistory = true);
+    setState(() {
+      _isLoadingHistory = true;
+      _verificationHistory = [];
+    });
 
     try {
       final response = await DioClient().dio.get<dynamic>(
@@ -292,10 +304,11 @@ class _TrainerPendingVerificationsScreenState
   }
 
   Widget _buildPendingTab() {
+    final pendingList = _pendingVerifications;
     if (_isLoadingPending) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_pendingVerifications.isEmpty) {
+    if (pendingList.isEmpty) {
       return _buildEmptyState(
         'No Pending Verifications',
         'You have caught up with all client workouts.',
@@ -304,19 +317,22 @@ class _TrainerPendingVerificationsScreenState
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _pendingVerifications.length,
+      itemCount: pendingList.length,
       itemBuilder: (context, index) {
-        final item = _pendingVerifications[index];
+        final item = pendingList[index];
         final sessionId = item['session_id'] as int? ?? 0;
         final customerName = item['customer_name'] as String? ?? 'Client';
         final customerId = item['customer_id'] as int? ?? 0;
-        final profilePic = item['customer_profile_picture'] as String? ?? 
-                           item['profile_picture'] as String? ?? 
-                           item['customer_image'] as String? ?? 
-                           item['image_url'] as String? ??
-                           (item['customer'] is Map ? (item['customer'] as Map)['profile_picture'] as String? : null) ??
-                           _clientProfilesById[customerId] ??
-                           _clientProfilesByName[customerName];
+        final profilePic =
+            item['customer_profile_picture'] as String? ??
+            item['profile_picture'] as String? ??
+            item['customer_image'] as String? ??
+            item['image_url'] as String? ??
+            (item['customer'] is Map
+                ? (item['customer'] as Map)['profile_picture'] as String?
+                : null) ??
+            _clientProfilesById[customerId] ??
+            _clientProfilesByName[customerName];
         final workoutTitle = item['workout_title'] as String? ?? 'Workout';
         final completedAtRaw = item['completed_at'] as String? ?? '';
         String completedAt = completedAtRaw;
@@ -369,11 +385,7 @@ class _TrainerPendingVerificationsScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (profilePic != null && profilePic.isNotEmpty)
-                      ProfileImage(
-                        isEdit: false,
-                        url: profilePic,
-                        radius: 20,
-                      )
+                      ProfileImage(isEdit: false, url: profilePic, radius: 20)
                     else
                       const Icon(
                         Icons.person,
@@ -484,10 +496,11 @@ class _TrainerPendingVerificationsScreenState
   }
 
   Widget _buildHistoryTab() {
+    final historyList = _verificationHistory;
     if (_isLoadingHistory) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_verificationHistory.isEmpty) {
+    if (historyList.isEmpty) {
       return _buildEmptyState(
         'No History',
         'You have not verified any workouts yet.',
@@ -496,18 +509,21 @@ class _TrainerPendingVerificationsScreenState
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _verificationHistory.length,
+      itemCount: historyList.length,
       itemBuilder: (context, index) {
-        final item = _verificationHistory[index];
+        final item = historyList[index];
         final customerName = item['customer_name'] as String? ?? 'Client';
         final customerId = item['customer_id'] as int? ?? 0;
-        final profilePic = item['customer_profile_picture'] as String? ?? 
-                           item['profile_picture'] as String? ?? 
-                           item['customer_image'] as String? ?? 
-                           item['image_url'] as String? ??
-                           (item['customer'] is Map ? (item['customer'] as Map)['profile_picture'] as String? : null) ??
-                           _clientProfilesById[customerId] ??
-                           _clientProfilesByName[customerName];
+        final profilePic =
+            item['customer_profile_picture'] as String? ??
+            item['profile_picture'] as String? ??
+            item['customer_image'] as String? ??
+            item['image_url'] as String? ??
+            (item['customer'] is Map
+                ? (item['customer'] as Map)['profile_picture'] as String?
+                : null) ??
+            _clientProfilesById[customerId] ??
+            _clientProfilesByName[customerName];
         final workoutTitle = item['workout_title'] as String? ?? 'Workout';
         final verifiedAtRaw = item['verified_at'] as String? ?? '';
         final sessionId = item['session_id'] as int? ?? 0;
@@ -588,11 +604,7 @@ class _TrainerPendingVerificationsScreenState
                 Row(
                   children: [
                     if (profilePic != null && profilePic.isNotEmpty)
-                      ProfileImage(
-                        isEdit: false,
-                        url: profilePic,
-                        radius: 20,
-                      )
+                      ProfileImage(isEdit: false, url: profilePic, radius: 20)
                     else
                       const Icon(
                         Icons.person,

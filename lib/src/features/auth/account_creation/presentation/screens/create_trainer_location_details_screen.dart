@@ -1,5 +1,8 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-
+import 'package:mentor_mobile_app/core/services/google/services/location_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:dio/dio.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
 class CreateTrainerLocationDetailsScreen extends StatefulWidget {
   const CreateTrainerLocationDetailsScreen({super.key});
 
@@ -93,6 +96,53 @@ class _CreateTrainerLocationDetailsScreenState extends State<CreateTrainerLocati
     super.dispose();
   }
 
+  bool _isLoading = false;
+
+  Future<void> _onNext() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final user = LocalStorageService().getUser();
+      final String street = _locationFields[0][0].controller?.text.trim() ?? '';
+      final String city = _locationFields[1][0].controller?.text.trim() ?? '';
+      final String state = _locationFields[2][0].controller?.text.trim() ?? '';
+      final String pincode = _locationFields[3][0].controller?.text.trim() ?? '';
+      final List<String> parts = [street, city, state, pincode].where((e) => e.isNotEmpty).toList();
+      final String locationStr = parts.join(', ');
+
+      final formData = FormData.fromMap({
+        'location': locationStr,
+        'user_type': 'trainer',
+      });
+      
+      final response = await DioClient().dio.put<dynamic>(
+        ApiUris.editTrainerBasicDetails,
+        data: formData,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = response.data as Map<String, dynamic>;
+        final updatedUser = LoginSuccessModel.fromJson(responseData);
+        if (user != null) {
+          final mergedUser = user.copyWith(
+            location: updatedUser.location,
+          );
+          LocalStorageService().saveUser(mergedUser);
+        }
+      }
+
+      if (mounted) {
+        context.push(const TrainerCreationSuccessScreen());
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Failed to upload location. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,7 +210,25 @@ class _CreateTrainerLocationDetailsScreenState extends State<CreateTrainerLocati
 
                   // Current Location Button
                   InkWell(
-                    onTap: () {},
+                    onTap: () async {
+                      try {
+                        Fluttertoast.showToast(msg: 'Fetching location...');
+                        final placemarks = await LocationService().currentLocation();
+                        if (placemarks.isNotEmpty) {
+                          final place = placemarks.first;
+                          if (!mounted) return;
+                          setState(() {
+                            _locationFields[0][0].controller?.text = place.street ?? place.subLocality ?? place.name ?? '';
+                            _locationFields[1][0].controller?.text = place.locality ?? place.subAdministrativeArea ?? '';
+                            _locationFields[2][0].controller?.text = place.administrativeArea ?? '';
+                            _locationFields[3][0].controller?.text = place.postalCode ?? '';
+                          });
+                          Fluttertoast.showToast(msg: 'Location fetched successfully');
+                        }
+                      } catch (e) {
+                        Fluttertoast.showToast(msg: e.toString());
+                      }
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
@@ -210,7 +278,8 @@ class _CreateTrainerLocationDetailsScreenState extends State<CreateTrainerLocati
               ),
               child: Button.filled(
                 title: 'Next',
-                ontap: () => context.push(const CreateTrainerBankDetailsScreen()),
+                ontap: _onNext,
+                isLoading: _isLoading,
                 buttonColor: AppColors.primary,
               ),
             ),

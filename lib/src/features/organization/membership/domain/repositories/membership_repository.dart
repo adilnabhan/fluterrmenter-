@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/payment_history/payment_history_model.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/upcoming_renewals/upcoming_renewal_model.dart';
 
 @immutable
 final class MembershipRepository {
@@ -365,6 +366,51 @@ final class MembershipRepository {
         onSuccess: (res) {
           final data = res.data;
           return right(UpComingPayments.fromJson(data as Map<String, dynamic>));
+        },
+      );
+    } on ApiException catch (e) {
+      return left(e);
+    } catch (_) {
+      return left(const ApiException.unknown());
+    }
+  }
+
+  Future<Either<ApiException, UpcomingRenewalResponseModel>> listUpcomingRenewals({
+    required Map<String, dynamic> queryParameters,
+    String? nextUrl,
+  }) async {
+    try {
+      return await Feggy.async(
+        call: _dio.get<dynamic>(
+          nextUrl ?? ApiUris.customerRenewals,
+          queryParameters: queryParameters,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
+        onSuccess: (res) {
+          final data = res.data;
+          
+          if (data is List<dynamic>) {
+            final results = data.map((e) => UpcomingRenewalModel.fromJson(e as Map<String, dynamic>)).toList();
+            return right(UpcomingRenewalResponseModel(results: results));
+          } else if (data is Map<String, dynamic>) {
+            if (data.containsKey('results')) {
+              return right(UpcomingRenewalResponseModel.fromJson(data));
+            } else if (data.containsKey('data') && data['data'] is List) {
+              final resultsList = data['data'] as List<dynamic>;
+              final results = resultsList.map((e) => UpcomingRenewalModel.fromJson(e as Map<String, dynamic>)).toList();
+              return right(UpcomingRenewalResponseModel(
+                count: data['count'] as int?,
+                next: data['next'] as String?,
+                previous: data['previous'] as String?,
+                results: results,
+              ));
+            } else {
+               // Fallback to original parsing if it's some other map structure
+               return right(UpcomingRenewalResponseModel.fromJson(data));
+            }
+          }
+          
+          return right(UpcomingRenewalResponseModel.fromJson(data as Map<String, dynamic>));
         },
       );
     } on ApiException catch (e) {

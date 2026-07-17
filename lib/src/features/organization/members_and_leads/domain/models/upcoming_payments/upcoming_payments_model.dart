@@ -21,8 +21,7 @@ class UpComingPayments with _$UpComingPayments {
 class UpComingPaymentsList with _$UpComingPaymentsList {
   const factory UpComingPaymentsList({
     @JsonKey(name: "id") required int id,
-    @JsonKey(name: "customer_details")
-    required CustomerDetails customerDetails,
+    @JsonKey(name: "customer_details") required CustomerDetails customerDetails,
     @JsonKey(name: "end_date") required DateTime endDate,
     @JsonKey(name: "days_until_expire") required int daysUntilExpire,
   }) = _UpComingPaymentsList;

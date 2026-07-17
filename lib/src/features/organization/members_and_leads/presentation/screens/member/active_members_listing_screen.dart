@@ -172,7 +172,7 @@ class _ActiveMembersListingScreenState
                                             BlocProvider.value(
                                               value: _cubit,
                                               child: MemberDetialsScreen(
-                                                memberData: memberData!,
+                                                memberId: memberData!.id!,
                                               ),
                                             ),
                                           );

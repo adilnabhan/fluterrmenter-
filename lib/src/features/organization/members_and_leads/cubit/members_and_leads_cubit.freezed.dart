@@ -24,6 +24,8 @@ mixin _$MembersAndLeadsState {
       throw _privateConstructorUsedError;
   Option<Either<ApiException, MemberDetailsModel>>? get createOrUpdateMember =>
       throw _privateConstructorUsedError;
+  Option<Either<ApiException, MemberDetailsModel>>? get searchedCustomer =>
+      throw _privateConstructorUsedError;
   bool? get memberOnboardedAnimationCompleted =>
       throw _privateConstructorUsedError; //* Leads
   ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
@@ -35,7 +37,12 @@ mixin _$MembersAndLeadsState {
   ({Option<Either<ApiException, UpComingPayments>> data, bool isPagination})
   get upComingPayments => throw _privateConstructorUsedError; // paymentHistory
   ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
-  get paymentHistory => throw _privateConstructorUsedError;
+  get paymentHistory => throw _privateConstructorUsedError; // upcomingRenewals
+  ({
+    Option<Either<ApiException, UpcomingRenewalResponseModel>> data,
+    bool isPagination,
+  })
+  get upcomingRenewals => throw _privateConstructorUsedError;
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.
@@ -59,6 +66,7 @@ abstract class $MembersAndLeadsStateCopyWith<$Res> {
     members,
     Option<Either<ApiException, MemberDetailsModel>> memberDetails,
     Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
+    Option<Either<ApiException, MemberDetailsModel>>? searchedCustomer,
     bool? memberOnboardedAnimationCompleted,
     ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
     leads,
@@ -68,6 +76,11 @@ abstract class $MembersAndLeadsStateCopyWith<$Res> {
     upComingPayments,
     ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
     paymentHistory,
+    ({
+      Option<Either<ApiException, UpcomingRenewalResponseModel>> data,
+      bool isPagination,
+    })
+    upcomingRenewals,
   });
 }
 
@@ -92,12 +105,14 @@ class _$MembersAndLeadsStateCopyWithImpl<
     Object? members = null,
     Object? memberDetails = null,
     Object? createOrUpdateMember = freezed,
+    Object? searchedCustomer = freezed,
     Object? memberOnboardedAnimationCompleted = freezed,
     Object? leads = null,
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
     Object? upComingPayments = null,
     Object? paymentHistory = null,
+    Object? upcomingRenewals = null,
   }) {
     return _then(
       _value.copyWith(
@@ -119,6 +134,11 @@ class _$MembersAndLeadsStateCopyWithImpl<
                 freezed == createOrUpdateMember
                     ? _value.createOrUpdateMember
                     : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, MemberDetailsModel>>?,
+            searchedCustomer:
+                freezed == searchedCustomer
+                    ? _value.searchedCustomer
+                    : searchedCustomer // ignore: cast_nullable_to_non_nullable
                         as Option<Either<ApiException, MemberDetailsModel>>?,
             memberOnboardedAnimationCompleted:
                 freezed == memberOnboardedAnimationCompleted
@@ -161,6 +181,17 @@ class _$MembersAndLeadsStateCopyWithImpl<
                           Option<Either<ApiException, PaymentHistory>> data,
                           bool isPagination,
                         }),
+            upcomingRenewals:
+                null == upcomingRenewals
+                    ? _value.upcomingRenewals
+                    : upcomingRenewals // ignore: cast_nullable_to_non_nullable
+                        as ({
+                          Option<
+                            Either<ApiException, UpcomingRenewalResponseModel>
+                          >
+                          data,
+                          bool isPagination,
+                        }),
           )
           as $Val,
     );
@@ -184,6 +215,7 @@ abstract class _$$MembersAndLeadsStateImplCopyWith<$Res>
     members,
     Option<Either<ApiException, MemberDetailsModel>> memberDetails,
     Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember,
+    Option<Either<ApiException, MemberDetailsModel>>? searchedCustomer,
     bool? memberOnboardedAnimationCompleted,
     ({Option<Either<ApiException, LeadsListingModel>> data, bool isPagination})
     leads,
@@ -193,6 +225,11 @@ abstract class _$$MembersAndLeadsStateImplCopyWith<$Res>
     upComingPayments,
     ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
     paymentHistory,
+    ({
+      Option<Either<ApiException, UpcomingRenewalResponseModel>> data,
+      bool isPagination,
+    })
+    upcomingRenewals,
   });
 }
 
@@ -213,12 +250,14 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
     Object? members = null,
     Object? memberDetails = null,
     Object? createOrUpdateMember = freezed,
+    Object? searchedCustomer = freezed,
     Object? memberOnboardedAnimationCompleted = freezed,
     Object? leads = null,
     Object? leadDetails = null,
     Object? createOrUpdateLead = freezed,
     Object? upComingPayments = null,
     Object? paymentHistory = null,
+    Object? upcomingRenewals = null,
   }) {
     return _then(
       _$MembersAndLeadsStateImpl(
@@ -239,6 +278,11 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
             freezed == createOrUpdateMember
                 ? _value.createOrUpdateMember
                 : createOrUpdateMember // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, MemberDetailsModel>>?,
+        searchedCustomer:
+            freezed == searchedCustomer
+                ? _value.searchedCustomer
+                : searchedCustomer // ignore: cast_nullable_to_non_nullable
                     as Option<Either<ApiException, MemberDetailsModel>>?,
         memberOnboardedAnimationCompleted:
             freezed == memberOnboardedAnimationCompleted
@@ -279,6 +323,15 @@ class __$$MembersAndLeadsStateImplCopyWithImpl<$Res>
                       Option<Either<ApiException, PaymentHistory>> data,
                       bool isPagination,
                     }),
+        upcomingRenewals:
+            null == upcomingRenewals
+                ? _value.upcomingRenewals
+                : upcomingRenewals // ignore: cast_nullable_to_non_nullable
+                    as ({
+                      Option<Either<ApiException, UpcomingRenewalResponseModel>>
+                      data,
+                      bool isPagination,
+                    }),
       ),
     );
   }
@@ -291,12 +344,14 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
     this.members = const (data: None(), isPagination: false),
     this.memberDetails = const None(),
     this.createOrUpdateMember,
+    this.searchedCustomer,
     this.memberOnboardedAnimationCompleted,
     this.leads = const (data: None(), isPagination: false),
     this.leadDetails = const None(),
     this.createOrUpdateLead,
     this.upComingPayments = const (data: None(), isPagination: false),
     this.paymentHistory = const (data: None(), isPagination: false),
+    this.upcomingRenewals = const (data: None(), isPagination: false),
   });
 
   //* Members
@@ -312,6 +367,8 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   final Option<Either<ApiException, MemberDetailsModel>> memberDetails;
   @override
   final Option<Either<ApiException, MemberDetailsModel>>? createOrUpdateMember;
+  @override
+  final Option<Either<ApiException, MemberDetailsModel>>? searchedCustomer;
   @override
   final bool? memberOnboardedAnimationCompleted;
   //* Leads
@@ -340,10 +397,18 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
   @JsonKey()
   final ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
   paymentHistory;
+  // upcomingRenewals
+  @override
+  @JsonKey()
+  final ({
+    Option<Either<ApiException, UpcomingRenewalResponseModel>> data,
+    bool isPagination,
+  })
+  upcomingRenewals;
 
   @override
   String toString() {
-    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, memberOnboardedAnimationCompleted: $memberOnboardedAnimationCompleted, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead, upComingPayments: $upComingPayments, paymentHistory: $paymentHistory)';
+    return 'MembersAndLeadsState(members: $members, memberDetails: $memberDetails, createOrUpdateMember: $createOrUpdateMember, searchedCustomer: $searchedCustomer, memberOnboardedAnimationCompleted: $memberOnboardedAnimationCompleted, leads: $leads, leadDetails: $leadDetails, createOrUpdateLead: $createOrUpdateLead, upComingPayments: $upComingPayments, paymentHistory: $paymentHistory, upcomingRenewals: $upcomingRenewals)';
   }
 
   @override
@@ -356,6 +421,8 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
                 other.memberDetails == memberDetails) &&
             (identical(other.createOrUpdateMember, createOrUpdateMember) ||
                 other.createOrUpdateMember == createOrUpdateMember) &&
+            (identical(other.searchedCustomer, searchedCustomer) ||
+                other.searchedCustomer == searchedCustomer) &&
             (identical(
                   other.memberOnboardedAnimationCompleted,
                   memberOnboardedAnimationCompleted,
@@ -370,7 +437,9 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
             (identical(other.upComingPayments, upComingPayments) ||
                 other.upComingPayments == upComingPayments) &&
             (identical(other.paymentHistory, paymentHistory) ||
-                other.paymentHistory == paymentHistory));
+                other.paymentHistory == paymentHistory) &&
+            (identical(other.upcomingRenewals, upcomingRenewals) ||
+                other.upcomingRenewals == upcomingRenewals));
   }
 
   @override
@@ -379,12 +448,14 @@ class _$MembersAndLeadsStateImpl implements _MembersAndLeadsState {
     members,
     memberDetails,
     createOrUpdateMember,
+    searchedCustomer,
     memberOnboardedAnimationCompleted,
     leads,
     leadDetails,
     createOrUpdateLead,
     upComingPayments,
     paymentHistory,
+    upcomingRenewals,
   );
 
   /// Create a copy of MembersAndLeadsState
@@ -410,6 +481,7 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
     final Option<Either<ApiException, MemberDetailsModel>> memberDetails,
     final Option<Either<ApiException, MemberDetailsModel>>?
     createOrUpdateMember,
+    final Option<Either<ApiException, MemberDetailsModel>>? searchedCustomer,
     final bool? memberOnboardedAnimationCompleted,
     final ({
       Option<Either<ApiException, LeadsListingModel>> data,
@@ -429,6 +501,11 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
       bool isPagination,
     })
     paymentHistory,
+    final ({
+      Option<Either<ApiException, UpcomingRenewalResponseModel>> data,
+      bool isPagination,
+    })
+    upcomingRenewals,
   }) = _$MembersAndLeadsStateImpl;
 
   //* Members
@@ -439,6 +516,8 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
   Option<Either<ApiException, MemberDetailsModel>> get memberDetails;
   @override
   Option<Either<ApiException, MemberDetailsModel>>? get createOrUpdateMember;
+  @override
+  Option<Either<ApiException, MemberDetailsModel>>? get searchedCustomer;
   @override
   bool? get memberOnboardedAnimationCompleted; //* Leads
   @override
@@ -453,7 +532,13 @@ abstract class _MembersAndLeadsState implements MembersAndLeadsState {
   get upComingPayments; // paymentHistory
   @override
   ({Option<Either<ApiException, PaymentHistory>> data, bool isPagination})
-  get paymentHistory;
+  get paymentHistory; // upcomingRenewals
+  @override
+  ({
+    Option<Either<ApiException, UpcomingRenewalResponseModel>> data,
+    bool isPagination,
+  })
+  get upcomingRenewals;
 
   /// Create a copy of MembersAndLeadsState
   /// with the given fields replaced by the non-null parameter values.

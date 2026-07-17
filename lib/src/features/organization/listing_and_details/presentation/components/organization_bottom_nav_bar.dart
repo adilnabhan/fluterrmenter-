@@ -55,6 +55,19 @@ class OrganizationBottomNavBar extends StatelessWidget {
                   onTap: () => onTap(1),
                 ),
                 _NavBarItem(
+                  icon: Icon(
+                    Icons.bar_chart_rounded,
+                    color:
+                        currentIndex == 2
+                            ? AppColors.primary
+                            : AppColors.textGrey,
+                    size: 24,
+                  ),
+                  label: 'Reports',
+                  isSelected: currentIndex == 2,
+                  onTap: () => onTap(2),
+                ),
+                _NavBarItem(
                   icon: IgnorePointer(
                     child: ProfileImage(
                       url: profileImageUrl,
@@ -63,8 +76,8 @@ class OrganizationBottomNavBar extends StatelessWidget {
                     ),
                   ),
                   label: 'Profile',
-                  isSelected: currentIndex == 2,
-                  onTap: () => onTap(2),
+                  isSelected: currentIndex == 3,
+                  onTap: () => onTap(3),
                   profileImageUrl: profileImageUrl,
                 ),
               ] else ...[

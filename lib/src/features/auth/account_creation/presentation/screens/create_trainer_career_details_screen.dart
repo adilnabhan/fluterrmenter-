@@ -452,12 +452,14 @@ class _AddCenterSheetState extends State<_AddCenterSheet> {
                         children: [
                           const CircleAvatar(backgroundColor: Color(0xffF0F0F0)),
                           const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(name, style: AppStyles.text14Px.poppins.w600.dark),
-                              Text('Ballygunge', style: AppStyles.text12Px.poppins.w400.textGrey),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(name, style: AppStyles.text14Px.poppins.w600.dark),
+                                Text('Ballygunge', style: AppStyles.text12Px.poppins.w400.textGrey),
+                              ],
+                            ),
                           ),
                         ],
                       ),

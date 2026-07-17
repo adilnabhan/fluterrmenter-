@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/payment_history/payment_history_model.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/upcoming_renewals/upcoming_renewal_model.dart';
 
 part 'members_and_leads_state.dart';
 part 'members_and_leads_cubit.freezed.dart';
@@ -82,9 +83,26 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     emit(state.copyWith(memberDetails: some(res)));
   }
 
+  Future<void> searchCustomerByNumber(String mobileNumber) async {
+    if (isClosed) return;
+    emit(state.copyWith(searchedCustomer: none()));
+    final res = await MembersRepository().searchCustomerByNumber(mobileNumber: mobileNumber);
+    if (isClosed) return;
+    emit(state.copyWith(searchedCustomer: some(res)));
+  }
+
+  void clearSearchedCustomer() {
+    emit(state.copyWith(searchedCustomer: none()));
+  }
+
   Future<void> cerateOrUpdateMemberDetails({
     required MemberDetailsModel memeberDetails,
     required MembershipPackageModel membershipPackageModel,
+    double? discountAmount,
+    double? amountReceived,
+    String? paymentMethod,
+    String? membershipStartDate,
+    int? memberId,
   }) async {
     print('id ---${membershipPackageModel.id}---$orgId');
     if (isClosed) return;
@@ -96,9 +114,11 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     );
 
     final map = {
-      'first_name': memeberDetails.fullName,
-      // 'last_name': '',
-      'mobile_number': '+91${memeberDetails.mobileNumber}',
+      'first_name': memeberDetails.firstName ?? memeberDetails.fullName ?? '',
+      if (memeberDetails.lastName != null) 'last_name': memeberDetails.lastName,
+      'mobile_number': (memeberDetails.mobileNumber?.startsWith('+') ?? false)
+          ? memeberDetails.mobileNumber
+          : '+91${memeberDetails.mobileNumber}',
       'email': memeberDetails.email,
       'date_of_birth': memeberDetails.dateOfBirth?.format('yyyy-MM-dd'),
       'gender': memeberDetails.gender,
@@ -107,15 +127,22 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       'user_role': 45,
       'organization_id': orgId,
       'emergency_contact_number':
-          memeberDetails.emergencyContactNumber!.isNotEmpty
-              ? '+91${memeberDetails.emergencyContactNumber}'
+          (memeberDetails.emergencyContactNumber?.isNotEmpty ?? false)
+              ? (memeberDetails.emergencyContactNumber!.startsWith('+')
+                  ? memeberDetails.emergencyContactNumber
+                  : '+91${memeberDetails.emergencyContactNumber}')
               : null,
       'height': memeberDetails.height,
       'weight': memeberDetails.weight,
       'profession': memeberDetails.profession,
       'membership_plan_id': membershipPackageModel.id,
+      if (discountAmount != null) 'discount_amount': discountAmount,
+      if (amountReceived != null) 'amount_received': amountReceived,
+      if (paymentMethod != null) 'payment_method': paymentMethod,
+      if (membershipStartDate != null) 'membership_start_date': membershipStartDate,
       'profile_picture':
-          (memeberDetails.profilePicture?.isNotEmpty ?? false)
+          (memeberDetails.profilePicture?.isNotEmpty ?? false) &&
+          !memeberDetails.profilePicture!.startsWith('http')
               ? await MultipartFile.fromFile(
                 memeberDetails.profilePicture!,
                 filename: 'profile.jpg',
@@ -127,7 +154,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     );
     print(' ths map is--$map');
     final res = await MembersRepository().createOrUpdateMember(
-      memberId: null,
+      memberId: memberId,
       body: FormData.fromMap(map),
     );
     if (isClosed) return;
@@ -248,95 +275,8 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         ),
       );
       return;
-    } else if (email?.isEmpty ?? true) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          createOrUpdateLead: some(
-            left(const ApiException.notFound(msg: 'Email is required')),
-          ),
-        ),
-      );
-      return;
-    } else if (dateOfBirth?.isEmpty ?? true) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          createOrUpdateLead: some(
-            left(const ApiException.notFound(msg: 'Date of birth is required')),
-          ),
-        ),
-      );
-      return;
-    } else if (gender?.isEmpty ?? true) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          createOrUpdateLead: some(
-            left(const ApiException.notFound(msg: 'Gender is required')),
-          ),
-        ),
-      );
-      return;
-    } else if (bloodGroup?.isEmpty ?? true) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          createOrUpdateLead: some(
-            left(const ApiException.notFound(msg: 'Blood group is required')),
-          ),
-        ),
-      );
-      return;
-    } else if (emergencyContactNumber?.isEmpty ?? true) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          createOrUpdateLead: some(
-            left(
-              const ApiException.notFound(
-                msg: 'Emergency contact number is required',
-              ),
-            ),
-          ),
-        ),
-      );
-      return;
-    } else if (experience == null) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          createOrUpdateLead: some(
-            left(const ApiException.notFound(msg: 'Experience is required')),
-          ),
-        ),
-      );
-      return;
-    } else if (addressProof?.isEmpty ?? true) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          createOrUpdateLead: some(
-            left(const ApiException.notFound(msg: 'Address proof is required')),
-          ),
-        ),
-      );
-      return;
-    } else if (trainerCertificates?.isEmpty ?? true) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          createOrUpdateLead: some(
-            left(
-              const ApiException.notFound(
-                msg: 'Trainer certificates are required',
-              ),
-            ),
-          ),
-        ),
-      );
-      return;
     }
+
     // else if (profilePicture?.isEmpty ?? true) {
     if (isClosed) return;
     //   emit(state.copyWith(createOrUpdateLead: some(left(const ApiException.notFound(msg: 'Profile picture is required')))));
@@ -812,14 +752,85 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     }
   }
 
+  Future<void> fetchUpcomingRenewals({
+    bool isPagination = false,
+    int? dayFilter,
+    String? searchQuery,
+  }) async {
+    final expiring = state.upcomingRenewals.data.fold(
+      () => null,
+      (t) => t.fold((l) => null, (r) => r),
+    );
 
+    if (isPagination && (expiring?.next?.isEmpty ?? true)) {
+      return;
+    }
 
-  Future<void> fetchPaymentHistory({bool isPagination = false,
-    required int orgId
+    if (isClosed) return;
+    emit(
+      state.copyWith(
+        upcomingRenewals: (
+          data: isPagination ? state.upcomingRenewals.data : none(),
+          isPagination: isPagination,
+        ),
+      ),
+    );
+
+    final res = await MembershipRepository().listUpcomingRenewals(
+      queryParameters: {
+        'organization_id': orgId,
+        'status': 'upcoming',
+        if (dayFilter != null) 'day_filter': dayFilter,
+        if (searchQuery != null && searchQuery.trim().isNotEmpty)
+          'search': searchQuery,
+      },
+      nextUrl: isPagination ? expiring?.next : null,
+    );
+
+    if (isPagination) {
+      await res.fold(
+        (l) {
+          if (isClosed) return null;
+          emit(
+            state.copyWith(
+              upcomingRenewals: (
+                data: state.upcomingRenewals.data,
+                isPagination: false,
+              ),
+            ),
+          );
+          return Dialogs.showSnack(msg: l.msg);
+        },
+        (r) {
+          final data = r.copyWith(
+            results: [...?expiring?.results, ...?r.results],
+          );
+
+          if (isClosed) return;
+          emit(
+            state.copyWith(
+              upcomingRenewals: (data: some(right(data)), isPagination: false),
+            ),
+          );
+        },
+      );
+    } else {
+      if (isClosed) return;
+      emit(
+        state.copyWith(
+          upcomingRenewals: (data: some(res), isPagination: false),
+        ),
+      );
+    }
+  }
+
+  Future<void> fetchPaymentHistory({
+    bool isPagination = false,
+    required int orgId,
   }) async {
     final paymentHistoryData = state.paymentHistory.data.fold(
-          () => null,
-          (t) => t.fold((l) => null, (r) => r),
+      () => null,
+      (t) => t.fold((l) => null, (r) => r),
     );
 
     final String? nextUrl = paymentHistoryData?.allPayments.next;
@@ -832,32 +843,32 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     emit(
       state.copyWith(
         paymentHistory: (
-        data: isPagination ? state.paymentHistory.data : none(),
-        isPagination: isPagination,
+          data: isPagination ? state.paymentHistory.data : none(),
+          isPagination: isPagination,
         ),
       ),
     );
 
     final res = await MembershipRepository().listPaymentHistory(
-      nextUrl: isPagination ? nextUrl : null,orgId: orgId
-
+      nextUrl: isPagination ? nextUrl : null,
+      orgId: orgId,
     );
 
     if (isPagination) {
       await res.fold(
-            (l) {
+        (l) {
           if (isClosed) return;
           emit(
             state.copyWith(
               paymentHistory: (
-              data: state.paymentHistory.data,
-              isPagination: false,
+                data: state.paymentHistory.data,
+                isPagination: false,
               ),
             ),
           );
           Dialogs.showSnack(msg: l.msg);
         },
-            (r) {
+        (r) {
           final mergedData = r.copyWith(
             allPayments: r.allPayments.copyWith(
               results: [
@@ -871,8 +882,8 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
           emit(
             state.copyWith(
               paymentHistory: (
-              data: some(right(mergedData)),
-              isPagination: false,
+                data: some(right(mergedData)),
+                isPagination: false,
               ),
             ),
           );
@@ -881,16 +892,8 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     } else {
       if (isClosed) return;
       emit(
-        state.copyWith(
-          paymentHistory: (
-          data: some(res),
-          isPagination: false,
-          ),
-        ),
+        state.copyWith(paymentHistory: (data: some(res), isPagination: false)),
       );
     }
   }
-
-
-
 }

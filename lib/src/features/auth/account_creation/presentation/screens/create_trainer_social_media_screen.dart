@@ -152,7 +152,8 @@ class _CreateTrainerSocialMediaScreenState extends State<CreateTrainerSocialMedi
                   if (_socialUrlControllers[4].text.isNotEmpty) {'platform': 'youtube', 'url': _socialUrlControllers[4].text},
                 ];
                 */
-                context.push(const CreateTrainerEarlyBirdOfferScreen());
+                // context.push(const CreateTrainerEarlyBirdOfferScreen());
+                context.push(const CreateTrainerLocationDetailsScreen());
               },
               buttonColor: AppColors.primary,
             ),

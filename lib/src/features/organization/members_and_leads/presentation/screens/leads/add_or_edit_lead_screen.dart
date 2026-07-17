@@ -43,7 +43,6 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           _fields[1].focusNode?.requestFocus();
         },
         controller: TextEditingController(),
-        // focusNode: FocusNode(),
         keyboardType: TextInputType.name,
         decoration: InputDecoration(
           hintText: 'Enter Name',
@@ -56,37 +55,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
       ),
       FieldData(
         type: FieldType.word,
-        textInputAction: TextInputAction.done,
-        label: 'Email Address',
-        requiredLabel: true,
-        controller: TextEditingController(),
-        focusNode: FocusNode(),
-        validator: (value) {
-          if (value?.isNotEmpty ?? false) {
-            if (!RegExp(
-              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-            ).hasMatch(value!)) {
-              return 'Invalid email address!';
-            }
-          }
-          return null;
-        },
-        onSubmitted: (value) {
-          _fields[2].focusNode?.requestFocus();
-        },
-        keyboardType: TextInputType.emailAddress,
-        decoration: InputDecoration(
-          hintText: 'Enter your email address',
-          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-          border: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-            borderSide: BorderSide(color: AppColors.borderGrey),
-          ),
-        ),
-      ),
-      FieldData(
-        type: FieldType.word,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Mobile Number',
         requiredLabel: true,
         controller: TextEditingController(),
@@ -104,7 +73,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           return null;
         },
         onSubmitted: (value) {
-          _fields[3].focusNode?.requestFocus();
+          _fields[2].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: 'Enter Mobile Number',
@@ -117,17 +86,31 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
       ),
       FieldData(
         type: FieldType.word,
-        textInputAction: TextInputAction.done,
-        label: 'Location',
-        requiredLabel: true,
+        textInputAction: TextInputAction.next,
+        label: 'Email Address',
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
-        validator: (value) {
-          if (value?.trim().isEmpty ?? true) {
-            return 'Location is required';
-          }
-          return null;
+        onSubmitted: (value) {
+          _fields[3].focusNode?.requestFocus();
         },
+        keyboardType: TextInputType.emailAddress,
+        decoration: InputDecoration(
+          hintText: 'Enter your email address',
+          hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.borderGrey),
+          ),
+        ),
+      ),
+      FieldData(
+        type: FieldType.word,
+        textInputAction: TextInputAction.next,
+        label: 'Location',
+        requiredLabel: false,
+        controller: TextEditingController(),
+        focusNode: FocusNode(),
         onSubmitted: (value) {
           _fields[4].focusNode?.requestFocus();
         },
@@ -142,9 +125,9 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
       ),
       FieldData(
         type: FieldType.word,
-        textInputAction: TextInputAction.done,
-        label: 'Expirience',
-        requiredLabel: true,
+        textInputAction: TextInputAction.next,
+        label: 'Experience',
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         keyboardType: TextInputType.number,
@@ -153,12 +136,6 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(2),
         ],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Expriece is required';
-          }
-          return null;
-        },
         onSubmitted: (value) {
           _fields[5].focusNode?.requestFocus();
         },
@@ -182,9 +159,9 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
       ),
       FieldData(
         type: FieldType.radio,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Blood Group',
-        requiredLabel: true,
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         items: [
@@ -197,17 +174,11 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           (label: 'O+', value: 'O+'),
           (label: 'O-', value: 'O-'),
         ],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Blood Group must be selected';
-          }
-          return null;
-        },
         onValueChanged: (p0) {
-          _fields[5].focusNode?.requestFocus();
+          _fields[6].focusNode?.requestFocus();
         },
         onSubmitted: (value) {
-          _fields[5].focusNode?.requestFocus();
+          _fields[6].focusNode?.requestFocus();
         },
         decoration: InputDecoration(
           hintText: 'Select Blood Group',
@@ -220,9 +191,9 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
       ),
       FieldData(
         type: FieldType.radio,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Gender',
-        requiredLabel: true,
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         items: [
@@ -230,14 +201,8 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           (label: 'Female', value: 'female'),
           (label: 'Other', value: 'other'),
         ],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Geneder must be selected';
-          }
-          return null;
-        },
         onValueChanged: (p0) {
-          _fields[6].focusNode?.requestFocus();
+          _fields[7].focusNode?.requestFocus();
         },
         onSubmitted: (value) {
           _fields[7].focusNode?.requestFocus();
@@ -253,16 +218,10 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
       ),
       FieldData(
         type: FieldType.date,
-        textInputAction: TextInputAction.done,
+        textInputAction: TextInputAction.next,
         label: 'Date of Birth',
-        requiredLabel: true,
+        requiredLabel: false,
         controller: TextEditingController(),
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Date of Birth must be selected';
-          }
-          return null;
-        },
         onSubmitted: (value) {
           _fields[8].focusNode?.requestFocus();
         },
@@ -279,7 +238,7 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
         type: FieldType.word,
         textInputAction: TextInputAction.done,
         label: 'Emergency Contact',
-        requiredLabel: true,
+        requiredLabel: false,
         controller: TextEditingController(),
         focusNode: FocusNode(),
         keyboardType: TextInputType.phone,
@@ -288,18 +247,12 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(10),
         ],
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Emergency Contact is required';
-          }
-          return null;
-        },
         onSubmitted: (value) {
           _onContinue();
-          _fields[7].focusNode?.unfocus();
+          _fields[8].focusNode?.unfocus();
         },
         decoration: InputDecoration(
-          hintText: 'Enter Mobile Number',
+          hintText: 'Enter Emergency Contact',
           hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
           border: const OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -329,14 +282,14 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
     }
     if (_formKey.currentState?.validate() ?? false) {
       final fullName = _fields[0].controller?.text;
-      final emailAddress = _fields[1].controller?.text;
-      final mobileNo = _fields[2].controller?.text;
+      final mobileNo = _fields[1].controller?.text;
+      final emailAddress = _fields[2].controller?.text;
+      final location = _fields[3].controller?.text;
       final experience = _fields[4].controller?.text;
       final bloodGroup = _fields[5].controller?.text;
       final gender = _fields[6].controller?.text;
       final dateOfBirth = _fields[7].selectedDateTime?.format('yyyy-MM-dd');
       final emergencyContactNo = _fields[8].controller?.text;
-      final location = _fields[3].controller?.text;
       final documents =
           _documents.value
               .where((e) => e?.path?.trim().isNotEmpty ?? false)

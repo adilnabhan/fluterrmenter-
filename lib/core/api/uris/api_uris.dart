@@ -106,6 +106,8 @@ final class ApiUris {
   ///============================= Workouts =============================\\\
   static final gymExercises = '${_v1}fitnesscenter/exercises/';
   static final createGymExercise = '${_v1}fitnesscenter/exercises/create/';
+  static String editGymExercise(int id) => '${_v1}fitnesscenter/exercises/$id/';
+  static String deleteGymExercise(int id) => '${_v1}fitnesscenter/exercises/$id/';
   static final gymWorkoutLibrary = '${_v1}fitnesscenter/workout-library/';
   static String gymWorkoutLibraryDetail(int id) => '${_v1}fitnesscenter/workout-library/$id/';
   static final workoutGroups = '${_v1}trainer/workout-groups/';

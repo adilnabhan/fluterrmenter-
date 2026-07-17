@@ -71,6 +71,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
+      _groups = [];
     });
 
     try {
@@ -360,7 +361,6 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -443,7 +443,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
             ],
           ),
           Positioned(
-            bottom: 110,
+            bottom: 16,
             left: 0,
             right: 0,
             child: Center(

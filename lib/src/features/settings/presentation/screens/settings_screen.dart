@@ -10,6 +10,7 @@ import 'package:mentor_mobile_app/src/features/settings/presentation/screens/faq
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_gallery_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_schedules_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_amenities_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
 
 class SettingsScreen extends StatelessWidget {
   final int? orgId;
@@ -28,6 +29,20 @@ class SettingsScreen extends StatelessWidget {
   });
 
   OrganizationDetailsModel? get orgDetails {
+    if (orgDetailsCubit != null) {
+      OrganizationDetailsModel? fullDetails;
+      orgDetailsCubit!.state.details.fold(
+        () {},
+        (either) => either.fold(
+          (l) {},
+          (r) {
+            if (r.id == orgId) fullDetails = r;
+          },
+        ),
+      );
+      if (fullDetails != null) return fullDetails;
+    }
+
     if (orgId == null) return null;
     return OrganizationDetailsModel(id: orgId, name: name, email: email, logo: logoUrl);
   }
@@ -389,7 +404,7 @@ class SettingsScreen extends StatelessWidget {
               iconColor: const Color(0xFFE53935),
               textColor: const Color(0xFFE53935),
               onTap: () {
-                // Logout logic
+                const LogoutSheet().show(context);
               },
             ),
             const SizedBox(height: 40),

@@ -91,7 +91,14 @@ class _TrainerCreationSuccessScreenState extends State<TrainerCreationSuccessScr
                           Button.filled(
                             title: 'Go to Trainer Dashboard →',
                             ontap: () {
+                              final user = LocalStorageService().getUser();
                               context.pushAndRemoveUntil(const TrainerMainScreen(initialIndex: 0));
+                              if (user != null) {
+                                Future.delayed(const Duration(milliseconds: 100), () {
+                                  final trainerUser = user.copyWith(userRole: 35);
+                                  Feggy.navKey.currentContext?.read<AppCubit>().addUser(trainerUser);
+                                });
+                              }
                             },
                             buttonColor: AppColors.primary,
                             raduis: 12,

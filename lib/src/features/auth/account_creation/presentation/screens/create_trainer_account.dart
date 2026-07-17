@@ -202,18 +202,19 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
 
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      // final firstName = _firstName.controller?.text.trim();
-      // final lastName = _lastName.controller?.text.trim();
-      // final email = _email.controller?.text.trim();
+      final firstName = _firstName.controller?.text.trim();
+      final lastName = _lastName.controller?.text.trim();
+      final email = _email.controller?.text.trim();
 
-      // context.read<CreateAccountCubit>().onboardUser(
-      //   firstName: firstName ?? '',
-      //   lastName: lastName ?? '',
-      //   email: email ?? '',
-      // );
+      context.read<CreateAccountCubit>().onboardUser(
+        firstName: firstName ?? '',
+        lastName: lastName ?? '',
+        email: email ?? '',
+        userRole: '35',
+      );
       
       // Directly navigate to professional details as per user request to not call API
-      context.push(const CreateTrainerProfessionalDetailsScreen());
+      // context.push(const CreateTrainerProfessionalDetailsScreen());
     } else {
       Dialogs.showSnack(msg: 'Please fill all the required fields');
     }
@@ -230,7 +231,8 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
               Dialogs.showSnack(msg: l.msg);
             },
             (r) {
-              context.read<AppCubit>().addUser(r);
+              // Save locally but defer AppCubit update until the end of the flow to prevent Navigator rebuilds
+              LocalStorageService().saveUser(r);
               context.push(const CreateTrainerProfessionalDetailsScreen());
             },
           ),

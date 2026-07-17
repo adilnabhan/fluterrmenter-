@@ -919,9 +919,10 @@ class _OrganizationListingAndDetailsScreenState
                                   title: 'Total Members',
                                   color: const Color(0xff9C51BF),
                                   gradient: null,
-                                  count:
-                                      (orgHomeData.expiredCustomersCount ?? 0) +
-                                      (orgHomeData.activeCustomersCount ?? 0),
+                                  count: orgHomeData.totalCustomers ?? 
+                                      orgHomeData.totalCustomersCount ?? 
+                                      ((orgHomeData.expiredCustomersCount ?? 0) +
+                                      (orgHomeData.activeCustomersCount ?? 0)),
                                   onTap: () {
                                     if (state.selectedOrganization?.id !=
                                         null) {
@@ -1065,9 +1066,10 @@ class _OrganizationListingAndDetailsScreenState
                                 ),
                                 (
                                   title: 'Total\nMembers',
-                                  count:
-                                      (orgHomeData.expiredCustomersCount ?? 0) +
-                                      (orgHomeData.activeCustomersCount ?? 0),
+                                  count: orgHomeData.totalCustomers ?? 
+                                      orgHomeData.totalCustomersCount ?? 
+                                      ((orgHomeData.expiredCustomersCount ?? 0) +
+                                      (orgHomeData.activeCustomersCount ?? 0)),
                                   countColor: const Color(0xff333333),
                                   labelColor: const Color(0xff333333),
                                   gradient: null,
@@ -1134,7 +1136,7 @@ class _OrganizationListingAndDetailsScreenState
                                 ),
                                 (
                                   title: 'Today\'s\nleads',
-                                  count: 0,
+                                  count: 'Coming\nsoon',
                                   countColor: const Color(0xff333333),
                                   labelColor: const Color(0xff333333),
                                   gradient: null,
@@ -1146,7 +1148,7 @@ class _OrganizationListingAndDetailsScreenState
                                 ),
                                 (
                                   title: 'Biometric\nDevices',
-                                  count: 0,
+                                  count: 'Coming\nsoon',
                                   countColor: const Color(0xff27AE60),
                                   labelColor: const Color(0xff333333),
                                   gradient: null,
@@ -1253,7 +1255,7 @@ class _OrganizationListingAndDetailsScreenState
                                                                 .copyWith(
                                                                   color:
                                                                       card.countColor,
-                                                                  fontSize: 32,
+                                                                  fontSize: card.count is String ? 16 : 32,
                                                                 ),
                                                           ),
                                                         ),
@@ -1409,6 +1411,7 @@ class _OrganizationListingAndDetailsScreenState
                   ),
                 ),
                 GymTrainersScreen(orgDetails: orgDetails!),
+                OrganizationReportsScreen(orgId: state.selectedOrganization!.id!),
                 OrganizationDetailsScreen(
                   orgId: state.selectedOrganization!.id!,
                   canFetch: false,

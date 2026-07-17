@@ -104,6 +104,8 @@ _$TrainerModelImpl _$$TrainerModelImplFromJson(Map<String, dynamic> json) =>
                 (e) => PortfolioImageModel.fromJson(e as Map<String, dynamic>),
               )
               .toList(),
+      clientsCount: (json['clients_count'] as num?)?.toInt(),
+      verifiedWorkoutsCount: (json['verified_workouts_count'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$TrainerModelImplToJson(_$TrainerModelImpl instance) =>
@@ -113,6 +115,8 @@ Map<String, dynamic> _$$TrainerModelImplToJson(_$TrainerModelImpl instance) =>
       'profile_step': instance.profileStep,
       'certificates': instance.certificates,
       'portfolio_images': instance.portfolioImages,
+      'clients_count': instance.clientsCount,
+      'verified_workouts_count': instance.verifiedWorkoutsCount,
     };
 
 _$CertificateModelImpl _$$CertificateModelImplFromJson(

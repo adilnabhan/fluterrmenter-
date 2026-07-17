@@ -44,6 +44,41 @@ class _OrganizationWorkoutLibraryScreenState
     }
   }
 
+  Future<void> _deleteExercise(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Exercise'),
+        content: const Text('Are you sure you want to delete this custom exercise?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+
+    try {
+      await DioClient().dio.delete<dynamic>(ApiUris.deleteGymExercise(id));
+      Dialogs.showSnack(msg: 'Exercise deleted successfully');
+      _fetchGymExercises();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      Dialogs.showSnack(msg: 'Failed to delete exercise');
+    }
+  }
+
   void _onSearchChanged(String query) {
     if (query.isEmpty) {
       setState(() => _filteredExercises = List.from(_orgExercises));
@@ -223,10 +258,37 @@ class _OrganizationWorkoutLibraryScreenState
                                         ],
                                       ),
                                     ),
-                                    const Icon(
-                                      Icons.chevron_right,
-                                      color: Colors.grey,
-                                      size: 20,
+                                    PopupMenuButton<String>(
+                                      color: Colors.white,
+                                      surfaceTintColor: Colors.white,
+                                      icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+                                      onSelected: (value) async {
+                                        if (value == 'edit') {
+                                          final result = await showModalBottomSheet<bool>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (context) => _CreateNewExerciseSheet(editExercise: ex),
+                                          );
+                                          if (result == true) {
+                                            _fetchGymExercises();
+                                          }
+                                        } else if (value == 'delete') {
+                                          if (ex['id'] != null) {
+                                            _deleteExercise(ex['id'] as int);
+                                          }
+                                        }
+                                      },
+                                      itemBuilder: (context) => [
+                                        const PopupMenuItem(
+                                          value: 'edit',
+                                          child: Text('Edit'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'delete',
+                                          child: Text('Delete', style: TextStyle(color: Colors.red)),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -359,7 +421,6 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
       Dialogs.showSnack(msg: 'Failed to add exercise');
     }
   }
-
 
   void _showCreateExerciseSheet() {
     Navigator.pop(context); // Close the current sheet
@@ -577,7 +638,9 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
 }
 
 class _CreateNewExerciseSheet extends StatefulWidget {
-  const _CreateNewExerciseSheet();
+  final Map<String, dynamic>? editExercise;
+
+  const _CreateNewExerciseSheet({this.editExercise});
 
   @override
   State<_CreateNewExerciseSheet> createState() =>
@@ -603,6 +666,20 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
   @override
   void initState() {
     super.initState();
+    if (widget.editExercise != null) {
+      _nameController.text = widget.editExercise!['name']?.toString() ?? '';
+      _youtubeController.text = widget.editExercise!['video_url']?.toString() ??
+          widget.editExercise!['youtube_link']?.toString() ??
+          '';
+      
+      final muscle = widget.editExercise!['primary_muscle_group_id'] ?? widget.editExercise!['muscle_group_id'];
+      if (muscle != null) _selectedMuscleId = int.tryParse(muscle.toString());
+
+      final equipment = widget.editExercise!['equipment_id'] ?? widget.editExercise!['equipment'];
+      if (equipment != null) _selectedEquipmentId = int.tryParse(equipment.toString());
+
+      _selectedType = widget.editExercise!['exercise_type_id']?.toString() ?? widget.editExercise!['type']?.toString();
+    }
     _fetchDropdownData();
   }
 
@@ -653,26 +730,34 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
     });
 
     try {
-      final response = await DioClient().dio.post<dynamic>(
-        ApiUris.createGymExercise,
-        data: {
-          'name': _nameController.text.trim(),
-          'muscle_group_id': _selectedMuscleId,
-          'equipment_id': _selectedEquipmentId,
-          'exercise_type_id': _selectedType,
-          'youtube_link': _youtubeController.text.trim(),
-        },
-      );
+      final isEditing = widget.editExercise != null;
+      final data = {
+        'name': _nameController.text.trim(),
+        'muscle_group_id': _selectedMuscleId,
+        'equipment_id': _selectedEquipmentId,
+        'exercise_type_id': _selectedType,
+        'youtube_link': _youtubeController.text.trim(),
+      };
+
+      final response = isEditing 
+        ? await DioClient().dio.put<dynamic>(
+            ApiUris.editGymExercise(widget.editExercise!['id'] as int),
+            data: data,
+          )
+        : await DioClient().dio.post<dynamic>(
+            ApiUris.createGymExercise,
+            data: data,
+          );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Dialogs.showSnack(msg: 'Exercise created successfully');
-        Navigator.pop(context); // Close create form
+        Dialogs.showSnack(msg: isEditing ? 'Exercise updated successfully' : 'Exercise created successfully');
+        Navigator.pop(context, true); // Return true to signal success
       } else {
         if (!mounted) return;
         setState(() {
           _isCreating = false;
         });
-        Dialogs.showSnack(msg: 'Failed to create exercise');
+        Dialogs.showSnack(msg: isEditing ? 'Failed to update exercise' : 'Failed to create exercise');
       }
     } catch (e) {
       if (!mounted) return;

@@ -38,7 +38,7 @@ class _OrganizationDashboardScaffoldState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
+      extendBody: false,
       body: IndexedStack(index: _currentIndex, children: widget.pages),
       floatingActionButton:
           widget.floatingActionButtons != null &&

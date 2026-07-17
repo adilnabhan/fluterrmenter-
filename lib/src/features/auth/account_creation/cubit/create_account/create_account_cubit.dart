@@ -11,6 +11,7 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
     required String firstName,
     required String lastName,
     required String email,
+    String userRole = '20',
   }) async {
     if (state.onboardingUser?.isNone() ?? false) {
       return;
@@ -59,7 +60,7 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
         'mobile_number': state.sentOtpEntity.mobileNumber,
         'process': 'registration',
         'source': platformSource,
-        'user_role': '20',
+        'user_role': userRole,
         'meta': <String, dynamic>{},
       },
     );

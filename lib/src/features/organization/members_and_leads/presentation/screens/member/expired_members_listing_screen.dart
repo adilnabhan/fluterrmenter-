@@ -164,122 +164,111 @@ class __ExpiredMembersListingScreenState
                                   ) {
                                     final memberData =
                                         memebersDataum.results?[index];
-                                    return ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: ColoredBox(
-                                        color: Colors.white,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(16),
-                                          child: Column(
-                                            spacing: 8,
-                                            children: [
-                                              Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  ClipRRect(
-                                                    borderRadius:
-                                                        const BorderRadius.all(
-                                                          Radius.circular(
-                                                            80000,
+                                    return InkWell(
+                                      onTap: () {
+                                        if (memberData?.id != null) {
+                                          context.push(
+                                            BlocProvider.value(
+                                              value: _cubit,
+                                              child: MemberDetialsScreen(
+                                                memberId: memberData!.id!,
+                                              ),
+                                            ),
+                                          );
+                                        } else {
+                                          Dialogs.showSnack(
+                                            msg: 'Member not found!',
+                                          );
+                                        }
+                                      },
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: ColoredBox(
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Column(
+                                              spacing: 8,
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(
+                                                              80000,
+                                                            ),
                                                           ),
-                                                        ),
-                                                    child: ProfileImage(
-                                                      isEdit: false,
-                                                      url:
-                                                          '${memberData?.profilePicture ?? ''}',
-                                                      radius: 40,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Flexible(
-                                                    child: SizedBox(
-                                                      width: double.maxFinite,
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            memberData?.name ??
-                                                                '',
-                                                            style:
-                                                                AppStyles
-                                                                    .text14Px
-                                                                    .poppins
-                                                                    .w500
-                                                                    .dark,
-                                                          ),
-                                                          const SizedBox(
-                                                            height: 4,
-                                                          ),
-                                                          Text(
-                                                            memberData
-                                                                    ?.mobileNumber ??
-                                                                '',
-                                                            style:
-                                                                AppStyles
-                                                                    .text12Px
-                                                                    .poppins
-                                                                    .w400
-                                                                    .dark,
-                                                          ),
-                                                        ],
+                                                      child: ProfileImage(
+                                                        isEdit: false,
+                                                        url:
+                                                            '${memberData?.profilePicture ?? ''}',
+                                                        radius: 40,
                                                       ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    'memberId',
-                                                    style:
-                                                        AppStyles
-                                                            .text12Px
-                                                            .poppins
-                                                            .w400
-                                                            .textGrey,
-                                                  ),
-                                                ],
-                                              ),
-                                              Text(
-                                                'Check In',
-                                                style:
-                                                    AppStyles
-                                                        .text10Px
-                                                        .poppins
-                                                        .w400
-                                                        .textGrey,
-                                                textAlign: TextAlign.end,
-                                              ).align(Alignment.centerRight),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    memberData
-                                                            ?.activePlan
-                                                            ?.planName ??
-                                                        '',
-                                                    style:
-                                                        AppStyles
-                                                            .text12Px
-                                                            .poppins
-                                                            .w500
-                                                            .dark,
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    '05:30 AM',
-                                                    style:
-                                                        AppStyles
-                                                            .text12Px
-                                                            .poppins
-                                                            .w500
-                                                            .dark,
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                                    const SizedBox(width: 8),
+                                                    Flexible(
+                                                      child: SizedBox(
+                                                        width: double.maxFinite,
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              memberData
+                                                                      ?.name ??
+                                                                  '',
+                                                              style:
+                                                                  AppStyles
+                                                                      .text14Px
+                                                                      .poppins
+                                                                      .w500
+                                                                      .dark,
+                                                            ),
+                                                            const SizedBox(
+                                                              height: 4,
+                                                            ),
+                                                            Text(
+                                                              memberData
+                                                                      ?.mobileNumber ??
+                                                                  '',
+                                                              style:
+                                                                  AppStyles
+                                                                      .text12Px
+                                                                      .poppins
+                                                                      .w400
+                                                                      .dark,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      memberData
+                                                              ?.activePlan
+                                                              ?.planName ??
+                                                          '',
+                                                      style:
+                                                          AppStyles
+                                                              .text12Px
+                                                              .poppins
+                                                              .w500
+                                                              .dark,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -301,10 +290,10 @@ class __ExpiredMembersListingScreenState
       ),
     );
   }
+
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
-
 }

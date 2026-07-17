@@ -171,7 +171,8 @@ class _CreateTrainerResultsScreenState extends State<CreateTrainerResultsScreen>
                         .toList();
                     // Call API here...
                     */
-                    context.push(const CreateTrainerCareerDetailsScreen());
+                    // context.push(const CreateTrainerCareerDetailsScreen());
+                    context.push(const CreateTrainerSocialMediaScreen());
                   },
                   buttonColor: AppColors.primary,
                 ),

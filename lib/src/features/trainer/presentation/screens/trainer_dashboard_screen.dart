@@ -32,6 +32,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
+      _dashboardData = {};
+      _workoutGroupsCount = 0;
+      _pendingVerificationsCount = 0;
     });
 
     try {
@@ -39,6 +42,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
         ApiUris.trainerDashboard,
         options: Options(headers: {'X-Platform': platformSource}),
       );
+      debugPrint("Dashboard API Response: ${response.data}");
 
       int groupCount = 0;
       try {
@@ -123,81 +127,77 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: false,
-        titleSpacing: 16,
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              side: const BorderSide(color: Color(0xffDDDDDD)),
-            ),
-            onPressed: () {
-              const AccountSwitcherSheet().show(context);
-            },
-            label: const Icon(
-              Icons.keyboard_arrow_down_sharp,
-              color: Color(0xff222222),
-              size: 20,
-            ),
-            icon: Text(
-              displayName,
-              style: AppStyles.text14Px.poppins.w600.copyWith(
-                color: const Color(0xff222222),
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.black87,
-            ),
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const TrainerProfileSettingsScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.settings_outlined, color: Colors.black87),
-          ),
-        ],
-      ),
       body:
           _isLoading
               ? const Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-                onRefresh: _fetchDashboardData,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics(),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header greeting
-                      // Text(
-                      //   'Welcome back,',
-                      //   style: AppStyles.text14Px.poppins.w400.copyWith(
-                      //     color: AppColors.textGrey,
-                      //   ),
-                      // ),
-                      // Text(
-                      //   context.read<AppCubit>().state.currentUser?.firstName ??
-                      //       'Trainer',
-                      //   style: AppStyles.text22Px.poppins.w700.dark,
-                      // ),
-                      // const SizedBox(height: 20),
-                      _buildBannerCarousel(),
+              : SafeArea(
+                  child: RefreshIndicator(
+                    onRefresh: _fetchDashboardData,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: ClampingScrollPhysics(),
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  side: const BorderSide(color: Color(0xffDDDDDD)),
+                                ),
+                                onPressed: () {
+                                  const AccountSwitcherSheet().show(context);
+                                },
+                                label: const Icon(
+                                  Icons.keyboard_arrow_down_sharp,
+                                  color: Color(0xff222222),
+                                  size: 20,
+                                ),
+                                icon: Text(
+                                  displayName,
+                                  style: AppStyles.text14Px.poppins.w600.copyWith(
+                                    color: const Color(0xff222222),
+                                  ),
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {},
+                                    icon: const Icon(
+                                      Icons.notifications_none_rounded,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  const TrainerProfileSettingsScreen(),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.settings_outlined,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _buildBannerCarousel(),
                       const SizedBox(height: 22),
 
                       // Stats Grid
@@ -434,6 +434,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         ),
                       ],
                     ],
+                  ),
                   ),
                 ),
               ),
