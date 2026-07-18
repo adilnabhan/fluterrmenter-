@@ -13,6 +13,7 @@ class TrainerPortfolioScreen extends StatefulWidget {
   final int? initialIndex;
   final bool isViewOnly;
   final List<PortfolioImageModel>? initialPortfolioImages;
+  final String? trainerId;
 
   const TrainerPortfolioScreen({
     super.key, 
@@ -20,6 +21,7 @@ class TrainerPortfolioScreen extends StatefulWidget {
     this.initialIndex,
     this.isViewOnly = false,
     this.initialPortfolioImages,
+    this.trainerId,
   });
 
   @override
@@ -30,12 +32,15 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
   bool _isLoading = false;
   late final PageController _pageController;
   late int _currentIndex;
+  List<PortfolioImageModel> _portfolioImages = [];
 
   @override
   void initState() {
     super.initState();
+    _portfolioImages = widget.initialPortfolioImages ?? [];
     _currentIndex = widget.initialIndex ?? 0;
     _pageController = PageController(initialPage: _currentIndex);
+    _fetchPortfolioImages();
   }
 
   @override
@@ -71,7 +76,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Fluttertoast.showToast(msg: 'Portfolio image uploaded');
-        // _fetchTrainerDetails(); // Refresh to get the new image
+        _fetchPortfolioImages();
       } else {
         Fluttertoast.showToast(msg: 'Failed to upload image');
       }
@@ -120,7 +125,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         Fluttertoast.showToast(msg: 'Image deleted');
-        _fetchTrainerDetails();
+        _fetchPortfolioImages();
       } else {
         Fluttertoast.showToast(msg: 'Failed to delete image');
       }
@@ -135,17 +140,40 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
     }
   }
 
-  Future<void> _fetchTrainerDetails() async {
+  Future<void> _fetchPortfolioImages() async {
     try {
+      final uri = (widget.isViewOnly && widget.trainerId != null)
+          ? '${ApiUris.portfolioImages}?trainer_id=${widget.trainerId}'
+          : ApiUris.portfolioImages;
       final response = await DioClient().dio.get<dynamic>(
-        ApiUris.editTrainerBasicDetails,
+        uri,
         options: Options(headers: {'X-Platform': platformSource}).token,
       );
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        final updatedUser = LoginSuccessModel.fromJson(data);
-        if (mounted) {
-          context.read<AppCubit>().addUser(updatedUser);
+        final data = response.data;
+        if (data is List) {
+          final mapped = data.map((e) {
+            if (e is Map<String, dynamic>) {
+              return PortfolioImageModel.fromJson(e);
+            }
+            return const PortfolioImageModel();
+          }).toList();
+          if (mounted) {
+            setState(() {
+              _portfolioImages = mapped;
+              // Update appCubit state for TrainerMainProfileScreen background to pick it up later if needed
+              if (!widget.isViewOnly) {
+                final appCubit = context.read<AppCubit>();
+                final currentUser = appCubit.state.currentUser;
+                if (currentUser != null) {
+                  final updatedUser = currentUser.copyWith(
+                    trainer: currentUser.trainer?.copyWith(portfolioImages: mapped) ?? TrainerModel(portfolioImages: mapped),
+                  );
+                  appCubit.addUser(updatedUser);
+                }
+              }
+            });
+          }
         }
       }
     } catch (e) {
@@ -155,17 +183,16 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AppCubit>().state.currentUser;
-    var portfolioImages = widget.initialPortfolioImages ?? user?.trainer?.portfolioImages ?? [];
-    final hasNoRealImages = portfolioImages.isEmpty;
+    var portfolioImagesToDisplay = _portfolioImages;
+    final hasNoRealImages = portfolioImagesToDisplay.isEmpty;
 
     // Use hero images as a fallback to preview the UI if there are no real images
     if (hasNoRealImages && widget.heroImages != null) {
-      portfolioImages = widget.heroImages!.map((img) => PortfolioImageModel(image: img)).toList();
+      portfolioImagesToDisplay = widget.heroImages!.map((img) => PortfolioImageModel(image: img)).toList();
     }
 
-    final currentImage = portfolioImages.isNotEmpty && _currentIndex < portfolioImages.length 
-        ? portfolioImages[_currentIndex].image ?? '' 
+    final currentImage = portfolioImagesToDisplay.isNotEmpty && _currentIndex < portfolioImagesToDisplay.length 
+        ? portfolioImagesToDisplay[_currentIndex].image ?? '' 
         : '';
 
     return Scaffold(
@@ -202,7 +229,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                         icon: Icons.arrow_back_ios_new,
                         onTap: () => Navigator.pop(context),
                       ),
-                      if (portfolioImages.isNotEmpty && !widget.isViewOnly)
+                      if (portfolioImagesToDisplay.isNotEmpty && !widget.isViewOnly)
                         _buildGlassCircle(
                           icon: Icons.delete_outline,
                           iconColor: Colors.redAccent,
@@ -211,8 +238,8 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                               Fluttertoast.showToast(msg: 'Cannot delete preview images');
                               return;
                             }
-                            if (_currentIndex < portfolioImages.length) {
-                              _deletePortfolioImage(portfolioImages[_currentIndex].id!);
+                            if (_currentIndex < portfolioImagesToDisplay.length) {
+                              _deletePortfolioImage(portfolioImagesToDisplay[_currentIndex].id!);
                             }
                           },
                         ),
@@ -231,7 +258,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                             children: [
                               PageView.builder(
                           controller: _pageController,
-                          itemCount: portfolioImages.length,
+                          itemCount: portfolioImagesToDisplay.length,
                           onPageChanged: (index) {
                             setState(() {
                               _currentIndex = index;
@@ -246,7 +273,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(24),
                                     child: Image.network(
-                                      portfolioImages[index].image ?? '',
+                                      portfolioImagesToDisplay[index].image ?? '',
                                       fit: BoxFit.cover,
                                       errorBuilder: (_, __, ___) => Container(
                                         color: Colors.grey.shade800,
@@ -277,7 +304,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                             ),
                           ),
                         // Right Arrow
-                        if (_currentIndex < portfolioImages.length - 1)
+                        if (_currentIndex < portfolioImagesToDisplay.length - 1)
                           Positioned(
                             right: 8,
                             child: _buildGlassCircle(
@@ -296,7 +323,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                 ),
                 
                 // Thumbnails
-                if (portfolioImages.isNotEmpty && !_isLoading)
+                if (portfolioImagesToDisplay.isNotEmpty && !_isLoading)
                   Container(
                     height: 80,
                     margin: const EdgeInsets.only(bottom: 24, top: 16),
@@ -307,7 +334,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                         Expanded(
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
-                            itemCount: portfolioImages.length,
+                            itemCount: portfolioImagesToDisplay.length,
                             separatorBuilder: (_, __) => const SizedBox(width: 8),
                             itemBuilder: (context, index) {
                               final isSelected = _currentIndex == index;
@@ -332,7 +359,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: Image.network(
-                                      portfolioImages[index].image ?? '',
+                                      portfolioImagesToDisplay[index].image ?? '',
                                       fit: BoxFit.cover,
                                       errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade800),
                                     ),

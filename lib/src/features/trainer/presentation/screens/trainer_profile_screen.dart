@@ -7,6 +7,9 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 
 import 'package:mentor_mobile_app/src/features/auth/login/domain/models/login_with_otp_model.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TrainerMainProfileScreen extends StatefulWidget {
@@ -29,11 +32,16 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
   int _heroCurrentIndex = 0;
   bool _isLoading = false;
   LoginSuccessModel? _fetchedUser;
-  
+
   List<Map<String, dynamic>> _reviews = [];
   int _reviewsCount = 0;
   double _averageRating = 0.0;
   bool _isLoadingReviews = false;
+
+  List<Map<String, dynamic>> _transformations = [];
+  bool _isLoadingTransformations = false;
+  final PageController _transformationPageController = PageController();
+  int _transformationCurrentIndex = 0;
 
   @override
   void initState() {
@@ -42,23 +50,106 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
       _fetchTrainerDetails();
     }
     _fetchReviews();
+    _fetchPortfolioImages();
+    _fetchTransformations();
+  }
+
+  Future<void> _fetchTransformations() async {
+    if (!mounted) return;
+    setState(() => _isLoadingTransformations = true);
+    try {
+      final uri =
+          (widget.isViewOnly && widget.trainerId != null)
+              ? '${ApiUris.transformations}?trainer_id=${widget.trainerId}'
+              : ApiUris.transformations;
+      final res = await DioClient().dio.get(uri);
+      if (res.statusCode == 200) {
+        final data = res.data;
+        if (data is List) {
+          final mapped =
+              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          if (mounted) {
+            setState(() {
+              _transformations = mapped;
+              _isLoadingTransformations = false;
+            });
+          }
+        }
+      } else {
+        if (mounted) setState(() => _isLoadingTransformations = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingTransformations = false);
+    }
+  }
+
+  Future<void> _fetchPortfolioImages() async {
+    try {
+      final uri =
+          (widget.isViewOnly && widget.trainerId != null)
+              ? '${ApiUris.portfolioImages}?trainer_id=${widget.trainerId}'
+              : ApiUris.portfolioImages;
+      final response = await DioClient().dio.get<dynamic>(uri);
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
+        if (data is List) {
+          final mapped =
+              data.map((e) {
+                if (e is Map<String, dynamic>) {
+                  return PortfolioImageModel.fromJson(e);
+                }
+                return const PortfolioImageModel();
+              }).toList();
+          if (mounted) {
+            if (!widget.isViewOnly) {
+              final appCubit = context.read<AppCubit>();
+              final currentUser = appCubit.state.currentUser;
+              if (currentUser != null) {
+                final updatedUser = currentUser.copyWith(
+                  trainer:
+                      currentUser.trainer?.copyWith(portfolioImages: mapped) ??
+                      TrainerModel(portfolioImages: mapped),
+                );
+                appCubit.addUser(updatedUser);
+              }
+            } else {
+              setState(() {
+                if (_fetchedUser != null) {
+                  _fetchedUser = _fetchedUser!.copyWith(
+                    trainer:
+                        _fetchedUser!.trainer?.copyWith(
+                          portfolioImages: mapped,
+                        ) ??
+                        TrainerModel(portfolioImages: mapped),
+                  );
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Silently fail or log
+    }
   }
 
   Future<void> _fetchReviews() async {
     if (!mounted) return;
     setState(() => _isLoadingReviews = true);
     try {
-      final uri = (widget.isViewOnly && widget.trainerId != null)
-          ? '${ApiUris.trainerReviews}?trainer_id=${widget.trainerId}'
-          : ApiUris.trainerReviews;
+      final uri =
+          (widget.isViewOnly && widget.trainerId != null)
+              ? '${ApiUris.trainerReviews}?trainer_id=${widget.trainerId}'
+              : ApiUris.trainerReviews;
       final res = await DioClient().dio.get(uri);
       if (res.statusCode == 200) {
         final data = res.data;
         if (data is Map) {
           final results = data['results'] as List? ?? [];
           final count = data['count'] as int? ?? 0;
-          final mappedReviews = results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-          
+          final mappedReviews =
+              results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+
           double avg = 0.0;
           if (mappedReviews.isNotEmpty) {
             double sum = 0.0;
@@ -151,19 +242,29 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         setState(() {
           _fetchedUser = fetched;
           _isLoading = false;
-          
-          final ratingVal = data['avg_rating'] ?? data['average_rating'] ?? data['rating'];
+
+          final ratingVal =
+              data['avg_rating'] ?? data['average_rating'] ?? data['rating'];
           if (ratingVal != null) {
-            _averageRating = (ratingVal is num) ? ratingVal.toDouble() : double.tryParse(ratingVal.toString()) ?? 0.0;
+            _averageRating =
+                (ratingVal is num)
+                    ? ratingVal.toDouble()
+                    : double.tryParse(ratingVal.toString()) ?? 0.0;
           }
-          
+
           final countVal = data['review_count'] ?? data['reviews_count'];
           if (countVal != null) {
-             _reviewsCount = (countVal is num) ? countVal.toInt() : int.tryParse(countVal.toString()) ?? 0;
+            _reviewsCount =
+                (countVal is num)
+                    ? countVal.toInt()
+                    : int.tryParse(countVal.toString()) ?? 0;
           }
-          
+
           if (data['reviews'] is List) {
-            _reviews = (data['reviews'] as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+            _reviews =
+                (data['reviews'] as List)
+                    .map((e) => Map<String, dynamic>.from(e as Map))
+                    .toList();
             if (countVal == null) {
               _reviewsCount = _reviews.length;
             }
@@ -181,6 +282,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
   }
 
   Future<void> _handleRefresh() async {
+    _fetchPortfolioImages();
     if (widget.isViewOnly && widget.trainerId != null) {
       await _fetchTrainerDetails();
       return;
@@ -223,15 +325,17 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           instagram: data['instagram']?.toString() ?? currentUser.instagram,
           facebook: data['facebook']?.toString() ?? currentUser.facebook,
           youtube: data['youtube']?.toString() ?? currentUser.youtube,
-          trainer: currentUser.trainer?.copyWith(
-            clientsCount: data['clients_count'] as int?,
-            verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
-            portfolioImages: mappedPortfolio,
-          ) ?? TrainerModel(
-            clientsCount: data['clients_count'] as int?,
-            verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
-            portfolioImages: mappedPortfolio,
-          ),
+          trainer:
+              currentUser.trainer?.copyWith(
+                clientsCount: data['clients_count'] as int?,
+                verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
+                portfolioImages: mappedPortfolio,
+              ) ??
+              TrainerModel(
+                clientsCount: data['clients_count'] as int?,
+                verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
+                portfolioImages: mappedPortfolio,
+              ),
         );
 
         appCubit.addUser(updatedUser);
@@ -271,6 +375,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
               initialIndex: initialIndex,
               isViewOnly: widget.isViewOnly,
               initialPortfolioImages: portfolioImages,
+              trainerId: widget.trainerId,
             ),
       ),
     );
@@ -564,7 +669,9 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                   trainerId: widget.trainerId,
                                   isViewOnly: widget.isViewOnly,
                                   initialCertificates:
-                                      widget.isViewOnly ? null : user?.trainer?.certificates,
+                                      widget.isViewOnly
+                                          ? null
+                                          : user?.trainer?.certificates,
                                 ),
                           ),
                         );
@@ -572,7 +679,12 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                       child: _buildCertificatesButton(),
                     ),
                     const SizedBox(height: 16),
-                    _buildReviewsSection(_reviews, _reviewsCount, _averageRating, _isLoadingReviews),
+                    _buildReviewsSection(
+                      _reviews,
+                      _reviewsCount,
+                      _averageRating,
+                      _isLoadingReviews,
+                    ),
 
                     const SizedBox(height: 100),
                   ],
@@ -657,9 +769,19 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildStatItem('${user?.trainer?.clientsCount ?? 0}', 'Clients'),
-                        _buildStatItem('${user?.trainer?.verifiedWorkoutsCount ?? 0}', 'Verified\nWorkouts'),
-                        _buildStatItem(_averageRating.toStringAsFixed(1), 'Rating', isRating: true),
+                        _buildStatItem(
+                          '${user?.trainer?.clientsCount ?? 0}',
+                          'Clients',
+                        ),
+                        _buildStatItem(
+                          '${user?.trainer?.verifiedWorkoutsCount ?? 0}',
+                          'Verified\nWorkouts',
+                        ),
+                        _buildStatItem(
+                          _averageRating.toStringAsFixed(1),
+                          'Rating',
+                          isRating: true,
+                        ),
                       ],
                     ),
                   ],
@@ -859,158 +981,360 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     );
   }
 
-  Widget _buildTransformationCard() {
-    return const _TransformationCarousel();
-  }
-}
-
-class _TransformationCarousel extends StatefulWidget {
-  const _TransformationCarousel();
-
-  @override
-  State<_TransformationCarousel> createState() =>
-      _TransformationCarouselState();
-}
-
-class _TransformationCarouselState extends State<_TransformationCarousel> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-
-  final List<Map<String, String>> _transformations = [];
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_transformations.isEmpty) {
-      return const SizedBox();
-    }
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xffE6E6E6),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          // Tab indicator row
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap:
-                      () => _pageController.animateToPage(
-                        _currentPage * 2, // jump within same pair — no-op here
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      ),
-                  child: Container(
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Before',
-                      style: AppStyles.text14Px.poppins.w500,
-                    ),
-                  ),
-                ),
+  Future<void> _deleteTransformation(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Transformation'),
+            content: const Text(
+              'Are you sure you want to delete this transformation?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Container(
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text('After', style: AppStyles.text14Px.poppins.w500),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          // PageView carousel
+    );
+    if (confirm != true) return;
+
+    try {
+      await DioClient().dio.delete(ApiUris.deleteTransformation(id));
+      Fluttertoast.showToast(msg: 'Transformation deleted');
+      _fetchTransformations();
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Failed to delete transformation');
+    }
+  }
+
+  Widget _buildTransformationCard() {
+    if (widget.isViewOnly && _transformations.isEmpty)
+      return const SizedBox.shrink();
+
+    final itemCount =
+        widget.isViewOnly
+            ? _transformations.length
+            : _transformations.length + 1;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Transformations', style: AppStyles.text14Px.poppins.w600),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_isLoadingTransformations)
+          const Center(child: CircularProgressIndicator())
+        else if (itemCount == 0)
+          const SizedBox.shrink()
+        else
           SizedBox(
             height: 200,
             child: PageView.builder(
-              controller: _pageController,
-              itemCount: _transformations.length,
-              onPageChanged: (index) => setState(() => _currentPage = index),
+              controller: _transformationPageController,
+              itemCount: itemCount,
+              onPageChanged:
+                  (index) =>
+                      setState(() => _transformationCurrentIndex = index),
               itemBuilder: (context, index) {
-                final pair = _transformations[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Row(
+                if (!widget.isViewOnly && index == _transformations.length) {
+                  return GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder:
+                            (context) => _AddTransformationSheet(
+                              onSuccess: _fetchTransformations,
+                            ),
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                const Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.add_circle_outline,
+                                        color: Colors.grey,
+                                        size: 40,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Add Before',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 12,
+                                  left: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      'Before',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(width: 2, color: Colors.white),
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                const Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.add_circle_outline,
+                                        color: Colors.grey,
+                                        size: 40,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Add After',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 12,
+                                  right: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      'After',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                final trans = _transformations[index];
+                final String beforeImg =
+                    (trans['before_image_url'] ?? trans['before_image'] ?? '')
+                        .toString();
+                final String afterImg =
+                    (trans['after_image_url'] ?? trans['after_image'] ?? '')
+                        .toString();
+                final String desc = (trans['description'] ?? '').toString();
+
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Stack(
                     children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: Image.network(
-                            pair['before']!,
-                            fit: BoxFit.cover,
-                            loadingBuilder:
-                                (_, child, progress) =>
-                                    progress == null
-                                        ? child
-                                        : Container(
-                                          color: Colors.grey.shade300,
-                                          child: const Center(
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.red,
-                                            ),
-                                          ),
-                                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(16),
+                                    bottomLeft: Radius.circular(16),
+                                  ),
+                                  child: Image.network(
+                                    beforeImg,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (_, __, ___) => const SizedBox(),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 12,
+                                  left: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      'Before',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(width: 2, color: Colors.white),
+                          Expanded(
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(16),
+                                    bottomRight: Radius.circular(16),
+                                  ),
+                                  child: Image.network(
+                                    afterImg,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (_, __, ___) => const SizedBox(),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 12,
+                                  right: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      'After',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (desc.isNotEmpty)
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(16),
+                                bottomRight: Radius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              desc,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: Image.network(
-                            pair['after']!,
-                            fit: BoxFit.cover,
-                            loadingBuilder:
-                                (_, child, progress) =>
-                                    progress == null
-                                        ? child
-                                        : Container(
-                                          color: Colors.grey.shade300,
-                                          child: const Center(
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.red,
-                                            ),
-                                          ),
-                                        ),
+                      if (!widget.isViewOnly)
+                        Positioned(
+                          top: 12,
+                          right: 12,
+                          child: InkWell(
+                            onTap:
+                                () => _deleteTransformation(trans['id'] as int),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 );
               },
             ),
           ),
-          const SizedBox(height: 14),
-          // Dot indicators
+        if (itemCount > 1) ...[
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(_transformations.length, (index) {
-              final isActive = index == _currentPage;
+            children: List.generate(itemCount, (index) {
+              final isActive = index == _transformationCurrentIndex;
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: isActive ? 16 : 6,
                 height: 6,
                 decoration: BoxDecoration(
@@ -1020,6 +1344,218 @@ class _TransformationCarouselState extends State<_TransformationCarousel> {
               );
             }),
           ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AddTransformationSheet extends StatefulWidget {
+  final VoidCallback onSuccess;
+  const _AddTransformationSheet({required this.onSuccess});
+  @override
+  State<_AddTransformationSheet> createState() =>
+      _AddTransformationSheetState();
+}
+
+class _AddTransformationSheetState extends State<_AddTransformationSheet> {
+  File? _beforeFile;
+  File? _afterFile;
+  final TextEditingController _descController = TextEditingController();
+  bool _isSubmitting = false;
+
+  Future<void> _submit() async {
+    if (_beforeFile == null || _afterFile == null) {
+      Fluttertoast.showToast(msg: 'Please select both before and after images');
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    try {
+      final formData = FormData.fromMap({
+        'description': _descController.text,
+        'before_image_file': await MultipartFile.fromFile(_beforeFile!.path),
+        'after_image_file': await MultipartFile.fromFile(_afterFile!.path),
+      });
+      final res = await DioClient().dio.post(
+        ApiUris.transformations,
+        data: formData,
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        Fluttertoast.showToast(msg: 'Transformation added successfully');
+        widget.onSuccess();
+        if (mounted) Navigator.pop(context);
+      } else {
+        Fluttertoast.showToast(msg: 'Failed to add transformation');
+        setState(() => _isSubmitting = false);
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Failed to add transformation');
+      setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        top: 24,
+        left: 20,
+        right: 20,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Add Transformation',
+                style: AppStyles.text16Px.poppins.w600,
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder:
+                          (c) => ImagePickerDialog(
+                            onPickedImage: (f) {
+                              if (f != null)
+                                setState(() => _beforeFile = File(f.path));
+                            },
+                          ),
+                    );
+                  },
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child:
+                        _beforeFile != null
+                            ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                _beforeFile!,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                            : const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_a_photo, color: Colors.grey),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Before',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder:
+                          (c) => ImagePickerDialog(
+                            onPickedImage: (f) {
+                              if (f != null)
+                                setState(() => _afterFile = File(f.path));
+                            },
+                          ),
+                    );
+                  },
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child:
+                        _afterFile != null
+                            ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(_afterFile!, fit: BoxFit.cover),
+                            )
+                            : const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_a_photo, color: Colors.grey),
+                                SizedBox(height: 4),
+                                Text(
+                                  'After',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _descController,
+            decoration: InputDecoration(
+              hintText: 'Add a description...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+            ),
+            maxLines: 3,
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child:
+                  _isSubmitting
+                      ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                      : const Text(
+                        'Save Transformation',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+            ),
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -1100,7 +1636,12 @@ Widget _buildPortfolioButton() {
   );
 }
 
-Widget _buildReviewsSection(List<Map<String, dynamic>> reviews, int count, double avg, bool isLoading) {
+Widget _buildReviewsSection(
+  List<Map<String, dynamic>> reviews,
+  int count,
+  double avg,
+  bool isLoading,
+) {
   if (isLoading) {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 20),
@@ -1132,12 +1673,17 @@ Widget _buildReviewsSection(List<Map<String, dynamic>> reviews, int count, doubl
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(avg.toStringAsFixed(1), style: AppStyles.text24Px.poppins.w700),
+            Text(
+              avg.toStringAsFixed(1),
+              style: AppStyles.text24Px.poppins.w700,
+            ),
             const SizedBox(width: 8),
             Row(
               children: List.generate(5, (index) {
                 return Icon(
-                  index < avg.floor() ? Icons.star : (index < avg ? Icons.star_half : Icons.star_border),
+                  index < avg.floor()
+                      ? Icons.star
+                      : (index < avg ? Icons.star_half : Icons.star_border),
                   color: Colors.amber,
                   size: 20,
                 );
@@ -1152,10 +1698,12 @@ Widget _buildReviewsSection(List<Map<String, dynamic>> reviews, int count, doubl
           ),
         ),
         const SizedBox(height: 16),
-        ...reviews.map((r) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _buildReviewItem(r),
-        )),
+        ...reviews.map(
+          (r) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildReviewItem(r),
+          ),
+        ),
         if (count > reviews.length)
           Align(
             alignment: Alignment.centerRight,
@@ -1180,16 +1728,30 @@ Widget _buildReviewsSection(List<Map<String, dynamic>> reviews, int count, doubl
 
 Widget _buildReviewItem(Map<String, dynamic> review) {
   final name = review['customer_name']?.toString() ?? 'User';
-  
+
   String date = '';
   if (review['created_at'] != null) {
     try {
       final dt = DateTime.parse(review['created_at'].toString());
-      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      date = '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      date =
+          '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
     } catch (_) {}
   }
-  
+
   final rating = review['rating']?.toString() ?? '0.0';
   final comment = review['comment']?.toString() ?? '';
   final avatar = review['profile_picture']?.toString();
@@ -1208,8 +1770,14 @@ Widget _buildReviewItem(Map<String, dynamic> review) {
             CircleAvatar(
               radius: 16,
               backgroundColor: Colors.grey.shade200,
-              backgroundImage: avatar != null && avatar.isNotEmpty ? NetworkImage(avatar) : null,
-              child: avatar == null || avatar.isEmpty ? const Icon(Icons.person, size: 16, color: Colors.grey) : null,
+              backgroundImage:
+                  avatar != null && avatar.isNotEmpty
+                      ? NetworkImage(avatar)
+                      : null,
+              child:
+                  avatar == null || avatar.isEmpty
+                      ? const Icon(Icons.person, size: 16, color: Colors.grey)
+                      : null,
             ),
             const SizedBox(width: 12),
             Expanded(

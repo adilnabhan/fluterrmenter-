@@ -49,7 +49,7 @@ class _OrganizationWorkoutLibraryScreenState
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Exercise'),
-        content: const Text('Are you sure you want to delete this custom exercise?'),
+        content: const Text('Are you sure you want to remove this exercise from your library?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -69,9 +69,23 @@ class _OrganizationWorkoutLibraryScreenState
     setState(() => _isLoading = true);
 
     try {
+      // First try to delete it as a custom exercise
       await DioClient().dio.delete<dynamic>(ApiUris.deleteGymExercise(id));
       Dialogs.showSnack(msg: 'Exercise deleted successfully');
       _fetchGymExercises();
+    } on DioException catch (e) {
+      // If it fails (e.g. 403 Forbidden or 404 because it's a global exercise), try the library override fallback
+      try {
+        await DioClient().dio.delete<dynamic>(
+          '${ApiUris.gymWorkoutLibrary}0/?workout_id=$id',
+        );
+        Dialogs.showSnack(msg: 'Exercise removed from library');
+        _fetchGymExercises();
+      } catch (fallbackError) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        Dialogs.showSnack(msg: 'Failed to delete exercise');
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);

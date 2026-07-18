@@ -42,7 +42,7 @@ final class ApiUris {
   static String updateOrg(int orgId) =>
       '${_v1}fitnesscenter/organization/$orgId/update/';
   static String deletePhoto(int orgId, int photoId) =>
-      '${_v1}fitnesscenter/organization/$orgId/photos/$photoId/delete';
+      '${_v1}fitnesscenter/organization/photos/$photoId/delete/';
   static final fcOrganizationReviews =
       '${_v1}fitnesscenter/organization/reviews/';
 
@@ -102,6 +102,10 @@ final class ApiUris {
   static final portfolioImages = '${_v1}trainer/portfolio-images/';
   static String deletePortfolioImage(int id) =>
       '${_v1}trainer/portfolio-images/$id/';
+  
+  ///============================= Transformations =============================\\\
+  static final transformations = '${_v1}trainer/transformations/';
+  static String deleteTransformation(int id) => '${_v1}trainer/transformations/$id/';
 
   ///============================= Workouts =============================\\\
   static final gymExercises = '${_v1}fitnesscenter/exercises/';
