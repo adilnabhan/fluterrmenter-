@@ -11,10 +11,12 @@ class DioClient {
 
   DioClient._internal() {
     _dio = Dio();
-    _dio.interceptors.addAll([
-      PrettyDioLogger(requestHeader: true, requestBody: true),
-      CurlLoggerInterceptor(),
-    ]);
+    if (kDebugMode) {
+      _dio.interceptors.addAll([
+        PrettyDioLogger(requestHeader: true, requestBody: true),
+        CurlLoggerInterceptor(),
+      ]);
+    }
   }
 
   static final DioClient _instance = DioClient._internal();
@@ -29,7 +31,9 @@ class DioClient {
     if (!_authInterceptorAdded) {
       _dio.interceptors.add(AuthInterceptor(appCubit, _dio));
       _authInterceptorAdded = true;
-      print('✅ AuthInterceptor registered with DioClient');
+      if (kDebugMode) {
+        print('✅ AuthInterceptor registered with DioClient');
+      }
     }
   }
 }
@@ -44,7 +48,7 @@ class CurlLoggerInterceptor extends Interceptor {
         .map((e) => '-H "${e.key}: ${e.value}"')
         .join(' \\\n  ');
 
-    var data = "";
+    var data = '';
     if (options.data != null) {
       try {
         data = "-d '${jsonEncode(options.data)}'";

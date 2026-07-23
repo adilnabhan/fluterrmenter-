@@ -26,12 +26,20 @@ class __SubscriptionPlanChooseComState
     extends State<_SubscriptionPlanChooseCom> {
   late final SubscriptionCubit _cubit;
   late final OrganizationListingAndDetailsCubit _parentCubit;
+  final TextEditingController _couponController = TextEditingController();
+
   @override
   void initState() {
     _cubit = context.read<SubscriptionCubit>();
     _parentCubit = context.read<OrganizationListingAndDetailsCubit>();
     _fetchPlans();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _couponController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchPlans() async {
@@ -49,414 +57,162 @@ class __SubscriptionPlanChooseComState
               Dialogs.showSnack(msg: error.msg);
             },
             (razorpayOrder) async {
-              // ============ OLD NAVIGATION COMMENTED OUT ============
-              // context.pushAndRemoveUntil(const OrganizationListingScreen());
-              // ============ END OLD NAVIGATION COMMENTED OUT ============
-
-              // ============ NEW NAVIGATION TO SUCCESS SCREEN ============
               context.pushAndRemoveUntil(const SubscriptionSuccessScreen());
-              // ============ END NEW NAVIGATION TO SUCCESS SCREEN ============
             },
           );
         });
       },
       child: BlocBuilder<SubscriptionCubit, SubscriptionState>(
-        buildWhen: (p, c) => p.payment != c.payment,
+        buildWhen: (p, c) =>
+            p.payment != c.payment ||
+            p.plans != c.plans ||
+            p.selectedSubscriptionModel != c.selectedSubscriptionModel ||
+            p.appliedCoupon != c.appliedCoupon ||
+            p.isCouponApplied != c.isCouponApplied ||
+            p.couponDiscountAmount != c.couponDiscountAmount,
         builder: (context, state) {
+          final isPaying = state.payment?.isNone() ?? false;
           return PopScope(
-            canPop: !(state.payment?.isNone() ?? false),
+            canPop: !isPaying,
             child: AnnotatedRegion<SystemUiOverlayStyle>(
-              value: SystemUiOverlayStyle.light,
-              child: Container(
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/debug/planbackground.png'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: SafeArea(
-                  child: Scaffold(
-                    backgroundColor: Colors.transparent,
-                    body: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ============ COMMENTED OUT PROGRESS BAR ============
-                          // const SizedBox(height: 10),
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.center,
-                          //   children: List.generate(8, (index) {
-                          //     bool isActive = index <= 5; // Example progress
-                          //     return Row(
-                          //       children: [
-                          //         Container(
-                          //           width: 25,
-                          //           height: 1,
-                          //           color: isActive ? const Color(0xFFE22121) : Colors.grey,
-                          //         ),
-                          //         Transform.rotate(
-                          //           angle: 0.785398,
-                          //           child: Container(
-                          //             width: 8,
-                          //             height: 8,
-                          //             color: isActive ? const Color(0xFFE22121) : Colors.grey,
-                          //           ),
-                          //         ),
-                          //       ],
-                          //     );
-                          //   }),
-                          // ),
-                          // ============ END COMMENTED OUT PROGRESS BAR ============
-                          const SizedBox(height: 40),
-                          Text(
-                            'Choose Your\nDiscipl Plan 🔥',
-                            style: AppStyles.text30Px.poppins.w600.light,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            '30-day trial period is available for all\nsubscription plans.',
-                            style: AppStyles.text14Px.poppins.w400.light
-                                .copyWith(color: Colors.white.withOpacity(0.8)),
-                          ),
-                          const Spacer(flex: 2),
-                          BlocBuilder<SubscriptionCubit, SubscriptionState>(
-                            buildWhen:
-                                (p, c) =>
-                                    p.plans != c.plans ||
-                                    p.selectedSubscriptionModel !=
-                                        c.selectedSubscriptionModel,
-                            builder: (context, state) {
-                              return state.plans.fold(
-                                () => Column(
-                                  children: [
-                                    _buildPlanOptionShimmer(),
-                                    const SizedBox(height: 16),
-                                    _buildPlanOptionShimmer(),
-                                  ],
-                                ),
-                                (either) {
-                                  return either.fold(
-                                    (error) {
-                                      return SizedBox(
-                                        width: 100,
-                                        child: Button.filled(
-                                          title: 'Retry',
-                                          ontap: _fetchPlans,
-                                          buttonColor: Colors.white,
-                                          style:
-                                              AppStyles
-                                                  .text14Px
-                                                  .poppins
-                                                  .w600
-                                                  .dark,
-                                          raduis: 10000,
-                                        ),
-                                      ).center;
-                                    },
-                                    (plans) {
-                                      return ListView.separated(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemCount: plans.results?.length ?? 0,
-                                        separatorBuilder:
-                                            (_, __) =>
-                                                const SizedBox(height: 16),
-                                        itemBuilder:
-                                            (
-                                              context,
-                                              index,
-                                            ) => _buildPlanOption(
-                                              plan: plans.results?[index],
-                                              isSelected:
-                                                  state
-                                                      .selectedSubscriptionModel
-                                                      ?.id ==
-                                                  plans.results?[index].id,
-                                            ),
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                          const Spacer(),
-                          BlocBuilder<SubscriptionCubit, SubscriptionState>(
-                            buildWhen:
-                                (p, c) =>
-                                    p.plans != c.plans ||
-                                    p.selectedSubscriptionModel !=
-                                        c.selectedSubscriptionModel ||
-                                    p.payment != c.payment,
-                            builder: (context, state) {
-                              if (state.plans.fold(
-                                () => true,
-                                (t) => t.fold((l) => true, (r) => false),
-                              )) {
-                                return const SizedBox(height: 40);
-                              }
-                              return Button.filled(
-                                title: 'Continue',
-                                isDisabled:
-                                    state.selectedSubscriptionModel == null,
-                                isLoading: state.payment?.isNone() ?? false,
-                                ontap: () {
-                                  if (state.payment?.isNone() ?? false) {
-                                    return;
-                                  }
-                                  _cubit.payment();
-                                },
-                                buttonColor: Colors.white,
-                                disabledButtonColor: Colors.white.withOpacity(
-                                  0.5,
-                                ),
-                                loadingColor: Colors.black,
-                                style: AppStyles.text16Px.poppins.w600.dark,
-                                raduis: 12,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 40),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // ============ OLD BUILD METHOD COMMENTED OUT ============
-  /*
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<SubscriptionCubit, SubscriptionState>(
-      listenWhen: (p, c) => p.payment != c.payment,
-      listener: (context, state) {
-        state.payment?.fold(() {}, (either) {
-          either.fold(
-            (error) {
-              Dialogs.showSnack(msg: error.msg);
-            },
-            (razorpayOrder) async {
-              context.pushAndRemoveUntil(const OrganizationListingScreen());
-            },
-          );
-        });
-      },
-      child: BlocBuilder<SubscriptionCubit, SubscriptionState>(
-        buildWhen: (p, c) => p.payment != c.payment,
-        builder: (context, state) {
-          return PopScope(
-            canPop: !(state.payment?.isNone() ?? false),
-            child: SafeArea(
+              value: SystemUiOverlayStyle.dark,
               child: Scaffold(
-                backgroundColor: Colors.white, // Background color
+                backgroundColor: const Color(0xffF9FAFB),
                 body: Stack(
                   children: [
+                    // Background Icons
                     Positioned(
-                      top: context.height * .08,
-                      right: 32,
-                      child: SvgPicture.asset(
-                        'assets/images/svg/vectors/dumble.svg',
-                        fit: BoxFit.scaleDown,
-                        height: 40,
-                        colorFilter: const ColorFilter.mode(
-                          AppColors.dark,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: context.height * .28,
-                      right: context.width * .25,
-                      child: SvgPicture.asset(
-                        'assets/images/svg/vectors/hart.svg',
-                        fit: BoxFit.scaleDown,
-                        height: 40,
-                        colorFilter: const ColorFilter.mode(
-                          AppColors.dark,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: context.height * .38,
-                      left: 32,
+                      top: 40,
+                      left: 20,
                       child: SvgPicture.asset(
                         'assets/images/svg/vectors/shoe.svg',
-                        fit: BoxFit.scaleDown,
                         height: 40,
-                        colorFilter: const ColorFilter.mode(
-                          AppColors.dark,
+                        colorFilter: ColorFilter.mode(
+                          const Color(0xffFFB2B2).withOpacity(0.4),
                           BlendMode.srcIn,
                         ),
                       ),
                     ),
                     Positioned(
-                      top: context.height * .4,
-                      right: 16,
+                      top: 30,
+                      right: 20,
                       child: SvgPicture.asset(
-                        'assets/images/svg/vectors/showing_power.svg',
-                        fit: BoxFit.scaleDown,
+                        'assets/images/svg/vectors/dumble.svg',
                         height: 40,
-                        colorFilter: const ColorFilter.mode(
-                          AppColors.dark,
+                        colorFilter: ColorFilter.mode(
+                          const Color(0xffFFB2B2).withOpacity(0.4),
                           BlendMode.srcIn,
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                    Positioned(
+                      top: 170,
+                      left: 40,
+                      child: SvgPicture.asset(
+                        'assets/images/svg/vectors/hart.svg',
+                        height: 35,
+                        colorFilter: ColorFilter.mode(
+                          const Color(0xffFFB2B2).withOpacity(0.4),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 150,
+                      right: 60,
+                      child: SvgPicture.asset(
+                        'assets/images/svg/vectors/showing_power.svg',
+                        height: 40,
+                        colorFilter: ColorFilter.mode(
+                          const Color(0xffFFB2B2).withOpacity(0.4),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+
+                    SafeArea(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Spacer(),
-                          Text(
-                            'Choose\nSubscription plan',
-                            style: AppStyles.text24Px.poppins.w700.dark,
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: TextSpan(
-                              style: AppStyles.text14Px.poppins.w400.dark,
-                              children: const [
-                                TextSpan(
-                                  text: '15-day',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                          Expanded(
+                            child: state.plans.fold(
+                              () => ListView(
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                children: [
+                                  const SizedBox(height: 10),
+                                  _buildStepIndicator(),
+                                  const SizedBox(height: 40),
+                                  _buildPlanOptionShimmer(),
+                                  const SizedBox(height: 16),
+                                  _buildPlanOptionShimmer(),
+                                ],
+                              ),
+                              (either) => either.fold(
+                                (error) => Center(
+                                  child: SizedBox(
+                                    width: 100,
+                                    child: Button.filled(
+                                      title: 'Retry',
+                                      ontap: _fetchPlans,
+                                      buttonColor: AppColors.primary,
+                                      style: AppStyles.text14Px.poppins.w600.light,
+                                      raduis: 12,
+                                    ),
+                                  ),
                                 ),
-                                TextSpan(
-                                  text:
-                                      ' trial period is available for both\nsubscription plans',
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(flex: 4),
-                          BlocBuilder<SubscriptionCubit, SubscriptionState>(
-                            buildWhen:
-                                (p, c) =>
-                                    p.plans != c.plans ||
-                                    p.selectedSubscriptionModel !=
-                                        c.selectedSubscriptionModel,
-                            builder: (context, state) {
-                              return state.plans.fold(
-                                () => Column(
-                                  children: [
-                                    _buildPlanOptionShimmer(),
-                                    const SizedBox(height: 16),
-                                    _buildPlanOptionShimmer(),
-                                  ],
-                                ),
-                                (either) {
-                                  return either.fold(
-                                    (error) {
-                                      return SizedBox(
-                                        width: 100,
-                                        child: Button.filled(
-                                          title: 'Retry',
-                                          ontap: _fetchPlans,
-                                          buttonColor: AppColors.primary,
-                                          style:
-                                              AppStyles
-                                                  .text14Px
-                                                  .poppins
-                                                  .w600
-                                                  .light,
-                                          raduis: 10000,
-                                        ),
-                                      ).center;
-                                    },
-                                    (plans) {
-                                      return ListView.separated(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemCount: plans.results?.length ?? 0,
-                                        separatorBuilder:
-                                            (_, __) =>
-                                                const SizedBox(height: 16),
-                                        itemBuilder:
-                                            (
-                                              context,
-                                              index,
-                                            ) => _buildPlanOption(
-                                              plan: plans.results?[index],
-                                              isSelected:
-                                                  state
-                                                      .selectedSubscriptionModel
-                                                      ?.id ==
-                                                  plans.results?[index].id,
-                                            ),
-                                      );
-                                    },
+                                (plansModel) {
+                                  final plans = plansModel.results ?? [];
+                                  final selectedPlan = state.selectedSubscriptionModel;
+
+                                  return ListView(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                                    children: [
+                                      const SizedBox(height: 10),
+                                      _buildStepIndicator(),
+                                      const SizedBox(height: 30),
+
+                                      // Title
+                                      Text(
+                                        'Choose Your\nDiscipl Plan 🔥',
+                                        style: AppStyles.text32Px.poppins.w700.dark.copyWith(height: 1.2),
+                                      ),
+                                      const SizedBox(height: 24),
+
+                                      // Selector Chips if multiple
+                                      if (plans.length > 1)
+                                        _buildPlanSelector(plans, selectedPlan),
+
+                                      // Main Pricing Card
+                                      if (selectedPlan != null) ...[
+                                        _buildPricingCard(selectedPlan),
+                                        const SizedBox(height: 28),
+                                        
+                                        // Coupon & Total Pricing Section
+                                        _buildCouponSection(state, selectedPlan),
+                                      ],
+                                      const SizedBox(height: 24),
+                                    ],
                                   );
                                 },
-                              );
-                            },
+                              ),
+                            ),
                           ),
-                          const Spacer(),
-                          BlocBuilder<SubscriptionCubit, SubscriptionState>(
-                            buildWhen:
-                                (p, c) =>
-                                    p.plans != c.plans ||
-                                    p.selectedSubscriptionModel !=
-                                        c.selectedSubscriptionModel ||
-                                    p.payment != c.payment,
-                            builder: (context, state) {
-                              if (state.plans.fold(
-                                () => true,
-                                (t) => t.fold((l) => true, (r) => false),
-                              )) {
-                                return const SizedBox(height: 40);
-                              }
-                              return Button.filled(
-                                title: 'Continue',
-                                isDisabled:
-                                    state.selectedSubscriptionModel == null,
-                                isLoading: state.payment?.isNone() ?? false,
-                                ontap: () {
-                                  if (state.payment?.isNone() ?? false) {
-                                    return;
-                                  }
-                                  _cubit.payment();
-                                },
-                                buttonColor: AppColors.primary,
-                                disabledButtonColor: AppColors.primary
-                                    .withAlpha(125),
-                                loadingColor: Colors.white,
-                                style: AppStyles.text14Px.poppins.w600.light,
-                                raduis: 12,
-                              );
-                            },
+
+                          // Bottom Continue Button
+                          Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Button.filled(
+                              title: state.selectedSubscriptionModel != null &&
+                                      state.selectedSubscriptionModel!.totalPriceIncludeDiscount > 0
+                                  ? 'Upgrade My Gym'
+                                  : 'Continue',
+                              isDisabled: state.selectedSubscriptionModel == null,
+                              isLoading: isPaying,
+                              ontap: () => _cubit.payment(),
+                              buttonColor: AppColors.primary,
+                              disabledButtonColor: AppColors.primary.withOpacity(0.5),
+                              raduis: 12,
+                            ),
                           ),
-                          // const SizedBox(height: 20),
-                          // Center(
-                          //   child: InkWell(
-                          //     onTap: () {
-                          //       _parentCubit.skipSubscriptionCheck();
-                          //     },
-                          //     borderRadius: BorderRadius.circular(12),
-                          //     child: Padding(
-                          //       padding: const EdgeInsets.all(8.0),
-                          //       child: Text(
-                          //         'Skip',
-                          //         style: AppStyles.text14Px.poppins.w600
-                          //             .copyWith(
-                          //           color: AppColors.dark.withOpacity(0.7),
-                          //           decoration: TextDecoration.underline,
-                          //         ),
-                          //       ),
-                          //     ),
-                          //   ),
-                          // ),
-                          const Spacer(),
                         ],
                       ),
                     ),
@@ -469,248 +225,323 @@ class __SubscriptionPlanChooseComState
       ),
     );
   }
-  */
 
-  Widget _buildPlanOption({
-    required SubscriptionPlanModel? plan,
-    bool isSelected = false,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        if (plan == null || isSelected) return;
-        _cubit.selectSubscription(plan);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          // ============ NEW GRADIENT CODE ============
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF280C0C), // Darker red/brown from left
-              Color(0xFF5E2323), // Lighter red/brown to right
-            ],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          // ============ END NEW GRADIENT CODE ============
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color:
-                isSelected
-                    ? const Color(
-                      0xFFD9A6A6,
-                    ) // Light pinkish border when selected
-                    : const Color(
-                      0xFFD9A6A6,
-                    ).withOpacity(0.3), // Subtle border for non-selected
-            width: 1.5,
-          ),
-        ),
-        child: Column(
+  Widget _buildStepIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(8, (index) {
+        bool isActive = index <= 6;
+        return Row(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      plan?.name ?? '',
-                      style: AppStyles.text16Px.poppins.w600.light,
-                    ),
-                    const SizedBox(height: 8),
-                    if ((plan?.discountedPrice?.isNotEmpty ?? false) &&
-                        (plan?.regularPrice?.isNotEmpty ?? false) &&
-                        plan?.regularPrice != plan?.discountedPrice)
-                      Row(
-                        children: [
-                          Text(
-                            'Total ₹${plan?.discountedPrice ?? 00}',
-                            style: AppStyles.text12Px.poppins.w400.light
-                                .copyWith(color: Colors.grey),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xff713E3E),
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(6),
-                              ),
-                            ),
-                            child: Text(
-                              'Save ₹${plan?.totalDiscount ?? 00}',
-                              style: AppStyles.text12Px.poppins.w400.light,
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        style: AppStyles.text16Px.poppins.w700.light,
-                        children: [
-                          if (plan?.discountedPrice?.isNotEmpty ?? false)
-                            TextSpan(
-                              text:
-                                  '₹${plan?.perMonthPriceExcludeDiscount.toStringAsFixed(0)}',
-                              style: AppStyles.text14Px.poppins.w300.light
-                                  .copyWith(
-                                    decoration: TextDecoration.lineThrough,
-                                    color: Colors.grey,
-                                  ),
-                            ),
-                          if (plan?.regularPrice?.isNotEmpty ?? false)
-                            const WidgetSpan(child: SizedBox(width: 4)),
-                          TextSpan(
-                            text:
-                                '₹${plan?.perMonthPriceIncludeDisount.toStringAsFixed(0)}',
-                            style: AppStyles.text18Px.poppins.w700.light,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      'per month',
-                      style: AppStyles.text12Px.poppins.w400.light,
-                    ),
-                  ],
-                ),
-              ],
+            Container(
+              width: 15,
+              height: 2,
+              color: isActive ? AppColors.primary : AppColors.borderGrey,
+            ),
+            Transform.rotate(
+              angle: 0.785398,
+              child: Container(
+                width: 6,
+                height: 6,
+                color: isActive ? AppColors.primary : AppColors.borderGrey,
+              ),
             ),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
 
-  // ============ OLD _buildPlanOption COMMENTED OUT ============
-  /*
-  Widget _buildPlanOption({
-    required SubscriptionPlanModel? plan,
-    bool isSelected = false,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        if (plan == null || isSelected) return;
-        _cubit.selectSubscription(plan);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: !isSelected ? Colors.grey.shade100 : null,
-          gradient:
-              !isSelected
-                  ? null
-                  : const LinearGradient(
-                    colors: [Color(0xFF290F0F), Color(0xff581F1F)],
-                  ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? const Color(0xffC39191) : Colors.grey.shade300,
-          ),
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  plan?.name ?? '',
-                  style:
-                      isSelected
-                          ? AppStyles.text14Px.poppins.w500.light
-                          : AppStyles.text14Px.poppins.w500.dark,
+  Widget _buildPlanSelector(
+    List<SubscriptionPlanModel> plans,
+    SubscriptionPlanModel? selected,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: plans.map((plan) {
+          final isSelected = plan.id == selected?.id;
+          return GestureDetector(
+            onTap: () {
+              _couponController.clear();
+              _cubit.selectSubscription(plan);
+            },
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primary : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color:
+                      isSelected ? AppColors.primary : const Color(0xffEEEEEE),
                 ),
-                RichText(
-                  text: TextSpan(
-                    style:
-                        isSelected
-                            ? AppStyles.text16Px.poppins.w700.light
-                            : AppStyles.text16Px.poppins.w700.dark,
-                    children: [
-                      if (plan?.discountedPrice?.isNotEmpty ?? false)
-                        TextSpan(
-                          text:
-                              '₹${plan?.perMonthPriceExcludeDiscount.toStringAsFixed(2)}',
-                          style: (isSelected
-                                  ? AppStyles.text14Px.poppins.w300.light
-                                  : AppStyles.text14Px.poppins.w300.dark)
-                              .copyWith(decoration: TextDecoration.lineThrough),
-                        ),
-                      if (plan?.regularPrice?.isNotEmpty ?? false)
-                        const WidgetSpan(child: SizedBox(width: 4)),
-                      TextSpan(
-                        text:
-                            '₹${plan?.perMonthPriceIncludeDisount.toStringAsFixed(2)}',
-                        style:
-                            isSelected
-                                ? AppStyles.text16Px.poppins.w700.light
-                                : AppStyles.text16Px.poppins.w700.dark,
-                      ),
-                    ],
-                  ),
+                boxShadow: [
+                  if (!isSelected)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                ],
+              ),
+              child: Text(
+                plan.name ?? '',
+                style: AppStyles.text13Px.poppins.w600.copyWith(
+                  color: isSelected ? Colors.white : AppColors.dark,
                 ),
-              ],
+              ),
             ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                if ((plan?.discountedPrice?.isNotEmpty ?? false) &&
-                    (plan?.regularPrice?.isNotEmpty ?? false) &&
-                    plan?.regularPrice != plan?.discountedPrice) ...[
+          );
+        }).toList(),
+      ),
+    ).pOnly(bottom: 24);
+  }
+
+  Widget _buildPricingCard(SubscriptionPlanModel plan) {
+    final hasDiscount =
+        plan.totalPriceExcludeDiscount > plan.totalPriceIncludeDiscount;
+    final isYearly = plan.period == 365;
+    final billingSuffix =
+        isYearly
+            ? '/year'
+            : (plan.period == 30 ? '/month' : '/${plan.period} days');
+    final monthlySubtext =
+        isYearly
+            ? '(₹${plan.perMonthPriceIncludeDisount.toStringAsFixed(0)}/month billed annually)'
+            : '(₹${plan.totalPriceIncludeDiscount.toStringAsFixed(0)}/month)';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xffFFEEEE)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header with gradient
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              gradient: LinearGradient(
+                colors: [Color(0xffFF8A8A), Color(0xffFFD6A4)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+            child: Center(
+              child: Column(
+                children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        'Total ₹${plan?.discountedPrice ?? 00}',
-                        style:
-                            isSelected
-                                ? AppStyles.text12Px.poppins.w400.light
-                                : AppStyles.text12Px.poppins.w400.dark,
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              isSelected
-                                  ? const Color(0xff713E3E)
-                                  : AppColors.primary.withOpacity(0.1),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(6),
+                      if (hasDiscount && plan.totalPriceExcludeDiscount > 0) ...[
+                        Text(
+                          '₹${plan.totalPriceExcludeDiscount.toStringAsFixed(0)}',
+                          style: AppStyles.text16Px.poppins.w400.copyWith(
+                            color: const Color(0xff444444),
+                            decoration: TextDecoration.lineThrough,
                           ),
                         ),
-                        child: Text(
-                          'Save ₹${plan?.totalDiscount ?? 00}',
-                          style:
-                              isSelected
-                                  ? AppStyles.text12Px.poppins.w400.light
-                                  : AppStyles.text12Px.poppins.w400.dark
-                                      .copyWith(color: AppColors.primary),
-                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        '₹${plan.totalPriceIncludeDiscount.toStringAsFixed(0)}',
+                        style: AppStyles.text28Px.poppins.w700.dark,
+                      ),
+                      Text(
+                        billingSuffix,
+                        style: AppStyles.text14Px.poppins.w500.dark,
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    monthlySubtext,
+                    style: AppStyles.text12Px.poppins.w400.dark.copyWith(
+                      color: AppColors.dark.withOpacity(0.8),
+                    ),
                   ),
                 ],
-                // Text('per month', style: isSelected ? AppStyles.text12Px.poppins.w400.light : AppStyles.text12Px.poppins.w400.dark),
+              ),
+            ),
+          ),
+
+          // Benefits
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                _buildBenefitRow(
+                  'EMI facility for members',
+                  'Increase conversions by offering\nflexible payment options.',
+                ),
+                const SizedBox(height: 16),
+                _buildBenefitRow(
+                  'Listing on Discipl Customer App.',
+                  'Be discovered by serious fitness\nseekers across your region.',
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.check, color: Color(0xffDC2626), size: 18),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'And all upcoming features.',
+                        style: AppStyles.text14Px.poppins.w600.dark,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-  */
+
+  Widget _buildBenefitRow(String title, String subtitle) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.check, color: Color(0xffDC2626), size: 18),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppStyles.text14Px.poppins.w600.dark,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: AppStyles.text12Px.poppins.w400.textGrey,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCouponSection(
+    SubscriptionState state,
+    SubscriptionPlanModel plan,
+  ) {
+    final baseAmount = plan.totalPriceIncludeDiscount.toDouble();
+    final discount = state.isCouponApplied ? state.couponDiscountAmount : 0.0;
+    final totalToPay = (baseAmount - discount).clamp(0.0, double.infinity);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Have a Coupon Code?',
+          style: AppStyles.text16Px.poppins.w600.dark,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Enter Coupon Code to avail special discounts',
+          style: AppStyles.text12Px.poppins.w400.textGrey,
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _couponController,
+                style: AppStyles.text14Px.poppins.w500.dark,
+                decoration: InputDecoration(
+                  hintText: 'Enter Coupon Code',
+                  hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xffEEEEEE)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xffEEEEEE)),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            state.isCouponApplied
+                ? Button.outlined(
+                  title: 'Remove',
+                  size: const Size(100, 48),
+                  ontap: () {
+                    _couponController.clear();
+                    _cubit.removeCoupon();
+                  },
+                  raduis: 8,
+                )
+                : Button.filled(
+                  title: 'Apply',
+                  size: const Size(100, 48),
+                  ontap: () {
+                    final code = _couponController.text.trim();
+                    if (code.isNotEmpty) {
+                      _cubit.applyCoupon(code);
+                    }
+                  },
+                  buttonColor: AppColors.primary,
+                  raduis: 8,
+                ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Coupon Code Discount:',
+              style: AppStyles.text14Px.poppins.w400.textGrey,
+            ),
+            Text(
+              '₹${discount.toStringAsFixed(0)}/-',
+              style: AppStyles.text14Px.poppins.w500.dark,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Total Amount to Pay:',
+              style: AppStyles.text16Px.poppins.w600.dark,
+            ),
+            Text(
+              '₹${totalToPay.toStringAsFixed(0)}/-',
+              style: AppStyles.text16Px.poppins.w700.dark,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _buildPlanOptionShimmer() {
     return Shimmer.fromColors(

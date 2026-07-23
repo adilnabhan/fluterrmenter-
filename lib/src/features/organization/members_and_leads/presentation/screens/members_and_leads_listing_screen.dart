@@ -72,8 +72,6 @@ class __MembersAndLeadsListingScreenState
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
@@ -152,7 +150,8 @@ class __MembersAndLeadsListingScreenState
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           FilterButton(
-                            isSelected: _selectedMembersSorts?.isNotEmpty ?? false,
+                            isSelected:
+                                _selectedMembersSorts?.isNotEmpty ?? false,
                             onTap: () {
                               FilterSelectionSheet(
                                 selectedFilters: _selectedMembersSorts,
@@ -171,212 +170,254 @@ class __MembersAndLeadsListingScreenState
                       ),
                     ),
                     Expanded(
-                      child: 
-                          //* Members Listing
-
-                          BlocBuilder<
-                            MembersAndLeadsCubit,
-                            MembersAndLeadsState
-                          >(
-                            buildWhen: (p, c) => p.members != c.members,
-                            bloc: _cubit,
-                            builder: (context, state) {
-                              return state.members.data.fold(
-                                () => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                                (either) => either.fold(
-                                  (error) => error.maybeWhen(
-                                    network:
-                                        (e) => ErrorUi.network(
-                                          onTap: _fetchMembers,
-                                        ),
-                                    notFound:
-                                        (e) => ErrorUi.notFound(
-                                          onTap: _fetchMembers,
-                                        ),
-                                    orElse:
-                                        () => ErrorUi.server(
-                                          onTap: _fetchMembers,
-                                        ),
-                                  ),
-                                  (memebrsDataum) {
-                                    if (memebrsDataum.results?.isEmpty ??
-                                        true) {
-                                      return ErrorUi.empty().center;
-                                    }
-                                    return RefreshIndicator.adaptive(
-                                      onRefresh: _fetchMembers,
-                                      child: ListView.separated(
-                                        controller: _scrollController,
-                                        padding: const EdgeInsets.only(
-                                          bottom: 104,
-                                        ),
-                                        itemCount:
-                                            // (memebrsDataum.results?.length ??
-                                            //     0) +
-                                            // (state.members.isPagination
-                                            //     ? 1
-                                            //     : 0),
-                                            memebrsDataum.results?.length ?? 0,
-                                        separatorBuilder: (
-                                          BuildContext context,
-                                          int index,
-                                        ) {
-                                          return const SizedBox(height: 16);
-                                        },
-                                        itemBuilder: (
-                                          BuildContext context,
-                                          int index,
-                                        ) {
-                                          // final items =
-                                          //     memebrsDataum.results ?? [];
-                                          //
-                                          // // ===== Pagination Loader UI =====
-                                          // if (index == items.length) {
-                                          //   return const Padding(
-                                          //     padding: EdgeInsets.symmetric(
-                                          //       vertical: 16,
-                                          //     ),
-                                          //     child: Center(
-                                          //       child:
-                                          //           CircularProgressIndicator(),
-                                          //     ),
-                                          //   );
-                                          // }
-                                          final memberData =
-                                              memebrsDataum.results?[index];
-                                          return InkWell(
-                                            onTap: () {
-                                              if (memberData?.id != null) {
-                                                context.push(
-                                                  BlocProvider.value(
-                                                    value: _cubit,
-                                                    child: MemberDetialsScreen(
-                                                      memberId: memberData!.id!,
-                                                    ),
-                                                  ),
-                                                );
-                                              } else {
-                                                Dialogs.showSnack(
-                                                  msg:
-                                                      'Selected lead is not valid',
-                                                );
-                                              }
-                                            },
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              child: ColoredBox(
-                                                color: Colors.white,
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(
-                                                    16,
-                                                  ),
-                                                  child: Column(
-                                                    spacing: 8,
-                                                    children: [
-                                                      Row(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          ClipRRect(
-                                                            borderRadius:
-                                                                const BorderRadius.all(
-                                                                  Radius.circular(
-                                                                    80000,
-                                                                  ),
-                                                                ),
-                                                            child: ProfileImage(
-                                                              isEdit: false,
-                                                              url:
-                                                                  '${memberData?.profilePicture ?? ''}',
-                                                              radius: 40,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8,
-                                                          ),
-                                                          Flexible(
-                                                            child: SizedBox(
-                                                              width:
-                                                                  double
-                                                                      .maxFinite,
-                                                              child: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                    memberData
-                                                                            ?.name ??
-                                                                        '',
-                                                                    style:
-                                                                        AppStyles
-                                                                            .text14Px
-                                                                            .poppins
-                                                                            .w500
-                                                                            .dark,
-                                                                  ),
-                                                                  const SizedBox(
-                                                                    height: 4,
-                                                                  ),
-                                                                  Text(
-                                                                    memberData?.mobileNumber ?? '',
-                                                                    style:
-                                                                        AppStyles
-                                                                            .text12Px
-                                                                            .poppins
-                                                                            .w400
-                                                                            .dark,
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            memberData
-                                                                    ?.activePlan
-                                                                    ?.planName ??
-                                                                '',
-                                                            style:
-                                                                AppStyles
-                                                                    .text12Px
-                                                                    .poppins
-                                                                    .w500
-                                                                    .dark,
-                                                          ),
-                                                          // const SizedBox(height: 4),
-                                                          // Text('05: AM', style: AppStyles.text12Px.poppins.w500.dark),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
+                      child:
+                      //* Members Listing
+                      BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+                        buildWhen: (p, c) => p.members != c.members,
+                        bloc: _cubit,
+                        builder: (context, state) {
+                          return state.members.data.fold(
+                            () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            (either) => either.fold(
+                              (error) => error.maybeWhen(
+                                network:
+                                    (e) =>
+                                        ErrorUi.network(onTap: _fetchMembers),
+                                notFound:
+                                    (e) =>
+                                        ErrorUi.notFound(onTap: _fetchMembers),
+                                orElse:
+                                    () => ErrorUi.server(onTap: _fetchMembers),
+                              ),
+                              (memebrsDataum) {
+                                if (memebrsDataum.results?.isEmpty ?? true) {
+                                  return ErrorUi.empty().center;
+                                }
+                                return RefreshIndicator.adaptive(
+                                  onRefresh: _fetchMembers,
+                                  child: ListView.separated(
+                                    controller: _scrollController,
+                                    padding: const EdgeInsets.only(bottom: 104),
+                                    itemCount:
+                                        // (memebrsDataum.results?.length ??
+                                        //     0) +
+                                        // (state.members.isPagination
+                                        //     ? 1
+                                        //     : 0),
+                                        memebrsDataum.results?.length ?? 0,
+                                    separatorBuilder: (
+                                      BuildContext context,
+                                      int index,
+                                    ) {
+                                      return const SizedBox(height: 16);
+                                    },
+                                    itemBuilder: (
+                                      BuildContext context,
+                                      int index,
+                                    ) {
+                                      // final items =
+                                      //     memebrsDataum.results ?? [];
+                                      //
+                                      // // ===== Pagination Loader UI =====
+                                      // if (index == items.length) {
+                                      //   return const Padding(
+                                      //     padding: EdgeInsets.symmetric(
+                                      //       vertical: 16,
+                                      //     ),
+                                      //     child: Center(
+                                      //       child:
+                                      //           CircularProgressIndicator(),
+                                      //     ),
+                                      //   );
+                                      // }
+                                      final memberData =
+                                          memebrsDataum.results?[index];
+                                      return InkWell(
+                                        onTap: () {
+                                          if (memberData?.id != null) {
+                                            context.push(
+                                              BlocProvider.value(
+                                                value: _cubit,
+                                                child: MemberDetialsScreen(
+                                                  memberId: memberData!.id!,
                                                 ),
                                               ),
-                                            ),
-                                          );
+                                            );
+                                          } else {
+                                            Dialogs.showSnack(
+                                              msg: 'Selected lead is not valid',
+                                            );
+                                          }
                                         },
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                          ),
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          child: ColoredBox(
+                                            color: Colors.white,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(16),
+                                              child: Column(
+                                                spacing: 8,
+                                                children: [
+                                                  Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            const BorderRadius.all(
+                                                              Radius.circular(
+                                                                80000,
+                                                              ),
+                                                            ),
+                                                        child: ProfileImage(
+                                                          isEdit: false,
+                                                          url:
+                                                              '${memberData?.profilePicture ?? ''}',
+                                                          radius: 40,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      Flexible(
+                                                        child: SizedBox(
+                                                          width:
+                                                              double.maxFinite,
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                memberData
+                                                                        ?.name ??
+                                                                    '',
+                                                                style:
+                                                                    AppStyles
+                                                                        .text14Px
+                                                                        .poppins
+                                                                        .w500
+                                                                        .dark,
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 4,
+                                                              ),
+                                                              Text(
+                                                                memberData
+                                                                        ?.mobileNumber ??
+                                                                    '',
+                                                                style:
+                                                                    AppStyles
+                                                                        .text12Px
+                                                                        .poppins
+                                                                        .w400
+                                                                        .dark,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      if (memberData
+                                                                  ?.activePlan
+                                                                  ?.status
+                                                                  ?.toLowerCase() ==
+                                                              'active' ||
+                                                          memberData
+                                                                  ?.activePlan
+                                                                  ?.status
+                                                                  ?.toLowerCase() ==
+                                                              'expired')
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 10,
+                                                                vertical: 4,
+                                                              ),
+                                                          decoration: BoxDecoration(
+                                                            color:
+                                                                memberData!
+                                                                            .activePlan!
+                                                                            .status!
+                                                                            .toLowerCase() ==
+                                                                        'active'
+                                                                    ? const Color(
+                                                                      0xFFE8F5E9,
+                                                                    )
+                                                                    : const Color(
+                                                                      0xFFFFEBEE,
+                                                                    ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  12,
+                                                                ),
+                                                          ),
+                                                          child: Text(
+                                                            memberData!
+                                                                        .activePlan!
+                                                                        .status!
+                                                                        .toLowerCase() ==
+                                                                    'active'
+                                                                ? 'Active'
+                                                                : 'Expired',
+                                                            style: AppStyles.text10Px.poppins.w500.copyWith(
+                                                              color:
+                                                                  memberData!
+                                                                              .activePlan!
+                                                                              .status!
+                                                                              .toLowerCase() ==
+                                                                          'active'
+                                                                      ? const Color(
+                                                                        0xFF4CAF50,
+                                                                      )
+                                                                      : const Color(
+                                                                        0xFFD30000,
+                                                                      ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                  // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        memberData
+                                                                ?.activePlan
+                                                                ?.planName ??
+                                                            '',
+                                                        style:
+                                                            AppStyles
+                                                                .text12Px
+                                                                .poppins
+                                                                .w500
+                                                                .dark,
+                                                      ),
+                                                      // const SizedBox(height: 4),
+                                                      // Text('05: AM', style: AppStyles.text12Px.poppins.w500.dark),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
                       ),
+                    ),
                   ],
                 ).pad(16),
               ),

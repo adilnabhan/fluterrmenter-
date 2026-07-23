@@ -1,6 +1,8 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/add_or_edit_memeber_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
 import 'package:intl/intl.dart';
 
 class TrainerClientStatsScreen extends StatefulWidget {
@@ -139,67 +141,6 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
       setState(() {
         _isSavingNotes = false;
       });
-    }
-  }
-
-  Future<void> _toggleDetailAssignment(bool isCurrentlyAssigned) async {
-    final user = context.read<AppCubit>().state.currentUser;
-    final trainerId = user?.trainer?.id ?? user?.mentor?.id;
-    if (trainerId == null) {
-      Dialogs.showSnack(msg: 'Trainer profile not found.');
-      return;
-    }
-
-    if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final profile = _clientData['profile'] as Map<dynamic, dynamic>? ?? {};
-      final memberId =
-          _clientData['member_id'] ??
-          profile['member_id'] ??
-          _clientData['id'] ??
-          profile['id'] ??
-          widget.customerId;
-
-      final response = await DioClient().dio.patch<dynamic>(
-        ApiUris.updateMember(memberId as int),
-        data: {'trainer_id': isCurrentlyAssigned ? null : trainerId},
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        Dialogs.showSnack(
-          msg:
-              isCurrentlyAssigned
-                  ? 'Client unassigned successfully'
-                  : 'Client assigned to you successfully',
-        );
-        _fetchClientDetails();
-      } else {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-        });
-        Dialogs.showSnack(msg: 'Failed to update assignment');
-      }
-    } on DioException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
-      final errorData = e.response?.data;
-      final errorMsg =
-          errorData != null ? errorData.toString() : e.message ?? e.toString();
-      Dialogs.showSnack(msg: 'Error: $errorMsg');
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
-      Dialogs.showSnack(msg: 'Error updating assignment: ${e.toString()}');
     }
   }
 
@@ -460,36 +401,35 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
               'Assigned Workout Plans',
               style: AppStyles.text16Px.poppins.w600.dark,
             ),
-            if (isAssignedToMe)
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (context) => const WorkoutGroupsScreen(),
-                    ),
-                  ).then((_) => _fetchClientDetails());
-                },
-                icon: const Icon(Icons.add, size: 16, color: Color(0xFF2E7D32)),
-                label: Text(
-                  'Assign Plan',
-                  style: AppStyles.text12Px.poppins.w600.copyWith(
-                    color: const Color(0xFF2E7D32),
+            TextButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const WorkoutGroupsScreen(),
                   ),
-                ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  backgroundColor: const Color(0xffE8F5E9),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                ).then((_) => _fetchClientDetails());
+              },
+              icon: const Icon(Icons.add, size: 16, color: Color(0xFF2E7D32)),
+              label: Text(
+                'Assign Plan',
+                style: AppStyles.text12Px.poppins.w600.copyWith(
+                  color: const Color(0xFF2E7D32),
                 ),
               ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                backgroundColor: const Color(0xffE8F5E9),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -507,14 +447,7 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
             ],
           ),
           child:
-              !isAssignedToMe
-                  ? Text(
-                    'Workout plans are only visible and manageable when this customer is assigned to you.',
-                    style: AppStyles.text12Px.poppins.w400.copyWith(
-                      color: AppColors.textGrey,
-                    ),
-                  )
-                  : assignedPlans.isEmpty
+              assignedPlans.isEmpty
                   ? Center(
                     child: Text(
                       'No workout plans assigned.',
@@ -640,58 +573,47 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
               ),
             ],
           ),
-          child:
-              isAssignedToMe
-                  ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        controller: _notesController,
-                        maxLines: 4,
-                        decoration: InputDecoration(
-                          hintText:
-                              'Add progress logs, dietary notes, or remarks...',
-                          hintStyle: AppStyles.text12Px.poppins.w400.copyWith(
-                            color: AppColors.textGrey,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey.shade200),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          fillColor: const Color(0xffF7F7F7),
-                          filled: true,
-                        ),
-                        style: AppStyles.text13Px.poppins.w400,
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.maxFinite,
-                        child: Button.filled(
-                          ontap: _isSavingNotes ? () {} : _saveNotes,
-                          title: 'Save Notes',
-                          buttonColor: AppColors.primary,
-                          isLoading: _isSavingNotes,
-                          style: AppStyles.text14Px.poppins.w600.light,
-                        ),
-                      ),
-                    ],
-                  )
-                  : Text(
-                    'Assign this client to yourself to write progress notes and remarks.',
-                    style: AppStyles.text12Px.poppins.w400.copyWith(
-                      color: AppColors.textGrey,
-                    ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _notesController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: 'Add progress logs, dietary notes, or remarks...',
+                  hintStyle: AppStyles.text12Px.poppins.w400.copyWith(
+                    color: AppColors.textGrey,
                   ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.primary),
+                  ),
+                  fillColor: const Color(0xffF7F7F7),
+                  filled: true,
+                ),
+                style: AppStyles.text13Px.poppins.w400,
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.maxFinite,
+                child: Button.filled(
+                  ontap: _isSavingNotes ? () {} : _saveNotes,
+                  title: 'Save Notes',
+                  buttonColor: AppColors.primary,
+                  isLoading: _isSavingNotes,
+                  style: AppStyles.text14Px.poppins.w600.light,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -928,77 +850,96 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
-      appBar: widget.showAppBar
-          ? AppBar(
-              leading: const PopButton().center,
-              title: Text(
-                'Client Details',
-                style: AppStyles.text18Px.poppins.w600.dark,
+      appBar:
+          widget.showAppBar
+              ? AppBar(
+                leading: const PopButton().center,
+                title: Text(
+                  'Client Details',
+                  style: AppStyles.text18Px.poppins.w600.dark,
+                ),
+              )
+              : AppBar(
+                leading: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.black,
+                    size: 20,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
               ),
-            )
-          : AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
-                onPressed: () => Navigator.pop(context),
-              ),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-            ),
       body: SafeArea(
         child: Column(
           children: [
             // Main profile card
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.iconBackground,
-                    ),
-                    child: ClipOval(
-                      child:
-                          imgUrl != null
-                              ? Image.network(
-                                imgUrl as String,
-                                fit: BoxFit.cover,
-                                errorBuilder:
-                                    (_, __, ___) => const Icon(
-                                      Icons.person,
-                                      size: 30,
-                                      color: AppColors.primary,
-                                    ),
-                              )
-                              : const Icon(
-                                Icons.person,
-                                size: 30,
-                                color: AppColors.primary,
-                              ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(name, style: AppStyles.text16Px.poppins.w600.dark),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Age: $age  |  Phone: $mobile',
-                          style: AppStyles.text12Px.poppins.w400.copyWith(
-                            color: AppColors.textGrey,
-                          ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => TrainerClientDetailScreen(
+                          customerId: widget.customerId,
                         ),
-                        const SizedBox(height: 6),
-                        _buildDetailAssignmentRow(isAssignedToMe, trainerName),
-                      ],
-                    ),
                   ),
-                ],
+                );
+              },
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.iconBackground,
+                      ),
+                      child: ClipOval(
+                        child:
+                            imgUrl != null
+                                ? Image.network(
+                                  imgUrl as String,
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (_, __, ___) => const Icon(
+                                        Icons.person,
+                                        size: 30,
+                                        color: AppColors.primary,
+                                      ),
+                                )
+                                : const Icon(
+                                  Icons.person,
+                                  size: 30,
+                                  color: AppColors.primary,
+                                ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: AppStyles.text16Px.poppins.w600.dark,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Age: $age  |  Phone: $mobile',
+                            style: AppStyles.text12Px.poppins.w400.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 4),
@@ -1043,52 +984,6 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
           ),
         ),
         Text(value, style: AppStyles.text13Px.poppins.w600),
-      ],
-    );
-  }
-
-  Widget _buildDetailAssignmentRow(bool isAssignedToMe, String? trainerName) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            isAssignedToMe
-                ? 'Assigned to: Me'
-                : (trainerName != null && trainerName.isNotEmpty)
-                ? 'Assigned to: $trainerName'
-                : 'Unassigned',
-            style: AppStyles.text12Px.poppins.w600.copyWith(
-              color:
-                  isAssignedToMe
-                      ? const Color(0xFF43A047)
-                      : (trainerName != null && trainerName.isNotEmpty)
-                      ? AppColors.textGrey
-                      : Colors.orange.shade800,
-            ),
-          ),
-        ),
-        TextButton(
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            backgroundColor:
-                isAssignedToMe
-                    ? const Color(0xffFFEAEA)
-                    : const Color(0xffE8F5E9),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          onPressed: () => _toggleDetailAssignment(isAssignedToMe),
-          child: Text(
-            isAssignedToMe ? 'Unassign' : 'Assign',
-            style: AppStyles.text12Px.poppins.w600.copyWith(
-              color:
-                  isAssignedToMe ? AppColors.primary : const Color(0xFF43A047),
-            ),
-          ),
-        ),
       ],
     );
   }

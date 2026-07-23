@@ -131,310 +131,327 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : SafeArea(
-                  child: RefreshIndicator(
-                    onRefresh: _fetchDashboardData,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: ClampingScrollPhysics(),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  side: const BorderSide(color: Color(0xffDDDDDD)),
-                                ),
-                                onPressed: () {
-                                  const AccountSwitcherSheet().show(context);
-                                },
-                                label: const Icon(
-                                  Icons.keyboard_arrow_down_sharp,
-                                  color: Color(0xff222222),
-                                  size: 20,
-                                ),
-                                icon: Text(
-                                  displayName,
-                                  style: AppStyles.text14Px.poppins.w600.copyWith(
-                                    color: const Color(0xff222222),
-                                  ),
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () {},
-                                    icon: const Icon(
-                                      Icons.notifications_none_rounded,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  const TrainerProfileSettingsScreen(),
-                                        ),
-                                      );
-                                    },
-                                    icon: const Icon(
-                                      Icons.settings_outlined,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          _buildBannerCarousel(),
-                      const SizedBox(height: 22),
-
-                      // Stats Grid
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: GridView.count(
-                          padding: EdgeInsets.zero,
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          childAspectRatio: 1.6,
+                child: RefreshIndicator(
+                  onRefresh: _fetchDashboardData,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: ClampingScrollPhysics(),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _buildStatCard(
-                              title: 'Active\nMembers',
-                              value: '$activeClients',
-                              valueColor: const Color(0xff3B5998),
-                              titleColor: const Color(0xff3B5998),
-                              circleArrowColor: const Color(0xff3B5998),
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xffD6E4FF), Color(0xffADC8FF)],
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                side: const BorderSide(
+                                  color: Color(0xffDDDDDD),
+                                ),
                               ),
-                              onTap: () {
-                                context.push(
-                                  const TrainerCustomersScreen(isPushed: true),
-                                );
+                              onPressed: () {
+                                const AccountSwitcherSheet().show(context);
                               },
-                            ),
-                            _buildStatCard(
-                              title: 'Pending\nVerifications',
-                              value: '$pendingVerifications',
-                              valueColor: const Color(0xffC0392B),
-                              titleColor: const Color(0xffC0392B),
-                              circleArrowColor: const Color(0xffC0392B),
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xffFFCDD2), Color(0xffFFAB91)],
+                              label: const Icon(
+                                Icons.keyboard_arrow_down_sharp,
+                                color: Color(0xff222222),
+                                size: 20,
                               ),
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) =>
-                                            const TrainerPendingVerificationsScreen(),
-                                  ),
-                                );
-                                _fetchDashboardData();
-                              },
+                              icon: Text(
+                                displayName,
+                                style: AppStyles.text14Px.poppins.w600.copyWith(
+                                  color: const Color(0xff222222),
+                                ),
+                              ),
                             ),
-                            _buildStatCard(
-                              title: 'Workout Groups\nCreated',
-                              value: '$workoutGroupsCreated',
-                              valueColor: const Color(0xFFD97706),
-                              titleColor: AppColors.textDark,
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) =>
-                                            const WorkoutGroupsScreen(),
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    Icons.notifications_none_rounded,
+                                    color: Colors.black87,
                                   ),
-                                );
-                                _fetchDashboardData();
-                              },
-                            ),
-                            _buildStatCard(
-                              title: 'Average\nRating',
-                              value: '$averageRating',
-                              valueColor: const Color(0xFF16A34A),
-                              titleColor: AppColors.textDark,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                const TrainerProfileSettingsScreen(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.settings_outlined,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Upcoming Birthdays
-                      if (upcomingBirthdays.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        _buildBannerCarousel(),
+                        const SizedBox(height: 22),
+
+                        // Stats Grid
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(
-                            'Member Insights',
-                            style: AppStyles.text16Px.poppins.w600.dark,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          height: 100,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            itemCount: upcomingBirthdays.length,
-                            separatorBuilder:
-                                (context, index) => const SizedBox(width: 12),
-                            itemBuilder: (context, index) {
-                              final bday = upcomingBirthdays[index];
-                              final String name =
-                                  bday['name'] as String? ?? 'N/A';
-                              final String dateStr =
-                                  bday['date_of_birth'] as String? ?? '';
-                              final imgUrl = bday['profile_picture'];
-                              final adNo =
-                                  bday['admission_no']?.toString() ??
-                                  bday['id']?.toString() ??
-                                  '';
-                              final textColor = const Color(0xFF64542B);
-
-                              return Container(
-                                width: MediaQuery.of(context).size.width - 70,
-                                clipBehavior: Clip.hardEdge,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE3D4B6),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      top: -5,
-                                      right: 0,
-                                      child: Image.asset(
-                                        'assets/images/png/icons/hat.png',
-                                        width: 65,
-                                        height: 65,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'BIRTHDAY',
-                                            style: AppStyles
-                                                .text13Px
-                                                .poppins
-                                                .w700
-                                                .copyWith(color: textColor),
-                                          ),
-                                          const Spacer(),
-                                          Row(
-                                            children: [
-                                              Container(
-                                                width: 42,
-                                                height: 42,
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Colors.white,
-                                                ),
-                                                child: ClipOval(
-                                                  child:
-                                                      imgUrl != null
-                                                          ? Image.network(
-                                                            imgUrl as String,
-                                                            fit: BoxFit.cover,
-                                                            errorBuilder:
-                                                                (
-                                                                  _,
-                                                                  __,
-                                                                  ___,
-                                                                ) => Icon(
-                                                                  Icons.person,
-                                                                  size: 24,
-                                                                  color:
-                                                                      textColor,
-                                                                ),
-                                                          )
-                                                          : Icon(
-                                                            Icons.person,
-                                                            size: 24,
-                                                            color: textColor,
-                                                          ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      name,
-                                                      style: AppStyles
-                                                          .text14Px
-                                                          .poppins
-                                                          .w700
-                                                          .copyWith(
-                                                            color: textColor,
-                                                          ),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                    Text(
-                                                      'On $dateStr',
-                                                      style: AppStyles
-                                                          .text12Px
-                                                          .poppins
-                                                          .w500
-                                                          .copyWith(
-                                                            color: textColor,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              if (adNo.isNotEmpty)
-                                                Text(
-                                                  'Ad No - $adNo',
-                                                  style: AppStyles
-                                                      .text12Px
-                                                      .poppins
-                                                      .w600
-                                                      .copyWith(
-                                                        color: textColor,
-                                                      ),
-                                                ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                          child: GridView.count(
+                            padding: EdgeInsets.zero,
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            childAspectRatio: 1.6,
+                            children: [
+                              _buildStatCard(
+                                title: 'Active\nClients',
+                                value: '$activeClients',
+                                valueColor: const Color(0xff3B5998),
+                                titleColor: const Color(0xff3B5998),
+                                circleArrowColor: const Color(0xff3B5998),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xffD6E4FF),
+                                    Color(0xffADC8FF),
                                   ],
                                 ),
-                              );
-                            },
+                                onTap: () {
+                                  context.push(
+                                    const TrainerCustomersScreen(
+                                      isPushed: true,
+                                      initialStatusFilter: 'active',
+                                    ),
+                                  );
+                                },
+                              ),
+                              _buildStatCard(
+                                title: 'Pending\nVerifications',
+                                value: '$pendingVerifications',
+                                valueColor: const Color(0xffC0392B),
+                                titleColor: const Color(0xffC0392B),
+                                circleArrowColor: const Color(0xffC0392B),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xffFFCDD2),
+                                    Color(0xffFFAB91),
+                                  ],
+                                ),
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              const TrainerPendingVerificationsScreen(),
+                                    ),
+                                  );
+                                  _fetchDashboardData();
+                                },
+                              ),
+                              _buildStatCard(
+                                title: 'Workout Groups\nCreated',
+                                value: '$workoutGroupsCreated',
+                                valueColor: const Color(0xFFD97706),
+                                titleColor: AppColors.textDark,
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              const WorkoutGroupsScreen(),
+                                    ),
+                                  );
+                                  _fetchDashboardData();
+                                },
+                              ),
+                              _buildStatCard(
+                                title: 'Average\nRating',
+                                value: '$averageRating',
+                                valueColor: const Color(0xFF16A34A),
+                                titleColor: AppColors.textDark,
+                              ),
+                            ],
                           ),
                         ),
+                        const SizedBox(height: 24),
+                        // Upcoming Birthdays
+                        if (upcomingBirthdays.isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              'Member Insights',
+                              style: AppStyles.text16Px.poppins.w600.dark,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            height: 100,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
+                              itemCount: upcomingBirthdays.length,
+                              separatorBuilder:
+                                  (context, index) => const SizedBox(width: 12),
+                              itemBuilder: (context, index) {
+                                final bday = upcomingBirthdays[index];
+                                final String name =
+                                    bday['name'] as String? ?? 'N/A';
+                                final String dateStr =
+                                    bday['date_of_birth'] as String? ?? '';
+                                final imgUrl = bday['profile_picture'];
+                                final adNo =
+                                    bday['admission_no']?.toString() ??
+                                    bday['id']?.toString() ??
+                                    '';
+                                final textColor = const Color(0xFF64542B);
+
+                                return Container(
+                                  width: MediaQuery.of(context).size.width - 70,
+                                  clipBehavior: Clip.hardEdge,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE3D4B6),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      Positioned(
+                                        top: -5,
+                                        right: 0,
+                                        child: Image.asset(
+                                          'assets/images/png/icons/hat.png',
+                                          width: 65,
+                                          height: 65,
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'BIRTHDAY',
+                                              style: AppStyles
+                                                  .text13Px
+                                                  .poppins
+                                                  .w700
+                                                  .copyWith(color: textColor),
+                                            ),
+                                            const Spacer(),
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  width: 42,
+                                                  height: 42,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        color: Colors.white,
+                                                      ),
+                                                  child: ClipOval(
+                                                    child:
+                                                        imgUrl != null
+                                                            ? Image.network(
+                                                              imgUrl as String,
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder:
+                                                                  (
+                                                                    _,
+                                                                    __,
+                                                                    ___,
+                                                                  ) => Icon(
+                                                                    Icons
+                                                                        .person,
+                                                                    size: 24,
+                                                                    color:
+                                                                        textColor,
+                                                                  ),
+                                                            )
+                                                            : Icon(
+                                                              Icons.person,
+                                                              size: 24,
+                                                              color: textColor,
+                                                            ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        name,
+                                                        style: AppStyles
+                                                            .text14Px
+                                                            .poppins
+                                                            .w700
+                                                            .copyWith(
+                                                              color: textColor,
+                                                            ),
+                                                        maxLines: 1,
+                                                        overflow:
+                                                            TextOverflow
+                                                                .ellipsis,
+                                                      ),
+                                                      Text(
+                                                        'On $dateStr',
+                                                        style: AppStyles
+                                                            .text12Px
+                                                            .poppins
+                                                            .w500
+                                                            .copyWith(
+                                                              color: textColor,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                if (adNo.isNotEmpty)
+                                                  Text(
+                                                    'Ad No - $adNo',
+                                                    style: AppStyles
+                                                        .text12Px
+                                                        .poppins
+                                                        .w600
+                                                        .copyWith(
+                                                          color: textColor,
+                                                        ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
+                    ),
                   ),
                 ),
               ),

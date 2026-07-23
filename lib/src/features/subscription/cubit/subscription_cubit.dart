@@ -32,7 +32,49 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   void selectSubscription(SubscriptionPlanModel model) {
     if (isClosed) return;
-    emit(state.copyWith(selectedSubscriptionModel: model));
+    emit(state.copyWith(
+      selectedSubscriptionModel: model,
+      appliedCoupon: null,
+      couponDiscountAmount: 0.0,
+      isCouponApplied: false,
+    ));
+  }
+
+  void applyCoupon(String code) {
+    if (isClosed) return;
+    final plan = state.selectedSubscriptionModel;
+    if (plan == null) return;
+
+    final upperCode = code.trim().toUpperCase();
+    double discount = 0.0;
+    final planPrice = plan.totalPriceIncludeDiscount.toDouble();
+
+    if (upperCode == 'DISCIPL50') {
+      discount = planPrice * 0.50;
+    } else if (upperCode == 'EARLYBIRD') {
+      discount = planPrice * 0.20;
+    } else if (upperCode == 'WELCOME10') {
+      discount = planPrice * 0.10;
+    } else {
+      Dialogs.showSnack(msg: 'Invalid coupon code!');
+      return;
+    }
+
+    emit(state.copyWith(
+      appliedCoupon: upperCode,
+      couponDiscountAmount: discount,
+      isCouponApplied: true,
+    ));
+    Dialogs.showSnack(msg: 'Coupon applied successfully!');
+  }
+
+  void removeCoupon() {
+    if (isClosed) return;
+    emit(state.copyWith(
+      appliedCoupon: null,
+      couponDiscountAmount: 0.0,
+      isCouponApplied: false,
+    ));
   }
 
   Future<void> payment() async {
@@ -63,6 +105,8 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       body: {
         'plan_id': state.selectedSubscriptionModel!.id,
         'organization_id': orgDetails.id,
+        if (state.isCouponApplied && state.appliedCoupon != null)
+          'coupon_code': state.appliedCoupon,
       },
     );
     // await res.fold(
@@ -104,8 +148,13 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     emit(state.copyWith(payment: none()));
     final razorpayApiKey = dotenv.get('RAZORPAY_API_KEY');
     try {
-      final discountAmount =
+      final baseAmount =
           rozarpayOrder.disciplPlan?.discountedPrice?.toNum ?? 0;
+      final discountAmount = state.isCouponApplied
+          ? (baseAmount - (state.couponDiscountAmount * 100))
+              .clamp(0, double.infinity)
+              .toInt()
+          : baseAmount;
       final rozarpayOrderId = rozarpayOrder.orderId;
       if (discountAmount <= 0) {
         if (isClosed) return;

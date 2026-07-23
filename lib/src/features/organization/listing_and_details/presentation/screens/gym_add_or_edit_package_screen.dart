@@ -27,6 +27,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
   bool _showOfferPrice = false;
   bool _isEmi = false;
   int _calculatedMonths = 0;
+  bool _isDisposed = false;
 
   // 🔹 Added variables for commission display
   double _razorpayCommissionPercent = 4.0;
@@ -78,8 +79,8 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
     final priceController = TextEditingController();
 
     void listener() {
-      if (!mounted) return;
-      if (mounted) setState(() {});
+      if (_isDisposed || !mounted) return;
+      setState(() {});
     }
 
     monthController.addListener(listener);
@@ -179,12 +180,12 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
 
     // 👇 Listen for days change → calculate months and update EMI options
     _daysField.controller!.addListener(() {
+      if (_isDisposed || !mounted) return;
       final text = _daysField.controller?.text ?? '';
       final days = int.tryParse(text) ?? 0;
       final months = (days / 30).floor();
 
-      if (mounted) {
-        setState(() {
+      setState(() {
           _calculatedMonths = months > 0 ? months : 0;
 
           // rebuild month field for each EMI
@@ -203,8 +204,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
             _emiOptions[i] = (month: newMonthField, price: existing.price);
           }
         });
-      }
-    });
+      });
 
     // ---------- Actual price field ----------------
     _actualPriceField = FieldData<String>(
@@ -318,11 +318,12 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
 
         // 🔥 FIX: Add listeners so UI updates when editing
         monthController.addListener(() {
-          if (!mounted) return;
-          if (mounted) setState(() {});
+          if (_isDisposed || !mounted) return;
+          setState(() {});
         });
         priceController.addListener(() {
-          if (mounted) setState(() {});
+          if (_isDisposed || !mounted) return;
+          setState(() {});
         });
 
         final monthField = _buildMonthFieldWithController(monthController);
@@ -358,10 +359,9 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
 
   /// Helper that computes commission & credited amount and updates message
   void _calculateCommission() {
+    if (_isDisposed || !mounted) return;
     final text = _actualPriceField.controller?.text.trim() ?? '';
     final amount = double.tryParse(text) ?? 0.0;
-
-    if (!mounted) return;
 
     setState(() {
       _calculatedCommission = amount * (_razorpayCommissionPercent / 100);
@@ -370,17 +370,16 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       _commissionMessage =
           amount > 0
               ? 'After $_razorpayCommissionPercent% payment gateway charges'
-                  /* ' (₹${_calculatedCommission.toStringAsFixed(2)}), '
+              /* ' (₹${_calculatedCommission.toStringAsFixed(2)}), '
                   '₹${_creditedAmount.toStringAsFixed(2)} will be credited to your account.' */
               : '';
     });
   }
 
   void _calculateOfferCommission() {
+    if (_isDisposed || !mounted) return;
     final text = _offerPriceField.controller?.text.trim() ?? '';
     final amount = double.tryParse(text) ?? 0.0;
-
-    if (!mounted) return;
 
     setState(() {
       _offerCalculatedCommission = amount * (_razorpayCommissionPercent / 100);
@@ -389,7 +388,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       _offerCommissionMessage =
           amount > 0
               ? 'After $_razorpayCommissionPercent% payment gateway charges '
-                  /* '(₹${_offerCalculatedCommission.toStringAsFixed(2)}), '
+              /* '(₹${_offerCalculatedCommission.toStringAsFixed(2)}), '
                   '₹${_offerCreditedAmount.toStringAsFixed(2)} will be credited to your account.' */
               : '';
     });
@@ -397,6 +396,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     // Remove listener before disposing to avoid memory leaks
     try {
       _actualPriceField.controller?.removeListener(_calculateCommission);
@@ -869,8 +869,9 @@ String _emiCommissionMessage(String priceText) {
   final credited = price - commission;
 
   return 'After ${4.0}% payment gateway charges '
-      /* '(₹${commission.toStringAsFixed(2)}), '
-      '₹${credited.toStringAsFixed(2)} will be credited to your account.' */;
+  /* '(₹${commission.toStringAsFixed(2)}), '
+      '₹${credited.toStringAsFixed(2)} will be credited to your account.' */
+  ;
 }
 
 class _Divider extends StatelessWidget {

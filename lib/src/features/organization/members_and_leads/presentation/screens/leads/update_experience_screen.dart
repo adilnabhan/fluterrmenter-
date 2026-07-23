@@ -22,11 +22,16 @@ class _UpdateExperienceScreenState extends State<UpdateExperienceScreen> {
       textInputAction: TextInputAction.done,
       label: 'Expirience',
       requiredLabel: true,
-      controller: TextEditingController(text: widget.details?.mentorProfile?.experience?.toString()),
+      controller: TextEditingController(
+        text: widget.details?.mentorProfile?.experience?.toString(),
+      ),
       focusNode: FocusNode(),
       keyboardType: TextInputType.number,
       maxLength: 2,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(2)],
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(2),
+      ],
       validator: (value) {
         if (value?.isEmpty ?? true) {
           return 'Expriece is required';
@@ -34,13 +39,27 @@ class _UpdateExperienceScreenState extends State<UpdateExperienceScreen> {
         return null;
       },
       onSubmitted: (value) {
-        _cubit.updateLeadExperience(leadId: widget.details!.id!, experience: value);
+        _cubit.updateLeadExperience(
+          leadId: widget.details!.id!,
+          experience: value,
+        );
       },
       decoration: InputDecoration(
         hintText: '4',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-        suffixIcon: SizedBox.square(dimension: 22, child: Center(child: Text('YEARS   ', style: AppStyles.text14Px.poppins.w400.dark))),
-        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+        suffixIcon: SizedBox.square(
+          dimension: 22,
+          child: Center(
+            child: Text(
+              'YEARS   ',
+              style: AppStyles.text14Px.poppins.w400.dark,
+            ),
+          ),
+        ),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppColors.borderGrey),
+        ),
       ),
     );
     super.initState();
@@ -62,7 +81,10 @@ class _UpdateExperienceScreenState extends State<UpdateExperienceScreen> {
         Dialogs.showSnack(msg: 'Lead not found!');
         return;
       }
-      _cubit.updateLeadExperience(leadId: widget.details!.id!, experience: experience);
+      _cubit.updateLeadExperience(
+        leadId: widget.details!.id!,
+        experience: experience,
+      );
     } else {
       Dialogs.showSnack(msg: 'Please enter valid experience');
     }
@@ -82,7 +104,9 @@ class _UpdateExperienceScreenState extends State<UpdateExperienceScreen> {
                   Dialogs.showSnack(msg: l.msg);
                 },
                 (r) {
-                  Dialogs.showSnack(msg: 'Trainer details updated successfully');
+                  Dialogs.showSnack(
+                    msg: 'Trainer details updated successfully',
+                  );
                   context.pop();
                 },
               );
@@ -90,7 +114,8 @@ class _UpdateExperienceScreenState extends State<UpdateExperienceScreen> {
           },
         ),
         BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
-          listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
+          listenWhen:
+              (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
           bloc: _cubit,
           listener: (context, state) {
             state.createOrUpdateMember?.fold(() => null, (t) {
@@ -108,14 +133,33 @@ class _UpdateExperienceScreenState extends State<UpdateExperienceScreen> {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(leading: const PopButton().center, titleTextStyle: AppStyles.text16Px.poppins.w500.dark, title: const Text('Add Date of Birth')),
-        body: Form(key: _formKey, child: ListView(padding: const EdgeInsets.all(16), children: [Field(data: _fieldData)])),
-        bottomNavigationBar: BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
-          buildWhen: (p, c) => p.createOrUpdateLead != c.createOrUpdateLead || p.createOrUpdateMember != c.createOrUpdateMember,
-          builder: (context, state) {
-            return Button.filled(title: 'Save', isLoading: state.createOrUpdateLead?.isNone() ?? false, buttonColor: AppColors.primary, ontap: _onContinue);
-          },
-        ).pad(16).pxy(y: 16),
+        appBar: AppBar(
+          leading: const PopButton().center,
+          titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
+          title: const Text('Add Date of Birth'),
+        ),
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [Field(data: _fieldData)],
+          ),
+        ),
+        bottomNavigationBar:
+            BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+              buildWhen:
+                  (p, c) =>
+                      p.createOrUpdateLead != c.createOrUpdateLead ||
+                      p.createOrUpdateMember != c.createOrUpdateMember,
+              builder: (context, state) {
+                return Button.filled(
+                  title: 'Save',
+                  isLoading: state.createOrUpdateLead?.isNone() ?? false,
+                  buttonColor: AppColors.primary,
+                  ontap: _onContinue,
+                );
+              },
+            ).pad(16).pxy(y: 16),
       ),
     );
   }

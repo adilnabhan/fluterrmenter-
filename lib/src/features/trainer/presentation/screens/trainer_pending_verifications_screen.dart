@@ -25,6 +25,10 @@ class _TrainerPendingVerificationsScreenState
   Map<String, String> _clientProfilesByName = {};
   Map<int, String> _clientProfilesById = {};
 
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  DateTime? _selectedDate;
+
   @override
   void initState() {
     super.initState();
@@ -88,6 +92,7 @@ class _TrainerPendingVerificationsScreenState
 
   @override
   void dispose() {
+    _searchController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -99,9 +104,20 @@ class _TrainerPendingVerificationsScreenState
       _pendingVerifications = [];
     });
 
+    final Map<String, dynamic> queryParams = {};
+    if (_searchQuery.trim().isNotEmpty) {
+      queryParams['search'] = _searchQuery.trim();
+    }
+    if (_selectedDate != null) {
+      final dateStr =
+          '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
+      queryParams['date'] = dateStr;
+    }
+
     try {
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.pendingVerifications,
+        queryParameters: queryParams,
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -124,6 +140,35 @@ class _TrainerPendingVerificationsScreenState
     } catch (e) {
       if (mounted) setState(() => _isLoadingPending = false);
       Dialogs.showSnack(msg: 'Failed to load pending verifications');
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final DateTime now = DateTime.now();
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? now,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              onSurface: AppColors.textDark,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+      _fetchPendingVerifications();
     }
   }
 
@@ -305,193 +350,408 @@ class _TrainerPendingVerificationsScreenState
 
   Widget _buildPendingTab() {
     final pendingList = _pendingVerifications;
-    if (_isLoadingPending) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (pendingList.isEmpty) {
-      return _buildEmptyState(
-        'No Pending Verifications',
-        'You have caught up with all client workouts.',
-        Icons.verified_outlined,
-      );
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: pendingList.length,
-      itemBuilder: (context, index) {
-        final item = pendingList[index];
-        final sessionId = item['session_id'] as int? ?? 0;
-        final customerName = item['customer_name'] as String? ?? 'Client';
-        final customerId = item['customer_id'] as int? ?? 0;
-        final profilePic =
-            item['customer_profile_picture'] as String? ??
-            item['profile_picture'] as String? ??
-            item['customer_image'] as String? ??
-            item['image_url'] as String? ??
-            (item['customer'] is Map
-                ? (item['customer'] as Map)['profile_picture'] as String?
-                : null) ??
-            _clientProfilesById[customerId] ??
-            _clientProfilesByName[customerName];
-        final workoutTitle = item['workout_title'] as String? ?? 'Workout';
-        final completedAtRaw = item['completed_at'] as String? ?? '';
-        String completedAt = completedAtRaw;
-        if (completedAtRaw.isNotEmpty) {
-          final parsed = DateTime.tryParse(completedAtRaw);
-          if (parsed != null) {
-            final local = parsed.toLocal();
-            final hour =
-                local.hour == 0
-                    ? 12
-                    : (local.hour > 12 ? local.hour - 12 : local.hour);
-            final amPm = local.hour >= 12 ? 'PM' : 'AM';
-            completedAt =
-                '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} $hour:${local.minute.toString().padLeft(2, '0')} $amPm';
-          }
-        }
+    final hasActiveFilter =
+        _searchQuery.trim().isNotEmpty || _selectedDate != null;
 
-        return GestureDetector(
-          onTap: () {
-            if (sessionId > 0) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) => TrainerWorkoutSessionDetailScreen(
-                        sessionId: sessionId,
-                      ),
-                ),
-              );
-            }
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (profilePic != null && profilePic.isNotEmpty)
-                      ProfileImage(isEdit: false, url: profilePic, radius: 20)
-                    else
-                      const Icon(
-                        Icons.person,
-                        size: 24,
-                        color: AppColors.primary,
-                      ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            customerName,
-                            style: AppStyles.text16Px.poppins.w600.dark,
+    String? dateFilterLabel;
+    if (_selectedDate != null) {
+      dateFilterLabel =
+          '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) {
+                        if (!mounted) return;
+                        setState(() {
+                          _searchQuery = val;
+                        });
+                        EasyDebounce.debounce(
+                          'pending-verifications-search',
+                          const Duration(milliseconds: 400),
+                          () => _fetchPendingVerifications(),
+                        );
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search by name or phone',
+                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: AppColors.textGrey,
+                          size: 20,
+                        ),
+                        suffixIcon:
+                            _searchController.text.isNotEmpty
+                                ? IconButton(
+                                  icon: const Icon(
+                                    Icons.clear,
+                                    size: 18,
+                                    color: AppColors.textGrey,
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = '';
+                                    });
+                                    _fetchPendingVerifications();
+                                  },
+                                )
+                                : null,
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.borderGrey,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            workoutTitle,
-                            style: AppStyles.text15Px.poppins.w600.copyWith(
-                              color: AppColors.textDark,
-                            ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.borderGrey,
                           ),
-                        ],
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                          ),
+                        ),
                       ),
                     ),
-                    if (completedAt.isNotEmpty)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                  ),
+                  const SizedBox(width: 10),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _pickDate,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color:
+                              _selectedDate != null
+                                  ? AppColors.primary
+                                  : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                _selectedDate != null
+                                    ? AppColors.primary
+                                    : AppColors.borderGrey,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.calendar_month_outlined,
+                          color:
+                              _selectedDate != null
+                                  ? Colors.white
+                                  : AppColors.textDark,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (dateFilterLabel != null) ...[
+                const SizedBox(height: 10),
+                Wrap(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.check_circle_outline,
-                            size: 16,
-                            color: Colors.green,
+                            Icons.calendar_today,
+                            size: 14,
+                            color: AppColors.primary,
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(width: 6),
                           Text(
-                            completedAt,
-                            style: AppStyles.text10Px.poppins.w500.copyWith(
-                              color: AppColors.textGrey,
+                            dateFilterLabel,
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedDate = null;
+                              });
+                              _fetchPendingVerifications();
+                            },
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: AppColors.primary,
                             ),
                           ),
                         ],
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 32,
-                        child: OutlinedButton(
-                          onPressed:
-                              () => _showVerificationDialog(
-                                sessionId,
-                                customerName,
-                                workoutTitle,
-                                false,
-                              ),
-                          style: OutlinedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            foregroundColor: Colors.red,
-                            side: const BorderSide(color: Colors.red),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text('Reject'),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: SizedBox(
-                        height: 32,
-                        child: ElevatedButton(
-                          onPressed:
-                              () => _showVerificationDialog(
-                                sessionId,
-                                customerName,
-                                workoutTitle,
-                                true,
-                              ),
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            backgroundColor: Colors.green,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: Text(
-                            'Verify',
-                            style: AppStyles.text14Px.poppins.w600.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
                       ),
                     ),
                   ],
                 ),
               ],
-            ),
+            ],
           ),
-        );
-      },
+        ),
+        Expanded(
+          child:
+              _isLoadingPending
+                  ? const Center(child: CircularProgressIndicator())
+                  : pendingList.isEmpty
+                  ? _buildEmptyState(
+                    hasActiveFilter
+                        ? 'No Matching Verifications'
+                        : 'No Pending Verifications',
+                    hasActiveFilter
+                        ? 'Try adjusting your search or date filter.'
+                        : 'You have caught up with all client workouts.',
+                    Icons.verified_outlined,
+                  )
+                  : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: pendingList.length,
+                    itemBuilder: (context, index) {
+                      final item = pendingList[index];
+                      final sessionId = item['session_id'] as int? ?? 0;
+                      final customerName =
+                          item['customer_name'] as String? ?? 'Client';
+                      final customerId = item['customer_id'] as int? ?? 0;
+                      final profilePic =
+                          item['customer_profile_picture'] as String? ??
+                          item['profile_picture'] as String? ??
+                          item['customer_image'] as String? ??
+                          item['image_url'] as String? ??
+                          (item['customer'] is Map
+                              ? (item['customer']
+                                      as Map)['profile_picture']
+                                  as String?
+                              : null) ??
+                          _clientProfilesById[customerId] ??
+                          _clientProfilesByName[customerName];
+                      final workoutTitle =
+                          item['workout_title'] as String? ?? 'Workout';
+                      final completedAtRaw =
+                          item['completed_at'] as String? ?? '';
+                      String completedAt = completedAtRaw;
+                      if (completedAtRaw.isNotEmpty) {
+                        final parsed = DateTime.tryParse(completedAtRaw);
+                        if (parsed != null) {
+                          final local = parsed.toLocal();
+                          final hour =
+                              local.hour == 0
+                                  ? 12
+                                  : (local.hour > 12
+                                      ? local.hour - 12
+                                      : local.hour);
+                          final amPm = local.hour >= 12 ? 'PM' : 'AM';
+                          completedAt =
+                              '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} $hour:${local.minute.toString().padLeft(2, '0')} $amPm';
+                        }
+                      }
+
+                      return GestureDetector(
+                        onTap: () {
+                          if (sessionId > 0) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder:
+                                    (context) =>
+                                        TrainerWorkoutSessionDetailScreen(
+                                          sessionId: sessionId,
+                                        ),
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.03),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (profilePic != null &&
+                                      profilePic.isNotEmpty)
+                                    ProfileImage(
+                                      isEdit: false,
+                                      url: profilePic,
+                                      radius: 20,
+                                    )
+                                  else
+                                    const Icon(
+                                      Icons.person,
+                                      size: 24,
+                                      color: AppColors.primary,
+                                    ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          customerName,
+                                          style:
+                                              AppStyles
+                                                  .text16Px
+                                                  .poppins
+                                                  .w600
+                                                  .dark,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          workoutTitle,
+                                          style: AppStyles
+                                              .text15Px
+                                              .poppins
+                                              .w600
+                                              .copyWith(
+                                                color: AppColors.textDark,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (completedAt.isNotEmpty)
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        const Icon(
+                                          Icons.check_circle_outline,
+                                          size: 16,
+                                          color: Colors.green,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          completedAt,
+                                          style: AppStyles
+                                              .text10Px
+                                              .poppins
+                                              .w500
+                                              .copyWith(
+                                                color: AppColors.textGrey,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: 32,
+                                      child: OutlinedButton(
+                                        onPressed:
+                                            () => _showVerificationDialog(
+                                              sessionId,
+                                              customerName,
+                                              workoutTitle,
+                                              false,
+                                            ),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          foregroundColor: Colors.red,
+                                          side: const BorderSide(
+                                            color: Colors.red,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Text('Reject'),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: 32,
+                                      child: ElevatedButton(
+                                        onPressed:
+                                            () => _showVerificationDialog(
+                                              sessionId,
+                                              customerName,
+                                              workoutTitle,
+                                              true,
+                                            ),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          backgroundColor: Colors.green,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Verify',
+                                          style: AppStyles
+                                              .text14Px
+                                              .poppins
+                                              .w600
+                                              .copyWith(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+        ),
+      ],
     );
   }
 
@@ -550,7 +810,7 @@ class _TrainerPendingVerificationsScreenState
             if (sessionId > 0) {
               Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder:
                       (context) => TrainerWorkoutSessionDetailScreen(
                         sessionId: sessionId,

@@ -3,7 +3,6 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_dashboard_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_main_screen.dart';
 
-
 class VerifyOtpScreen extends StatelessWidget {
   const VerifyOtpScreen({required this.sentOtpEntity, super.key});
 
@@ -75,7 +74,9 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
               context.read<AppCubit>().addUser(r!);
 
               if (r.userRole == 35) {
-                context.pushAndRemoveUntil(const TrainerMainScreen(initialIndex: 0));
+                context.pushAndRemoveUntil(
+                  const TrainerMainScreen(initialIndex: 0),
+                );
                 return;
               }
 
@@ -139,7 +140,8 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
                     ),
                   );
                   return;
-                } else if ((r.isProfileCompleted ?? false) || r.mentor?.org != null) {
+                } else if ((r.isProfileCompleted ?? false) ||
+                    r.mentor?.org != null) {
                   context.pushAndRemoveUntil(const OrganizationListingScreen());
                 } else {
                   context.pushAndRemoveUntil(

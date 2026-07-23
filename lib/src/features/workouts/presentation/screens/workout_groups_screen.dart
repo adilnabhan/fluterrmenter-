@@ -263,6 +263,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                   (context) => WorkoutGroupDetailsScreen(
                     groupId: groupId,
                     groupTitle: createdName,
+                    source: source,
                   ),
             ),
           ).then((_) {
@@ -620,6 +621,7 @@ class _WorkoutGroupCard extends StatelessWidget {
                 (context) => WorkoutGroupDetailsScreen(
                   groupId: groupId,
                   groupTitle: groupName,
+                  source: group['source'] as String?,
                 ),
           ),
         );

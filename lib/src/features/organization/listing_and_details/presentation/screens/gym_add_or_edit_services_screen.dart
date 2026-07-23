@@ -212,10 +212,10 @@ class _GymServicesScreenState extends State<GymServicesScreen> {
       ),
     );
   }
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-
 }

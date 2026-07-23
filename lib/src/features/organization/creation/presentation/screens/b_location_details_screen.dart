@@ -167,7 +167,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
             return null;
           },
           onSubmitted: (value) {
-            _locationDetails[4][0].focusNode?.requestFocus();
+            FocusScope.of(context).unfocus();
           },
           decoration: InputDecoration(
             hintText: 'Pin code',
@@ -205,7 +205,6 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
     final city = _locationDetails[2][0].controller?.text;
     final state = _locationDetails[3][0].controller?.text;
     final picode = _locationDetails[3][1].controller?.text;
-
 
     print('selected values---$flatName');
     print('selected values---$state');
@@ -1053,7 +1052,7 @@ class __GymLocationDetailsScreenState extends State<_GymLocationDetailsScreen> {
 //             return null;
 //           },
 //           onSubmitted: (value) {
-//             _locationDetails[4][0].focusNode?.requestFocus();
+//             FocusScope.of(context).unfocus();
 //           },
 //           decoration: InputDecoration(
 //             hintText: 'PIN / ZIP Code',

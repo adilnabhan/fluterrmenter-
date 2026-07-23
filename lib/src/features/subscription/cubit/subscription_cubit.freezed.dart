@@ -23,6 +23,9 @@ mixin _$SubscriptionState {
       throw _privateConstructorUsedError;
   Option<Either<ApiException, PaymentSuccessResponse>>? get payment =>
       throw _privateConstructorUsedError;
+  String? get appliedCoupon => throw _privateConstructorUsedError;
+  double get couponDiscountAmount => throw _privateConstructorUsedError;
+  bool get isCouponApplied => throw _privateConstructorUsedError;
 
   /// Create a copy of SubscriptionState
   /// with the given fields replaced by the non-null parameter values.
@@ -42,6 +45,9 @@ abstract class $SubscriptionStateCopyWith<$Res> {
     Option<Either<ApiException, PlansModel>> plans,
     SubscriptionPlanModel? selectedSubscriptionModel,
     Option<Either<ApiException, PaymentSuccessResponse>>? payment,
+    String? appliedCoupon,
+    double couponDiscountAmount,
+    bool isCouponApplied,
   });
 
   $SubscriptionPlanModelCopyWith<$Res>? get selectedSubscriptionModel;
@@ -65,6 +71,9 @@ class _$SubscriptionStateCopyWithImpl<$Res, $Val extends SubscriptionState>
     Object? plans = null,
     Object? selectedSubscriptionModel = freezed,
     Object? payment = freezed,
+    Object? appliedCoupon = freezed,
+    Object? couponDiscountAmount = null,
+    Object? isCouponApplied = null,
   }) {
     return _then(
       _value.copyWith(
@@ -85,6 +94,21 @@ class _$SubscriptionStateCopyWithImpl<$Res, $Val extends SubscriptionState>
                         as Option<
                           Either<ApiException, PaymentSuccessResponse>
                         >?,
+            appliedCoupon:
+                freezed == appliedCoupon
+                    ? _value.appliedCoupon
+                    : appliedCoupon // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            couponDiscountAmount:
+                null == couponDiscountAmount
+                    ? _value.couponDiscountAmount
+                    : couponDiscountAmount // ignore: cast_nullable_to_non_nullable
+                        as double,
+            isCouponApplied:
+                null == isCouponApplied
+                    ? _value.isCouponApplied
+                    : isCouponApplied // ignore: cast_nullable_to_non_nullable
+                        as bool,
           )
           as $Val,
     );
@@ -121,6 +145,9 @@ abstract class _$$SubscriptionStateImplCopyWith<$Res>
     Option<Either<ApiException, PlansModel>> plans,
     SubscriptionPlanModel? selectedSubscriptionModel,
     Option<Either<ApiException, PaymentSuccessResponse>>? payment,
+    String? appliedCoupon,
+    double couponDiscountAmount,
+    bool isCouponApplied,
   });
 
   @override
@@ -144,6 +171,9 @@ class __$$SubscriptionStateImplCopyWithImpl<$Res>
     Object? plans = null,
     Object? selectedSubscriptionModel = freezed,
     Object? payment = freezed,
+    Object? appliedCoupon = freezed,
+    Object? couponDiscountAmount = null,
+    Object? isCouponApplied = null,
   }) {
     return _then(
       _$SubscriptionStateImpl(
@@ -162,6 +192,21 @@ class __$$SubscriptionStateImplCopyWithImpl<$Res>
                 ? _value.payment
                 : payment // ignore: cast_nullable_to_non_nullable
                     as Option<Either<ApiException, PaymentSuccessResponse>>?,
+        appliedCoupon:
+            freezed == appliedCoupon
+                ? _value.appliedCoupon
+                : appliedCoupon // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        couponDiscountAmount:
+            null == couponDiscountAmount
+                ? _value.couponDiscountAmount
+                : couponDiscountAmount // ignore: cast_nullable_to_non_nullable
+                    as double,
+        isCouponApplied:
+            null == isCouponApplied
+                ? _value.isCouponApplied
+                : isCouponApplied // ignore: cast_nullable_to_non_nullable
+                    as bool,
       ),
     );
   }
@@ -174,6 +219,9 @@ class _$SubscriptionStateImpl implements _SubscriptionState {
     this.plans = const None(),
     this.selectedSubscriptionModel,
     this.payment,
+    this.appliedCoupon,
+    this.couponDiscountAmount = 0.0,
+    this.isCouponApplied = false,
   });
 
   @override
@@ -183,10 +231,18 @@ class _$SubscriptionStateImpl implements _SubscriptionState {
   final SubscriptionPlanModel? selectedSubscriptionModel;
   @override
   final Option<Either<ApiException, PaymentSuccessResponse>>? payment;
+  @override
+  final String? appliedCoupon;
+  @override
+  @JsonKey()
+  final double couponDiscountAmount;
+  @override
+  @JsonKey()
+  final bool isCouponApplied;
 
   @override
   String toString() {
-    return 'SubscriptionState(plans: $plans, selectedSubscriptionModel: $selectedSubscriptionModel, payment: $payment)';
+    return 'SubscriptionState(plans: $plans, selectedSubscriptionModel: $selectedSubscriptionModel, payment: $payment, appliedCoupon: $appliedCoupon, couponDiscountAmount: $couponDiscountAmount, isCouponApplied: $isCouponApplied)';
   }
 
   @override
@@ -200,12 +256,25 @@ class _$SubscriptionStateImpl implements _SubscriptionState {
                   selectedSubscriptionModel,
                 ) ||
                 other.selectedSubscriptionModel == selectedSubscriptionModel) &&
-            (identical(other.payment, payment) || other.payment == payment));
+            (identical(other.payment, payment) || other.payment == payment) &&
+            (identical(other.appliedCoupon, appliedCoupon) ||
+                other.appliedCoupon == appliedCoupon) &&
+            (identical(other.couponDiscountAmount, couponDiscountAmount) ||
+                other.couponDiscountAmount == couponDiscountAmount) &&
+            (identical(other.isCouponApplied, isCouponApplied) ||
+                other.isCouponApplied == isCouponApplied));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, plans, selectedSubscriptionModel, payment);
+  int get hashCode => Object.hash(
+    runtimeType,
+    plans,
+    selectedSubscriptionModel,
+    payment,
+    appliedCoupon,
+    couponDiscountAmount,
+    isCouponApplied,
+  );
 
   /// Create a copy of SubscriptionState
   /// with the given fields replaced by the non-null parameter values.
@@ -224,6 +293,9 @@ abstract class _SubscriptionState implements SubscriptionState {
     final Option<Either<ApiException, PlansModel>> plans,
     final SubscriptionPlanModel? selectedSubscriptionModel,
     final Option<Either<ApiException, PaymentSuccessResponse>>? payment,
+    final String? appliedCoupon,
+    final double couponDiscountAmount,
+    final bool isCouponApplied,
   }) = _$SubscriptionStateImpl;
 
   @override
@@ -232,6 +304,12 @@ abstract class _SubscriptionState implements SubscriptionState {
   SubscriptionPlanModel? get selectedSubscriptionModel;
   @override
   Option<Either<ApiException, PaymentSuccessResponse>>? get payment;
+  @override
+  String? get appliedCoupon;
+  @override
+  double get couponDiscountAmount;
+  @override
+  bool get isCouponApplied;
 
   /// Create a copy of SubscriptionState
   /// with the given fields replaced by the non-null parameter values.

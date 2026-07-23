@@ -65,6 +65,8 @@ final class ApiUris {
   static String leadDetails(String id) => '${_v1}mentor/trainers/$id/';
   static String assignWorkoutPlan(int planId) =>
       '${_v1}trainer/workout-plans/$planId/assign/';
+  static String saveWorkoutPlanAsTemplate(int planId) =>
+      '${_v1}trainer/workout-plans/$planId/save-as-template/';
 
   ///============================= Membership =============================\\\
   static final createMembershipPackage =
@@ -77,6 +79,9 @@ final class ApiUris {
       '${_v1}fitnesscenter/membership-plans/$id/';
   static final paymentHistory = '${_v1}fitnesscenter/customer-payments/';
   static final reports = '${_v1}fitnesscenter/reports/';
+  static final expenses = '${_v1}fitnesscenter/expenses/';
+  static String expenseDetail(int id) => '${_v1}fitnesscenter/expenses/$id/';
+  static final budget = '${_v1}fitnesscenter/budget/';
   // static String paymentHistory(String orgId) =>
   //     '${_v1}fitnesscenter/customer-payments/$orgId';
 
@@ -119,6 +124,7 @@ final class ApiUris {
       '${_v1}trainer/workout-groups/$id/';
   static final workoutPlans = '${_v1}trainer/workout-plans/';
   static String workoutPlanDetail(int id) => '${_v1}trainer/workout-plans/$id/';
+  static String copyWorkoutPlan(int id) => '${_v1}trainer/workout-plans/$id/copy/';
   static final muscleGroups = '${_v1}trainer/muscle-groups/';
   static final equipment = '${_v1}trainer/equipment/';
   static final exerciseTypes = '${_v1}trainer/exercise-types/';

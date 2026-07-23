@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class SignupScreen extends StatelessWidget {
@@ -38,26 +39,12 @@ class SignupScreen extends StatelessWidget {
                       height: 1.2,
                     ),
                   ),
-                  
+
                   const Spacer(),
-                  
+
                   // Buttons
                   Column(
                     children: [
-                      // Google Signin (Commented out)
-                      /*
-                      Button.outlined(
-                        title: 'Continue with Google',
-                        ontap: () {},
-                        icon: SvgPicture.asset(
-                          'assets/images/svg/icons/google.svg',
-                          height: 24,
-                          width: 24,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      */
-                      
                       // Mobile OTP Login
                       Container(
                         decoration: BoxDecoration(
@@ -65,7 +52,7 @@ class SignupScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -76,24 +63,63 @@ class SignupScreen extends StatelessWidget {
                           ontap: () {
                             context.push(const SentOtpScreen());
                           },
-                          icon: const Icon( 
+                          icon: const Icon(
                             Icons.phone_android_outlined,
                             color: Colors.black,
                             size: 24,
                           ),
                         ),
                       ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Footer Text
-                      Text(
-                        "You've already taken the first step -\nlet's keep the momentum!",
-                        style: AppStyles.text14Px.poppins.w400.copyWith(
-                          color: const Color(0xFF666666),
-                          fontSize: 12.sp,
-                        ),
+
+                      const SizedBox(height: 16),
+
+                      // Terms & Conditions and Privacy Policy Text
+                      RichText(
                         textAlign: TextAlign.center,
+                        text: TextSpan(
+                          style: AppStyles.text14Px.poppins.w400.copyWith(
+                            color: const Color(0xFF666666),
+                            fontSize: 12.sp,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: 'By continuing, you agree to our\n',
+                            ),
+                            TextSpan(
+                              text: 'Terms & Conditions',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: AppColors.primary,
+                                fontSize: 12.sp,
+                              ),
+                              recognizer:
+                                  TapGestureRecognizer()
+                                    ..onTap = () {
+                                      launchUrl(
+                                        Uri.parse(
+                                          'https://thediscipl.com/terms-conditions',
+                                        ),
+                                      );
+                                    },
+                            ),
+                            const TextSpan(text: ' and '),
+                            TextSpan(
+                              text: 'Privacy Policy.',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: AppColors.primary,
+                                fontSize: 12.sp,
+                              ),
+                              recognizer:
+                                  TapGestureRecognizer()
+                                    ..onTap = () {
+                                      launchUrl(
+                                        Uri.parse(
+                                          'https://thediscipl.com/privacy-policy',
+                                        ),
+                                      );
+                                    },
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

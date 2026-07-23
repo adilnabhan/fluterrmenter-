@@ -83,11 +83,12 @@ class _CreateTrainerProfessionalDetailsScreenState
       final user = LocalStorageService().getUser();
       // Update bio and experience
       final formData = FormData.fromMap({
-        'experience_years': int.tryParse(_experience.controller?.text.trim() ?? '0') ?? 0,
+        'experience_years':
+            int.tryParse(_experience.controller?.text.trim() ?? '0') ?? 0,
         'bio': _bio.controller?.text.trim() ?? '',
         'user_type': 'trainer',
       });
-      
+
       if (_profileImage != null) {
         formData.files.add(
           MapEntry(
@@ -95,7 +96,7 @@ class _CreateTrainerProfessionalDetailsScreenState
             await MultipartFile.fromFile(_profileImage!.path),
           ),
         );
-      }      
+      }
       final response = await DioClient().dio.put<dynamic>(
         ApiUris.editTrainerBasicDetails,
         data: formData,
@@ -133,7 +134,9 @@ class _CreateTrainerProfessionalDetailsScreenState
         context.push(const CreateTrainerResultsScreen());
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Failed to upload details. Please try again.');
+      Fluttertoast.showToast(
+        msg: 'Failed to upload details. Please try again.',
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -238,7 +241,7 @@ class _CreateTrainerProfessionalDetailsScreenState
                   allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
                   allowMultiple: true,
                 );
-                
+
                 if (result != null && result.files.isNotEmpty) {
                   if (!mounted) return;
                   setState(() {
@@ -295,25 +298,27 @@ class _CreateTrainerProfessionalDetailsScreenState
                           child: Column(
                             children: [
                               Expanded(
-                                child: file.name.toLowerCase().endsWith('.pdf')
-                                    ? Center(
-                                        child: Icon(
-                                          Icons.picture_as_pdf,
-                                          color: AppColors.primary.withOpacity(0.5),
-                                          size: 40,
+                                child:
+                                    file.name.toLowerCase().endsWith('.pdf')
+                                        ? Center(
+                                          child: Icon(
+                                            Icons.picture_as_pdf,
+                                            color: AppColors.primary
+                                                .withOpacity(0.5),
+                                            size: 40,
+                                          ),
+                                        )
+                                        : ClipRRect(
+                                          borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(12),
+                                            topRight: Radius.circular(12),
+                                          ),
+                                          child: Image.file(
+                                            File(file.path),
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                          ),
                                         ),
-                                      )
-                                    : ClipRRect(
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(12),
-                                          topRight: Radius.circular(12),
-                                        ),
-                                        child: Image.file(
-                                          File(file.path),
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                        ),
-                                      ),
                               ),
                               Container(
                                 padding: const EdgeInsets.all(8),

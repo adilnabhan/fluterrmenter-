@@ -11,6 +11,7 @@ export 'dart:convert';
 export 'dart:io';
 export 'dart:math';
 import 'dart:developer' as dev;
+import 'package:flutter/foundation.dart';
 
 //*================[ external packages ]=============================//
 
@@ -85,13 +86,17 @@ void write(
   String name = '',
   Object? error,
   StackTrace? stackTrace,
-}) => dev.log(
-  text,
-  error: error,
-  level: level,
-  name: name,
-  sequenceNumber: sequenceNumber,
-  stackTrace: stackTrace,
-  time: time,
-);
+}) {
+  if (kDebugMode) {
+    dev.log(
+      text,
+      error: error,
+      level: level,
+      name: name,
+      sequenceNumber: sequenceNumber,
+      stackTrace: stackTrace,
+      time: time,
+    );
+  }
+}
 //!-----------------------------------------------------------

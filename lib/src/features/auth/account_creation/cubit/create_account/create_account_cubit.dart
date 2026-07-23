@@ -67,6 +67,4 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
     if (isClosed) return;
     emit(state.copyWith(onboardingUser: some(result)));
   }
-
-
 }

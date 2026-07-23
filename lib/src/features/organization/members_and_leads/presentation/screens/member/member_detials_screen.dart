@@ -1,4 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/trainer_client_workout_history_calendar.dart';
 
 class MemberDetialsScreen extends StatefulWidget {
   const MemberDetialsScreen({required this.memberId, super.key});
@@ -11,6 +13,7 @@ class MemberDetialsScreen extends StatefulWidget {
 
 class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
   late final MembersAndLeadsCubit _cubit;
+  List<Map<String, dynamic>> _workoutHistory = [];
 
   @override
   void initState() {
@@ -19,8 +22,29 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
     _fetch();
   }
 
+  Future<void> _fetchWorkoutHistory() async {
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.customerWorkoutHistory(widget.memberId),
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200 && response.data is List) {
+        final List<dynamic> data = response.data as List<dynamic>;
+        if (!mounted) return;
+        setState(() {
+          _workoutHistory =
+              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        });
+      }
+    } catch (e) {
+      // Silently handle — calendar will show all days as missed if no data
+    }
+  }
+
   Future<void> _fetch() async {
     await _cubit.fetchMemberDetails(memberId: widget.memberId);
+    _fetchWorkoutHistory();
   }
 
   @override
@@ -91,6 +115,33 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                       children: [
                         _buildProfileDetails(data),
                         _buildMembershipDetails(data),
+                        if (data.memberships?.isNotEmpty == true) ...[
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.calendar_month,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Workout Journey',
+                                    style: AppStyles.text16Px.poppins.w600.dark,
+                                  ),
+                                ],
+                              ).pOnly(bottom: 16),
+                              TrainerClientWorkoutHistoryCalendar(
+                                customerId: widget.memberId,
+                                startDate: data.memberships!.first.startDate,
+                                workoutHistory: _workoutHistory,
+                              ),
+                              const SizedBox(height: 24),
+                            ],
+                          ),
+                        ],
                         _buildContactDetails(data),
                         _buildPersonalDetails(data),
                       ],

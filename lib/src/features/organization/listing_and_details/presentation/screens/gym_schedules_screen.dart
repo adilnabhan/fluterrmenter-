@@ -353,10 +353,12 @@ class _GymSchedulesScreenState extends State<GymSchedulesScreen> {
                               '${eveningStartingTime.hour.toString().padLeft(2, '0')}:${eveningStartingTime.minute.toString().padLeft(2, '0')}',
                           'evening_closing_time':
                               '${eveningEndingTime.hour.toString().padLeft(2, '0')}:${eveningEndingTime.minute.toString().padLeft(2, '0')}',
-                          if (ladiesStartingTime != null) 'ladies_opening_time':
-                              '${ladiesStartingTime.hour.toString().padLeft(2, '0')}:${ladiesStartingTime.minute.toString().padLeft(2, '0')}',
-                          if (ladiesEndingTime != null) 'ladies_closing_time':
-                              '${ladiesEndingTime.hour.toString().padLeft(2, '0')}:${ladiesEndingTime.minute.toString().padLeft(2, '0')}',
+                          if (ladiesStartingTime != null)
+                            'ladies_opening_time':
+                                '${ladiesStartingTime.hour.toString().padLeft(2, '0')}:${ladiesStartingTime.minute.toString().padLeft(2, '0')}',
+                          if (ladiesEndingTime != null)
+                            'ladies_closing_time':
+                                '${ladiesEndingTime.hour.toString().padLeft(2, '0')}:${ladiesEndingTime.minute.toString().padLeft(2, '0')}',
                         };
                       }).toList(),
                 };

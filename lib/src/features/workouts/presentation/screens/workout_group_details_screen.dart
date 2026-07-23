@@ -10,11 +10,13 @@ class WorkoutGroupDetailsScreen extends StatefulWidget {
   const WorkoutGroupDetailsScreen({
     required this.groupId,
     required this.groupTitle,
+    this.source,
     super.key,
   });
 
   final int groupId;
   final String groupTitle;
+  final String? source;
 
   @override
   State<WorkoutGroupDetailsScreen> createState() =>
@@ -123,6 +125,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         ApiUris.workoutPlans,
         queryParameters: {
           'group': widget.groupId,
+          if (widget.source != null) 'source': widget.source,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),
@@ -180,7 +183,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         Dialogs.showSnack(msg: 'Workout plan created successfully');
         _planNamePrivate.controller?.clear();
         _planNamePublic.controller?.clear();
-        
+
         if (response.data is Map && response.data['id'] != null) {
           final int planId = response.data['id'] as int;
           Navigator.push(
@@ -466,21 +469,21 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                       children: [
                         TextSpan(
                           text: '(only visible to you)',
-                          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textGrey),
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: AppColors.textGrey,
+                          ),
                         ),
                         TextSpan(
                           text: '*',
-                          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.primary),
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: AppColors.primary,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Field(
-                    data: _planNamePrivate.copyWith(
-                      label: '',
-                    ),
-                  ),
+                  Field(data: _planNamePrivate.copyWith(label: '')),
                   const SizedBox(height: 16),
                   RichText(
                     text: TextSpan(
@@ -489,21 +492,21 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                       children: [
                         TextSpan(
                           text: '(visible to clients)',
-                          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.textGrey),
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: AppColors.textGrey,
+                          ),
                         ),
                         TextSpan(
                           text: '*',
-                          style: AppStyles.text14Px.poppins.w500.copyWith(color: AppColors.primary),
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: AppColors.primary,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Field(
-                    data: _planNamePublic.copyWith(
-                      label: '',
-                    ),
-                  ),
+                  Field(data: _planNamePublic.copyWith(label: '')),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
