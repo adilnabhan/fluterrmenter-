@@ -67,41 +67,6 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
-      // 2. Fetch already assigned client IDs for this specific plan
-      final assignedResponse = await DioClient().dio.get<dynamic>(
-        ApiUris.assignWorkoutPlan(widget.planId),
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-
-      final Set<int> assignedCustomerIds = {};
-      if (assignedResponse.statusCode == 200 && assignedResponse.data is List) {
-        final List<dynamic> assignedList =
-            assignedResponse.data as List<dynamic>;
-        final now = DateTime.now();
-        for (var item in assignedList) {
-          final map = Map<String, dynamic>.from(item as Map);
-          if (map['is_assigned'] == true) {
-            bool isRecent = true;
-            final dateStr =
-                map['assigned_at'] ??
-                map['created_at'] ??
-                map['date'] ??
-                map['updated_at'];
-            if (dateStr != null && dateStr is String && dateStr.isNotEmpty) {
-              final parsedDate = DateTime.tryParse(dateStr);
-              if (parsedDate != null) {
-                if (now.difference(parsedDate).inHours >= 12) {
-                  isRecent = false;
-                }
-              }
-            }
-            if (isRecent) {
-              assignedCustomerIds.add(map['customer_id'] as int);
-            }
-          }
-        }
-      }
-
       if (clientsResponse.statusCode == 200) {
         final data = clientsResponse.data;
         List<dynamic> results = [];
@@ -116,10 +81,9 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         final parsedClients =
             results.map((e) {
               final map = Map<String, dynamic>.from(e as Map);
-              final customerId = map['customer_id'] as int;
               return {
                 ...map,
-                'is_assigned': assignedCustomerIds.contains(customerId),
+                'is_assigned': false,
               };
             }).toList();
 
@@ -157,40 +121,6 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
-      final assignedResponse = await DioClient().dio.get<dynamic>(
-        ApiUris.assignWorkoutPlan(widget.planId),
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-
-      final Set<int> assignedCustomerIds = {};
-      if (assignedResponse.statusCode == 200 && assignedResponse.data is List) {
-        final List<dynamic> assignedList =
-            assignedResponse.data as List<dynamic>;
-        final now = DateTime.now();
-        for (var item in assignedList) {
-          final map = Map<String, dynamic>.from(item as Map);
-          if (map['is_assigned'] == true) {
-            bool isRecent = true;
-            final dateStr =
-                map['assigned_at'] ??
-                map['created_at'] ??
-                map['date'] ??
-                map['updated_at'];
-            if (dateStr != null && dateStr is String && dateStr.isNotEmpty) {
-              final parsedDate = DateTime.tryParse(dateStr);
-              if (parsedDate != null) {
-                if (now.difference(parsedDate).inHours >= 12) {
-                  isRecent = false;
-                }
-              }
-            }
-            if (isRecent) {
-              assignedCustomerIds.add(map['customer_id'] as int);
-            }
-          }
-        }
-      }
-
       if (clientsResponse.statusCode == 200) {
         final data = clientsResponse.data;
         List<dynamic> results = [];
@@ -205,10 +135,9 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         final parsedClients =
             results.map((e) {
               final map = Map<String, dynamic>.from(e as Map);
-              final customerId = map['customer_id'] as int;
               return {
                 ...map,
-                'is_assigned': assignedCustomerIds.contains(customerId),
+                'is_assigned': false,
               };
             }).toList();
 
@@ -697,7 +626,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
+                              MaterialPageRoute<void>(
                                 builder:
                                     (_) => TrainerClientStatsScreen(
                                       customerId: customerId,
@@ -914,7 +843,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                                       onTap: () {
                                         Navigator.push(
                                           context,
-                                          MaterialPageRoute(
+                                          MaterialPageRoute<void>(
                                             builder:
                                                 (_) => TrainerClientStatsScreen(
                                                   customerId: customerId,

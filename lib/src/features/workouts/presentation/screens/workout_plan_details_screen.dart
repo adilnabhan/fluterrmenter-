@@ -72,6 +72,10 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                     rawSets
                         .map((s) => Map<String, dynamic>.from(s as Map))
                         .toList();
+                final int orderIdx =
+                    (item['order_index'] as int?) ??
+                    (item['order'] as int?) ??
+                    0;
                 return WorkoutExercise(
                   id: item['id'].toString(),
                   workoutId: item['workout'].toString(),
@@ -87,8 +91,11 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                       '',
                   trackBy: workout['track_by'] as String? ?? 'reps',
                   sets: setsList,
+                  orderIndex: orderIdx,
                 );
               }).toList();
+
+          parsedExercises.sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
 
           if (!mounted) return;
           setState(() {
@@ -157,7 +164,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
         final isNew = curr.id.startsWith('temp_');
         if (isNew) {
           final workoutId = int.parse(curr.workoutId);
-          await dio.post<dynamic>(
+          final res = await dio.post<dynamic>(
             ApiUris.planDayExercises(_dayId!),
             data: {
               'workout': workoutId,
@@ -167,12 +174,24 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
             },
             options: Options(headers: {'X-Platform': platformSource}),
           );
+          if ((res.statusCode == 200 || res.statusCode == 201) &&
+              res.data is Map) {
+            final newId = res.data['id'];
+            if (newId != null) {
+              _exercises[i] = _exercises[i].copyWith(id: newId.toString());
+            }
+          }
         } else {
           final exerciseId = int.tryParse(curr.id);
           if (exerciseId != null) {
             await dio.put<dynamic>(
               ApiUris.planDayExerciseDetail(_dayId!, exerciseId),
-              data: {'video_url': curr.videoLink, 'sets': curr.sets},
+              data: {
+                'video_url': curr.videoLink,
+                'sets': curr.sets,
+                'order_index': i,
+                'order': i,
+              },
               options: Options(headers: {'X-Platform': platformSource}),
             );
           }
@@ -180,15 +199,16 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       }
 
       // 4. Perform reorder update
-      // Re-fetch or build order index payload for non-new items
-      await _fetchPlanDetails();
-
       final List<Map<String, dynamic>> reorderPayload = [];
       for (var i = 0; i < _exercises.length; i++) {
-        reorderPayload.add({
-          'id': int.parse(_exercises[i].id),
-          'order_index': i,
-        });
+        final exerciseId = int.tryParse(_exercises[i].id);
+        if (exerciseId != null) {
+          reorderPayload.add({
+            'id': exerciseId,
+            'order_index': i,
+            'order': i,
+          });
+        }
       }
 
       if (reorderPayload.isNotEmpty) {
@@ -258,7 +278,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
         final isNew = curr.id.startsWith('temp_');
         if (isNew) {
           final workoutId = int.parse(curr.workoutId);
-          await dio.post<dynamic>(
+          final res = await dio.post<dynamic>(
             ApiUris.planDayExercises(_dayId!),
             data: {
               'workout': workoutId,
@@ -268,12 +288,24 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
             },
             options: Options(headers: {'X-Platform': platformSource}),
           );
+          if ((res.statusCode == 200 || res.statusCode == 201) &&
+              res.data is Map) {
+            final newId = res.data['id'];
+            if (newId != null) {
+              _exercises[i] = _exercises[i].copyWith(id: newId.toString());
+            }
+          }
         } else {
           final exerciseId = int.tryParse(curr.id);
           if (exerciseId != null) {
             await dio.put<dynamic>(
               ApiUris.planDayExerciseDetail(_dayId!, exerciseId),
-              data: {'video_url': curr.videoLink, 'sets': curr.sets},
+              data: {
+                'video_url': curr.videoLink,
+                'sets': curr.sets,
+                'order_index': i,
+                'order': i,
+              },
               options: Options(headers: {'X-Platform': platformSource}),
             );
           }
@@ -281,14 +313,16 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       }
 
       // 4. Perform reorder update
-      await _fetchPlanDetails();
-
       final List<Map<String, dynamic>> reorderPayload = [];
       for (var i = 0; i < _exercises.length; i++) {
-        reorderPayload.add({
-          'id': int.parse(_exercises[i].id),
-          'order_index': i,
-        });
+        final exerciseId = int.tryParse(_exercises[i].id);
+        if (exerciseId != null) {
+          reorderPayload.add({
+            'id': exerciseId,
+            'order_index': i,
+            'order': i,
+          });
+        }
       }
 
       if (reorderPayload.isNotEmpty) {
@@ -2239,6 +2273,7 @@ class WorkoutExercise {
   final String videoLink;
   final String trackBy;
   final List<Map<String, dynamic>> sets;
+  final int orderIndex;
 
   const WorkoutExercise({
     required this.id,
@@ -2250,7 +2285,34 @@ class WorkoutExercise {
     required this.videoLink,
     this.trackBy = 'reps',
     required this.sets,
+    this.orderIndex = 0,
   });
+
+  WorkoutExercise copyWith({
+    String? id,
+    String? workoutId,
+    String? name,
+    String? muscle,
+    String? equipment,
+    String? type,
+    String? videoLink,
+    String? trackBy,
+    List<Map<String, dynamic>>? sets,
+    int? orderIndex,
+  }) {
+    return WorkoutExercise(
+      id: id ?? this.id,
+      workoutId: workoutId ?? this.workoutId,
+      name: name ?? this.name,
+      muscle: muscle ?? this.muscle,
+      equipment: equipment ?? this.equipment,
+      type: type ?? this.type,
+      videoLink: videoLink ?? this.videoLink,
+      trackBy: trackBy ?? this.trackBy,
+      sets: sets ?? this.sets,
+      orderIndex: orderIndex ?? this.orderIndex,
+    );
+  }
 
   String get subtitle => '$muscle / $equipment / $type';
 }
@@ -2364,7 +2426,7 @@ class _SelectExerciseItem extends StatelessWidget {
 
 class _EditExerciseBottomSheet extends StatefulWidget {
   final WorkoutExercise exercise;
-  final Function(WorkoutExercise) onSave;
+  final void Function(WorkoutExercise) onSave;
   final VoidCallback onDelete;
 
   const _EditExerciseBottomSheet({

@@ -1008,7 +1008,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     if (confirm != true) return;
 
     try {
-      await DioClient().dio.delete(ApiUris.deleteTransformation(id));
+      await DioClient().dio.delete<dynamic>(ApiUris.deleteTransformation(id));
       Fluttertoast.showToast(msg: 'Transformation deleted');
       _fetchTransformations();
     } catch (e) {
@@ -1052,7 +1052,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                 if (!widget.isViewOnly && index == _transformations.length) {
                   return GestureDetector(
                     onTap: () {
-                      showModalBottomSheet(
+                      showModalBottomSheet<void>(
                         context: context,
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
@@ -1249,7 +1249,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                 ),
                                 Positioned(
                                   top: 12,
-                                  right: 12,
+                                  left: 12,
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
@@ -1376,7 +1376,7 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
         'before_image_file': await MultipartFile.fromFile(_beforeFile!.path),
         'after_image_file': await MultipartFile.fromFile(_afterFile!.path),
       });
-      final res = await DioClient().dio.post(
+      final res = await DioClient().dio.post<dynamic>(
         ApiUris.transformations,
         data: formData,
       );
@@ -1429,7 +1429,7 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    showModalBottomSheet(
+                    showModalBottomSheet<void>(
                       context: context,
                       builder:
                           (c) => ImagePickerDialog(
@@ -1473,7 +1473,7 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    showModalBottomSheet(
+                    showModalBottomSheet<void>(
                       context: context,
                       builder:
                           (c) => ImagePickerDialog(
