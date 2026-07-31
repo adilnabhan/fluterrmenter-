@@ -28,6 +28,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
   late TextEditingController _instagramController;
   late TextEditingController _facebookController;
   late TextEditingController _youtubeController;
+  late TextEditingController _whatsappController;
 
   String _selectedGender = 'male';
   File? _selectedImage;
@@ -49,6 +50,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     _instagramController = TextEditingController(text: user?.instagram ?? '');
     _facebookController = TextEditingController(text: user?.facebook ?? '');
     _youtubeController = TextEditingController(text: user?.youtube ?? '');
+    _whatsappController = TextEditingController(text: user?.whatsapp ?? '');
     final currentGender = user?.gender?.toLowerCase() ?? 'male';
     if (['male', 'female', 'other'].contains(currentGender)) {
       _selectedGender = currentGender;
@@ -67,6 +69,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     _instagramController.dispose();
     _facebookController.dispose();
     _youtubeController.dispose();
+    _whatsappController.dispose();
     super.dispose();
   }
 
@@ -104,6 +107,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
         'instagram': _instagramController.text.trim(),
         'facebook': _facebookController.text.trim(),
         'youtube': _youtubeController.text.trim(),
+        'whatsapp': _whatsappController.text.trim(),
         'user_type': 'trainer',
       });
 
@@ -179,6 +183,10 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
                   _youtubeController.text.trim().isNotEmpty
                       ? _youtubeController.text.trim()
                       : currentUser.youtube,
+              whatsapp:
+                  _whatsappController.text.trim().isNotEmpty
+                      ? _whatsappController.text.trim()
+                      : currentUser.whatsapp,
               profilePicture: newProfilePic ?? currentUser.profilePicture,
             );
             context.read<AppCubit>().addUser(mergedUser);
@@ -501,6 +509,24 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               const SizedBox(height: 32),
               
               Text('Social Links', style: AppStyles.text16Px.poppins.w600),
+              const SizedBox(height: 16),
+
+              Text('WhatsApp', style: AppStyles.text14Px.poppins.w500),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _whatsappController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  hintText: 'WhatsApp Number',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               
               Text('Instagram', style: AppStyles.text14Px.poppins.w500),

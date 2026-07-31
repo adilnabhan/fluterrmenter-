@@ -28,6 +28,70 @@ class _TrainerPendingVerificationsScreenState
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   DateTime? _selectedDate;
+  String _pendingTypeFilter = 'assigned'; // 'assigned', 'self'
+
+  final TextEditingController _historySearchController = TextEditingController();
+  String _historySearchQuery = '';
+  DateTime? _historySelectedDate;
+  String _historyTypeFilter = 'assigned'; // 'assigned', 'self'
+
+  bool _isAssignedWorkout(Map<String, dynamic> item) {
+    final type = (item['workout_type'] ??
+            item['session_type'] ??
+            item['type'] ??
+            item['workout_category'] ??
+            '')
+        .toString()
+        .toLowerCase();
+    if (type.contains('assigned')) return true;
+    if (type.contains('self') || type.contains('custom') || type.contains('own')) return false;
+
+    final isAssigned = item['is_assigned'] as bool? ??
+        item['is_assigned_workout'] as bool?;
+    if (isAssigned != null) return isAssigned;
+
+    final isSelf = item['is_self_workout'] as bool? ??
+        item['is_custom'] as bool? ??
+        item['is_self'] as bool?;
+    if (isSelf != null) return !isSelf;
+
+    final planId = item['customer_workout_plan_id'] ??
+        item['plan_id'] ??
+        item['workout_plan_id'] ??
+        item['plan'];
+    return planId != null && planId != 0;
+  }
+
+  Widget _buildWorkoutTypeBadge(Map<String, dynamic> item) {
+    final isAssigned = _isAssignedWorkout(item);
+    final label = isAssigned ? 'Assigned' : 'Self Workout';
+    final bg = isAssigned
+        ? const Color(0xFFEBF3FF)
+        : const Color(0xFFF3E8FF);
+    final textColor = isAssigned
+        ? const Color(0xFF1E56A0)
+        : const Color(0xFF7E22CE);
+    final icon = isAssigned ? Icons.assignment_outlined : Icons.person_outline;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: textColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppStyles.text10Px.poppins.w600.copyWith(color: textColor),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -93,6 +157,7 @@ class _TrainerPendingVerificationsScreenState
   @override
   void dispose() {
     _searchController.dispose();
+    _historySearchController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -172,6 +237,35 @@ class _TrainerPendingVerificationsScreenState
     }
   }
 
+  Future<void> _pickHistoryDate() async {
+    final DateTime now = DateTime.now();
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _historySelectedDate ?? now,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              onSurface: AppColors.textDark,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _historySelectedDate = picked;
+      });
+      _fetchVerificationHistory();
+    }
+  }
+
   Future<void> _fetchVerificationHistory() async {
     if (!mounted) return;
     setState(() {
@@ -179,9 +273,20 @@ class _TrainerPendingVerificationsScreenState
       _verificationHistory = [];
     });
 
+    final Map<String, dynamic> queryParams = {};
+    if (_historySearchQuery.trim().isNotEmpty) {
+      queryParams['search'] = _historySearchQuery.trim();
+    }
+    if (_historySelectedDate != null) {
+      final dateStr =
+          '${_historySelectedDate!.year}-${_historySelectedDate!.month.toString().padLeft(2, '0')}-${_historySelectedDate!.day.toString().padLeft(2, '0')}';
+      queryParams['date'] = dateStr;
+    }
+
     try {
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.verificationHistory,
+        queryParameters: queryParams,
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -349,9 +454,15 @@ class _TrainerPendingVerificationsScreenState
   }
 
   Widget _buildPendingTab() {
-    final pendingList = _pendingVerifications;
+    final rawPendingList = _pendingVerifications;
+    final pendingList = rawPendingList.where((item) {
+      if (_pendingTypeFilter == 'assigned' && !_isAssignedWorkout(item)) return false;
+      if (_pendingTypeFilter == 'self' && _isAssignedWorkout(item)) return false;
+      return true;
+    }).toList();
+
     final hasActiveFilter =
-        _searchQuery.trim().isNotEmpty || _selectedDate != null;
+        _searchQuery.trim().isNotEmpty || _selectedDate != null || _pendingTypeFilter != 'all';
 
     String? dateFilterLabel;
     if (_selectedDate != null) {
@@ -470,6 +581,53 @@ class _TrainerPendingVerificationsScreenState
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+
+              // Filter Chips: Assigned Workouts (50%) & Self Workouts (50%)
+              Row(
+                children: [
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Assigned Workouts')),
+                      selected: _pendingTypeFilter == 'assigned',
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: _pendingTypeFilter == 'assigned' ? Colors.white : AppColors.dark,
+                        fontSize: 12,
+                        fontWeight: _pendingTypeFilter == 'assigned' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      backgroundColor: Colors.white,
+                      side: BorderSide(
+                        color: _pendingTypeFilter == 'assigned' ? AppColors.primary : const Color(0xffEEEEEE),
+                      ),
+                      onSelected: (val) {
+                        if (val) setState(() => _pendingTypeFilter = 'assigned');
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Self Workouts')),
+                      selected: _pendingTypeFilter == 'self',
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: _pendingTypeFilter == 'self' ? Colors.white : AppColors.dark,
+                        fontSize: 12,
+                        fontWeight: _pendingTypeFilter == 'self' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      backgroundColor: Colors.white,
+                      side: BorderSide(
+                        color: _pendingTypeFilter == 'self' ? AppColors.primary : const Color(0xffEEEEEE),
+                      ),
+                      onSelected: (val) {
+                        if (val) setState(() => _pendingTypeFilter = 'self');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
               if (dateFilterLabel != null) ...[
                 const SizedBox(height: 10),
                 Wrap(
@@ -634,14 +792,23 @@ class _TrainerPendingVerificationsScreenState
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          customerName,
-                                          style:
-                                              AppStyles
-                                                  .text16Px
-                                                  .poppins
-                                                  .w600
-                                                  .dark,
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                customerName,
+                                                style: AppStyles
+                                                    .text16Px
+                                                    .poppins
+                                                    .w600
+                                                    .dark,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            _buildWorkoutTypeBadge(item),
+                                          ],
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
@@ -756,174 +923,412 @@ class _TrainerPendingVerificationsScreenState
   }
 
   Widget _buildHistoryTab() {
-    final historyList = _verificationHistory;
-    if (_isLoadingHistory) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (historyList.isEmpty) {
-      return _buildEmptyState(
-        'No History',
-        'You have not verified any workouts yet.',
-        Icons.history,
-      );
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: historyList.length,
-      itemBuilder: (context, index) {
-        final item = historyList[index];
-        final customerName = item['customer_name'] as String? ?? 'Client';
-        final customerId = item['customer_id'] as int? ?? 0;
-        final profilePic =
-            item['customer_profile_picture'] as String? ??
-            item['profile_picture'] as String? ??
-            item['customer_image'] as String? ??
-            item['image_url'] as String? ??
-            (item['customer'] is Map
-                ? (item['customer'] as Map)['profile_picture'] as String?
-                : null) ??
-            _clientProfilesById[customerId] ??
-            _clientProfilesByName[customerName];
-        final workoutTitle = item['workout_title'] as String? ?? 'Workout';
-        final verifiedAtRaw = item['verified_at'] as String? ?? '';
-        final sessionId = item['session_id'] as int? ?? 0;
-        String verifiedAt = verifiedAtRaw;
-        if (verifiedAtRaw.isNotEmpty) {
-          final parsed = DateTime.tryParse(verifiedAtRaw);
-          if (parsed != null) {
-            final local = parsed.toLocal();
-            final hour =
-                local.hour == 0
-                    ? 12
-                    : (local.hour > 12 ? local.hour - 12 : local.hour);
-            final amPm = local.hour >= 12 ? 'PM' : 'AM';
-            verifiedAt =
-                '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} $hour:${local.minute.toString().padLeft(2, '0')} $amPm';
-          }
-        }
-        final status = item['verification_status'] as String? ?? '';
-        final remarks = item['remarks'] as String? ?? '';
-        final isVerified = status == 'verified';
+    final rawHistoryList = _verificationHistory;
+    final historyList = rawHistoryList.where((item) {
+      if (_historyTypeFilter == 'assigned' && !_isAssignedWorkout(item)) return false;
+      if (_historyTypeFilter == 'self' && _isAssignedWorkout(item)) return false;
+      return true;
+    }).toList();
 
-        return GestureDetector(
-          onTap: () {
-            if (sessionId > 0) {
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder:
-                      (context) => TrainerWorkoutSessionDetailScreen(
-                        sessionId: sessionId,
-                      ),
-                ),
-              );
-            }
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        workoutTitle,
-                        style: AppStyles.text16Px.poppins.w600.dark,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            isVerified
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        isVerified ? 'Verified' : 'Rejected',
-                        style: AppStyles.text12Px.poppins.w600.copyWith(
-                          color: isVerified ? Colors.green : Colors.red,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    if (profilePic != null && profilePic.isNotEmpty)
-                      ProfileImage(isEdit: false, url: profilePic, radius: 20)
-                    else
-                      const Icon(
-                        Icons.person,
-                        size: 24,
-                        color: AppColors.primary,
-                      ),
-                    const SizedBox(width: 6),
-                    Text(
-                      customerName,
-                      style: AppStyles.text14Px.poppins.w500.copyWith(
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                  ],
-                ),
-                if (verifiedAt.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    'Date: $verifiedAt',
-                    style: AppStyles.text12Px.poppins.w400.copyWith(
-                      color: AppColors.textGrey,
-                    ),
-                  ),
-                ],
-                if (remarks.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.format_quote,
-                          size: 16,
+    final hasActiveFilter =
+        _historySearchQuery.trim().isNotEmpty || _historySelectedDate != null || _historyTypeFilter != 'all';
+
+    String? dateFilterLabel;
+    if (_historySelectedDate != null) {
+      dateFilterLabel =
+          '${_historySelectedDate!.year}-${_historySelectedDate!.month.toString().padLeft(2, '0')}-${_historySelectedDate!.day.toString().padLeft(2, '0')}';
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _historySearchController,
+                      onChanged: (val) {
+                        if (!mounted) return;
+                        setState(() {
+                          _historySearchQuery = val;
+                        });
+                        EasyDebounce.debounce(
+                          'history-verifications-search',
+                          const Duration(milliseconds: 400),
+                          () => _fetchVerificationHistory(),
+                        );
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search by name or phone',
+                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
                           color: AppColors.textGrey,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            remarks,
-                            style: AppStyles.text12Px.poppins.w400.copyWith(
-                              fontStyle: FontStyle.italic,
-                              color: AppColors.textDark,
-                            ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: AppColors.textGrey,
+                          size: 20,
+                        ),
+                        suffixIcon:
+                            _historySearchController.text.isNotEmpty
+                                ? IconButton(
+                                  icon: const Icon(
+                                    Icons.clear,
+                                    size: 18,
+                                    color: AppColors.textGrey,
+                                  ),
+                                  onPressed: () {
+                                    _historySearchController.clear();
+                                    setState(() {
+                                      _historySearchQuery = '';
+                                    });
+                                    _fetchVerificationHistory();
+                                  },
+                                )
+                                : null,
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.borderGrey,
                           ),
                         ),
-                      ],
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.borderGrey,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _pickHistoryDate,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color:
+                              _historySelectedDate != null
+                                  ? AppColors.primary
+                                  : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                _historySelectedDate != null
+                                    ? AppColors.primary
+                                    : AppColors.borderGrey,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.calendar_month_outlined,
+                          color:
+                              _historySelectedDate != null
+                                  ? Colors.white
+                                  : AppColors.textDark,
+                          size: 22,
+                        ),
+                      ),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 8),
+
+              // Filter Chips: Assigned Workouts (50%) & Self Workouts (50%)
+              Row(
+                children: [
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Assigned Workouts')),
+                      selected: _historyTypeFilter == 'assigned',
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: _historyTypeFilter == 'assigned' ? Colors.white : AppColors.dark,
+                        fontSize: 12,
+                        fontWeight: _historyTypeFilter == 'assigned' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      backgroundColor: Colors.white,
+                      side: BorderSide(
+                        color: _historyTypeFilter == 'assigned' ? AppColors.primary : const Color(0xffEEEEEE),
+                      ),
+                      onSelected: (val) {
+                        if (val) setState(() => _historyTypeFilter = 'assigned');
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Self Workouts')),
+                      selected: _historyTypeFilter == 'self',
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: _historyTypeFilter == 'self' ? Colors.white : AppColors.dark,
+                        fontSize: 12,
+                        fontWeight: _historyTypeFilter == 'self' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      backgroundColor: Colors.white,
+                      side: BorderSide(
+                        color: _historyTypeFilter == 'self' ? AppColors.primary : const Color(0xffEEEEEE),
+                      ),
+                      onSelected: (val) {
+                        if (val) setState(() => _historyTypeFilter = 'self');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              if (dateFilterLabel != null) ...[
+                const SizedBox(height: 10),
+                Wrap(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.calendar_today,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            dateFilterLabel,
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _historySelectedDate = null;
+                              });
+                              _fetchVerificationHistory();
+                            },
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
-            ),
+            ],
           ),
-        );
-      },
+        ),
+        Expanded(
+          child:
+              _isLoadingHistory
+                  ? const Center(child: CircularProgressIndicator())
+                  : historyList.isEmpty
+                  ? _buildEmptyState(
+                      hasActiveFilter
+                          ? 'No Matching Verifications'
+                          : 'No History',
+                      hasActiveFilter
+                          ? 'Try adjusting your search or date filter.'
+                          : 'You have not verified any workouts yet.',
+                      Icons.history,
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: historyList.length,
+                      itemBuilder: (context, index) {
+                        final item = historyList[index];
+                        final customerName = item['customer_name'] as String? ?? 'Client';
+                        final customerId = item['customer_id'] as int? ?? 0;
+                        final profilePic =
+                            item['customer_profile_picture'] as String? ??
+                            item['profile_picture'] as String? ??
+                            item['customer_image'] as String? ??
+                            item['image_url'] as String? ??
+                            (item['customer'] is Map
+                                ? (item['customer'] as Map)['profile_picture'] as String?
+                                : null) ??
+                            _clientProfilesById[customerId] ??
+                            _clientProfilesByName[customerName];
+                        final workoutTitle = item['workout_title'] as String? ?? 'Workout';
+                        final verifiedAtRaw = item['verified_at'] as String? ?? '';
+                        final sessionId = item['session_id'] as int? ?? 0;
+                        String verifiedAt = verifiedAtRaw;
+                        if (verifiedAtRaw.isNotEmpty) {
+                          final parsed = DateTime.tryParse(verifiedAtRaw);
+                          if (parsed != null) {
+                            final local = parsed.toLocal();
+                            final hour =
+                                local.hour == 0
+                                    ? 12
+                                    : (local.hour > 12 ? local.hour - 12 : local.hour);
+                            final amPm = local.hour >= 12 ? 'PM' : 'AM';
+                            verifiedAt =
+                                '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} $hour:${local.minute.toString().padLeft(2, '0')} $amPm';
+                          }
+                        }
+                        final status = item['verification_status'] as String? ?? '';
+                        final remarks = item['remarks'] as String? ?? '';
+                        final isVerified = status == 'verified';
+
+                        return GestureDetector(
+                          onTap: () {
+                            if (sessionId > 0) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder:
+                                      (context) => TrainerWorkoutSessionDetailScreen(
+                                        sessionId: sessionId,
+                                      ),
+                                ),
+                              );
+                            }
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        workoutTitle,
+                                        style: AppStyles.text16Px.poppins.w600.dark,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isVerified
+                                                ? Colors.green.withOpacity(0.1)
+                                                : Colors.red.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        isVerified ? 'Verified' : 'Rejected',
+                                        style: AppStyles.text12Px.poppins.w600.copyWith(
+                                          color: isVerified ? Colors.green : Colors.red,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    if (profilePic != null && profilePic.isNotEmpty)
+                                      ProfileImage(isEdit: false, url: profilePic, radius: 20)
+                                    else
+                                      const Icon(
+                                        Icons.person,
+                                        size: 24,
+                                        color: AppColors.primary,
+                                      ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        customerName,
+                                        style: AppStyles.text14Px.poppins.w500.copyWith(
+                                          color: AppColors.textDark,
+                                        ),
+                                      ),
+                                    ),
+                                    _buildWorkoutTypeBadge(item),
+                                  ],
+                                ),
+                                if (verifiedAt.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Date: $verifiedAt',
+                                    style: AppStyles.text12Px.poppins.w400.copyWith(
+                                      color: AppColors.textGrey,
+                                    ),
+                                  ),
+                                ],
+                                if (remarks.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade50,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Icon(
+                                          Icons.format_quote,
+                                          size: 16,
+                                          color: AppColors.textGrey,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            remarks,
+                                            style: AppStyles.text12Px.poppins.w400.copyWith(
+                                              fontStyle: FontStyle.italic,
+                                              color: AppColors.textDark,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
     );
   }
 

@@ -10,6 +10,7 @@ import 'package:mentor_mobile_app/src/features/settings/presentation/screens/faq
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_gallery_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_schedules_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_amenities_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_banners_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -275,7 +276,6 @@ class SettingsScreen extends StatelessWidget {
             _buildSettingsItem(
               icon: Icons.sports_gymnastics,
               title: 'Amenities',
-              isLast: true,
               onTap: () {
                 if (orgDetails != null) {
                   Widget page = GymAmenitiesScreen(orgDetails: orgDetails!);
@@ -286,6 +286,23 @@ class SettingsScreen extends StatelessWidget {
                     );
                   }
                   Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+                }
+              },
+            ),
+            _buildSettingsItem(
+              icon: Icons.add_photo_alternate_outlined,
+              title: 'Banners',
+              isLast: true,
+              onTap: () {
+                if (orgDetails != null) {
+                  Widget page = GymBannersScreen(orgDetails: orgDetails!);
+                  if (orgDetailsCubit != null) {
+                    page = BlocProvider<OrganizationListingAndDetailsCubit>.value(
+                      value: orgDetailsCubit!,
+                      child: page,
+                    );
+                  }
+                  Navigator.push(context, MaterialPageRoute<void>(builder: (_) => page));
                 }
               },
             ),

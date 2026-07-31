@@ -58,22 +58,40 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     if (!mounted) return;
     setState(() => _isLoadingTransformations = true);
     try {
-      final uri =
-          (widget.isViewOnly && widget.trainerId != null)
-              ? '${ApiUris.transformations}?trainer_id=${widget.trainerId}'
-              : ApiUris.transformations;
-      final res = await DioClient().dio.get(uri);
+      final currentUser = context.read<AppCubit>().state.currentUser;
+      final orgId = widget.isViewOnly
+          ? _fetchedUser?.mentor?.org?.id
+          : currentUser?.organizationId ?? currentUser?.trainer?.organizationId ?? currentUser?.mentor?.org?.id;
+
+      final Map<String, dynamic> params = {};
+      if (orgId != null) {
+        params['organization_id'] = orgId;
+      }
+      if (widget.isViewOnly && widget.trainerId != null) {
+        params['trainer_id'] = widget.trainerId;
+      }
+
+      final res = await DioClient().dio.get<dynamic>(
+        ApiUris.transformations,
+        queryParameters: params,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
       if (res.statusCode == 200) {
         final data = res.data;
-        if (data is List) {
-          final mapped =
-              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-          if (mounted) {
-            setState(() {
-              _transformations = mapped;
-              _isLoadingTransformations = false;
-            });
-          }
+        List<dynamic> results = [];
+        if (data is Map) {
+          results = data['transformations'] as List? ?? [];
+        } else if (data is List) {
+          results = data;
+        }
+
+        final mapped =
+            results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        if (mounted) {
+          setState(() {
+            _transformations = mapped;
+            _isLoadingTransformations = false;
+          });
         }
       } else {
         if (mounted) setState(() => _isLoadingTransformations = false);
@@ -227,6 +245,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           instagram: data['instagram']?.toString(),
           facebook: data['facebook']?.toString(),
           youtube: data['youtube']?.toString(),
+          whatsapp: data['whatsapp']?.toString(),
           trainer: TrainerModel(
             certificates: mappedCerts,
             portfolioImages: mappedPortfolio,
@@ -234,7 +253,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
           ),
           mentor: Mentor(
-            org: Org(name: mentorData?['organization']?['name']?.toString()),
+            org: Org(
+              id: mentorData?['organization']?['id'] as int?,
+              name: mentorData?['organization']?['name']?.toString(),
+            ),
           ),
         );
 
@@ -270,6 +292,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             }
           }
         });
+        _fetchTransformations();
       } else {
         if (!mounted) return;
         setState(() => _isLoading = false);
@@ -325,6 +348,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           instagram: data['instagram']?.toString() ?? currentUser.instagram,
           facebook: data['facebook']?.toString() ?? currentUser.facebook,
           youtube: data['youtube']?.toString() ?? currentUser.youtube,
+          whatsapp: data['whatsapp']?.toString() ?? currentUser.whatsapp,
           trainer:
               currentUser.trainer?.copyWith(
                 clientsCount: data['clients_count'] as int?,
@@ -448,16 +472,9 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                             return GestureDetector(
                               onTap:
                                   () => _openFullScreen(context, index, user),
-                              child: Image.network(
+                              child: ImageNetwork(
                                 heroCarousel[index],
                                 fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (_, child, progress) =>
-                                        progress == null
-                                            ? child
-                                            : Container(
-                                              color: Colors.grey.shade900,
-                                            ),
                               ),
                             );
                           },
@@ -732,16 +749,14 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                 child: ClipOval(
                   child:
                       user?.profilePicture?.toString().isNotEmpty == true
-                          ? Image.network(
+                          ? ImageNetwork(
                             user!.profilePicture!.toString(),
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(
-                                Icons.person,
-                                size: 40,
-                                color: Colors.grey,
-                              );
-                            },
+                            errorWidget: const Icon(
+                              Icons.person,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
                           )
                           : const Icon(
                             Icons.person,
@@ -899,7 +914,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           ),
           if ((user?.instagram?.toString().isNotEmpty == true) ||
               (user?.facebook?.toString().isNotEmpty == true) ||
-              (user?.youtube?.toString().isNotEmpty == true)) ...[
+              (user?.youtube?.toString().isNotEmpty == true) ||
+              (user?.whatsapp?.toString().isNotEmpty == true)) ...[
             const SizedBox(height: 16),
             Row(
               children: [
@@ -917,7 +933,9 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                   GestureDetector(
                     onTap:
                         () => launchUrl(Uri.parse(user!.facebook!.toString())),
-                    child: _buildSocialIcon(Icons.facebook),
+                    child: _buildSocialSvgIcon(
+                      'assets/images/svg/icons/face_book.svg',
+                    ),
                   ),
                   const SizedBox(width: 12),
                 ],
@@ -927,6 +945,24 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                         () => launchUrl(Uri.parse(user!.youtube!.toString())),
                     child: _buildSocialSvgIcon(
                       'assets/images/svg/icons/youtube.svg',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                if (user?.whatsapp?.toString().isNotEmpty == true) ...[
+                  GestureDetector(
+                    onTap: () {
+                      var whatsappUrl = user!.whatsapp!.toString().trim();
+                      if (!whatsappUrl.startsWith('http')) {
+                        whatsappUrl = 'https://wa.me/$whatsappUrl';
+                      }
+                      launchUrl(
+                        Uri.parse(whatsappUrl),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    },
+                    child: _buildSocialSvgIcon(
+                      'assets/images/svg/icons/whatsapp.svg',
                     ),
                   ),
                 ],
@@ -970,16 +1006,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     );
   }
 
-  Widget _buildSocialIcon(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(icon, size: 18, color: Colors.red.shade400),
-    );
-  }
+
 
   Future<void> _deleteTransformation(int id) async {
     final confirm = await showDialog<bool>(
@@ -1199,11 +1226,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                     topLeft: Radius.circular(16),
                                     bottomLeft: Radius.circular(16),
                                   ),
-                                  child: Image.network(
+                                  child: ImageNetwork(
                                     beforeImg,
                                     fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (_, __, ___) => const SizedBox(),
+                                    errorWidget: const SizedBox(),
                                   ),
                                 ),
                                 Positioned(
@@ -1240,11 +1266,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                     topRight: Radius.circular(16),
                                     bottomRight: Radius.circular(16),
                                   ),
-                                  child: Image.network(
+                                  child: ImageNetwork(
                                     afterImg,
                                     fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (_, __, ___) => const SizedBox(),
+                                    errorWidget: const SizedBox(),
                                   ),
                                 ),
                                 Positioned(
@@ -1371,14 +1396,19 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
     }
     setState(() => _isSubmitting = true);
     try {
+      final currentUser = context.read<AppCubit>().state.currentUser;
+      final orgId = currentUser?.organizationId ?? currentUser?.trainer?.organizationId ?? currentUser?.mentor?.org?.id;
+
       final formData = FormData.fromMap({
         'description': _descController.text,
-        'before_image_file': await MultipartFile.fromFile(_beforeFile!.path),
-        'after_image_file': await MultipartFile.fromFile(_afterFile!.path),
+        'before_image': await MultipartFile.fromFile(_beforeFile!.path),
+        'after_image': await MultipartFile.fromFile(_afterFile!.path),
+        if (orgId != null) 'organization_id': orgId,
       });
       final res = await DioClient().dio.post<dynamic>(
         ApiUris.transformations,
         data: formData,
+        options: Options(headers: {'X-Platform': platformSource}),
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
         Fluttertoast.showToast(msg: 'Transformation added successfully');
@@ -1389,7 +1419,20 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
         setState(() => _isSubmitting = false);
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Failed to add transformation');
+      String errMsg = 'Failed to add transformation';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map && data['message'] != null) {
+          errMsg = data['message'].toString();
+        } else if (data != null) {
+          errMsg = data.toString();
+        } else {
+          errMsg = e.message ?? e.toString();
+        }
+      } else {
+        errMsg = e.toString();
+      }
+      Fluttertoast.showToast(msg: errMsg);
       setState(() => _isSubmitting = false);
     }
   }

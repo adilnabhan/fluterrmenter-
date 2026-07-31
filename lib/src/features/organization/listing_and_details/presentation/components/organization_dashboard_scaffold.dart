@@ -21,25 +21,66 @@ class OrganizationDashboardScaffold extends StatefulWidget {
 class _OrganizationDashboardScaffoldState
     extends State<OrganizationDashboardScaffold> {
   late int _currentIndex;
+  List<bool>? _initialized;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _initList();
+  }
+
+  void _initList() {
+    _initialized = List<bool>.generate(
+      widget.pages.length,
+      (index) => index == _currentIndex,
+    );
   }
 
   void _onTap(int index) {
     if (!mounted) return;
     setState(() {
       _currentIndex = index;
+      if (_initialized == null) {
+        _initList();
+      }
+      if (index < _initialized!.length) {
+        _initialized![index] = true;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_initialized == null || _initialized!.length != widget.pages.length) {
+      final oldList = _initialized;
+      _initialized = List<bool>.generate(
+        widget.pages.length,
+        (index) {
+          if (index == _currentIndex) return true;
+          if (oldList != null && index < oldList.length) {
+            return oldList[index];
+          }
+          return false;
+        },
+      );
+    }
+
     return Scaffold(
       extendBody: false,
-      body: IndexedStack(index: _currentIndex, children: widget.pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: List<Widget>.generate(
+          widget.pages.length,
+          (index) {
+            if (index < _initialized!.length && _initialized![index]) {
+              return widget.pages[index];
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
+      ),
       floatingActionButton:
           widget.floatingActionButtons != null &&
                   widget.floatingActionButtons!.length > _currentIndex

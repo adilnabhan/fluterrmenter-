@@ -6,9 +6,40 @@ import 'package:mentor_mobile_app/src/features/settings/presentation/screens/con
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/bank_listing_view_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/domain/model/organization_details_model.dart';
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/faq_screen.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
 
-class TrainerProfileSettingsScreen extends StatelessWidget {
+class TrainerProfileSettingsScreen extends StatefulWidget {
   const TrainerProfileSettingsScreen({super.key});
+
+  @override
+  State<TrainerProfileSettingsScreen> createState() =>
+      _TrainerProfileSettingsScreenState();
+}
+
+class _TrainerProfileSettingsScreenState
+    extends State<TrainerProfileSettingsScreen> {
+  String? _freshProfileUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchFreshProfilePicture();
+  }
+
+  Future<void> _fetchFreshProfilePicture() async {
+    try {
+      final res = await DioClient().dio.get(ApiUris.editTrainerBasicDetails);
+      if (res.statusCode == 200 && res.data is Map) {
+        final data = res.data as Map<String, dynamic>;
+        final url = data['profile_picture']?.toString();
+        if (mounted && url != null && url.isNotEmpty && url != 'null') {
+          setState(() => _freshProfileUrl = url);
+        }
+      }
+    } catch (_) {
+      // Silently fall back to cached URL
+    }
+  }
 
   Widget _buildSectionHeader(String title) {
     return Padding(
@@ -116,30 +147,57 @@ class TrainerProfileSettingsScreen extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Logo
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: (user?.profilePicture as String?) != null && (user!.profilePicture as String).isNotEmpty
-                        ? Image.network(
-                            user.profilePicture as String,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
-                              Icons.person,
-                              color: AppColors.primary,
-                              size: 40,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.person,
-                            color: AppColors.primary,
-                            size: 40,
-                          ),
+                  // Profile Photo
+                  Builder(
+                    builder: (context) {
+                      // Prefer fresh URL from API, fall back to cached
+                      String? profileUrl = _freshProfileUrl;
+                      if (profileUrl == null || profileUrl.isEmpty) {
+                        final pp = user?.profilePicture;
+                        if (pp is String) {
+                          profileUrl = pp;
+                        } else if (pp is Map) {
+                          profileUrl = (pp['url'] ?? pp['image'] ?? pp['profile_image'] ?? pp['profile_picture'])?.toString();
+                        }
+                      }
+                      final hasImage = profileUrl != null && profileUrl.isNotEmpty && profileUrl != 'null';
+                      return Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: hasImage
+                            ? Image.network(
+                                profileUrl!,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const Center(
+                                    child: SizedBox(
+                                      width: 24, height: 24,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (_, error, ___) {
+                                  debugPrint('=== Image load error: $error');
+                                  return const Icon(
+                                    Icons.person,
+                                    color: AppColors.primary,
+                                    size: 40,
+                                  );
+                                },
+                              )
+                            : const Icon(
+                                Icons.person,
+                                color: AppColors.primary,
+                                size: 40,
+                              ),
+                      );
+                    },
                   ),
                   const SizedBox(width: 16),
                   // Details

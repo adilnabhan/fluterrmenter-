@@ -11,11 +11,13 @@ class TrainerClientWorkoutHistoryCalendar extends StatefulWidget {
     required this.customerId,
     this.startDate,
     required this.workoutHistory,
+    this.showTitle = true,
   });
 
   final int customerId;
   final DateTime? startDate;
   final List<Map<String, dynamic>> workoutHistory;
+  final bool showTitle;
 
   @override
   State<TrainerClientWorkoutHistoryCalendar> createState() =>
@@ -187,11 +189,13 @@ class _TrainerClientWorkoutHistoryCalendarState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Workout Journey",
-            style: AppStyles.text18Px.poppins.w600,
-          ),
-          const SizedBox(height: 12),
+          if (widget.showTitle) ...[
+            Text(
+              "Workout Journey",
+              style: AppStyles.text18Px.poppins.w600,
+            ),
+            const SizedBox(height: 12),
+          ],
           _buildCalendarCard(
             canGoPrev,
             canGoNext,

@@ -67,8 +67,14 @@ mixin _$LoginSuccessModel {
   String? get facebook => throw _privateConstructorUsedError;
   @JsonKey(name: 'youtube')
   String? get youtube => throw _privateConstructorUsedError;
+  @JsonKey(name: 'whatsapp')
+  String? get whatsapp => throw _privateConstructorUsedError;
   @JsonKey(name: 'trainer')
   TrainerModel? get trainer => throw _privateConstructorUsedError;
+  @JsonKey(name: 'organization_id')
+  int? get organizationId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'organization_name')
+  String? get organizationName => throw _privateConstructorUsedError;
 
   /// Serializes this LoginSuccessModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -111,7 +117,10 @@ abstract class $LoginSuccessModelCopyWith<$Res> {
     @JsonKey(name: 'instagram') String? instagram,
     @JsonKey(name: 'facebook') String? facebook,
     @JsonKey(name: 'youtube') String? youtube,
+    @JsonKey(name: 'whatsapp') String? whatsapp,
     @JsonKey(name: 'trainer') TrainerModel? trainer,
+    @JsonKey(name: 'organization_id') int? organizationId,
+    @JsonKey(name: 'organization_name') String? organizationName,
   });
 
   $MentorCopyWith<$Res>? get mentor;
@@ -156,7 +165,10 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
     Object? instagram = freezed,
     Object? facebook = freezed,
     Object? youtube = freezed,
+    Object? whatsapp = freezed,
     Object? trainer = freezed,
+    Object? organizationId = freezed,
+    Object? organizationName = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -275,11 +287,26 @@ class _$LoginSuccessModelCopyWithImpl<$Res, $Val extends LoginSuccessModel>
                     ? _value.youtube
                     : youtube // ignore: cast_nullable_to_non_nullable
                         as String?,
+            whatsapp:
+                freezed == whatsapp
+                    ? _value.whatsapp
+                    : whatsapp // ignore: cast_nullable_to_non_nullable
+                        as String?,
             trainer:
                 freezed == trainer
                     ? _value.trainer
                     : trainer // ignore: cast_nullable_to_non_nullable
                         as TrainerModel?,
+            organizationId:
+                freezed == organizationId
+                    ? _value.organizationId
+                    : organizationId // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            organizationName:
+                freezed == organizationName
+                    ? _value.organizationName
+                    : organizationName // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -347,7 +374,10 @@ abstract class _$$LoginWithOtpEntityImplCopyWith<$Res>
     @JsonKey(name: 'instagram') String? instagram,
     @JsonKey(name: 'facebook') String? facebook,
     @JsonKey(name: 'youtube') String? youtube,
+    @JsonKey(name: 'whatsapp') String? whatsapp,
     @JsonKey(name: 'trainer') TrainerModel? trainer,
+    @JsonKey(name: 'organization_id') int? organizationId,
+    @JsonKey(name: 'organization_name') String? organizationName,
   });
 
   @override
@@ -393,7 +423,10 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
     Object? instagram = freezed,
     Object? facebook = freezed,
     Object? youtube = freezed,
+    Object? whatsapp = freezed,
     Object? trainer = freezed,
+    Object? organizationId = freezed,
+    Object? organizationName = freezed,
   }) {
     return _then(
       _$LoginWithOtpEntityImpl(
@@ -512,11 +545,26 @@ class __$$LoginWithOtpEntityImplCopyWithImpl<$Res>
                 ? _value.youtube
                 : youtube // ignore: cast_nullable_to_non_nullable
                     as String?,
+        whatsapp:
+            freezed == whatsapp
+                ? _value.whatsapp
+                : whatsapp // ignore: cast_nullable_to_non_nullable
+                    as String?,
         trainer:
             freezed == trainer
                 ? _value.trainer
                 : trainer // ignore: cast_nullable_to_non_nullable
                     as TrainerModel?,
+        organizationId:
+            freezed == organizationId
+                ? _value.organizationId
+                : organizationId // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        organizationName:
+            freezed == organizationName
+                ? _value.organizationName
+                : organizationName // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -549,7 +597,10 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     @JsonKey(name: 'instagram') this.instagram,
     @JsonKey(name: 'facebook') this.facebook,
     @JsonKey(name: 'youtube') this.youtube,
+    @JsonKey(name: 'whatsapp') this.whatsapp,
     @JsonKey(name: 'trainer') this.trainer,
+    @JsonKey(name: 'organization_id') this.organizationId,
+    @JsonKey(name: 'organization_name') this.organizationName,
   }) : _warnings = warnings;
 
   factory _$LoginWithOtpEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -633,12 +684,21 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
   @JsonKey(name: 'youtube')
   final String? youtube;
   @override
+  @JsonKey(name: 'whatsapp')
+  final String? whatsapp;
+  @override
   @JsonKey(name: 'trainer')
   final TrainerModel? trainer;
+  @override
+  @JsonKey(name: 'organization_id')
+  final int? organizationId;
+  @override
+  @JsonKey(name: 'organization_name')
+  final String? organizationName;
 
   @override
   String toString() {
-    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted, userRole: $userRole, gender: $gender, dateOfBirth: $dateOfBirth, experienceYears: $experienceYears, bio: $bio, location: $location, instagram: $instagram, facebook: $facebook, youtube: $youtube, trainer: $trainer)';
+    return 'LoginSuccessModel(id: $id, access: $access, refresh: $refresh, firstName: $firstName, lastName: $lastName, mobileNumber: $mobileNumber, email: $email, bloodGroup: $bloodGroup, lastLogin: $lastLogin, mentor: $mentor, customer: $customer, profilePicture: $profilePicture, warnings: $warnings, isProfileCompleted: $isProfileCompleted, userRole: $userRole, gender: $gender, dateOfBirth: $dateOfBirth, experienceYears: $experienceYears, bio: $bio, location: $location, instagram: $instagram, facebook: $facebook, youtube: $youtube, whatsapp: $whatsapp, trainer: $trainer, organizationId: $organizationId, organizationName: $organizationName)';
   }
 
   @override
@@ -684,7 +744,13 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
             (identical(other.facebook, facebook) ||
                 other.facebook == facebook) &&
             (identical(other.youtube, youtube) || other.youtube == youtube) &&
-            (identical(other.trainer, trainer) || other.trainer == trainer));
+            (identical(other.whatsapp, whatsapp) ||
+                other.whatsapp == whatsapp) &&
+            (identical(other.trainer, trainer) || other.trainer == trainer) &&
+            (identical(other.organizationId, organizationId) ||
+                other.organizationId == organizationId) &&
+            (identical(other.organizationName, organizationName) ||
+                other.organizationName == organizationName));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -714,7 +780,10 @@ class _$LoginWithOtpEntityImpl implements _LoginWithOtpEntity {
     instagram,
     facebook,
     youtube,
+    whatsapp,
     trainer,
+    organizationId,
+    organizationName,
   ]);
 
   /// Create a copy of LoginSuccessModel
@@ -759,7 +828,10 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
     @JsonKey(name: 'instagram') final String? instagram,
     @JsonKey(name: 'facebook') final String? facebook,
     @JsonKey(name: 'youtube') final String? youtube,
+    @JsonKey(name: 'whatsapp') final String? whatsapp,
     @JsonKey(name: 'trainer') final TrainerModel? trainer,
+    @JsonKey(name: 'organization_id') final int? organizationId,
+    @JsonKey(name: 'organization_name') final String? organizationName,
   }) = _$LoginWithOtpEntityImpl;
 
   factory _LoginWithOtpEntity.fromJson(Map<String, dynamic> json) =
@@ -835,8 +907,17 @@ abstract class _LoginWithOtpEntity implements LoginSuccessModel {
   @JsonKey(name: 'youtube')
   String? get youtube;
   @override
+  @JsonKey(name: 'whatsapp')
+  String? get whatsapp;
+  @override
   @JsonKey(name: 'trainer')
   TrainerModel? get trainer;
+  @override
+  @JsonKey(name: 'organization_id')
+  int? get organizationId;
+  @override
+  @JsonKey(name: 'organization_name')
+  String? get organizationName;
 
   /// Create a copy of LoginSuccessModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1100,6 +1181,10 @@ mixin _$TrainerModel {
   int? get clientsCount => throw _privateConstructorUsedError;
   @JsonKey(name: 'verified_workouts_count')
   int? get verifiedWorkoutsCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'organization_id')
+  int? get organizationId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'organization_name')
+  String? get organizationName => throw _privateConstructorUsedError;
 
   /// Serializes this TrainerModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1127,6 +1212,8 @@ abstract class $TrainerModelCopyWith<$Res> {
     List<PortfolioImageModel>? portfolioImages,
     @JsonKey(name: 'clients_count') int? clientsCount,
     @JsonKey(name: 'verified_workouts_count') int? verifiedWorkoutsCount,
+    @JsonKey(name: 'organization_id') int? organizationId,
+    @JsonKey(name: 'organization_name') String? organizationName,
   });
 }
 
@@ -1152,6 +1239,8 @@ class _$TrainerModelCopyWithImpl<$Res, $Val extends TrainerModel>
     Object? portfolioImages = freezed,
     Object? clientsCount = freezed,
     Object? verifiedWorkoutsCount = freezed,
+    Object? organizationId = freezed,
+    Object? organizationName = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -1190,6 +1279,16 @@ class _$TrainerModelCopyWithImpl<$Res, $Val extends TrainerModel>
                     ? _value.verifiedWorkoutsCount
                     : verifiedWorkoutsCount // ignore: cast_nullable_to_non_nullable
                         as int?,
+            organizationId:
+                freezed == organizationId
+                    ? _value.organizationId
+                    : organizationId // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            organizationName:
+                freezed == organizationName
+                    ? _value.organizationName
+                    : organizationName // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -1214,6 +1313,8 @@ abstract class _$$TrainerModelImplCopyWith<$Res>
     List<PortfolioImageModel>? portfolioImages,
     @JsonKey(name: 'clients_count') int? clientsCount,
     @JsonKey(name: 'verified_workouts_count') int? verifiedWorkoutsCount,
+    @JsonKey(name: 'organization_id') int? organizationId,
+    @JsonKey(name: 'organization_name') String? organizationName,
   });
 }
 
@@ -1238,6 +1339,8 @@ class __$$TrainerModelImplCopyWithImpl<$Res>
     Object? portfolioImages = freezed,
     Object? clientsCount = freezed,
     Object? verifiedWorkoutsCount = freezed,
+    Object? organizationId = freezed,
+    Object? organizationName = freezed,
   }) {
     return _then(
       _$TrainerModelImpl(
@@ -1276,6 +1379,16 @@ class __$$TrainerModelImplCopyWithImpl<$Res>
                 ? _value.verifiedWorkoutsCount
                 : verifiedWorkoutsCount // ignore: cast_nullable_to_non_nullable
                     as int?,
+        organizationId:
+            freezed == organizationId
+                ? _value.organizationId
+                : organizationId // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        organizationName:
+            freezed == organizationName
+                ? _value.organizationName
+                : organizationName // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -1293,6 +1406,8 @@ class _$TrainerModelImpl implements _TrainerModel {
     final List<PortfolioImageModel>? portfolioImages,
     @JsonKey(name: 'clients_count') this.clientsCount,
     @JsonKey(name: 'verified_workouts_count') this.verifiedWorkoutsCount,
+    @JsonKey(name: 'organization_id') this.organizationId,
+    @JsonKey(name: 'organization_name') this.organizationName,
   }) : _certificates = certificates,
        _portfolioImages = portfolioImages;
 
@@ -1336,10 +1451,16 @@ class _$TrainerModelImpl implements _TrainerModel {
   @override
   @JsonKey(name: 'verified_workouts_count')
   final int? verifiedWorkoutsCount;
+  @override
+  @JsonKey(name: 'organization_id')
+  final int? organizationId;
+  @override
+  @JsonKey(name: 'organization_name')
+  final String? organizationName;
 
   @override
   String toString() {
-    return 'TrainerModel(id: $id, userType: $userType, profileStep: $profileStep, certificates: $certificates, portfolioImages: $portfolioImages, clientsCount: $clientsCount, verifiedWorkoutsCount: $verifiedWorkoutsCount)';
+    return 'TrainerModel(id: $id, userType: $userType, profileStep: $profileStep, certificates: $certificates, portfolioImages: $portfolioImages, clientsCount: $clientsCount, verifiedWorkoutsCount: $verifiedWorkoutsCount, organizationId: $organizationId, organizationName: $organizationName)';
   }
 
   @override
@@ -1363,7 +1484,11 @@ class _$TrainerModelImpl implements _TrainerModel {
             (identical(other.clientsCount, clientsCount) ||
                 other.clientsCount == clientsCount) &&
             (identical(other.verifiedWorkoutsCount, verifiedWorkoutsCount) ||
-                other.verifiedWorkoutsCount == verifiedWorkoutsCount));
+                other.verifiedWorkoutsCount == verifiedWorkoutsCount) &&
+            (identical(other.organizationId, organizationId) ||
+                other.organizationId == organizationId) &&
+            (identical(other.organizationName, organizationName) ||
+                other.organizationName == organizationName));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1377,6 +1502,8 @@ class _$TrainerModelImpl implements _TrainerModel {
     const DeepCollectionEquality().hash(_portfolioImages),
     clientsCount,
     verifiedWorkoutsCount,
+    organizationId,
+    organizationName,
   );
 
   /// Create a copy of TrainerModel
@@ -1403,6 +1530,8 @@ abstract class _TrainerModel implements TrainerModel {
     final List<PortfolioImageModel>? portfolioImages,
     @JsonKey(name: 'clients_count') final int? clientsCount,
     @JsonKey(name: 'verified_workouts_count') final int? verifiedWorkoutsCount,
+    @JsonKey(name: 'organization_id') final int? organizationId,
+    @JsonKey(name: 'organization_name') final String? organizationName,
   }) = _$TrainerModelImpl;
 
   factory _TrainerModel.fromJson(Map<String, dynamic> json) =
@@ -1429,6 +1558,12 @@ abstract class _TrainerModel implements TrainerModel {
   @override
   @JsonKey(name: 'verified_workouts_count')
   int? get verifiedWorkoutsCount;
+  @override
+  @JsonKey(name: 'organization_id')
+  int? get organizationId;
+  @override
+  @JsonKey(name: 'organization_name')
+  String? get organizationName;
 
   /// Create a copy of TrainerModel
   /// with the given fields replaced by the non-null parameter values.

@@ -29,12 +29,9 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   String _selectedGymFilter = 'All'; // Selected gym capsule filter
 
   String? _nextUrl;
+  int? _totalCount;
   bool _isFetchingMore = false;
   final ScrollController _scrollController = ScrollController();
-
-  // Static cache to avoid refetching on every screen visit
-  static List<Map<String, dynamic>>? _cachedClients;
-  static String? _cachedNextUrl;
 
   @override
   void initState() {
@@ -55,27 +52,14 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchClients({bool forceRefresh = false}) async {
+  Future<void> _fetchClients({bool forceRefresh = true}) async {
     if (!mounted) return;
-
-    if (!forceRefresh &&
-        _cachedClients != null &&
-        _searchQuery.trim().isEmpty &&
-        _statusFilter == 'all') {
-      setState(() {
-        _clients = List.from(_cachedClients!);
-        _nextUrl = _cachedNextUrl;
-        _isLoading = false;
-      });
-      return;
-    }
 
     setState(() {
       _isLoading = true;
-      if (forceRefresh) {
-        _clients = [];
-        _nextUrl = null;
-      }
+      _clients = [];
+      _nextUrl = null;
+      _totalCount = null;
     });
 
     try {
@@ -83,7 +67,6 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         ApiUris.trainerCustomers,
         queryParameters: {
           'status': _statusFilter,
-          'page_size': 10000,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),
@@ -92,25 +75,25 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
       if (response.statusCode == 200) {
         final data = response.data;
         List<dynamic> results = [];
+        int? count;
         if (data is Map) {
           results = List<dynamic>.from(data['results'] as List? ?? []);
           _nextUrl = data['next']?.toString();
+          if (data['count'] != null) {
+            count = int.tryParse(data['count'].toString());
+          }
         } else if (data is List) {
           results = data;
           _nextUrl = null;
+          count = data.length;
         }
 
         if (!mounted) return;
         setState(() {
           _clients =
               results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _totalCount = count;
           _isLoading = false;
-
-          // Cache the baseline data
-          if (_searchQuery.trim().isEmpty && _statusFilter == 'all') {
-            _cachedClients = List.from(_clients);
-            _cachedNextUrl = _nextUrl;
-          }
         });
       } else {
         if (!mounted) return;
@@ -147,6 +130,9 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         if (data is Map) {
           results = List<dynamic>.from(data['results'] as List? ?? []);
           _nextUrl = data['next']?.toString();
+          if (data['count'] != null) {
+            _totalCount = int.tryParse(data['count'].toString()) ?? _totalCount;
+          }
         } else if (data is List) {
           results = data;
           _nextUrl = null;
@@ -470,7 +456,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Text(
-              '${filtered.length} members',
+              '${_totalCount ?? filtered.length} members',
               style: AppStyles.text14Px.poppins.w400.copyWith(
                 color: AppColors.textGrey,
               ),
@@ -662,7 +648,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                           ],
                                         ),
                                       ),
-                                                                     const SizedBox(width: 8),
+                                      const SizedBox(width: 8),
                                       // Active Status Mark
                                       Text(
                                         statusText,
@@ -1001,22 +987,84 @@ class _AssignPlanBottomSheetContent extends StatefulWidget {
 class _AssignPlanBottomSheetContentState
     extends State<_AssignPlanBottomSheetContent> {
   List<Map<String, dynamic>> _plans = [];
+  List<Map<String, dynamic>> _groups = [];
   bool _isLoading = true;
   String _searchQuery = '';
   final Map<int, bool> _submittingMap = {};
   final Map<int, bool> _assigningMap = {};
   String _selectedSource = 'gym'; // 'gym' or 'trainer'
 
+  int? _selectedGroupId;
+  String? _selectedGroupName;
+
   @override
   void initState() {
     super.initState();
-    _fetchPlans();
+    _fetchGroups();
+  }
+
+  Future<void> _fetchGroups() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _groups = [];
+    });
+
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.workoutGroups,
+        queryParameters: {
+          if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
+        },
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data =
+            (response.data is Map)
+                ? (response.data['results'] as List<dynamic>? ?? [])
+                : (response.data as List<dynamic>);
+        if (!mounted) return;
+
+        final allGroups =
+            data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+
+        // Filter groups based on source
+        final filteredGroups =
+            allGroups.where((g) {
+              final src = g['source']?.toString();
+              if (_selectedSource == 'gym') {
+                return src == 'gym' || src == 'organization';
+              } else {
+                return src == 'trainer';
+              }
+            }).toList();
+
+        setState(() {
+          _groups = filteredGroups;
+          _isLoading = false;
+        });
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _isLoading = false;
+        });
+        Dialogs.showSnack(msg: 'Failed to load workout groups');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      Dialogs.showSnack(msg: 'Error loading groups: ${e.toString()}');
+    }
   }
 
   Future<void> _fetchPlans() async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
+      _plans = [];
     });
 
     try {
@@ -1024,6 +1072,7 @@ class _AssignPlanBottomSheetContentState
         ApiUris.workoutPlans,
         queryParameters: {
           'source': _selectedSource,
+          if (_selectedGroupId != null) 'group': _selectedGroupId,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),
@@ -1319,60 +1368,61 @@ class _AssignPlanBottomSheetContentState
     final titleController = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'New Instant Workout',
-          style: AppStyles.text16Px.poppins.w600,
-        ),
-        content: TextField(
-          controller: titleController,
-          decoration: InputDecoration(
-            hintText: 'Enter workout title',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade400),
+      builder:
+          (dialogContext) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade400),
+            title: Text(
+              'New Instant Workout',
+              style: AppStyles.text16Px.poppins.w600,
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.primary),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(
-              'Cancel',
-              style: AppStyles.text14Px.poppins.w500.copyWith(
-                color: Colors.grey,
+            content: TextField(
+              controller: titleController,
+              decoration: InputDecoration(
+                hintText: 'Enter workout title',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.primary),
+                ),
               ),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(
+                  'Cancel',
+                  style: AppStyles.text14Px.poppins.w500.copyWith(
+                    color: Colors.grey,
+                  ),
+                ),
               ),
-            ),
-            child: Text(
-              'Create',
-              style: AppStyles.text14Px.poppins.w600.copyWith(
-                color: Colors.white,
+              ElevatedButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Create',
+                  style: AppStyles.text14Px.poppins.w600.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirmed != true) return;
@@ -1421,12 +1471,13 @@ class _AssignPlanBottomSheetContentState
         Navigator.push(
           context,
           MaterialPageRoute<void>(
-            builder: (context) => WorkoutPlanDetailsScreen(
-              planId: newPlanId,
-              planTitle: newPlanTitle,
-              assignToCustomerId: widget.customerId,
-              isInstantWorkout: true,
-            ),
+            builder:
+                (context) => WorkoutPlanDetailsScreen(
+                  planId: newPlanId,
+                  planTitle: newPlanTitle,
+                  assignToCustomerId: widget.customerId,
+                  isInstantWorkout: true,
+                ),
           ),
         );
       } else {
@@ -1454,8 +1505,10 @@ class _AssignPlanBottomSheetContentState
             if (!mounted) return;
             setState(() {
               _selectedSource = sourceValue;
+              _selectedGroupId = null;
+              _selectedGroupName = null;
             });
-            _fetchPlans();
+            _fetchGroups();
           }
         },
         child: Container(
@@ -1530,11 +1583,20 @@ class _AssignPlanBottomSheetContentState
                   EasyDebounce.debounce(
                     'assign_sheet_plans_search',
                     const Duration(milliseconds: 300),
-                    () => _fetchPlans(),
+                    () {
+                      if (_selectedGroupId == null) {
+                        _fetchGroups();
+                      } else {
+                        _fetchPlans();
+                      }
+                    },
                   );
                 },
                 decoration: InputDecoration(
-                  hintText: 'Search for workout plan',
+                  hintText:
+                      _selectedGroupId == null
+                          ? 'Search for workout group'
+                          : 'Search for workout plan',
                   hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
                     color: AppColors.textGrey,
                   ),
@@ -1559,95 +1621,236 @@ class _AssignPlanBottomSheetContentState
                 ),
               ),
               const SizedBox(height: 16),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _plans.isEmpty
-                    ? Center(
-                      child: Text(
-                        'No workout plans found',
-                        style: AppStyles.text14Px.poppins.w400.copyWith(
-                          color: AppColors.textGrey,
-                        ),
-                      ),
-                    )
-                    : ListView.separated(
-                      padding: const EdgeInsets.only(bottom: 80),
-                      itemCount: _plans.length,
-                      separatorBuilder:
-                          (context, index) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final plan = _plans[index];
-                        final int planId = plan['id'] as int;
-                        final String planName = plan['plan_name'] as String;
-                        final String groupName =
-                            plan['group_name'] as String? ?? 'General';
-                        final int exerciseCount =
-                            plan['exercise_count'] as int? ?? 0;
-                        final bool isSubmitting =
-                            _submittingMap[planId] ?? false;
-
-                        return Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.borderGrey),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      planName,
-                                      style:
-                                          AppStyles.text14Px.poppins.w600.dark,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Group: $groupName | Exercises: $exerciseCount',
-                                      style: AppStyles.text12Px.poppins.w400
-                                          .copyWith(color: AppColors.textGrey),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              isSubmitting
-                                  ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : ElevatedButton(
-                                    onPressed:
-                                        () => _assignPlan(planId, planName),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF2E7D32),
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: Text(
-                                      'Assign',
-                                      style: AppStyles.text12Px.poppins.w600,
-                                    ),
-                                  ),
-                            ],
-                          ),
-                        );
+              if (_selectedGroupId != null) ...[
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, size: 20),
+                      onPressed: () {
+                        setState(() {
+                          _selectedGroupId = null;
+                          _selectedGroupName = null;
+                          _searchQuery = '';
+                        });
+                        _fetchGroups();
                       },
                     ),
+                    Expanded(
+                      child: Text(
+                        'Group: $_selectedGroupName',
+                        style: AppStyles.text14Px.poppins.w600.dark,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+              Expanded(
+                child:
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : (_selectedGroupId == null
+                            ? (_groups.isEmpty
+                                ? Center(
+                                  child: Text(
+                                    'No workout groups found',
+                                    style: AppStyles.text14Px.poppins.w400
+                                        .copyWith(color: AppColors.textGrey),
+                                  ),
+                                )
+                                : ListView.separated(
+                                  padding: const EdgeInsets.only(bottom: 80),
+                                  itemCount: _groups.length,
+                                  separatorBuilder:
+                                      (_, __) => const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    final group = _groups[index];
+                                    final int groupId = group['id'] as int;
+                                    final String groupTitle =
+                                        group['name'] as String? ?? 'General';
+                                    final String groupType =
+                                        group['type'] == 'single_day'
+                                            ? 'Single Day'
+                                            : 'Multi Day';
+                                    final int planCount =
+                                        group['plans_count'] as int? ?? 0;
+
+                                    return InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedGroupId = groupId;
+                                          _selectedGroupName = groupTitle;
+                                          _searchQuery = '';
+                                        });
+                                        _fetchPlans();
+                                      },
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.borderGrey,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    groupTitle,
+                                                    style:
+                                                        AppStyles
+                                                            .text14Px
+                                                            .poppins
+                                                            .w600
+                                                            .dark,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    '$groupType • $planCount plans',
+                                                    style: AppStyles
+                                                        .text12Px
+                                                        .poppins
+                                                        .w400
+                                                        .copyWith(
+                                                          color:
+                                                              AppColors
+                                                                  .textGrey,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const Icon(
+                                              Icons.chevron_right,
+                                              color: AppColors.textGrey,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ))
+                            : (_plans.isEmpty
+                                ? Center(
+                                  child: Text(
+                                    'No workout plans found in this group',
+                                    style: AppStyles.text14Px.poppins.w400
+                                        .copyWith(color: AppColors.textGrey),
+                                  ),
+                                )
+                                : ListView.separated(
+                                  padding: const EdgeInsets.only(bottom: 80),
+                                  itemCount: _plans.length,
+                                  separatorBuilder:
+                                      (context, index) =>
+                                          const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    final plan = _plans[index];
+                                    final int planId = plan['id'] as int;
+                                    final String planName =
+                                        plan['plan_name'] as String;
+                                    final int exerciseCount =
+                                        plan['exercise_count'] as int? ?? 0;
+                                    final bool isSubmitting =
+                                        _submittingMap[planId] ?? false;
+
+                                    return Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: AppColors.borderGrey,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  planName,
+                                                  style:
+                                                      AppStyles
+                                                          .text14Px
+                                                          .poppins
+                                                          .w600
+                                                          .dark,
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  'Exercises: $exerciseCount',
+                                                  style: AppStyles
+                                                      .text12Px
+                                                      .poppins
+                                                      .w400
+                                                      .copyWith(
+                                                        color:
+                                                            AppColors.textGrey,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          isSubmitting
+                                              ? const SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                              )
+                                              : ElevatedButton(
+                                                onPressed:
+                                                    () => _assignPlan(
+                                                      planId,
+                                                      planName,
+                                                    ),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: const Color(
+                                                    0xFF2E7D32,
+                                                  ),
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          20,
+                                                        ),
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 8,
+                                                      ),
+                                                  elevation: 0,
+                                                ),
+                                                child: Text(
+                                                  'Assign',
+                                                  style:
+                                                      AppStyles
+                                                          .text12Px
+                                                          .poppins
+                                                          .w600,
+                                                ),
+                                              ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ))),
               ),
             ],
           ),

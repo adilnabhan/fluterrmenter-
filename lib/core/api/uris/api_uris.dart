@@ -60,9 +60,13 @@ final class ApiUris {
 
   ///============================= Trainers =============================\\\
   static final leadsListing = '${_v1}fitnesscenter/trainers/';
+  static String removeTrainerFromGym(dynamic linkId) =>
+      '${_v1}fitnesscenter/trainers/$linkId/remove/';
   static final createLead = '${_v1}mentor/trainers/';
   static String updateLead(int id) => '${_v1}mentor/trainers/$id/';
   static String leadDetails(String id) => '${_v1}mentor/trainers/$id/';
+  static final searchTrainer = '${_v1}fitnesscenter/trainers/search/';
+  static final addExistingTrainer = '${_v1}fitnesscenter/trainers/add-existing/';
   static String assignWorkoutPlan(int planId) =>
       '${_v1}trainer/workout-plans/$planId/assign/';
   static String saveWorkoutPlanAsTemplate(int planId) =>
@@ -72,6 +76,8 @@ final class ApiUris {
   static final createMembershipPackage =
       '${_v1}fitnesscenter/membership-plans/';
   static final listMembershipPackages = '${_v1}fitnesscenter/membership-plans/';
+  static final manualMembershipEntry =
+      '${_v1}fitnesscenter/memberships/manual-entry/';
   static final customerRenewals = '${_v1}fitnesscenter/customer_renewals/';
   static String updateMembershipPackage(int id) =>
       '${_v1}fitnesscenter/membership-plans/$id/';
@@ -79,9 +85,16 @@ final class ApiUris {
       '${_v1}fitnesscenter/membership-plans/$id/';
   static final paymentHistory = '${_v1}fitnesscenter/customer-payments/';
   static final reports = '${_v1}fitnesscenter/reports/';
+  static final reportsCustomers = '${_v1}fitnesscenter/reports/customers/';
+  static final clientWorkoutCalendar = '${_v1}fitnesscenter/reports/client-workout-calendar/';
+  static String clientWorkoutCalendarDetail(String date) => '${_v1}fitnesscenter/reports/client-workout-calendar/$date/';
   static final expenses = '${_v1}fitnesscenter/expenses/';
   static String expenseDetail(int id) => '${_v1}fitnesscenter/expenses/$id/';
   static final budget = '${_v1}fitnesscenter/budget/';
+  static final trainerAttendance = '${_v1}fitnesscenter/trainer-attendance/';
+  static String trainerAttendanceDetail(int id) => '${_v1}fitnesscenter/trainer-attendance/$id/';
+  static String trainerAttendanceSessionDelete(int id) => '${_v1}fitnesscenter/trainer-attendance/session/$id/';
+  static final trainerAttendanceReports = '${_v1}fitnesscenter/trainer-attendance/reports/';
   // static String paymentHistory(String orgId) =>
   //     '${_v1}fitnesscenter/customer-payments/$orgId';
 
@@ -98,6 +111,12 @@ final class ApiUris {
   static final trainerCustomers = '${_v1}trainer/customers/';
   static String trainerCustomerDetails(int customerId) =>
       '${_v1}trainer/customers/$customerId/';
+  static String trainerClientAssignedWorkouts(int customerId) =>
+      '${_v1}trainer/clients/$customerId/assigned-workouts/';
+  static String customerAssignedWorkouts(int customerId) =>
+      '${_v1}customers/assigned-workouts/?customer_id=$customerId&status=all';
+  static String customerAssignedWorkoutsAll(int customerId) =>
+      '${_v1}customers/assigned-workouts-all/?customer_id=$customerId';
   static final trainerReports = '${_v1}trainer/reports/';
   static final trainerReviews = '${_v1}trainer/reviews/';
 
@@ -109,8 +128,8 @@ final class ApiUris {
       '${_v1}trainer/portfolio-images/$id/';
   
   ///============================= Transformations =============================\\\
-  static final transformations = '${_v1}trainer/transformations/';
-  static String deleteTransformation(int id) => '${_v1}trainer/transformations/$id/';
+  static final transformations = '${_v1}fitnesscenter/transformations/';
+  static String deleteTransformation(int id) => '${_v1}fitnesscenter/transformations/$id/';
 
   ///============================= Workouts =============================\\\
   static final gymExercises = '${_v1}fitnesscenter/exercises/';
@@ -153,4 +172,9 @@ final class ApiUris {
   static String workoutSessionDetails(int sessionId) =>
       '${_v1}mentor/verification/session/$sessionId/';
   static final verificationHistory = '${_v1}mentor/verification/history/';
+
+  ///============================= Gym Banners =============================\\\
+  static final gymBanners = '${_v1}fitnesscenter/gym-banners/';
+  static String gymBannerDetail(int id) =>
+      '${_v1}fitnesscenter/gym-banners/$id/';
 }

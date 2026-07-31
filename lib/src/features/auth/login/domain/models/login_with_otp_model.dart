@@ -30,7 +30,10 @@ class LoginSuccessModel with _$LoginSuccessModel {
     @JsonKey(name: 'instagram') String? instagram,
     @JsonKey(name: 'facebook') String? facebook,
     @JsonKey(name: 'youtube') String? youtube,
+    @JsonKey(name: 'whatsapp') String? whatsapp,
     @JsonKey(name: 'trainer') TrainerModel? trainer,
+    @JsonKey(name: 'organization_id') int? organizationId,
+    @JsonKey(name: 'organization_name') String? organizationName,
   }) = _LoginWithOtpEntity;
 
   factory LoginSuccessModel.fromJson(Map<String, dynamic> json) =>
@@ -58,6 +61,8 @@ class TrainerModel with _$TrainerModel {
     @JsonKey(name: 'portfolio_images') List<PortfolioImageModel>? portfolioImages,
     @JsonKey(name: 'clients_count') int? clientsCount,
     @JsonKey(name: 'verified_workouts_count') int? verifiedWorkoutsCount,
+    @JsonKey(name: 'organization_id') int? organizationId,
+    @JsonKey(name: 'organization_name') String? organizationName,
   }) = _TrainerModel;
 
   factory TrainerModel.fromJson(Map<String, dynamic> json) =>

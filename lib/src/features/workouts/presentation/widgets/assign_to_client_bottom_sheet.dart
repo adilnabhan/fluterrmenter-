@@ -61,7 +61,6 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
       final clientsResponse = await DioClient().dio.get<dynamic>(
         ApiUris.trainerCustomers,
         queryParameters: {
-          'page_size': 10000,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),

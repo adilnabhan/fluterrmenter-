@@ -137,6 +137,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                                 customerId: widget.memberId,
                                 startDate: data.memberships!.first.startDate,
                                 workoutHistory: _workoutHistory,
+                                showTitle: false,
                               ),
                               const SizedBox(height: 24),
                             ],
@@ -217,59 +218,113 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
   }
 
   Widget _buildMembershipDetails(MemberDetailsModel data) {
-    if (!(data.memberships?.isNotEmpty ?? false)) {
-      return const SizedBox.shrink();
-    }
+    final membershipsList = data.memberships ?? <MembershipDataModel>[];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Icon(
-              Icons.card_membership,
-              color: AppColors.primary,
-              size: 20,
+            Row(
+              children: [
+                const Icon(
+                  Icons.card_membership,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text('Memberships', style: AppStyles.text16Px.poppins.w600.dark),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text('Memberships', style: AppStyles.text16Px.poppins.w600.dark),
-          ],
-        ).pOnly(bottom: 16),
-
-        // Membership Summary Cards with better styling
-        Row(
-          children: [
-            Flexible(
-              child: _buildSummaryCard(
-                icon: Icons.check_circle,
-                iconColor: Colors.green,
-                title: 'Active Plans',
-                value:
-                    '${data.memberships?.where((m) => m.isActive ?? false).length ?? 0}',
-                subtitle: 'Currently Active',
-                gradient: [Colors.green.shade50, Colors.green.shade100],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Flexible(
-              child: _buildSummaryCard(
-                icon: Icons.fitness_center,
-                iconColor: AppColors.primary,
-                title: 'Total Plans',
-                value: '${data.memberships?.length ?? 0}',
-                subtitle: 'All Time',
-                gradient: [
-                  AppColors.primary.withOpacity(0.1),
-                  AppColors.primary.withOpacity(0.2),
+            InkWell(
+              onTap: () => _showRenewMembershipBottomSheet(data),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.add_circle_outline,
+                    color: AppColors.primary,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Renew / Add',
+                    style: AppStyles.text12Px.poppins.w600.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ],
               ),
             ),
           ],
-        ).pOnly(bottom: 20),
+        ).pOnly(bottom: 16),
 
-        // Individual Membership Cards
-        for (final membership in data.memberships ?? <MembershipDataModel>[])
-          _buildMembershipCard(membership).pOnly(bottom: 16),
+        if (membershipsList.isNotEmpty) ...[
+          // Membership Summary Cards with better styling
+          Row(
+            children: [
+              Flexible(
+                child: _buildSummaryCard(
+                  icon: Icons.check_circle,
+                  iconColor: Colors.green,
+                  title: 'Active Plans',
+                  value:
+                      '${membershipsList.where((m) => m.isActive ?? false).length}',
+                  subtitle: 'Currently Active',
+                  gradient: [Colors.green.shade50, Colors.green.shade100],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Flexible(
+                child: _buildSummaryCard(
+                  icon: Icons.fitness_center,
+                  iconColor: AppColors.primary,
+                  title: 'Total Plans',
+                  value: '${membershipsList.length}',
+                  subtitle: 'All Time',
+                  gradient: [
+                    AppColors.primary.withOpacity(0.1),
+                    AppColors.primary.withOpacity(0.2),
+                  ],
+                ),
+              ),
+            ],
+          ).pOnly(bottom: 20),
+
+          // Individual Membership Cards
+          for (final membership in membershipsList)
+            _buildMembershipCard(membership, data).pOnly(bottom: 16),
+        ] else ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.card_membership_outlined,
+                  size: 48,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'No memberships assigned yet.',
+                  style: AppStyles.text14Px.poppins.w500.textGrey,
+                ),
+                const SizedBox(height: 16),
+                Button.filled(
+                  title: 'Add Membership Plan',
+                  buttonColor: AppColors.primary,
+                  ontap: () => _showRenewMembershipBottomSheet(data),
+                ),
+              ],
+            ),
+          ).pOnly(bottom: 16),
+        ],
       ],
     );
   }
@@ -327,7 +382,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
     );
   }
 
-  Widget _buildMembershipCard(MembershipDataModel membership) {
+  Widget _buildMembershipCard(MembershipDataModel membership, MemberDetailsModel data) {
     final now = DateTime.now();
 
     // Check actual dates for accurate status
@@ -636,6 +691,18 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     ),
                   ],
                 ),
+
+                if (isExpired) ...[
+                  const Divider(thickness: 1, color: Color(0xffEEEEEE)).pxy(y: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Button.filled(
+                      title: 'Renew Membership',
+                      buttonColor: AppColors.primary,
+                      ontap: () => _showRenewMembershipBottomSheet(data),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -1608,6 +1675,334 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
           ),
         ).pOnly(bottom: 32),
       ],
+    );
+  }
+
+  void _showRenewMembershipBottomSheet(MemberDetailsModel memberDetails) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return _RenewMembershipBottomSheet(
+          orgId: _cubit.orgId,
+          memberId: widget.memberId,
+          memberName: '${memberDetails.firstName ?? ''} ${memberDetails.lastName ?? ''}'.trim(),
+          onRenewed: _fetch,
+        );
+      },
+    );
+  }
+}
+
+class _RenewMembershipBottomSheet extends StatefulWidget {
+  const _RenewMembershipBottomSheet({
+    required this.orgId,
+    required this.memberId,
+    required this.memberName,
+    required this.onRenewed,
+  });
+
+  final int orgId;
+  final int memberId;
+  final String memberName;
+  final VoidCallback onRenewed;
+
+  @override
+  State<_RenewMembershipBottomSheet> createState() =>
+      _RenewMembershipBottomSheetState();
+}
+
+class _RenewMembershipBottomSheetState
+    extends State<_RenewMembershipBottomSheet> {
+  List<MembershipPackageModel> _packages = [];
+  bool _isLoadingPackages = false;
+  MembershipPackageModel? _selectedPackage;
+
+  final _amountController = TextEditingController();
+  final _expiryDaysController = TextEditingController();
+  DateTime _startDate = DateTime.now();
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPackages();
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _expiryDaysController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchPackages() async {
+    if (!mounted) return;
+    setState(() => _isLoadingPackages = true);
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.listMembershipPackages,
+        queryParameters: {'organization_id': widget.orgId},
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic> data;
+        if (response.data is Map) {
+          data = List<dynamic>.from(
+            (response.data as Map)['results'] as List? ?? [],
+          );
+        } else {
+          data = response.data as List<dynamic>;
+        }
+
+        final parsed = data
+            .map((e) => MembershipPackageModel.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+
+        if (mounted) {
+          setState(() {
+            _packages = parsed;
+            _isLoadingPackages = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoadingPackages = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingPackages = false);
+    }
+  }
+
+  Future<void> _submit() async {
+    if (_selectedPackage == null) {
+      Dialogs.showSnack(msg: 'Please select a membership plan');
+      return;
+    }
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) {
+      Dialogs.showSnack(msg: 'Please enter a valid amount');
+      return;
+    }
+    final expiryDays = int.tryParse(_expiryDaysController.text);
+    if (expiryDays == null || expiryDays <= 0) {
+      Dialogs.showSnack(msg: 'Please enter valid expiry days');
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = true);
+
+    try {
+      final payload = {
+        'customer_id': widget.memberId,
+        'membership_plan_id': _selectedPackage!.id,
+        'start_date': _startDate.format('yyyy-MM-dd'),
+        'expiry_days': expiryDays,
+        'amount': amount,
+      };
+
+      final response = await DioClient().dio.post<dynamic>(
+        ApiUris.manualMembershipEntry,
+        data: payload,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Dialogs.showSnack(msg: 'Membership renewed successfully');
+        widget.onRenewed();
+        if (mounted) Navigator.pop(context);
+      } else {
+        if (mounted) setState(() => _isSubmitting = false);
+        Dialogs.showSnack(msg: 'Failed to renew membership');
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isSubmitting = false);
+      Dialogs.showSnack(msg: 'Error renewing membership: ${e.toString()}');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        top: 24,
+        left: 20,
+        right: 20,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Renew Membership',
+                  style: AppStyles.text18Px.poppins.w600,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Renewing subscription for ${widget.memberName}',
+              style: AppStyles.text14Px.poppins.w400.textGrey,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Select Membership Plan',
+              style: AppStyles.text14Px.poppins.w500.dark,
+            ),
+            const SizedBox(height: 8),
+            if (_isLoadingPackages)
+              const Center(child: CircularProgressIndicator()).pad(16)
+            else if (_packages.isEmpty)
+              Text(
+                'No membership plans found',
+                style: AppStyles.text14Px.poppins.w400.textGrey,
+              ).pad(8)
+            else
+              DropdownButtonFormField<MembershipPackageModel>(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                value: _selectedPackage,
+                hint: const Text('Choose a plan'),
+                items: _packages.map((package) {
+                  return DropdownMenuItem<MembershipPackageModel>(
+                    value: package,
+                    child: Text(
+                      '${package.name ?? ''} (₹${package.actualPrice})',
+                      style: AppStyles.text14Px.poppins.w400.dark,
+                    ),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _selectedPackage = val;
+                      _amountController.text = val.actualPrice ?? '';
+                      final int days = val.durationDays ?? 30;
+                      _expiryDaysController.text = days.toString();
+                    });
+                  }
+                },
+              ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Start Date',
+                        style: AppStyles.text14Px.poppins.w500.dark,
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () async {
+                          final selected = await showDatePicker(
+                            context: context,
+                            initialDate: _startDate,
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2100),
+                          );
+                          if (selected != null) {
+                            setState(() {
+                              _startDate = selected;
+                            });
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade400),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _startDate.format('dd MMM yyyy'),
+                                style: AppStyles.text14Px.poppins.w400.dark,
+                              ),
+                              const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Expiry Days',
+                        style: AppStyles.text14Px.poppins.w500.dark,
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _expiryDaysController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Amount (₹)',
+              style: AppStyles.text14Px.poppins.w500.dark,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _amountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Button.filled(
+              title: 'Submit Renewal',
+              isLoading: _isSubmitting,
+              buttonColor: AppColors.primary,
+              ontap: _submit,
+            ).pOnly(bottom: 24),
+          ],
+        ),
+      ),
     );
   }
 }

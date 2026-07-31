@@ -2,6 +2,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:intl/intl.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/trainer_client_workout_history_calendar.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 
 class TrainerClientDetailScreen extends StatefulWidget {
   const TrainerClientDetailScreen({required this.customerId, super.key});
@@ -16,6 +17,7 @@ class TrainerClientDetailScreen extends StatefulWidget {
 class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   Map<String, dynamic> _clientData = {};
   List<Map<String, dynamic>> _workoutHistory = [];
+  List<Map<String, dynamic>> _assignedWorkouts = [];
   bool _isLoading = true;
 
   @override
@@ -23,6 +25,60 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     super.initState();
     _fetchClientDetails();
     _fetchWorkoutHistory();
+    _fetchAssignedWorkouts();
+  }
+
+  List<Map<String, dynamic>> _parseWorkoutsResponse(dynamic data) {
+    if (data is List) {
+      return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } else if (data is Map) {
+      final listData = data['assigned_plans'] ??
+          data['assigned_workouts'] ??
+          data['results'] ??
+          data['data'] ??
+          data['plans'];
+      if (listData is List) {
+        return listData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+    }
+    return [];
+  }
+
+  Future<void> _fetchAssignedWorkouts() async {
+    List<Map<String, dynamic>> workoutsList = [];
+    bool fetched = false;
+
+    // 1. Primary endpoint: GET /api/v1/trainer/clients/{customer_id}/assigned-workouts/
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.trainerClientAssignedWorkouts(widget.customerId),
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (response.statusCode == 200) {
+        workoutsList = _parseWorkoutsResponse(response.data);
+        if (workoutsList.isNotEmpty) fetched = true;
+      }
+    } catch (_) {}
+
+    // 2. Fallback: GET /api/v1/customers/assigned-workouts/?customer_id={customer_id}&status=all
+    if (!fetched) {
+      try {
+        final response = await DioClient().dio.get<dynamic>(
+          ApiUris.customerAssignedWorkouts(widget.customerId),
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+        if (response.statusCode == 200) {
+          workoutsList = _parseWorkoutsResponse(response.data);
+          if (workoutsList.isNotEmpty) fetched = true;
+        }
+      } catch (_) {}
+    }
+
+    if (mounted) {
+      setState(() {
+        _assignedWorkouts = workoutsList;
+      });
+    }
   }
 
   Future<void> _fetchWorkoutHistory() async {
@@ -200,6 +256,26 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     final String weight = (profile['weight'] ?? 'N/A').toString();
     final String healthIssues = (profile['health_issues'] ?? 'NO').toString();
 
+    // Target Goals Parsing
+    final dynamic rawGoals = profile['target_goal'] ??
+        profile['target_goals'] ??
+        profile['goal'] ??
+        _clientData['target_goal'] ??
+        _clientData['target_goals'];
+    List<String> targetGoals = [];
+    if (rawGoals is List) {
+      targetGoals = rawGoals
+          .map((e) => e.toString().replaceAll('_', ' ').trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+    } else if (rawGoals is String && rawGoals.isNotEmpty) {
+      targetGoals = rawGoals
+          .split(',')
+          .map((e) => e.replaceAll('_', ' ').trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+    }
+
     // Payment Status fallback check
     final String paymentStatus =
         membership['payment_status'] as String? ??
@@ -312,29 +388,10 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                name,
-                                style: AppStyles.text16Px.poppins.w600.dark,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF1F1F1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.edit,
-                                size: 14,
-                                color: AppColors.textGrey,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          name,
+                          style: AppStyles.text16Px.poppins.w600.dark,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -417,21 +474,34 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
             ),
             const SizedBox(height: 12),
             // Tags / Goals
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha:0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
+            if (targetGoals.isNotEmpty) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: targetGoals.map((goal) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      goal,
+                      style: AppStyles.text12Px.poppins.w500.copyWith(
+                        color: Colors.red,
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-              child: Text(
-                'Weight Loss',
-                style: AppStyles.text12Px.poppins.w500.copyWith(
-                  color: Colors.red,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
+            ] else ...[
+              const SizedBox(height: 12),
+            ],
 
             // Fitness Analytics
             Text(
@@ -674,6 +744,67 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               ),
             ),
             const SizedBox(height: 24),
+
+            // Assigned Workouts
+            if (_assignedWorkouts.isNotEmpty) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Assigned Workouts',
+                    style: AppStyles.text16Px.poppins.w600.dark,
+                  ),
+                  Text(
+                    '${_assignedWorkouts.length} Plans',
+                    style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.primary),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ..._assignedWorkouts.map((workout) {
+                final planId = workout['plan_id'] as int? ?? workout['customer_workout_plan_id'] as int? ?? workout['workout_plan_id'] as int? ?? workout['id'] as int? ?? 0;
+                final title = (workout['plan_name'] ?? workout['title'] ?? workout['name'] ?? workout['workout_plan_name'] ?? 'Workout Plan').toString();
+                final status = (workout['status'] ?? workout['assignment_status'] ?? 'Active').toString();
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xffEEEEEE)),
+                  ),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.fitness_center, color: AppColors.primary),
+                    ),
+                    title: Text(title, style: AppStyles.text14Px.poppins.w600.dark),
+                    subtitle: Text(
+                      'Status: ${status.toUpperCase()}',
+                      style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: AppColors.dark),
+                    onTap: planId > 0
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => WorkoutPlanDetailsScreen(planId: planId, planTitle: title),
+                              ),
+                            );
+                          }
+                        : null,
+                  ),
+                );
+              }),
+              const SizedBox(height: 24),
+            ],
 
             // Workout Journey Calendar
             if (membership.isNotEmpty) ...[

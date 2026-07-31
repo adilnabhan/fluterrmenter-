@@ -7,6 +7,10 @@ import 'package:intl/intl.dart';
 import 'dart:ui';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/organization_workout_library_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 
 class OrganizationDetailsScreen extends StatefulWidget {
   const OrganizationDetailsScreen({
@@ -924,16 +928,20 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
   // Transformation (Before / After)
   // ────────────────────────────────────────────
   Widget _buildTransformationSection(OrganizationDetailsModel orgDetails) {
-    // Temporarily pass empty list until the transformation API is available
-    return const _TransformationCarousel(photos: []);
+    return _TransformationCarousel(
+      orgId: orgDetails.id ?? widget.orgId,
+      isEditable: !widget.canFetch,
+    );
   }
-
-
 }
 
 class _TransformationCarousel extends StatefulWidget {
-  final List<PhotoModel> photos;
-  const _TransformationCarousel({required this.photos});
+  final int orgId;
+  final bool isEditable;
+  const _TransformationCarousel({
+    required this.orgId,
+    required this.isEditable,
+  });
 
   @override
   State<_TransformationCarousel> createState() =>
@@ -941,12 +949,108 @@ class _TransformationCarousel extends StatefulWidget {
 }
 
 class _TransformationCarouselState extends State<_TransformationCarousel> {
+  List<Map<String, dynamic>> _transformations = [];
+  bool _isLoading = true;
   int _currentPage = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _fetchTransformations();
+  }
+
+  Future<void> _fetchTransformations() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    try {
+      final res = await DioClient().dio.get<dynamic>(
+        ApiUris.transformations,
+        queryParameters: {'organization_id': widget.orgId},
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (res.statusCode == 200) {
+        final data = res.data;
+        List<dynamic> results = [];
+        if (data is Map) {
+          results = data['transformations'] as List? ?? [];
+        } else if (data is List) {
+          results = data;
+        }
+
+        final mapped =
+            results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        if (mounted) {
+          setState(() {
+            _transformations = mapped;
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _deleteTransformation(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Transformation'),
+            content: const Text(
+              'Are you sure you want to delete this transformation?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+    if (confirm != true) return;
+
+    try {
+      final res = await DioClient().dio.delete<dynamic>(
+        ApiUris.deleteTransformation(id),
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (res.statusCode == 200) {
+        Fluttertoast.showToast(msg: 'Transformation deleted successfully');
+        _fetchTransformations();
+      } else {
+        Fluttertoast.showToast(msg: 'Failed to delete transformation');
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Failed to delete transformation');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    int pageCount = (widget.photos.length / 2).ceil();
-    if (pageCount == 0) pageCount = 1; // Always show at least 1 empty page
+    if (_isLoading) {
+      return const SizedBox(
+        height: 180,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final int pageCount = widget.isEditable
+        ? _transformations.length + 1
+        : _transformations.length;
+
+    if (pageCount == 0) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       children: [
@@ -960,120 +1064,351 @@ class _TransformationCarouselState extends State<_TransformationCarousel> {
               });
             },
             itemBuilder: (context, index) {
-              final beforeIdx = index * 2;
-              final afterIdx = index * 2 + 1;
+              if (widget.isEditable && index == _transformations.length) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => _AddTransformationSheet(
+                          orgId: widget.orgId,
+                          onSuccess: _fetchTransformations,
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildPlaceholderImage(
+                            'Add Before',
+                            isBefore: true,
+                          ),
+                        ),
+                        Container(width: 2, color: Colors.white),
+                        Expanded(
+                          child: _buildPlaceholderImage(
+                            'Add After',
+                            isBefore: false,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              final trans = _transformations[index];
+              final beforeImg = (trans['before_image'] ?? '').toString();
+              final afterImg = (trans['after_image'] ?? '').toString();
+              final id = trans['id'] as int? ?? 0;
+
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
+                child: Stack(
                   children: [
-                    Expanded(
-                      child: _buildTransformImage(
-                        widget.photos.length > beforeIdx
-                            ? widget.photos[beforeIdx].image
-                            : null,
-                        'Add Before',
-                        isBefore: true,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildTransformImage(
+                            beforeImg,
+                            isBefore: true,
+                          ),
+                        ),
+                        Container(width: 2, color: Colors.white),
+                        Expanded(
+                          child: _buildTransformImage(
+                            afterImg,
+                            isBefore: false,
+                          ),
+                        ),
+                      ],
                     ),
-                    Container(width: 2, color: Colors.white),
-                    Expanded(
-                      child: _buildTransformImage(
-                        widget.photos.length > afterIdx
-                            ? widget.photos[afterIdx].image
-                            : null,
-                        'Add After',
-                        isBefore: false,
+                    if (widget.isEditable)
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: InkWell(
+                          onTap: () => _deleteTransformation(id),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               );
             },
           ),
         ),
-        const SizedBox(height: 16),
-        // Dots
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(pageCount, (index) {
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color:
-                    _currentPage == index
-                        ? AppColors.primary
-                        : const Color(0xFFE5E5E5),
-              ),
-            );
-          }),
-        ),
+        if (pageCount > 1) ...[
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(pageCount, (index) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color:
+                      _currentPage == index
+                          ? AppColors.primary
+                          : const Color(0xFFE5E5E5),
+                ),
+              );
+            }),
+          ),
+        ],
       ],
     );
   }
 
-  Widget _buildTransformImage(
-    String? imageUrl,
-    String fallbackText, {
-    required bool isBefore,
-  }) {
+  Widget _buildPlaceholderImage(String fallbackText, {required bool isBefore}) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFD9D9D9),
-        borderRadius:
-            isBefore
-                ? const BorderRadius.horizontal(left: Radius.circular(16))
-                : const BorderRadius.horizontal(right: Radius.circular(16)),
-        image:
-            imageUrl != null && imageUrl.isNotEmpty
-                ? DecorationImage(
-                  image: NetworkImage(imageUrl),
-                  fit: BoxFit.cover,
-                )
-                : null,
+        borderRadius: isBefore
+            ? const BorderRadius.horizontal(left: Radius.circular(16))
+            : const BorderRadius.horizontal(right: Radius.circular(16)),
       ),
-      child: Stack(
-        children: [
-          // Fallback + icon
-          if (imageUrl == null || imageUrl.isEmpty)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.add_circle_outline, color: Colors.grey, size: 36),
-                  const SizedBox(height: 8),
-                  Text(
-                    fallbackText,
-                    textAlign: TextAlign.center,
-                    style: AppStyles.text13Px.poppins.w600.copyWith(
-                      color: AppColors.textGrey,
-                    ),
-                  ),
-                ],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add_circle_outline, color: Colors.grey, size: 36),
+            const SizedBox(height: 8),
+            Text(
+              fallbackText,
+              textAlign: TextAlign.center,
+              style: AppStyles.text13Px.poppins.w600.copyWith(
+                color: Colors.grey.shade600,
               ),
             ),
-          // Pill
-          Positioned(
-            top: 12,
-            left: isBefore ? 12 : null,
-            right: !isBefore ? 12 : null,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransformImage(String imageUrl, {required bool isBefore}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9D9D9),
+        borderRadius: isBefore
+            ? const BorderRadius.horizontal(left: Radius.circular(16))
+            : const BorderRadius.horizontal(right: Radius.circular(16)),
+      ),
+      child: ClipRRect(
+        borderRadius: isBefore
+            ? const BorderRadius.horizontal(left: Radius.circular(16))
+            : const BorderRadius.horizontal(right: Radius.circular(16)),
+        child: ImageNetwork(
+          imageUrl,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+}
+
+class _AddTransformationSheet extends StatefulWidget {
+  final int orgId;
+  final VoidCallback onSuccess;
+  const _AddTransformationSheet({
+    required this.orgId,
+    required this.onSuccess,
+  });
+
+  @override
+  State<_AddTransformationSheet> createState() =>
+      _AddTransformationSheetState();
+}
+
+class _AddTransformationSheetState extends State<_AddTransformationSheet> {
+  File? _beforeFile;
+  File? _afterFile;
+  final TextEditingController _descController = TextEditingController();
+  bool _isSubmitting = false;
+
+  Future<void> _submit() async {
+    if (_beforeFile == null || _afterFile == null) {
+      Fluttertoast.showToast(msg: 'Please select both before and after images');
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    try {
+      final formData = FormData.fromMap({
+        'description': _descController.text,
+        'before_image': await MultipartFile.fromFile(_beforeFile!.path),
+        'after_image': await MultipartFile.fromFile(_afterFile!.path),
+        'organization_id': widget.orgId,
+      });
+      final res = await DioClient().dio.post<dynamic>(
+        ApiUris.transformations,
+        data: formData,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        Fluttertoast.showToast(msg: 'Transformation added successfully');
+        widget.onSuccess();
+        if (mounted) Navigator.pop(context);
+      } else {
+        Fluttertoast.showToast(msg: 'Failed to add transformation');
+        setState(() => _isSubmitting = false);
+      }
+    } catch (e) {
+      String errMsg = 'Failed to add transformation';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map && data['message'] != null) {
+          errMsg = data['message'].toString();
+        } else if (data != null) {
+          errMsg = data.toString();
+        } else {
+          errMsg = e.message ?? e.toString();
+        }
+      } else {
+        errMsg = e.toString();
+      }
+      Fluttertoast.showToast(msg: errMsg);
+      setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        top: 24,
+        left: 20,
+        right: 20,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Add Transformation',
+                style: AppStyles.text16Px.poppins.w600,
               ),
-              child: Text(
-                isBefore ? 'Before' : 'After',
-                style: AppStyles.text13Px.poppins.w500.copyWith(
-                  color: AppColors.textDark,
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _ImagePickerBox(
+                  file: _beforeFile,
+                  label: 'Before Image',
+                  onPick: (file) => setState(() => _beforeFile = file),
                 ),
               ),
-            ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _ImagePickerBox(
+                  file: _afterFile,
+                  label: 'After Image',
+                  onPick: (file) => setState(() => _afterFile = file),
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _descController,
+            decoration: const InputDecoration(
+              hintText: 'Enter description (e.g. Lost 15kg in 12 weeks)',
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 2,
+          ),
+          const SizedBox(height: 24),
+          Button.filled(
+            raduis: 12,
+            title: _isSubmitting ? 'Submitting...' : 'Submit',
+            ontap: () {
+              if (!_isSubmitting) {
+                _submit();
+              }
+            },
+          ),
+          const SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+}
+
+class _ImagePickerBox extends StatelessWidget {
+  final File? file;
+  final String label;
+  final Function(File) onPick;
+
+  const _ImagePickerBox({
+    required this.file,
+    required this.label,
+    required this.onPick,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final picker = ImagePicker();
+        final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+        if (img != null) {
+          onPick(File(img.path));
+        }
+      },
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade300),
+          image: file != null
+              ? DecorationImage(image: FileImage(file!), fit: BoxFit.cover)
+              : null,
+        ),
+        child: file == null
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.camera_alt_outlined, color: Colors.grey),
+                    const SizedBox(height: 8),
+                    Text(
+                      label,
+                      style: AppStyles.text12Px.poppins.w500.textGrey,
+                    ),
+                  ],
+                ),
+              )
+            : null,
       ),
     );
   }
@@ -1131,10 +1466,13 @@ class _ScheduleTabViewState extends State<_ScheduleTabView> {
                   final isOpen = day.isOpen ?? false;
                   final isSelected = idx == _selectedDayIndex;
 
-                  final displayDay =
+                  final rawDay =
                       (day.day != null && day.day!.length > 3)
                           ? day.day!.substring(0, 3)
                           : (day.day ?? '');
+                  final displayDay = rawDay.isNotEmpty
+                      ? '${rawDay[0].toUpperCase()}${rawDay.substring(1)}'
+                      : rawDay;
 
                   return GestureDetector(
                     onTap: () {

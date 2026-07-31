@@ -51,6 +51,64 @@ class _TrainerWorkoutSessionDetailScreenState
     }
   }
 
+  bool _isAssignedWorkout(Map<String, dynamic> item) {
+    final type = (item['workout_type'] ??
+            item['session_type'] ??
+            item['type'] ??
+            item['workout_category'] ??
+            '')
+        .toString()
+        .toLowerCase();
+    if (type.contains('assigned')) return true;
+    if (type.contains('self') || type.contains('custom') || type.contains('own')) return false;
+
+    final isAssigned = item['is_assigned'] as bool? ??
+        item['is_assigned_workout'] as bool?;
+    if (isAssigned != null) return isAssigned;
+
+    final isSelf = item['is_self_workout'] as bool? ??
+        item['is_custom'] as bool? ??
+        item['is_self'] as bool?;
+    if (isSelf != null) return !isSelf;
+
+    final planId = item['customer_workout_plan_id'] ??
+        item['plan_id'] ??
+        item['workout_plan_id'] ??
+        item['plan'];
+    return planId != null && planId != 0;
+  }
+
+  Widget _buildWorkoutTypeBadge(Map<String, dynamic> item) {
+    final isAssigned = _isAssignedWorkout(item);
+    final label = isAssigned ? 'Assigned Workout' : 'Self Workout';
+    final bg = isAssigned
+        ? const Color(0xFFEBF3FF)
+        : const Color(0xFFF3E8FF);
+    final textColor = isAssigned
+        ? const Color(0xFF1E56A0)
+        : const Color(0xFF7E22CE);
+    final icon = isAssigned ? Icons.assignment_outlined : Icons.person_outline;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: textColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppStyles.text10Px.poppins.w600.copyWith(color: textColor),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final workoutTitle = _sessionData['workout_title'] as String? ?? 'Workout Session';
@@ -63,18 +121,30 @@ class _TrainerWorkoutSessionDetailScreenState
         elevation: 0,
         leading: const PopButton().center,
         centerTitle: false,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Text(
-              workoutTitle,
-              style: AppStyles.text18Px.poppins.w600.dark,
-            ),
-            if (exercises.isNotEmpty)
-              Text(
-                '${exercises.length} Exercises',
-                style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textGrey),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    workoutTitle,
+                    style: AppStyles.text18Px.poppins.w600.dark,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (exercises.isNotEmpty)
+                    Text(
+                      '${exercises.length} Exercises',
+                      style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textGrey),
+                    ),
+                ],
               ),
+            ),
+            if (_sessionData.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              _buildWorkoutTypeBadge(_sessionData),
+            ],
           ],
         ),
       ),

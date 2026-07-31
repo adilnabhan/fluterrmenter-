@@ -3,6 +3,7 @@ import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/wor
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/add_or_edit_memeber_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/add_customer_search_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/leads/add_or_edit_lead_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/leads/add_trainer_search_screen.dart';
 
 class QuickActionsFab extends StatelessWidget {
   final int orgId;
@@ -109,7 +110,7 @@ class _QuickActionsSheet extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => BlocProvider(
                     create: (context) => MembersAndLeadsCubit(orgId: orgId),
-                    child: const AddOrEditLeadScreen(),
+                    child: AddTrainerSearchScreen(orgId: orgId),
                   ),
                 ),
               );

@@ -38,10 +38,13 @@ _$LoginWithOtpEntityImpl _$$LoginWithOtpEntityImplFromJson(
   instagram: json['instagram'] as String?,
   facebook: json['facebook'] as String?,
   youtube: json['youtube'] as String?,
+  whatsapp: json['whatsapp'] as String?,
   trainer:
       json['trainer'] == null
           ? null
           : TrainerModel.fromJson(json['trainer'] as Map<String, dynamic>),
+  organizationId: (json['organization_id'] as num?)?.toInt(),
+  organizationName: json['organization_name'] as String?,
 );
 
 Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
@@ -70,7 +73,10 @@ Map<String, dynamic> _$$LoginWithOtpEntityImplToJson(
   'instagram': instance.instagram,
   'facebook': instance.facebook,
   'youtube': instance.youtube,
+  'whatsapp': instance.whatsapp,
   'trainer': instance.trainer,
+  'organization_id': instance.organizationId,
+  'organization_name': instance.organizationName,
 };
 
 _$MentorImpl _$$MentorImplFromJson(Map<String, dynamic> json) => _$MentorImpl(
@@ -106,6 +112,8 @@ _$TrainerModelImpl _$$TrainerModelImplFromJson(Map<String, dynamic> json) =>
               .toList(),
       clientsCount: (json['clients_count'] as num?)?.toInt(),
       verifiedWorkoutsCount: (json['verified_workouts_count'] as num?)?.toInt(),
+      organizationId: (json['organization_id'] as num?)?.toInt(),
+      organizationName: json['organization_name'] as String?,
     );
 
 Map<String, dynamic> _$$TrainerModelImplToJson(_$TrainerModelImpl instance) =>
@@ -117,6 +125,8 @@ Map<String, dynamic> _$$TrainerModelImplToJson(_$TrainerModelImpl instance) =>
       'portfolio_images': instance.portfolioImages,
       'clients_count': instance.clientsCount,
       'verified_workouts_count': instance.verifiedWorkoutsCount,
+      'organization_id': instance.organizationId,
+      'organization_name': instance.organizationName,
     };
 
 _$CertificateModelImpl _$$CertificateModelImplFromJson(

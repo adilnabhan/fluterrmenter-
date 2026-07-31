@@ -165,6 +165,16 @@ class _ActiveMembersListingScreenState
                                   ) {
                                     final memberData =
                                         memebersDataum.results?[index];
+                                    final endDate = memberData?.activePlan?.endDate;
+                                    bool isExpiringSoon = false;
+                                    if (endDate != null) {
+                                      final now = DateTime.now();
+                                      final today = DateTime(now.year, now.month, now.day);
+                                      final end = DateTime(endDate.year, endDate.month, endDate.day);
+                                      final difference = end.difference(today).inDays;
+                                      isExpiringSoon = difference >= 0 && difference <= 10;
+                                    }
+
                                     return InkWell(
                                       onTap: () {
                                         if (memberData?.id != null) {
@@ -185,7 +195,9 @@ class _ActiveMembersListingScreenState
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(16),
                                         child: ColoredBox(
-                                          color: Colors.white,
+                                          color: isExpiringSoon
+                                              ? const Color(0xffFFFDE7) // soft highlight yellow
+                                              : Colors.white,
                                           child: Padding(
                                             padding: const EdgeInsets.all(16),
                                             child: Column(
@@ -303,6 +315,7 @@ class _ActiveMembersListingScreenState
                                                                 ),
                                                           );
                                                         } else {
+                                                          final isSoon = difference <= 10;
                                                           return Column(
                                                             crossAxisAlignment:
                                                                 CrossAxisAlignment
@@ -315,7 +328,11 @@ class _ActiveMembersListingScreenState
                                                                         .text12Px
                                                                         .poppins
                                                                         .w400
-                                                                        .textGrey,
+                                                                        .copyWith(
+                                                                          color: isSoon
+                                                                              ? Colors.orange.shade800
+                                                                              : AppColors.textGrey,
+                                                                        ),
                                                               ),
                                                               Text(
                                                                 '$difference Days',
@@ -324,7 +341,11 @@ class _ActiveMembersListingScreenState
                                                                         .text14Px
                                                                         .poppins
                                                                         .w500
-                                                                        .dark,
+                                                                        .copyWith(
+                                                                          color: isSoon
+                                                                              ? Colors.orange.shade800
+                                                                              : AppColors.textDark,
+                                                                        ),
                                                               ),
                                                             ],
                                                           );

@@ -1,10 +1,12 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_customers_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/account_switcher_sheet.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_pending_verifications_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 
@@ -19,6 +21,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   Map<String, dynamic> _dashboardData = {};
   int _workoutGroupsCount = 0;
   int _pendingVerificationsCount = 0;
+  int _todaysAssignedWorkoutsCount = 0;
+  List<Map<String, dynamic>> _banners = [];
   bool _isLoading = true;
   int _currentBannerIndex = 0;
 
@@ -28,60 +32,161 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     _fetchDashboardData();
   }
 
-  Future<void> _fetchDashboardData() async {
+  Future<void> _fetchDashboardData({bool isSilent = false}) async {
     if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-      _dashboardData = {};
-      _workoutGroupsCount = 0;
-      _pendingVerificationsCount = 0;
-    });
+    if (!isSilent) {
+      setState(() {
+        _isLoading = true;
+        _dashboardData = {};
+        _workoutGroupsCount = 0;
+        _pendingVerificationsCount = 0;
+      });
+    }
 
     try {
-      final response = await DioClient().dio.get<dynamic>(
+      var currentUser = context.read<AppCubit>().state.currentUser;
+      var orgId =
+          currentUser?.organizationId ??
+          currentUser?.trainer?.organizationId ??
+          currentUser?.mentor?.org?.id;
+
+      debugPrint(
+        "Trainer Dashboard: currentUser ID=${currentUser?.id}, role=${currentUser?.userRole}",
+      );
+      debugPrint("Trainer Dashboard: Initial orgId resolved to: $orgId");
+
+      if (orgId == null) {
+        try {
+          debugPrint(
+            "Trainer Dashboard: orgId is null, calling editTrainerBasicDetails...",
+          );
+          final profileRes = await DioClient().dio.get<dynamic>(
+            ApiUris.editTrainerBasicDetails,
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+          debugPrint(
+            "Trainer Dashboard: editTrainerBasicDetails Response status=${profileRes.statusCode}, data=${profileRes.data}",
+          );
+          if (profileRes.statusCode == 200 && profileRes.data is Map) {
+            final responseMap = profileRes.data as Map;
+            final data =
+                responseMap['data'] is Map
+                    ? responseMap['data'] as Map
+                    : responseMap;
+            final profileOrgId =
+                data['organization_id'] as int? ??
+                data['trainer']?['organization_id'] as int? ??
+                data['mentor_profile']?['organization']?['id'] as int? ??
+                data['organization']?['id'] as int?;
+            final profileOrgName =
+                data['organization_name']?.toString() ??
+                data['trainer']?['organization_name']?.toString() ??
+                data['mentor_profile']?['organization']?['name']?.toString() ??
+                data['organization']?['name']?.toString();
+
+            debugPrint(
+              "Trainer Dashboard: resolved profileOrgId: $profileOrgId, profileOrgName: $profileOrgName",
+            );
+            if (profileOrgId != null && currentUser != null) {
+              orgId = profileOrgId;
+              final updatedUser = currentUser.copyWith(
+                organizationId: profileOrgId,
+                organizationName: profileOrgName,
+                trainer: currentUser.trainer?.copyWith(
+                  organizationId: profileOrgId,
+                  organizationName: profileOrgName,
+                ),
+              );
+              if (mounted) {
+                context.read<AppCubit>().addUser(updatedUser);
+                debugPrint(
+                  "Trainer Dashboard: Saved updated user profile to AppCubit with orgId: $profileOrgId",
+                );
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint("Failed to resolve orgId via trainer basic details: $e");
+        }
+      }
+
+      debugPrint(
+        "Trainer Dashboard: Launching concurrent futures with orgId=$orgId",
+      );
+      final dashboardFuture = DioClient().dio.get<dynamic>(
         ApiUris.trainerDashboard,
         options: Options(headers: {'X-Platform': platformSource}),
       );
-      debugPrint("Dashboard API Response: ${response.data}");
 
-      int groupCount = 0;
-      try {
-        final groupsResponse = await DioClient().dio.get<dynamic>(
-          ApiUris.workoutGroups,
-          options: Options(headers: {'X-Platform': platformSource}),
-        );
-        if (groupsResponse.statusCode == 200) {
-          final List<dynamic> data =
-              (groupsResponse.data is Map)
-                  ? (groupsResponse.data['results'] as List<dynamic>? ?? [])
-                  : (groupsResponse.data as List<dynamic>);
-          groupCount = data.length;
-        }
-      } catch (_) {}
+      final bannersFuture =
+          (orgId != null && (!isSilent || _banners.isEmpty))
+              ? DioClient().dio.get<dynamic>(
+                ApiUris.gymBanners,
+                queryParameters: {'organization_id': orgId},
+                options: Options(headers: {'X-Platform': platformSource}),
+              )
+              : Future.value(null);
 
-      int pendingCount = 0;
-      try {
-        final pendingResponse = await DioClient().dio.get<dynamic>(
-          ApiUris.pendingVerifications,
-          options: Options(headers: {'X-Platform': platformSource}),
+      final results = await Future.wait([dashboardFuture, bannersFuture]);
+      final response = results[0];
+      final bannersResponse = results[1];
+
+      debugPrint(
+        "Trainer Dashboard: Dashboard response status=${response?.statusCode}",
+      );
+      debugPrint(
+        "Trainer Dashboard: Banners response status=${bannersResponse?.statusCode}, data=${bannersResponse?.data}",
+      );
+
+      List<Map<String, dynamic>> fetchedBanners = [];
+      if (bannersResponse != null && bannersResponse.statusCode == 200) {
+        final List<dynamic> data =
+            (bannersResponse.data is List)
+                ? bannersResponse.data as List
+                : (bannersResponse.data is Map &&
+                    (bannersResponse.data as Map)['results'] is List)
+                ? (bannersResponse.data as Map)['results'] as List
+                : [];
+        final allBanners =
+            data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        fetchedBanners =
+            allBanners.where((b) {
+              final active = b['is_active'] as bool? ?? true;
+              final vis =
+                  (b['visibility'] as String? ?? 'customer').toLowerCase();
+              return active && (vis == 'trainer' || vis == 'both');
+            }).toList();
+        fetchedBanners.sort((a, b) {
+          final orderA = a['display_order'] as int? ?? 1;
+          final orderB = b['display_order'] as int? ?? 1;
+          return orderA.compareTo(orderB);
+        });
+        debugPrint(
+          "Trainer Dashboard: Fetched and filtered ${fetchedBanners.length} banners",
         );
-        if (pendingResponse.statusCode == 200 && pendingResponse.data is Map) {
-          final pendingData = pendingResponse.data as Map;
-          final pendingList =
-              pendingData['pending_verifications'] as List<dynamic>? ?? [];
-          pendingCount = pendingList.length;
-        }
-      } catch (_) {}
+      }
 
       if (!mounted) return;
 
-      if (response.statusCode == 200 && response.data is Map) {
+      if (response != null &&
+          response.statusCode == 200 &&
+          response.data is Map) {
+        final dataMap = Map<String, dynamic>.from(response.data as Map);
+        final stats = dataMap['stats'] as Map<String, dynamic>? ?? {};
+
         setState(() {
-          _dashboardData = Map<String, dynamic>.from(response.data as Map);
-          _workoutGroupsCount = groupCount;
-          _pendingVerificationsCount = pendingCount;
+          _dashboardData = dataMap;
+          if (fetchedBanners.isNotEmpty) {
+            _banners = fetchedBanners;
+          }
           _isLoading = false;
         });
+
+        // Fetch counts in the background only if not already returned by backend stats
+        if (stats['pending_verifications_count'] == null ||
+            stats['workout_groups_count'] == null) {
+          _fetchExtraCounts();
+        }
       } else {
         if (!mounted) return;
         setState(() {
@@ -98,12 +203,51 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     }
   }
 
+  Future<void> _fetchExtraCounts() async {
+    try {
+      final groupsResponse = await DioClient().dio.get<dynamic>(
+        ApiUris.workoutGroups,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (groupsResponse.statusCode == 200 && mounted) {
+        final List<dynamic> data =
+            (groupsResponse.data is Map)
+                ? (groupsResponse.data['results'] as List<dynamic>? ?? [])
+                : (groupsResponse.data as List<dynamic>);
+        setState(() {
+          _workoutGroupsCount = data.length;
+        });
+      }
+    } catch (_) {}
+
+    try {
+      final pendingResponse = await DioClient().dio.get<dynamic>(
+        ApiUris.pendingVerifications,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (pendingResponse.statusCode == 200 &&
+          pendingResponse.data is Map &&
+          mounted) {
+        final pendingData = pendingResponse.data as Map;
+        final pendingList =
+            pendingData['pending_verifications'] as List<dynamic>? ?? [];
+        setState(() {
+          _pendingVerificationsCount = pendingList.length;
+        });
+      }
+    } catch (_) {}
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     final stats = _dashboardData['stats'] as Map<String, dynamic>? ?? {};
     final activeClients = stats['active_clients'] ?? 0;
-    final pendingVerifications = _pendingVerificationsCount;
-    final workoutGroupsCreated = _workoutGroupsCount;
+    final pendingVerifications =
+        stats['pending_verifications_count'] ?? _pendingVerificationsCount;
+    final workoutGroupsCreated =
+        stats['workout_groups_count'] ?? _workoutGroupsCount;
     final averageRating = stats['average_rating'] ?? 0.0;
 
     final memberInsights =
@@ -260,12 +404,12 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                               const TrainerPendingVerificationsScreen(),
                                     ),
                                   );
-                                  _fetchDashboardData();
+                                  _fetchDashboardData(isSilent: true);
                                 },
                               ),
                               _buildStatCard(
-                                title: 'Workout Groups\nCreated',
-                                value: '$workoutGroupsCreated',
+                                title: 'Assigned\nWorkouts',
+                                value: '${stats['todays_assigned_workouts_count'] ?? stats['todays_assigned_workouts'] ?? stats['today_assigned_workouts_count'] ?? stats['assigned_workouts_count'] ?? stats['assigned_plans_count'] ?? 0}',
                                 valueColor: const Color(0xFFD97706),
                                 titleColor: AppColors.textDark,
                                 onTap: () async {
@@ -274,10 +418,10 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                     MaterialPageRoute(
                                       builder:
                                           (context) =>
-                                              const WorkoutGroupsScreen(),
+                                              const TrainerAssignedWorkoutsScreen(),
                                     ),
                                   );
-                                  _fetchDashboardData();
+                                  _fetchDashboardData(isSilent: true);
                                 },
                               ),
                               _buildStatCard(
@@ -459,25 +603,35 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   }
 
   Widget _buildBannerCarousel() {
-    final List<Widget> banners = [
-      _buildBannerItem(
-        title: 'BEST CUSTOMER SERVICES\nFor perfect body',
-        subtitle: 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit.',
-        discount: '30% OFF',
-        gradientColors: [const Color(0xFFC471F5), const Color(0xFFFA71CD)],
-      ),
-      _buildBannerItem(
-        title: 'NEW WORKOUT PLANS\nAvailable now',
-        subtitle: 'Reach your goals faster with our expert trainers.',
-        discount: 'JOIN NOW',
-        gradientColors: [const Color(0xFF4FACFE), const Color(0xFF00F2FE)],
-      ),
-    ];
+    final List<Widget> items =
+        _banners.isNotEmpty
+            ? _banners.map((b) => _buildDynamicBannerItem(b)).toList()
+            : [
+              _buildBannerItem(
+                title: 'BEST CUSTOMER SERVICES\nFor perfect body',
+                subtitle:
+                    'Lorem ipsum dolor sit amet, consectetuer adipiscing elit.',
+                discount: '30% OFF',
+                gradientColors: [
+                  const Color(0xFFC471F5),
+                  const Color(0xFFFA71CD),
+                ],
+              ),
+              _buildBannerItem(
+                title: 'NEW WORKOUT PLANS\nAvailable now',
+                subtitle: 'Reach your goals faster with our expert trainers.',
+                discount: 'JOIN NOW',
+                gradientColors: [
+                  const Color(0xFF4FACFE),
+                  const Color(0xFF00F2FE),
+                ],
+              ),
+            ];
 
     return Column(
       children: [
         CarouselSlider(
-          items: banners,
+          items: items,
           options: CarouselOptions(
             height: 180,
             viewportFraction: 1,
@@ -495,7 +649,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children:
-              banners.asMap().entries.map((entry) {
+              items.asMap().entries.map((entry) {
                 return Container(
                   width: 8,
                   height: 8,
@@ -511,6 +665,110 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
               }).toList(),
         ),
       ],
+    );
+  }
+
+  Widget _buildDynamicBannerItem(Map<String, dynamic> banner) {
+    final imageUrl = banner['image'] as String? ?? '';
+    final title = banner['title'] as String? ?? '';
+    final websiteUrl = banner['website_url'] as String? ?? '';
+    final whatsappNumber = banner['whatsapp_number'] as String? ?? '';
+
+    return GestureDetector(
+      onTap: () {
+        if (whatsappNumber.isNotEmpty) {
+          launchUrl(
+            Uri.parse(
+              'https://wa.me/${whatsappNumber.replaceAll(RegExp(r'[^\d+]'), '')}',
+            ),
+          );
+        } else if (websiteUrl.isNotEmpty) {
+          launchUrl(Uri.parse(websiteUrl));
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.grey.shade100,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (imageUrl.isNotEmpty)
+                CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder:
+                      (context, url) =>
+                          const Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                )
+              else
+                Container(color: Colors.grey.shade300),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.8),
+                        Colors.black.withOpacity(0.0),
+                      ],
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: AppStyles.text16Px.poppins.w700.copyWith(
+                          color: Colors.white,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (websiteUrl.isNotEmpty ||
+                          whatsappNumber.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              whatsappNumber.isNotEmpty
+                                  ? Icons.phone_outlined
+                                  : Icons.link,
+                              size: 12,
+                              color: Colors.white70,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              whatsappNumber.isNotEmpty
+                                  ? 'Tap to WhatsApp'
+                                  : 'Tap to visit website',
+                              style: AppStyles.text10Px.poppins.w500.copyWith(
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
