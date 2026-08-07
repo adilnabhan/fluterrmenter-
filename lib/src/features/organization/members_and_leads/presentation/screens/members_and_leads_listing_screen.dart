@@ -441,10 +441,11 @@ class __MembersAndLeadsListingScreenState
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (context) => BlocProvider.value(
-                        value: _cubit,
-                        child: AddTrainerSearchScreen(orgId: widget.orgId),
-                      ),
+                      builder:
+                          (context) => BlocProvider.value(
+                            value: _cubit,
+                            child: AddTrainerSearchScreen(orgId: widget.orgId),
+                          ),
                     ),
                   ).then((value) {
                     if (value == true) {

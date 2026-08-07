@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 
 final ValueNotifier<int> reportsRefreshTrigger = ValueNotifier<int>(0);
@@ -98,11 +99,16 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
         _monthlyReport['active_progress']?.toString() ?? "-";
 
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
+        backgroundColor: context.colors.background,
+        elevation: 0,
+        iconTheme: IconThemeData(color: context.colors.icon),
         title: Text(
           'Trainer Reports',
-          style: AppStyles.text18Px.poppins.w600.dark,
+          style: AppStyles.text18Px.poppins.w600.copyWith(
+            color: context.colors.textPrimary,
+          ),
         ),
       ),
       body:
@@ -121,7 +127,9 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                       // Daily Report Summary Cards
                       Text(
                         'Daily Report',
-                        style: AppStyles.text16Px.poppins.w600.dark,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
+                          color: context.colors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       GridView.count(
@@ -163,16 +171,18 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                       // Monthly Report
                       Text(
                         'Monthly Performance Report',
-                        style: AppStyles.text16Px.poppins.w600.dark,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
+                          color: context.colors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Container(
                         width: double.maxFinite,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: context.colors.card,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xffEEEEEE)),
+                          border: Border.all(color: context.colors.border),
                         ),
                         child: Column(
                           children: [
@@ -180,28 +190,28 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                               'Total Clients Assigned',
                               '$monthlyClientsTrained',
                             ),
-                            const Divider(
+                            Divider(
                               height: 24,
                               thickness: 1,
-                              color: Color(0xffEEEEEE),
+                              color: context.colors.divider,
                             ),
                             _buildReportRow(
                               'Total Assigned Workouts',
                               '$monthlyWorkoutsAssigned',
                             ),
-                            const Divider(
+                            Divider(
                               height: 24,
                               thickness: 1,
-                              color: Color(0xffEEEEEE),
+                              color: context.colors.divider,
                             ),
                             _buildReportRow(
                               'Workout Completion Rate',
                               monthlyCompletionRate,
                             ),
-                            const Divider(
+                            Divider(
                               height: 24,
                               thickness: 1,
-                              color: Color(0xffEEEEEE),
+                              color: context.colors.divider,
                             ),
                             _buildReportRow(
                               'Active Workouts Progress',
@@ -227,12 +237,12 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: context.colors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -247,8 +257,9 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
             children: [
               Text(
                 value,
-                style: AppStyles.text24Px.poppins.w700.dark.copyWith(
+                style: AppStyles.text24Px.poppins.w700.copyWith(
                   fontSize: 28,
+                  color: context.colors.textPrimary,
                 ),
               ),
               Icon(icon, color: color, size: 24),
@@ -257,7 +268,7 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
           Text(
             title,
             style: AppStyles.text12Px.poppins.w500.copyWith(
-              color: AppColors.textGrey,
+              color: context.colors.textSecondary,
             ),
           ),
         ],
@@ -275,7 +286,7 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
           child: Text(
             label,
             style: AppStyles.text14Px.poppins.w500.copyWith(
-              color: AppColors.textGrey,
+              color: context.colors.textSecondary,
             ),
           ),
         ),
@@ -285,7 +296,9 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
           child: Text(
             value,
             textAlign: TextAlign.end,
-            style: AppStyles.text14Px.poppins.w600.dark,
+            style: AppStyles.text14Px.poppins.w600.copyWith(
+              color: context.colors.textPrimary,
+            ),
           ),
         ),
       ],

@@ -28,9 +28,10 @@ class CreateGroupButton extends StatelessWidget {
           ],
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.add, color: Colors.white, size: 24),
+            const Icon(Icons.add, color: Colors.white, size: 22),
             const SizedBox(width: 8),
             Text(
               label,

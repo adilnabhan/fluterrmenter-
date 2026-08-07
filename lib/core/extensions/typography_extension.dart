@@ -20,7 +20,7 @@ extension TextStyleX on TextStyle {
   TextStyle get w800 => copyWith(fontWeight: FontWeight.w800);
 
   //*Colors
-  TextStyle get dark => copyWith(color: AppColors.dark);
+  TextStyle get dark => this;
   TextStyle get light => copyWith(color: AppColors.light);
   TextStyle get primary => copyWith(color: AppColors.primary);
   TextStyle get error => copyWith(color: AppColors.error);

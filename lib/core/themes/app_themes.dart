@@ -1,28 +1,26 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 
-///*
 @immutable
 sealed class AppThemes {
-  // ///* Set status bar color
-  // static void setStatusBarColor() {
-  //   SystemChrome.setSystemUIOverlayStyle(
-  //     const SystemUiOverlayStyle(
-  //       statusBarColor: AppColors.primary,
-  //       statusBarIconBrightness: Brightness.light,
-  //     ),
-  //   );
-  // }
-
-  ///*
   static final light = ThemeData(
+    useMaterial3: true,
     fontFamily: 'Poppins',
-    scaffoldBackgroundColor: AppColors.light,
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: AppThemeColors.light.background,
+    cardColor: AppThemeColors.light.card,
+    extensions: const [AppThemeColors.light],
+    colorScheme: ColorScheme.light(
+      primary: AppColors.primary,
+      surface: AppThemeColors.light.surface,
+      error: AppColors.error,
+    ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         textStyle: AppStyles.text16Px.w500.light,
         padding: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), // Set your desired radius
+          borderRadius: BorderRadius.circular(8),
         ),
         backgroundColor: AppColors.button,
         disabledBackgroundColor: AppColors.disabledButton,
@@ -35,21 +33,16 @@ sealed class AppThemes {
       centerTitle: true,
       titleTextStyle: AppStyles.text18Px.w500.dark.copyWith(
         fontWeight: FontWeight.w500,
+        color: AppThemeColors.light.textPrimary,
       ),
       iconTheme: const IconThemeData(color: Colors.black),
-      backgroundColor: AppColors.light,
-      surfaceTintColor: AppColors.light,
+      backgroundColor: AppThemeColors.light.background,
+      surfaceTintColor: AppThemeColors.light.background,
       elevation: 0,
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.fieldFillColor,
-      //   //   prefixStyle: AppStyles.text14Px.w400.kcolor(AppColors.darkBlue),
-      //   //   labelStyle: AppStyles.text14Px.w400.kcolor(AppColors.darkBlue),
-      //   //   hintStyle: AppStyles.text14Px.w400.kcolor(AppColors.lightGrey),
-      //   //   fillColor: AppColors.light,
-      //   //   filled: true,
-      //   //   contentPadding: const EdgeInsets.all(20),
+      fillColor: AppThemeColors.light.fieldFill,
       errorStyle: AppStyles.text14Px.poppins.w400.error,
       border: const OutlineInputBorder(
         borderSide: BorderSide.none,
@@ -76,67 +69,88 @@ sealed class AppThemes {
         borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
     ),
-    //   // progressIndicatorTheme: const ProgressIndicatorThemeData(
-    //   //   color: AppColors.dark,
-    //   // ),
-    //   // textTheme: TextTheme(
-    //   //   displaySmall: AppStyles.text13Px.w400.dark,
-    // ),
   );
 
-  ///*
-  static final dark = ThemeData.dark().copyWith(
-    // scaffoldBackgroundColor: AppColors.backgroundColorF4F1EA,
-    // elevatedButtonTheme: ElevatedButtonThemeData(
-    //   style: ElevatedButton.styleFrom(
-    //     textStyle: AppStyles.text16Px.w500.light,
-    //     padding: const EdgeInsets.all(16),
-    //     shape: RoundedRectangleBorder(
-    //       borderRadius: BorderRadius.circular(4), // Set your desired radius
-    //     ),
-    //     backgroundColor: AppColors.primary,
-    //     disabledBackgroundColor: AppColors.disableColorD6D6DC,
-    //     foregroundColor: AppColors.light,
-    //     disabledForegroundColor: AppColors.light,
-    //   ),
-    // ),
-    // appBarTheme: AppBarTheme(
-    //   centerTitle: true,
-    //   titleTextStyle: AppStyles.text18Px.w500.light,
-    //   iconTheme: const IconThemeData(color: Colors.white),
-    //   backgroundColor: AppColors.dark,
-    //   surfaceTintColor: AppColors.dark,
-    //   elevation: 0,
-    // ),
-    // splashColor: Colors.transparent,
-    // inputDecorationTheme: InputDecorationTheme(
-    //   prefixStyle: AppStyles.text14Px.w400.kcolor(AppColors.darkBlue),
-    //   labelStyle: AppStyles.text14Px.w400.kcolor(AppColors.darkBlue),
-    //   hintStyle: AppStyles.text14Px.w400.kcolor(AppColors.lightGrey),
-    //   errorStyle: AppStyles.text14Px.w400.error,
-    //   contentPadding: const EdgeInsets.all(20),
-    //   border: const OutlineInputBorder(
-    //     borderSide: BorderSide(color: AppColors.disableColorD6D6DC),
-    //     // borderRadius: BorderRadius.all(Radius.circular(40)),
-    //   ),
-    //   enabledBorder: const OutlineInputBorder(
-    //     borderSide: BorderSide(color: AppColors.disableColorD6D6DC),
-    //     // borderRadius: BorderRadius.all(Radius.circular(40)),
-    //   ),
-    //   errorBorder: const OutlineInputBorder(
-    //     borderSide: BorderSide(color: AppColors.error),
-    //     // borderRadius: BorderRadius.all(Radius.circular(40)),
-    //   ),
-    //   focusedBorder: const OutlineInputBorder(
-    //     borderSide: BorderSide(color: AppColors.primary),
-    //     // borderRadius: BorderRadius.all(Radius.circular(40)),
-    //   ),
-    // ),
-    // progressIndicatorTheme: const ProgressIndicatorThemeData(
-    //   color: AppColors.dark,
-    // ),
-    // textTheme: TextTheme(
-    //   displaySmall: AppStyles.text13Px.w500.light,
-    // ),
+  static final dark = ThemeData.dark(useMaterial3: true).copyWith(
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: AppThemeColors.dark.background,
+    cardColor: AppThemeColors.dark.card,
+    dialogBackgroundColor: AppThemeColors.dark.surface,
+    extensions: const [AppThemeColors.dark],
+    colorScheme: ColorScheme.dark(
+      primary: AppColors.primary,
+      surface: AppThemeColors.dark.surface,
+      error: AppColors.error,
+      onSurface: Colors.white,
+      onBackground: Colors.white,
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: Color(0xFF121212),
+      surfaceTintColor: Color(0xFF121212),
+    ),
+    dialogTheme: const DialogThemeData(
+      backgroundColor: Color(0xFF121212),
+      surfaceTintColor: Color(0xFF121212),
+      titleTextStyle: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+      contentTextStyle: TextStyle(color: Colors.white70, fontSize: 14),
+    ),
+    cardTheme: const CardThemeData(
+      color: Color(0xFF121212),
+      surfaceTintColor: Color(0xFF121212),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        textStyle: AppStyles.text16Px.w500.light,
+        padding: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        backgroundColor: AppColors.primary,
+        disabledBackgroundColor: AppColors.disabledButton,
+        foregroundColor: Colors.white,
+        disabledForegroundColor: Colors.white54,
+      ),
+    ),
+    splashColor: Colors.transparent,
+    appBarTheme: AppBarTheme(
+      centerTitle: true,
+      titleTextStyle: AppStyles.text18Px.w500.light.copyWith(
+        fontWeight: FontWeight.w500,
+        color: AppThemeColors.dark.textPrimary,
+      ),
+      iconTheme: const IconThemeData(color: Colors.white),
+      backgroundColor: AppThemeColors.dark.background,
+      surfaceTintColor: AppThemeColors.dark.background,
+      elevation: 0,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppThemeColors.dark.fieldFill,
+      errorStyle: AppStyles.text14Px.poppins.w400.error,
+      border: const OutlineInputBorder(
+        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      disabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      errorBorder: const OutlineInputBorder(
+        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      focusedErrorBorder: const OutlineInputBorder(
+        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+    ),
   );
 }

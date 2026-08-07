@@ -5,9 +5,11 @@ class TrainerWorkoutSessionDetailScreen extends StatefulWidget {
   const TrainerWorkoutSessionDetailScreen({
     super.key,
     required this.sessionId,
+    this.isAssigned,
   });
 
   final int sessionId;
+  final bool? isAssigned;
 
   @override
   State<TrainerWorkoutSessionDetailScreen> createState() =>
@@ -52,10 +54,13 @@ class _TrainerWorkoutSessionDetailScreenState
   }
 
   bool _isAssignedWorkout(Map<String, dynamic> item) {
+    if (widget.isAssigned != null) return widget.isAssigned!;
+
     final type = (item['workout_type'] ??
             item['session_type'] ??
             item['type'] ??
             item['workout_category'] ??
+            item['category'] ??
             '')
         .toString()
         .toLowerCase();
@@ -74,13 +79,18 @@ class _TrainerWorkoutSessionDetailScreenState
     final planId = item['customer_workout_plan_id'] ??
         item['plan_id'] ??
         item['workout_plan_id'] ??
-        item['plan'];
-    return planId != null && planId != 0;
+        item['plan'] ??
+        item['assigned_workout_plan'] ??
+        item['assigned_plan_id'] ??
+        item['plan_day_id'] ??
+        item['plan_day'] ??
+        item['assignment_id'];
+    return planId != null && planId != 0 && planId != '';
   }
 
   Widget _buildWorkoutTypeBadge(Map<String, dynamic> item) {
     final isAssigned = _isAssignedWorkout(item);
-    final label = isAssigned ? 'Assigned Workout' : 'Self Workout';
+    final label = isAssigned ? 'Assigned' : 'Self Workout';
     final bg = isAssigned
         ? const Color(0xFFEBF3FF)
         : const Color(0xFFF3E8FF);
@@ -129,8 +139,8 @@ class _TrainerWorkoutSessionDetailScreenState
                 children: [
                   Text(
                     workoutTitle,
-                    style: AppStyles.text18Px.poppins.w600.dark,
-                    maxLines: 1,
+                    style: AppStyles.text16Px.poppins.w600.dark,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (exercises.isNotEmpty)

@@ -24,9 +24,7 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
   }
 
@@ -40,14 +38,17 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
         options: Options(headers: {'X-Platform': platformSource}),
       );
       if (response.statusCode == 200) {
-        final List<dynamic> data = (response.data is List)
-            ? response.data as List
-            : (response.data is Map && (response.data as Map)['results'] is List)
+        final List<dynamic> data =
+            (response.data is List)
+                ? response.data as List
+                : (response.data is Map &&
+                    (response.data as Map)['results'] is List)
                 ? (response.data as Map)['results'] as List
                 : [];
         if (mounted) {
           setState(() {
-            _banners = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+            _banners =
+                data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
             _isLoading = false;
           });
         }
@@ -65,32 +66,34 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _BannerFormSheet(
-        orgId: widget.orgDetails.id ?? 0,
-        existingBanner: existingBanner,
-        onSuccess: _fetchBanners,
-      ),
+      builder:
+          (context) => _BannerFormSheet(
+            orgId: widget.orgDetails.id ?? 0,
+            existingBanner: existingBanner,
+            onSuccess: _fetchBanners,
+          ),
     );
   }
 
   Future<void> _deleteBanner(int bannerId) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Banner'),
-        content: const Text('Are you sure you want to delete this banner?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Banner'),
+            content: const Text('Are you sure you want to delete this banner?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
     );
     if (confirm != true) return;
 
@@ -123,9 +126,10 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
         leading: const PopButton().center,
         title: Text('Banners', style: AppStyles.text16Px.poppins.w500),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _banners.isEmpty
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _banners.isEmpty
               ? _buildEmptyState()
               : _buildBannersList(),
       bottomNavigationBar: Container(
@@ -215,25 +219,30 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
-                      child: imageUrl.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                color: Colors.grey.shade100,
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                color: Colors.grey.shade200,
-                                child: const Icon(Icons.error),
-                              ),
-                            )
-                          : Container(color: Colors.grey.shade200),
+                      child:
+                          imageUrl.isNotEmpty
+                              ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                fit: BoxFit.cover,
+                                placeholder:
+                                    (context, url) => Container(
+                                      color: Colors.grey.shade100,
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    ),
+                                errorWidget:
+                                    (context, url, error) => Container(
+                                      color: Colors.grey.shade200,
+                                      child: const Icon(Icons.error),
+                                    ),
+                              )
+                              : Container(color: Colors.grey.shade200),
                     ),
                   ),
                   Positioned(
@@ -242,7 +251,10 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
                     child: CircleAvatar(
                       backgroundColor: Colors.black.withOpacity(0.6),
                       child: IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.white),
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.white,
+                        ),
                         onPressed: () => _deleteBanner(id),
                       ),
                     ),
@@ -251,14 +263,22 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: isActive ? Colors.green.withOpacity(0.8) : Colors.red.withOpacity(0.8),
+                        color:
+                            isActive
+                                ? Colors.green.withOpacity(0.8)
+                                : Colors.red.withOpacity(0.8),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         isActive ? 'Active' : 'Inactive',
-                        style: AppStyles.text10Px.poppins.w600.copyWith(color: Colors.white),
+                        style: AppStyles.text10Px.poppins.w600.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -279,7 +299,10 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(4),
@@ -298,7 +321,11 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
                       if (websiteUrl.isNotEmpty) ...[
                         Row(
                           children: [
-                            Icon(Icons.link, size: 16, color: Colors.grey.shade600),
+                            Icon(
+                              Icons.link,
+                              size: 16,
+                              color: Colors.grey.shade600,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -315,7 +342,11 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            Icon(Icons.phone_outlined, size: 16, color: Colors.grey.shade600),
+                            Icon(
+                              Icons.phone_outlined,
+                              size: 16,
+                              color: Colors.grey.shade600,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               whatsappNumber,
@@ -328,15 +359,21 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Icon(Icons.visibility_outlined, size: 16, color: Colors.grey.shade600),
+                        Icon(
+                          Icons.visibility_outlined,
+                          size: 16,
+                          color: Colors.grey.shade600,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           visibility == 'both'
                               ? 'Visible on both Customer & Trainer apps'
                               : visibility == 'trainer'
-                                  ? 'Visible on Trainer app only'
-                                  : 'Visible on Customer app only',
-                          style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.primary),
+                              ? 'Visible on Trainer app only'
+                              : 'Visible on Customer app only',
+                          style: AppStyles.text12Px.poppins.w500.copyWith(
+                            color: AppColors.primary,
+                          ),
                         ),
                       ],
                     ),
@@ -345,7 +382,8 @@ class _GymBannersScreenState extends State<GymBannersScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton.icon(
-                          onPressed: () => _showBannerForm(existingBanner: banner),
+                          onPressed:
+                              () => _showBannerForm(existingBanner: banner),
                           icon: const Icon(Icons.edit_outlined, size: 16),
                           label: const Text('Edit Details'),
                           style: TextButton.styleFrom(
@@ -396,10 +434,18 @@ class _BannerFormSheetState extends State<_BannerFormSheet> {
   void initState() {
     super.initState();
     final existing = widget.existingBanner;
-    _titleController = TextEditingController(text: existing?['title'] as String? ?? '');
-    _webUrlController = TextEditingController(text: existing?['website_url'] as String? ?? '');
-    _whatsappController = TextEditingController(text: existing?['whatsapp_number'] as String? ?? '');
-    _orderController = TextEditingController(text: existing?['display_order']?.toString() ?? '1');
+    _titleController = TextEditingController(
+      text: existing?['title'] as String? ?? '',
+    );
+    _webUrlController = TextEditingController(
+      text: existing?['website_url'] as String? ?? '',
+    );
+    _whatsappController = TextEditingController(
+      text: existing?['whatsapp_number'] as String? ?? '',
+    );
+    _orderController = TextEditingController(
+      text: existing?['display_order']?.toString() ?? '1',
+    );
     _isActive = existing?['is_active'] as bool? ?? true;
     _visibility = existing?['visibility'] as String? ?? 'customer';
   }
@@ -415,7 +461,10 @@ class _BannerFormSheetState extends State<_BannerFormSheet> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (file != null) {
       setState(() {
         _localImage = file;
@@ -456,22 +505,26 @@ class _BannerFormSheetState extends State<_BannerFormSheet> {
 
       final formData = FormData.fromMap(fields);
 
-      final response = isEdit
-          ? await DioClient().dio.put<dynamic>(
-              ApiUris.gymBannerDetail(existing['id'] as int),
-              data: formData,
-              options: Options(headers: {'X-Platform': platformSource}),
-            )
-          : await DioClient().dio.post<dynamic>(
-              ApiUris.gymBanners,
-              data: formData,
-              options: Options(headers: {'X-Platform': platformSource}),
-            );
+      final response =
+          isEdit
+              ? await DioClient().dio.put<dynamic>(
+                ApiUris.gymBannerDetail(existing['id'] as int),
+                data: formData,
+                options: Options(headers: {'X-Platform': platformSource}),
+              )
+              : await DioClient().dio.post<dynamic>(
+                ApiUris.gymBanners,
+                data: formData,
+                options: Options(headers: {'X-Platform': platformSource}),
+              );
 
       final statusCode = response.statusCode ?? 0;
       if (statusCode == 200 || statusCode == 201) {
         Dialogs.showSnack(
-          msg: isEdit ? 'Banner updated successfully' : 'Banner uploaded successfully',
+          msg:
+              isEdit
+                  ? 'Banner updated successfully'
+                  : 'Banner uploaded successfully',
         );
         widget.onSuccess();
         if (mounted) Navigator.pop(context);
@@ -531,56 +584,57 @@ class _BannerFormSheetState extends State<_BannerFormSheet> {
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.grey.shade300),
                   ),
-                  child: _localImage != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.file(
-                            File(_localImage!.path),
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
-                        )
-                      : networkImageUrl.isNotEmpty
+                  child:
+                      _localImage != null
                           ? ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: CachedNetworkImage(
-                                imageUrl: networkImageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                placeholder: (context, url) =>
-                                    const Center(child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
-                              ),
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_photo_alternate_outlined,
-                                    size: 40, color: Colors.grey.shade400),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Select Banner Image',
-                                  style: AppStyles.text14Px.poppins.w500.textGrey,
-                                ),
-                              ],
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.file(
+                              File(_localImage!.path),
+                              fit: BoxFit.cover,
+                              width: double.infinity,
                             ),
+                          )
+                          : networkImageUrl.isNotEmpty
+                          ? ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: CachedNetworkImage(
+                              imageUrl: networkImageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              placeholder:
+                                  (context, url) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                              errorWidget:
+                                  (context, url, error) =>
+                                      const Icon(Icons.error),
+                            ),
+                          )
+                          : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_photo_alternate_outlined,
+                                size: 40,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Select Banner Image',
+                                style: AppStyles.text14Px.poppins.w500.textGrey,
+                              ),
+                            ],
+                          ),
                 ),
               ),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
-                  labelText: 'Title',
+                  labelText: 'Title (Optional)',
                   hintText: 'Enter banner title',
                   border: OutlineInputBorder(),
                 ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'Title is required';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -609,9 +663,18 @@ class _BannerFormSheetState extends State<_BannerFormSheet> {
                   border: OutlineInputBorder(),
                 ),
                 items: const [
-                  DropdownMenuItem(value: 'customer', child: Text('Customer Mobile App Only')),
-                  DropdownMenuItem(value: 'trainer', child: Text('Trainer Mobile App Only')),
-                  DropdownMenuItem(value: 'both', child: Text('Both Mobile Apps')),
+                  DropdownMenuItem(
+                    value: 'customer',
+                    child: Text('Customer Mobile App Only'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'trainer',
+                    child: Text('Trainer Mobile App Only'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'both',
+                    child: Text('Both Mobile Apps'),
+                  ),
                 ],
                 onChanged: (val) {
                   if (val != null) {

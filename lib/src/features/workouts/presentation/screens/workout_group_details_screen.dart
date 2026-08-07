@@ -25,8 +25,7 @@ class WorkoutGroupDetailsScreen extends StatefulWidget {
 
 class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final FieldData<dynamic> _planNamePrivate;
-  late final FieldData<dynamic> _planNamePublic;
+  late final FieldData<dynamic> _planName;
 
   List<Map<String, dynamic>> _plans = [];
   bool _isLoading = true;
@@ -36,42 +35,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
   void initState() {
     super.initState();
     _fetchPlans();
-    _planNamePrivate = FieldData(
-      type: FieldType.word,
-      textInputAction: TextInputAction.next,
-      label: 'Plan Name',
-      requiredLabel: true,
-      validator: (value) {
-        if (value?.trim().isEmpty ?? true) {
-          return 'Plan name is required';
-        }
-        return null;
-      },
-      onSubmitted: (value) {
-        _planNamePublic.focusNode?.requestFocus();
-      },
-      controller: TextEditingController(),
-      focusNode: FocusNode(),
-      decoration: InputDecoration(
-        hintText: 'Enter plan name',
-        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-        filled: true,
-        fillColor: Colors.white,
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.borderGrey, width: 1.5),
-        ),
-        enabledBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.borderGrey, width: 1.5),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-      ),
-    );
-    _planNamePublic = FieldData(
+    _planName = FieldData(
       type: FieldType.word,
       textInputAction: TextInputAction.done,
       label: 'Plan Name',
@@ -84,20 +48,18 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       },
       controller: TextEditingController(),
       focusNode: FocusNode(),
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         hintText: 'Enter plan name',
-        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
         filled: true,
-        fillColor: Colors.white,
-        border: const OutlineInputBorder(
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: AppColors.borderGrey, width: 1.5),
         ),
-        enabledBorder: const OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: AppColors.borderGrey, width: 1.5),
         ),
-        focusedBorder: const OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
@@ -107,10 +69,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
   @override
   void dispose() {
-    _planNamePrivate.controller?.dispose();
-    _planNamePrivate.focusNode?.dispose();
-    _planNamePublic.controller?.dispose();
-    _planNamePublic.focusNode?.dispose();
+    _planName.controller?.dispose();
+    _planName.focusNode?.dispose();
     super.dispose();
   }
 
@@ -152,68 +112,6 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         _isLoading = false;
       });
       Dialogs.showSnack(msg: 'Error loading plans: ${e.toString()}');
-    }
-  }
-
-  Future<void> _createPlan(String privateName, String publicName) async {
-    if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-    });
-
-    final user = context.read<AppCubit>().state.currentUser;
-    final isTrainer = user?.userRole == 35;
-    final source = isTrainer ? 'trainer' : 'organization';
-
-    try {
-      final response = await DioClient().dio.post<dynamic>(
-        ApiUris.workoutPlans,
-        data: {
-          'plan_name': publicName,
-          'plan_name_internal': privateName,
-          'group': widget.groupId,
-          'total_weeks': 1,
-          'total_days': 1,
-          'source': source,
-        },
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        Dialogs.showSnack(msg: 'Workout plan created successfully');
-        _planNamePrivate.controller?.clear();
-        _planNamePublic.controller?.clear();
-
-        if (response.data is Map && response.data['id'] != null) {
-          final int planId = response.data['id'] as int;
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-              builder:
-                  (context) => WorkoutPlanDetailsScreen(
-                    planId: planId,
-                    planTitle: publicName,
-                  ),
-            ),
-          ).then((_) {
-            _fetchPlans();
-          });
-        } else {
-          _fetchPlans();
-        }
-      } else {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-        });
-        Dialogs.showSnack(msg: 'Failed to create workout plan');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
-      Dialogs.showSnack(msg: 'Error creating workout plan: ${e.toString()}');
     }
   }
 
@@ -373,10 +271,17 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                             )
                                             : 'N/A';
 
+                                    final planSource = plan['source'] as String? ?? widget.source;
+                                    final isOrgPlan = planSource == 'organization' || planSource == 'gym' || plan['is_preset'] == true;
+                                    final user = context.read<AppCubit>().state.currentUser;
+                                    final isTrainer = user?.userRole == 35;
+                                    final canEditOrDelete = !isTrainer || !isOrgPlan;
+
                                     return _PlanCard(
                                       title: planName,
                                       exerciseCount: exerciseCount,
                                       createdOn: createdOn,
+                                      canEditOrDelete: canEditOrDelete,
                                       onTap: () async {
                                         await Navigator.push(
                                           context,
@@ -406,6 +311,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                                   ),
                                         );
                                       },
+                                      onRename: () => _renamePlan(planId, planName),
+                                      onDelete: () => _deletePlan(planId),
                                     );
                                   },
                                 ),
@@ -417,19 +324,229 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
             ],
           ),
           Positioned(
-            bottom: 30,
+            bottom: 20,
             left: 0,
             right: 0,
             child: Center(
               child: CreateGroupButton(
+                onTap: () {
+                  _showCreatePlanSheet(context);
+                },
                 label: 'Create new plan',
-                onTap: () => _showCreatePlanSheet(context),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _renamePlan(int planId, String currentName) async {
+    final nameController = TextEditingController(text: currentName);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Rename Workout Plan',
+            style: AppStyles.text16Px.poppins.w600,
+          ),
+          content: TextField(
+            controller: nameController,
+            decoration: InputDecoration(
+              hintText: 'Enter new plan name',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+                borderSide: BorderSide(color: AppColors.primary),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, null),
+              child: Text(
+                'Cancel',
+                style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(
+                dialogContext,
+                nameController.text.trim(),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Save',
+                style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (newName != null && newName.isNotEmpty && newName != currentName) {
+      try {
+        final response = await DioClient().dio.patch<dynamic>(
+          ApiUris.workoutPlanDetail(planId),
+          data: {'name': newName, 'plan_name': newName},
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+        if (response.statusCode == 200 || response.statusCode == 204) {
+          Dialogs.showSnack(msg: 'Workout plan renamed successfully');
+          _fetchPlans();
+        } else {
+          Dialogs.showSnack(msg: 'Failed to rename workout plan');
+        }
+      } catch (e) {
+        Dialogs.showSnack(msg: 'Error renaming plan: ${e.toString()}');
+      }
+    }
+  }
+
+  Future<void> _deletePlan(int planId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Delete Workout Plan',
+            style: AppStyles.text16Px.poppins.w600,
+          ),
+          content: const Text(
+            'Are you sure you want to delete this workout plan?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(
+                'Cancel',
+                style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Delete',
+                style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      try {
+        final response = await DioClient().dio.delete<dynamic>(
+          ApiUris.workoutPlanDetail(planId),
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+        if (response.statusCode == 200 || response.statusCode == 204) {
+          final msg = (response.data is Map && response.data['message'] != null)
+              ? response.data['message'].toString()
+              : 'Workout plan deleted successfully.';
+          Dialogs.showSnack(msg: msg);
+          _fetchPlans();
+        } else {
+          Dialogs.showSnack(msg: 'Failed to delete workout plan');
+        }
+      } on DioException catch (e) {
+        String errorMsg = 'Error deleting plan';
+        if (e.response?.data is Map) {
+          final map = e.response!.data as Map;
+          errorMsg = map['detail']?.toString() ??
+              map['message']?.toString() ??
+              errorMsg;
+        }
+        Dialogs.showSnack(msg: errorMsg);
+      } catch (e) {
+        Dialogs.showSnack(msg: 'Error deleting plan: ${e.toString()}');
+      }
+    }
+  }
+
+  Future<void> _createPlan(String planName) async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+    });
+
+    final user = context.read<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+    final source = isTrainer ? 'trainer' : 'organization';
+
+    try {
+      final response = await DioClient().dio.post<dynamic>(
+        ApiUris.workoutPlans,
+        data: {
+          'plan_name': planName,
+          'plan_name_internal': planName,
+          'group': widget.groupId,
+          'total_weeks': 1,
+          'total_days': 1,
+          'source': source,
+        },
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Dialogs.showSnack(msg: 'Workout plan created successfully');
+        _planName.controller?.clear();
+
+        if (response.data is Map && response.data['id'] != null) {
+          final int planId = response.data['id'] as int;
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder:
+                  (context) => WorkoutPlanDetailsScreen(
+                    planId: planId,
+                    planTitle: planName,
+                  ),
+            ),
+          ).then((_) {
+            _fetchPlans();
+          });
+        } else {
+          _fetchPlans();
+        }
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _isLoading = false;
+        });
+        Dialogs.showSnack(msg: 'Failed to create plan');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      Dialogs.showSnack(msg: 'Error creating plan: ${e.toString()}');
+    }
   }
 
   void _showCreatePlanSheet(BuildContext context) {
@@ -439,9 +556,9 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       backgroundColor: Colors.transparent,
       builder:
           (context) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            decoration: BoxDecoration(
+              color: context.colors.card,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
             padding: EdgeInsets.fromLTRB(
               20,
@@ -458,21 +575,17 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                   Text(
                     'Create a Single-Day group',
                     style: AppStyles.text18Px.poppins.w600.copyWith(
-                      color: AppColors.textDark,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 24),
                   RichText(
                     text: TextSpan(
                       text: 'Plan Name ',
-                      style: AppStyles.text14Px.poppins.w500.dark,
+                      style: AppStyles.text14Px.poppins.w500.copyWith(
+                        color: context.colors.textPrimary,
+                      ),
                       children: [
-                        TextSpan(
-                          text: '(only visible to you)',
-                          style: AppStyles.text14Px.poppins.w500.copyWith(
-                            color: AppColors.textGrey,
-                          ),
-                        ),
                         TextSpan(
                           text: '*',
                           style: AppStyles.text14Px.poppins.w500.copyWith(
@@ -483,43 +596,17 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Field(data: _planNamePrivate.copyWith(label: '')),
-                  const SizedBox(height: 16),
-                  RichText(
-                    text: TextSpan(
-                      text: 'Plan Name ',
-                      style: AppStyles.text14Px.poppins.w500.dark,
-                      children: [
-                        TextSpan(
-                          text: '(visible to clients)',
-                          style: AppStyles.text14Px.poppins.w500.copyWith(
-                            color: AppColors.textGrey,
-                          ),
-                        ),
-                        TextSpan(
-                          text: '*',
-                          style: AppStyles.text14Px.poppins.w500.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Field(data: _planNamePublic.copyWith(label: '')),
+                  Field(data: _planName.copyWith(label: '')),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
-                          final privateName =
-                              _planNamePrivate.controller?.text.trim() ?? '';
-                          final publicName =
-                              _planNamePublic.controller?.text.trim() ?? '';
+                          final name = _planName.controller?.text.trim() ?? '';
                           Navigator.pop(context);
-                          if (privateName.isNotEmpty && publicName.isNotEmpty) {
-                            _createPlan(privateName, publicName);
+                          if (name.isNotEmpty) {
+                            _createPlan(name);
                           }
                         }
                       },
@@ -553,6 +640,9 @@ class _PlanCard extends StatelessWidget {
     required this.createdOn,
     required this.onTap,
     required this.onAssignTap,
+    required this.onRename,
+    required this.onDelete,
+    this.canEditOrDelete = true,
   });
 
   final String title;
@@ -560,6 +650,9 @@ class _PlanCard extends StatelessWidget {
   final String createdOn;
   final VoidCallback onTap;
   final VoidCallback onAssignTap;
+  final VoidCallback onRename;
+  final VoidCallback onDelete;
+  final bool canEditOrDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -584,19 +677,78 @@ class _PlanCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: AppStyles.text16Px.poppins.w600.copyWith(
-                    color: AppColors.textDark,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppStyles.text16Px.poppins.w600.copyWith(
+                      color: AppColors.textDark,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                CircleAvatar(
-                  backgroundColor: AppColors.grey,
-                  radius: 15,
-                  child: const Icon(
-                    Icons.edit,
-                    size: 18,
-                    color: AppColors.textGrey,
+                if (canEditOrDelete)
+                  PopupMenuButton<String>(
+                  color: Colors.white,
+                  padding: EdgeInsets.zero,
+                  onSelected: (value) {
+                    if (value == 'rename') {
+                      onRename();
+                    } else if (value == 'delete') {
+                      onDelete();
+                    }
+                  },
+                  itemBuilder:
+                      (context) => [
+                        PopupMenuItem<String>(
+                          height: 36,
+                          value: 'rename',
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.edit_outlined,
+                                color: AppColors.textDark,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Rename',
+                                style: AppStyles.text14Px.poppins.copyWith(
+                                  color: AppColors.textDark,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<String>(
+                          height: 36,
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Delete',
+                                style: AppStyles.text14Px.poppins.copyWith(
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                  child: CircleAvatar(
+                    backgroundColor: AppColors.grey,
+                    radius: 15,
+                    child: const Icon(
+                      Icons.more_vert,
+                      size: 18,
+                      color: AppColors.textGrey,
+                    ),
                   ),
                 ),
               ],

@@ -35,9 +35,9 @@ class _QuickActionsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -47,7 +47,7 @@ class _QuickActionsSheet extends StatelessWidget {
           Text(
             'Quick Actions',
             style: AppStyles.text20Px.poppins.w600.copyWith(
-              color: AppColors.textDark,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 20),
@@ -162,12 +162,12 @@ class _ActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.isDarkMode ? context.colors.fieldFill : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderGrey),
+          border: Border.all(color: context.colors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -191,14 +191,14 @@ class _ActionCard extends StatelessWidget {
                   Text(
                     title,
                     style: AppStyles.text16Px.poppins.w600.copyWith(
-                      color: AppColors.textDark,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: AppStyles.text14Px.poppins.w400.copyWith(
-                      color: AppColors.textDark,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],

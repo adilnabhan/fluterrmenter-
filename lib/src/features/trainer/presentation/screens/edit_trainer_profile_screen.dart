@@ -55,6 +55,96 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     if (['male', 'female', 'other'].contains(currentGender)) {
       _selectedGender = currentGender;
     }
+
+    _fetchProfileDetails();
+  }
+
+  Future<void> _fetchProfileDetails() async {
+    try {
+      final res = await DioClient().dio.get<dynamic>(
+        ApiUris.editTrainerBasicDetails,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+      if (res.statusCode == 200 && res.data is Map) {
+        final data = res.data as Map<String, dynamic>;
+
+        final firstName = data['first_name']?.toString() ?? '';
+        final lastName = data['last_name']?.toString() ?? '';
+        final email = data['email']?.toString() ?? '';
+        final dob = (data['date_of_birth'] ?? data['dob'] ?? data['dateOfBirth'])?.toString() ?? '';
+        final expRaw = (data['experience_years'] ?? data['experience_year'] ?? data['experience'])?.toString() ?? '';
+        final bio = data['bio']?.toString() ?? '';
+        final location = data['location']?.toString() ?? '';
+        final instagram = data['instagram']?.toString() ?? '';
+        final facebook = data['facebook']?.toString() ?? '';
+        final youtube = data['youtube']?.toString() ?? '';
+        final whatsapp = data['whatsapp']?.toString() ?? '';
+        final gender = (data['gender']?.toString() ?? 'male').toLowerCase();
+
+        if (mounted) {
+          setState(() {
+            if (firstName.isNotEmpty && _firstNameController.text.isEmpty) {
+              _firstNameController.text = firstName;
+            }
+            if (lastName.isNotEmpty && _lastNameController.text.isEmpty) {
+              _lastNameController.text = lastName;
+            }
+            if (email.isNotEmpty && _emailController.text.isEmpty) {
+              _emailController.text = email;
+            }
+            if (dob.isNotEmpty && dob != 'null') {
+              _dobController.text = dob;
+            }
+            if (expRaw.isNotEmpty && expRaw != 'null') {
+              _experienceController.text = expRaw;
+            }
+            if (bio.isNotEmpty && bio != 'null' && _bioController.text.isEmpty) {
+              _bioController.text = bio;
+            }
+            if (location.isNotEmpty && location != 'null' && _locationController.text.isEmpty) {
+              _locationController.text = location;
+            }
+            if (instagram.isNotEmpty && instagram != 'null' && _instagramController.text.isEmpty) {
+              _instagramController.text = instagram;
+            }
+            if (facebook.isNotEmpty && facebook != 'null' && _facebookController.text.isEmpty) {
+              _facebookController.text = facebook;
+            }
+            if (youtube.isNotEmpty && youtube != 'null' && _youtubeController.text.isEmpty) {
+              _youtubeController.text = youtube;
+            }
+            if (whatsapp.isNotEmpty && whatsapp != 'null' && _whatsappController.text.isEmpty) {
+              _whatsappController.text = whatsapp;
+            }
+
+            if (['male', 'female', 'other'].contains(gender)) {
+              _selectedGender = gender;
+            }
+          });
+        }
+
+        final currentUser = context.read<AppCubit>().state.currentUser;
+        if (currentUser != null) {
+          final updatedUser = currentUser.copyWith(
+            firstName: firstName.isNotEmpty ? firstName : currentUser.firstName,
+            lastName: lastName.isNotEmpty ? lastName : currentUser.lastName,
+            email: email.isNotEmpty ? email : currentUser.email,
+            dateOfBirth: dob.isNotEmpty && dob != 'null' ? dob : currentUser.dateOfBirth,
+            experienceYears: int.tryParse(expRaw) ?? currentUser.experienceYears,
+            gender: ['male', 'female', 'other'].contains(gender) ? gender : currentUser.gender,
+            bio: bio.isNotEmpty && bio != 'null' ? bio : currentUser.bio,
+            location: location.isNotEmpty && location != 'null' ? location : currentUser.location,
+            instagram: instagram.isNotEmpty && instagram != 'null' ? instagram : currentUser.instagram,
+            facebook: facebook.isNotEmpty && facebook != 'null' ? facebook : currentUser.facebook,
+            youtube: youtube.isNotEmpty && youtube != 'null' ? youtube : currentUser.youtube,
+            whatsapp: whatsapp.isNotEmpty && whatsapp != 'null' ? whatsapp : currentUser.whatsapp,
+          );
+          context.read<AppCubit>().addUser(updatedUser);
+        }
+      }
+    } catch (_) {
+      // Quietly ignore
+    }
   }
 
   @override
@@ -220,17 +310,19 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     final user = context.watch<AppCubit>().state.currentUser;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
+        backgroundColor: context.colors.background,
+        iconTheme: IconThemeData(color: context.colors.icon),
         title: Text(
           'Edit Profile',
-          style: AppStyles.text18Px.poppins.w600.dark,
+          style: AppStyles.text18Px.poppins.w600.copyWith(color: context.colors.textPrimary),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.black,
+            color: context.colors.icon,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
@@ -309,14 +401,28 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 32),
 
-              Text('First Name', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'First Name',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _firstNameController,
+                style: TextStyle(color: context.colors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Enter first name',
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -328,14 +434,28 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              Text('Last Name', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'Last Name',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _lastNameController,
+                style: TextStyle(color: context.colors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Enter last name',
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -345,15 +465,29 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              Text('Email Address', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'Email Address',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                style: TextStyle(color: context.colors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Enter email address',
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -368,14 +502,28 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              Text('Location', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'Location',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _locationController,
+                style: TextStyle(color: context.colors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Enter location',
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -391,31 +539,45 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Gender', style: AppStyles.text14Px.poppins.w500),
+                        Text(
+                          'Gender',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: context.colors.textSecondary,
+                          ),
+                        ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
                           value: _selectedGender,
+                          dropdownColor: context.colors.card,
+                          style: TextStyle(color: context.colors.textPrimary),
                           decoration: InputDecoration(
+                            filled: true,
+                            fillColor: context.colors.card,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: context.colors.border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: context.colors.border),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 12,
                             ),
                           ),
-                          items: const [
+                          items: [
                             DropdownMenuItem(
                               value: 'male',
-                              child: Text('Male'),
+                              child: Text('Male', style: TextStyle(color: context.colors.textPrimary)),
                             ),
                             DropdownMenuItem(
                               value: 'female',
-                              child: Text('Female'),
+                              child: Text('Female', style: TextStyle(color: context.colors.textPrimary)),
                             ),
                             DropdownMenuItem(
                               value: 'other',
-                              child: Text('Other'),
+                              child: Text('Other', style: TextStyle(color: context.colors.textPrimary)),
                             ),
                           ],
                           onChanged: (val) {
@@ -433,16 +595,27 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
                       children: [
                         Text(
                           'Experience (Years)',
-                          style: AppStyles.text14Px.poppins.w500,
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: context.colors.textSecondary,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _experienceController,
                           keyboardType: TextInputType.number,
+                          style: TextStyle(color: context.colors.textPrimary),
                           decoration: InputDecoration(
                             hintText: 'E.g. 5',
+                            hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                            filled: true,
+                            fillColor: context.colors.card,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: context.colors.border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: context.colors.border),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -457,11 +630,17 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              Text('Date of Birth', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'Date of Birth',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _dobController,
                 readOnly: true,
+                style: TextStyle(color: context.colors.textPrimary),
                 onTap: () async {
                   final date = await showDatePicker(
                     context: context,
@@ -478,9 +657,17 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
                 },
                 decoration: InputDecoration(
                   hintText: 'YYYY-MM-DD',
-                  suffixIcon: const Icon(Icons.calendar_today, size: 20),
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  suffixIcon: Icon(Icons.calendar_today, size: 20, color: context.colors.icon),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -490,15 +677,29 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              Text('Bio', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'Bio',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _bioController,
                 maxLines: 4,
+                style: TextStyle(color: context.colors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Tell us a bit about yourself...',
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -508,18 +709,37 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 32),
               
-              Text('Social Links', style: AppStyles.text16Px.poppins.w600),
+              Text(
+                'Social Links',
+                style: AppStyles.text16Px.poppins.w600.copyWith(
+                  color: context.colors.textPrimary,
+                ),
+              ),
               const SizedBox(height: 16),
 
-              Text('WhatsApp', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'WhatsApp',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _whatsappController,
                 keyboardType: TextInputType.phone,
+                style: TextStyle(color: context.colors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'WhatsApp Number',
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -529,14 +749,28 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 16),
               
-              Text('Instagram', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'Instagram',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _instagramController,
+                style: TextStyle(color: context.colors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Instagram Profile URL',
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -546,14 +780,28 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              Text('Facebook', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'Facebook',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _facebookController,
+                style: TextStyle(color: context.colors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Facebook Profile URL',
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -563,14 +811,28 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              Text('YouTube', style: AppStyles.text14Px.poppins.w500),
+              Text(
+                'YouTube',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _youtubeController,
+                style: TextStyle(color: context.colors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'YouTube Channel URL',
+                  hintStyle: TextStyle(color: context.colors.textSecondary.withOpacity(0.6)),
+                  filled: true,
+                  fillColor: context.colors.card,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,

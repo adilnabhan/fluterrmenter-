@@ -20,7 +20,7 @@ class _CreateTrainerSocialMediaScreenState extends State<CreateTrainerSocialMedi
       _buildSocialField(0, 'Website', 'assets/images/svg/icons/website.svg'),
       _buildSocialField(1, 'WhatsApp', 'assets/images/svg/icons/whatsapp.svg', keyboardType: TextInputType.phone),
       _buildSocialField(2, 'Instagram', 'assets/images/svg/icons/instagram.svg'),
-      _buildSocialField(3, 'Facebook', 'assets/images/svg/icons/face_book.svg'),
+      _buildSocialField(3, 'Facebook', 'assets/images/svg/icons/fb.svg'),
       _buildSocialField(4, 'YouTube', 'assets/images/svg/icons/youtube.svg'),
     ];
   }

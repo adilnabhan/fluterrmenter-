@@ -25,10 +25,12 @@ class GymDetailsUpdateTemplateScreen extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
 
   @override
-  State<GymDetailsUpdateTemplateScreen> createState() => _GymDetailsUpdateTempleteScreenState();
+  State<GymDetailsUpdateTemplateScreen> createState() =>
+      _GymDetailsUpdateTempleteScreenState();
 }
 
-class _GymDetailsUpdateTempleteScreenState extends State<GymDetailsUpdateTemplateScreen> {
+class _GymDetailsUpdateTempleteScreenState
+    extends State<GymDetailsUpdateTemplateScreen> {
   late final TextEditingController _controller;
   late final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -47,7 +49,10 @@ class _GymDetailsUpdateTempleteScreenState extends State<GymDetailsUpdateTemplat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: const PopButton().center, title: Text(widget.title, style: AppStyles.text16Px.poppins.w500)),
+      appBar: AppBar(
+        leading: const PopButton().center,
+        title: Text(widget.title, style: AppStyles.text16Px.poppins.w500),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -55,7 +60,10 @@ class _GymDetailsUpdateTempleteScreenState extends State<GymDetailsUpdateTemplat
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.questionText, style: AppStyles.text16Px.poppins.w700.dark),
+              Text(
+                widget.questionText,
+                style: AppStyles.text16Px.poppins.w700.dark,
+              ),
               const SizedBox(height: 16),
               Field(
                 data: FieldData<String>(
@@ -77,11 +85,26 @@ class _GymDetailsUpdateTempleteScreenState extends State<GymDetailsUpdateTemplat
                     hintText: widget.hintText,
                     hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
                     filled: false,
-                    border: OutlineInputBorder(borderSide: const BorderSide(color: AppColors.borderGrey), borderRadius: BorderRadius.circular(8)),
-                    focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                    enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
-                    errorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.error)),
-                    focusedErrorBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)), borderSide: BorderSide(color: AppColors.borderGrey)),
+                    border: OutlineInputBorder(
+                      borderSide: const BorderSide(color: AppColors.borderGrey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(color: AppColors.borderGrey),
+                    ),
+                    enabledBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(color: AppColors.borderGrey),
+                    ),
+                    errorBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(color: AppColors.error),
+                    ),
+                    focusedErrorBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(color: AppColors.borderGrey),
+                    ),
                   ),
                 ),
               ),

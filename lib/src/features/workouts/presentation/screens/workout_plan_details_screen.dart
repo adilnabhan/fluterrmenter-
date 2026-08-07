@@ -622,7 +622,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder:
-          (sheetContext) => _SelectExerciseSheetContent(
+          (sheetContext) => SelectExerciseSheetContent(
             existingExercises: _exercises,
             onAddExercise: (WorkoutExercise newEx) {
               if (!mounted) return;
@@ -844,17 +844,22 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
   }
 }
 
-class _SelectExerciseSheetContent extends StatefulWidget {
+class SelectExerciseSheetContent extends StatefulWidget {
   final List<WorkoutExercise> existingExercises;
-  final Function(WorkoutExercise) onAddExercise;
+  final Function(WorkoutExercise)? onAddExercise;
+  final String title;
+  final bool isPage;
 
-  const _SelectExerciseSheetContent({
-    required this.existingExercises,
-    required this.onAddExercise,
+  const SelectExerciseSheetContent({
+    super.key,
+    this.existingExercises = const [],
+    this.onAddExercise,
+    this.title = 'Select Workout',
+    this.isPage = false,
   });
 
   @override
-  State<_SelectExerciseSheetContent> createState() =>
+  State<SelectExerciseSheetContent> createState() =>
       _SelectExerciseSheetContentState();
 }
 
@@ -871,7 +876,7 @@ class _TabCache {
 }
 
 class _SelectExerciseSheetContentState
-    extends State<_SelectExerciseSheetContent> {
+    extends State<SelectExerciseSheetContent> {
   int _selectedTab = 0; // 0 for Gym Created, 1 for You Created, 2 for Library
   List<Map<String, dynamic>> _allExercises = [];
   bool _isLoading = true;
@@ -949,14 +954,39 @@ class _SelectExerciseSheetContentState
         if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
       };
 
-      final response = await DioClient().dio.get<dynamic>(
-        ApiUris.workoutExercises,
-        queryParameters: queryParams,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+      dynamic data;
+      try {
+        final response = await DioClient().dio.get<dynamic>(
+          ApiUris.workoutExercises,
+          queryParameters: queryParams,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+        if (response.statusCode == 200) {
+          data = response.data;
+        }
+      } catch (_) {}
 
-      if (response.statusCode == 200) {
-        final data = response.data;
+      // If Gym Created tab is selected and trainer source=gym returned empty/null, try ApiUris.gymExercises
+      final bool isGymTabEmpty = data == null ||
+          (data is Map && (data['results'] as List? ?? []).isEmpty) ||
+          (data is List && data.isEmpty);
+
+      if (_selectedTab == 0 && isGymTabEmpty) {
+        try {
+          final gymRes = await DioClient().dio.get<dynamic>(
+            ApiUris.gymExercises,
+            queryParameters: {
+              if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
+            },
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+          if (gymRes.statusCode == 200 && gymRes.data != null) {
+            data = gymRes.data;
+          }
+        } catch (_) {}
+      }
+
+      if (data != null) {
         List<dynamic> resultsList = [];
         bool hasMore = false;
 
@@ -1090,10 +1120,12 @@ class _SelectExerciseSheetContentState
     final displayList = _filteredExercises;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      height: widget.isPage ? double.infinity : MediaQuery.of(context).size.height * 0.7,
+      decoration: BoxDecoration(
+        color: context.colors.background,
+        borderRadius: widget.isPage
+            ? BorderRadius.zero
+            : const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
@@ -1102,22 +1134,23 @@ class _SelectExerciseSheetContentState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Select Workout',
-                      style: AppStyles.text16Px.poppins.w600.copyWith(
-                        color: AppColors.textDark,
+                if (!widget.isPage)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
+                          color: context.colors.textPrimary,
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                      IconButton(
+                        icon: Icon(Icons.close, color: context.colors.icon),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                if (!widget.isPage) const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
@@ -1376,7 +1409,7 @@ class _SelectExerciseSheetContentState
                                         {'set_number': 1},
                                       ],
                                     );
-                                    widget.onAddExercise(newEx);
+                                    widget.onAddExercise?.call(newEx);
                                     Dialogs.showSnack(
                                       msg: '${newEx.name} added to plan list',
                                     );
@@ -1738,6 +1771,7 @@ class _CreateExerciseBottomSheetState
                             ),
                             const SizedBox(height: 8),
                             DropdownButtonFormField<int>(
+                              menuMaxHeight: 300,
                               value: _selectedMuscleId,
                               hint: const Text('Select the muscle'),
                               items: [
@@ -1964,6 +1998,7 @@ class _CreateExerciseBottomSheetState
                             ),
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
+                              menuMaxHeight: 300,
                               value: _selectedType,
                               hint: const Text('Select the type of exercise'),
                               items:
@@ -1990,6 +2025,7 @@ class _CreateExerciseBottomSheetState
                             ),
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
+                              menuMaxHeight: 300,
                               value: _selectedTrackBy,
                               hint: const Text('Select track by'),
                               items:
@@ -2016,6 +2052,7 @@ class _CreateExerciseBottomSheetState
                             ),
                             const SizedBox(height: 8),
                             DropdownButtonFormField<int>(
+                              menuMaxHeight: 300,
                               value: _selectedEquipmentId,
                               hint: const Text('Select the equipment used'),
                               items: [

@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_main_screen.dart';
 
 class AccountSwitcherSheet extends StatelessWidget {
@@ -8,7 +9,7 @@ class AccountSwitcherSheet extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -31,7 +32,11 @@ class AccountSwitcherSheet extends StatelessWidget {
       return prev;
     });
 
-    return Padding(
+    return Container(
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       padding: EdgeInsets.only(
         left: 16,
         right: 16,
@@ -47,11 +52,13 @@ class AccountSwitcherSheet extends StatelessWidget {
             children: [
               Text(
                 'Accounts',
-                style: AppStyles.text18Px.poppins.w600.dark,
+                style: AppStyles.text18Px.poppins.w600.copyWith(
+                  color: context.colors.textPrimary,
+                ),
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close, color: AppColors.textGrey),
+                icon: Icon(Icons.close, color: context.colors.icon),
               ),
             ],
           ),
@@ -59,8 +66,9 @@ class AccountSwitcherSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
+              color: context.colors.fieldFill,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.disabledButton),
+              border: Border.all(color: context.colors.border),
             ),
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -120,13 +128,15 @@ class AccountSwitcherSheet extends StatelessWidget {
                                     children: [
                                       Text(
                                         displayName,
-                                        style: AppStyles.text14Px.dark,
+                                        style: AppStyles.text14Px.copyWith(
+                                          color: context.colors.textPrimary,
+                                        ),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
                                         roleLabel,
                                         style: AppStyles.text12Px.poppins.w400.copyWith(
-                                          color: AppColors.textGrey,
+                                          color: context.colors.textSecondary,
                                         ),
                                       ),
                                     ],
@@ -168,9 +178,9 @@ class AccountSwitcherSheet extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Divider(
+                        Divider(
                           thickness: 1,
-                          color: Color(0xffDDDDDD),
+                          color: context.colors.divider,
                         ),
                       ],
                     );
@@ -199,7 +209,9 @@ class AccountSwitcherSheet extends StatelessWidget {
                           const SizedBox(width: 16),
                           Text(
                             'Add Account',
-                            style: AppStyles.text14Px.dark,
+                            style: AppStyles.text14Px.copyWith(
+                              color: context.colors.textPrimary,
+                            ),
                           ),
                         ],
                       ),

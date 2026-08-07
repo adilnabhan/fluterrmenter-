@@ -52,10 +52,7 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
     try {
       final res = await DioClient().dio.get<dynamic>(
         ApiUris.searchTrainer,
-        queryParameters: {
-          'mobile': mobile,
-          'organization_id': widget.orgId,
-        },
+        queryParameters: {'mobile': mobile, 'organization_id': widget.orgId},
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -68,7 +65,9 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
           });
         } else {
           setState(() {
-            _errorMessage = data['message']?.toString() ?? 'No trainer found with this mobile number.';
+            _errorMessage =
+                data['message']?.toString() ??
+                'No trainer found with this mobile number.';
             _isSearching = false;
           });
         }
@@ -101,19 +100,18 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
       final trainerId = _foundTrainer!['id'];
       final res = await DioClient().dio.post<dynamic>(
         ApiUris.addExistingTrainer,
-        data: {
-          'trainer_id': trainerId,
-          'organization_id': widget.orgId,
-        },
+        data: {'trainer_id': trainerId, 'organization_id': widget.orgId},
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
       if (res.statusCode == 200 || res.statusCode == 201) {
-        final msg = res.data is Map ? (res.data as Map)['message']?.toString() : null;
+        final msg =
+            res.data is Map ? (res.data as Map)['message']?.toString() : null;
         Dialogs.showSnack(msg: msg ?? 'Trainer added successfully!');
         if (mounted) Navigator.pop(context, true);
       } else {
-        final msg = res.data is Map ? (res.data as Map)['message']?.toString() : null;
+        final msg =
+            res.data is Map ? (res.data as Map)['message']?.toString() : null;
         Dialogs.showSnack(msg: msg ?? 'Failed to add trainer.');
       }
     } catch (e) {
@@ -133,18 +131,21 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
   }
 
   Widget _buildTrainerCard(Map<String, dynamic> trainer) {
-    final name = trainer['full_name']?.toString() ??
+    final name =
+        trainer['full_name']?.toString() ??
         '${trainer['first_name'] ?? ''} ${trainer['last_name'] ?? ''}'.trim();
     final mobile = trainer['mobile']?.toString() ?? '';
     final email = trainer['email']?.toString() ?? '';
     final bio = trainer['bio']?.toString() ?? '';
-    final int experience = trainer['experience_years'] is num
-        ? (trainer['experience_years'] as num).toInt()
-        : int.tryParse(trainer['experience_years']?.toString() ?? '') ?? 0;
+    final int experience =
+        trainer['experience_years'] is num
+            ? (trainer['experience_years'] as num).toInt()
+            : int.tryParse(trainer['experience_years']?.toString() ?? '') ?? 0;
     final specRaw = trainer['specializations'] as List? ?? [];
     final specs = specRaw.map((e) => e.toString()).toList();
     final profileImg = trainer['profile_image']?.toString();
-    final alreadyLinked = trainer['already_linked_to_this_gym'] as bool? ?? false;
+    final alreadyLinked =
+        trainer['already_linked_to_this_gym'] as bool? ?? false;
 
     return Container(
       margin: const EdgeInsets.only(top: 20),
@@ -172,14 +173,25 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
                   width: 60,
                   height: 60,
                   color: Colors.grey.shade100,
-                  child: profileImg != null && profileImg.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: profileImg,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => const CircularProgressIndicator(),
-                          errorWidget: (_, __, ___) => const Icon(Icons.person, size: 30, color: Colors.grey),
-                        )
-                      : const Icon(Icons.person, size: 30, color: Colors.grey),
+                  child:
+                      profileImg != null && profileImg.isNotEmpty
+                          ? CachedNetworkImage(
+                            imageUrl: profileImg,
+                            fit: BoxFit.cover,
+                            placeholder:
+                                (_, __) => const CircularProgressIndicator(),
+                            errorWidget:
+                                (_, __, ___) => const Icon(
+                                  Icons.person,
+                                  size: 30,
+                                  color: Colors.grey,
+                                ),
+                          )
+                          : const Icon(
+                            Icons.person,
+                            size: 30,
+                            color: Colors.grey,
+                          ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -194,13 +206,17 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
                     const SizedBox(height: 2),
                     Text(
                       mobile,
-                      style: AppStyles.text13Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                      style: AppStyles.text13Px.poppins.w400.copyWith(
+                        color: AppColors.textGrey,
+                      ),
                     ),
                     if (email.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         email,
-                        style: AppStyles.text13Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                        style: AppStyles.text13Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
                       ),
                     ],
                   ],
@@ -219,7 +235,9 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
           if (bio.isNotEmpty) ...[
             Text(
               bio,
-              style: AppStyles.text13Px.poppins.w400.copyWith(color: AppColors.textGrey),
+              style: AppStyles.text13Px.poppins.w400.copyWith(
+                color: AppColors.textGrey,
+              ),
             ),
             const SizedBox(height: 12),
           ],
@@ -227,54 +245,71 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: specs.map((spec) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffF0F4FF),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    spec,
-                    style: AppStyles.text12Px.poppins.w500.copyWith(color: const Color(0xff486CC2)),
-                  ),
-                );
-              }).toList(),
+              children:
+                  specs.map((spec) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffF0F4FF),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        spec,
+                        style: AppStyles.text12Px.poppins.w500.copyWith(
+                          color: const Color(0xff486CC2),
+                        ),
+                      ),
+                    );
+                  }).toList(),
             ),
             const SizedBox(height: 20),
           ],
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: alreadyLinked
-                ? Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12),
+            child:
+                alreadyLinked
+                    ? Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Already added to this gym',
+                        style: AppStyles.text14Px.poppins.w500.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    )
+                    : ElevatedButton(
+                      onPressed: _isSubmitting ? null : _addExistingTrainer,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child:
+                          _isSubmitting
+                              ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Text(
+                                'Add Existing Trainer',
+                                style: AppStyles.text14Px.poppins.w600.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
                     ),
-                    child: Text(
-                      'Already added to this gym',
-                      style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.grey),
-                    ),
-                  )
-                : ElevatedButton(
-                    onPressed: _isSubmitting ? null : _addExistingTrainer,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
-                        : Text(
-                            'Add Existing Trainer',
-                            style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white),
-                          ),
-                  ),
           ),
         ],
       ),
@@ -296,7 +331,10 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
           children: [
             Text('Search Trainer', style: AppStyles.text20Px.poppins.w600.dark),
             const SizedBox(height: 24),
-            Text('Search Trainer by mobile number', style: AppStyles.text14Px.poppins.w500.dark),
+            Text(
+              'Search Trainer by mobile number',
+              style: AppStyles.text14Px.poppins.w500.dark,
+            ),
             const SizedBox(height: 8),
             TextField(
               controller: _searchController,
@@ -304,28 +342,43 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
                 hintText: 'Enter 10-digit number',
-                hintStyle: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                prefixIcon: const Icon(Icons.phone_outlined, size: 20, color: AppColors.textGrey),
+                hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                  color: AppColors.textGrey,
+                ),
+                prefixIcon: const Icon(
+                  Icons.phone_outlined,
+                  size: 20,
+                  color: AppColors.textGrey,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.borderGrey),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Text("Trainer doesn't have Discipl app? ", style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+                Text(
+                  "Trainer doesn't have Discipl app? ",
+                  style: AppStyles.text12Px.poppins.w400.copyWith(
+                    color: AppColors.textGrey,
+                  ),
+                ),
                 InkWell(
                   onTap: () async {
                     final res = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => BlocProvider.value(
-                          value: context.read<MembersAndLeadsCubit>(),
-                          child: const AddOrEditLeadScreen(),
-                        ),
+                        builder:
+                            (context) => BlocProvider.value(
+                              value: context.read<MembersAndLeadsCubit>(),
+                              child: const AddOrEditLeadScreen(),
+                            ),
                       ),
                     );
                     if (res != null && res == true) {
@@ -347,8 +400,7 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
                 padding: EdgeInsets.only(top: 40),
                 child: Center(child: CircularProgressIndicator()),
               ),
-            if (_foundTrainer != null)
-              _buildTrainerCard(_foundTrainer!),
+            if (_foundTrainer != null) _buildTrainerCard(_foundTrainer!),
             if (_errorMessage != null && !_isSearching)
               Padding(
                 padding: const EdgeInsets.only(top: 24),
@@ -360,7 +412,9 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
                         Expanded(
                           child: Text(
                             _errorMessage!,
-                            style: AppStyles.text13Px.poppins.w500.copyWith(color: Colors.red),
+                            style: AppStyles.text13Px.poppins.w500.copyWith(
+                              color: Colors.red,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -369,22 +423,40 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
                           child: OutlinedButton.icon(
                             onPressed: () {
                               final number = _searchController.text.trim();
-                              final message = Uri.encodeComponent("Hi! Please download the Discipl Trainer app to register your profile.");
+                              final message = Uri.encodeComponent(
+                                "Hi! Please download the Discipl Trainer app to register your profile.",
+                              );
                               launchUrl(
-                                Uri.parse('https://wa.me/$number?text=$message'),
+                                Uri.parse(
+                                  'https://wa.me/$number?text=$message',
+                                ),
                                 mode: LaunchMode.externalApplication,
                               );
                             },
-                            icon: const Icon(Icons.share, size: 14, color: Color(0xFF25D366)),
+                            icon: const Icon(
+                              Icons.share,
+                              size: 14,
+                              color: Color(0xFF25D366),
+                            ),
                             label: Text(
                               'Invite',
-                              style: AppStyles.text12Px.poppins.w600.copyWith(color: const Color(0xFF25D366)),
+                              style: AppStyles.text12Px.poppins.w600.copyWith(
+                                color: const Color(0xFF25D366),
+                              ),
                             ),
                             style: OutlinedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              side: const BorderSide(color: Color(0xFF25D366), width: 1.5),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                              side: const BorderSide(
+                                color: Color(0xFF25D366),
+                                width: 1.5,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 0,
+                              ),
                             ),
                           ),
                         ),

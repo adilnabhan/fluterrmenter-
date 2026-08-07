@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 
 import 'dart:ui';
 
@@ -19,7 +20,7 @@ class OrganizationBottomNavBar extends StatelessWidget {
     final isTrainer = user?.userRole == 35;
 
     return Container(
-      decoration: const BoxDecoration(color: Colors.white),
+      decoration: BoxDecoration(color: context.colors.surface),
       child: SafeArea(
         top: false,
         child: Padding(
@@ -32,10 +33,12 @@ class OrganizationBottomNavBar extends StatelessWidget {
                   currentIndex == 0
                       ? 'assets/images/svg/icons/home_filled.svg'
                       : 'assets/images/svg/icons/homeicon.svg',
-                  // color:
-                  //     currentIndex == 0
-                  //         ? AppColors.primary
-                  //         : AppColors.textGrey,
+                  colorFilter: ColorFilter.mode(
+                    currentIndex == 0
+                        ? AppColors.primary
+                        : context.colors.textSecondary,
+                    BlendMode.srcIn,
+                  ),
                 ),
                 label: 'Home',
                 isSelected: currentIndex == 0,
@@ -48,7 +51,7 @@ class OrganizationBottomNavBar extends StatelessWidget {
                     color:
                         currentIndex == 1
                             ? AppColors.primary
-                            : AppColors.textGrey,
+                            : context.colors.textSecondary,
                   ),
                   label: 'Trainers',
                   isSelected: currentIndex == 1,
@@ -60,7 +63,7 @@ class OrganizationBottomNavBar extends StatelessWidget {
                     color:
                         currentIndex == 2
                             ? AppColors.primary
-                            : AppColors.textGrey,
+                            : context.colors.textSecondary,
                     size: 24,
                   ),
                   label: 'Reports',
@@ -87,7 +90,7 @@ class OrganizationBottomNavBar extends StatelessWidget {
                     color:
                         currentIndex == 1
                             ? AppColors.primary
-                            : AppColors.textGrey,
+                            : context.colors.textSecondary,
                     size: 24,
                   ),
                   label: 'Workouts',
@@ -100,7 +103,7 @@ class OrganizationBottomNavBar extends StatelessWidget {
                     color:
                         currentIndex == 2
                             ? AppColors.primary
-                            : AppColors.textGrey,
+                            : context.colors.textSecondary,
                     size: 24,
                   ),
                   label: 'Clients',
@@ -113,7 +116,7 @@ class OrganizationBottomNavBar extends StatelessWidget {
                     color:
                         currentIndex == 3
                             ? AppColors.primary
-                            : AppColors.textGrey,
+                            : context.colors.textSecondary,
                     size: 24,
                   ),
                   label: 'Reports',
@@ -181,7 +184,7 @@ class _NavBarItem extends StatelessWidget {
           Text(
             label,
             style: AppStyles.text13Px.poppins.copyWith(
-              color: isSelected ? AppColors.primary : AppColors.textGrey,
+              color: isSelected ? AppColors.primary : context.colors.textSecondary,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),

@@ -57,6 +57,8 @@ final class ApiUris {
   static String updateMember(int id) => '${_v1}customer/manage/$id/update/';
   static String memberDetails(int id) => '${_v1}customer/manage/$id/';
   static final searchCustomer = '${_v1}customer/search/';
+  static String customerBodyMatrix(dynamic customerId) =>
+      '${_v1}customer/body-matrix/?customer_id=$customerId';
 
   ///============================= Trainers =============================\\\
   static final leadsListing = '${_v1}fitnesscenter/trainers/';
@@ -90,11 +92,23 @@ final class ApiUris {
   static String clientWorkoutCalendarDetail(String date) => '${_v1}fitnesscenter/reports/client-workout-calendar/$date/';
   static final expenses = '${_v1}fitnesscenter/expenses/';
   static String expenseDetail(int id) => '${_v1}fitnesscenter/expenses/$id/';
+  static final revenueCategories = '${_v1}fitnesscenter/revenue-categories/';
+  static String revenueCategoryDetail(int id) => '${_v1}fitnesscenter/revenue-categories/$id/';
+  static final revenues = '${_v1}fitnesscenter/revenues/';
+  static String revenueDetail(int id) => '${_v1}fitnesscenter/revenues/$id/';
+  static final revenueReports = '${_v1}fitnesscenter/revenue-reports/';
+  static final revenueTargets = '${_v1}fitnesscenter/revenue-targets/';
   static final budget = '${_v1}fitnesscenter/budget/';
   static final trainerAttendance = '${_v1}fitnesscenter/trainer-attendance/';
   static String trainerAttendanceDetail(int id) => '${_v1}fitnesscenter/trainer-attendance/$id/';
   static String trainerAttendanceSessionDelete(int id) => '${_v1}fitnesscenter/trainer-attendance/session/$id/';
   static final trainerAttendanceReports = '${_v1}fitnesscenter/trainer-attendance/reports/';
+  static final clientAttendance = '${_v1}fitnesscenter/client-attendance/';
+  static String clientAttendanceDetail(int id) => '${_v1}fitnesscenter/client-attendance/$id/';
+  static final clientAttendanceReport = '${_v1}fitnesscenter/client-attendance/report/';
+  static final clientAttendanceDashboard = '${_v1}fitnesscenter/client-attendance/dashboard/';
+  static final gymHolidays = '${_v1}fitnesscenter/holidays/';
+  static String gymHolidayDetail(int id) => '${_v1}fitnesscenter/holidays/$id/';
   // static String paymentHistory(String orgId) =>
   //     '${_v1}fitnesscenter/customer-payments/$orgId';
 
@@ -119,6 +133,9 @@ final class ApiUris {
       '${_v1}customers/assigned-workouts-all/?customer_id=$customerId';
   static final trainerReports = '${_v1}trainer/reports/';
   static final trainerReviews = '${_v1}trainer/reviews/';
+  static final trainerClientAttendance = '${_v1}trainer/client-attendance/';
+  static final trainerClientAttendanceMark =
+      '${_v1}trainer/client-attendance/mark/';
 
   ///============================= Certificates & Portfolio =============================\\\
   static final certificates = '${_v1}trainer/certificates/';
@@ -138,6 +155,7 @@ final class ApiUris {
   static String deleteGymExercise(int id) => '${_v1}fitnesscenter/exercises/$id/';
   static final gymWorkoutLibrary = '${_v1}fitnesscenter/workout-library/';
   static String gymWorkoutLibraryDetail(int id) => '${_v1}fitnesscenter/workout-library/$id/';
+  static final gymWorkoutGroups = '${_v1}fitnesscenter/workout-groups/';
   static final workoutGroups = '${_v1}trainer/workout-groups/';
   static String workoutGroupDetail(int id) =>
       '${_v1}trainer/workout-groups/$id/';
@@ -177,4 +195,11 @@ final class ApiUris {
   static final gymBanners = '${_v1}fitnesscenter/gym-banners/';
   static String gymBannerDetail(int id) =>
       '${_v1}fitnesscenter/gym-banners/$id/';
+
+  ///============================= Upcoming Payments =============================\\\
+  static final upcomingPayments = '${_v1}fitnesscenter/upcoming-payments/';
+  static String markUpcomingPaymentPaid(int id) =>
+      '${_v1}fitnesscenter/upcoming-payments/$id/mark-paid/';
+  static String upcomingPaymentDetail(int id) =>
+      '${_v1}fitnesscenter/upcoming-payments/$id/';
 }

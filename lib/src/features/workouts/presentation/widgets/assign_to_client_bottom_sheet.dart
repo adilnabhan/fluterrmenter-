@@ -355,14 +355,6 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         enteredTitle.isNotEmpty ? enteredTitle : widget.planTitle;
 
     if (!mounted) return;
-    // ignore: use_build_context_synchronously
-    final trainerId = context.read<AppCubit>().state.currentUser?.mentor?.id;
-    if (trainerId == null) {
-      Dialogs.showSnack(msg: 'Trainer profile not found.');
-      return;
-    }
-
-    if (!mounted) return;
     setState(() {
       _submittingMap[customerId] = true;
     });

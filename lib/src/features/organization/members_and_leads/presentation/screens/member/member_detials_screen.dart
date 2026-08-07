@@ -234,7 +234,10 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                Text('Memberships', style: AppStyles.text16Px.poppins.w600.dark),
+                Text(
+                  'Memberships',
+                  style: AppStyles.text16Px.poppins.w600.dark,
+                ),
               ],
             ),
             InkWell(
@@ -382,7 +385,10 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
     );
   }
 
-  Widget _buildMembershipCard(MembershipDataModel membership, MemberDetailsModel data) {
+  Widget _buildMembershipCard(
+    MembershipDataModel membership,
+    MemberDetailsModel data,
+  ) {
     final now = DateTime.now();
 
     // Check actual dates for accurate status
@@ -693,7 +699,10 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                 ),
 
                 if (isExpired) ...[
-                  const Divider(thickness: 1, color: Color(0xffEEEEEE)).pxy(y: 12),
+                  const Divider(
+                    thickness: 1,
+                    color: Color(0xffEEEEEE),
+                  ).pxy(y: 12),
                   SizedBox(
                     width: double.infinity,
                     child: Button.filled(
@@ -1687,7 +1696,9 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
         return _RenewMembershipBottomSheet(
           orgId: _cubit.orgId,
           memberId: widget.memberId,
-          memberName: '${memberDetails.firstName ?? ''} ${memberDetails.lastName ?? ''}'.trim(),
+          memberName:
+              '${memberDetails.firstName ?? ''} ${memberDetails.lastName ?? ''}'
+                  .trim(),
           onRenewed: _fetch,
         );
       },
@@ -1757,9 +1768,14 @@ class _RenewMembershipBottomSheetState
           data = response.data as List<dynamic>;
         }
 
-        final parsed = data
-            .map((e) => MembershipPackageModel.fromJson(Map<String, dynamic>.from(e as Map)))
-            .toList();
+        final parsed =
+            data
+                .map(
+                  (e) => MembershipPackageModel.fromJson(
+                    Map<String, dynamic>.from(e as Map),
+                  ),
+                )
+                .toList();
 
         if (mounted) {
           setState(() {
@@ -1878,19 +1894,23 @@ class _RenewMembershipBottomSheetState
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(8)),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                 ),
                 value: _selectedPackage,
                 hint: const Text('Choose a plan'),
-                items: _packages.map((package) {
-                  return DropdownMenuItem<MembershipPackageModel>(
-                    value: package,
-                    child: Text(
-                      '${package.name ?? ''} (₹${package.actualPrice})',
-                      style: AppStyles.text14Px.poppins.w400.dark,
-                    ),
-                  );
-                }).toList(),
+                items:
+                    _packages.map((package) {
+                      return DropdownMenuItem<MembershipPackageModel>(
+                        value: package,
+                        child: Text(
+                          '${package.name ?? ''} (₹${package.actualPrice})',
+                          style: AppStyles.text14Px.poppins.w400.dark,
+                        ),
+                      );
+                    }).toList(),
                 onChanged: (val) {
                   if (val != null) {
                     setState(() {
@@ -1944,7 +1964,11 @@ class _RenewMembershipBottomSheetState
                                 _startDate.format('dd MMM yyyy'),
                                 style: AppStyles.text14Px.poppins.w400.dark,
                               ),
-                              const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                              const Icon(
+                                Icons.calendar_today,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
                             ],
                           ),
                         ),
@@ -1969,7 +1993,10 @@ class _RenewMembershipBottomSheetState
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.all(Radius.circular(8)),
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                         ),
                       ),
                     ],
@@ -1978,19 +2005,21 @@ class _RenewMembershipBottomSheetState
               ],
             ),
             const SizedBox(height: 16),
-            Text(
-              'Amount (₹)',
-              style: AppStyles.text14Px.poppins.w500.dark,
-            ),
+            Text('Amount (₹)', style: AppStyles.text14Px.poppins.w500.dark),
             const SizedBox(height: 8),
             TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(8)),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
             const SizedBox(height: 24),

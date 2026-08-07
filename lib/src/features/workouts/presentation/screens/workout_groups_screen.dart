@@ -1,11 +1,14 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/create_group_button.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_group_details_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 
 class WorkoutGroupsScreen extends StatefulWidget {
-  const WorkoutGroupsScreen({super.key});
+  const WorkoutGroupsScreen({super.key, this.orgId});
+
+  final int? orgId;
 
   @override
   State<WorkoutGroupsScreen> createState() => _WorkoutGroupsScreenState();
@@ -74,11 +77,20 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
       _groups = [];
     });
 
+    final user = context.read<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+    final resolvedOrgId =
+        widget.orgId ?? user?.organizationId ?? user?.trainer?.organizationId;
+
+    final url = isTrainer ? ApiUris.workoutGroups : ApiUris.gymWorkoutGroups;
+
     try {
       final response = await DioClient().dio.get<dynamic>(
-        ApiUris.workoutGroups,
+        url,
         queryParameters: {
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
+          if (!isTrainer && resolvedOrgId != null)
+            'organization_id': resolvedOrgId,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );
@@ -102,6 +114,20 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
         });
         Dialogs.showSnack(msg: 'Failed to load workout groups');
       }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      String errorMsg = 'Failed to load workout groups';
+      if (e.response?.data is Map) {
+        final map = e.response!.data as Map;
+        errorMsg = map['detail']?.toString() ??
+            map['message']?.toString() ??
+            map['error']?.toString() ??
+            errorMsg;
+      }
+      Dialogs.showSnack(msg: 'Error loading groups: $errorMsg');
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -296,18 +322,18 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
     final filtered = _filteredGroups;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.colors.background,
         elevation: 0,
         centerTitle: false,
         title: Text(
           'Workouts',
-          style: AppStyles.text20Px.poppins.w500.copyWith(color: Colors.black),
+          style: AppStyles.text20Px.poppins.w500.copyWith(color: context.colors.textPrimary),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.black),
+            icon: Icon(Icons.settings_outlined, color: context.colors.icon),
             onPressed: () {
               Navigator.push(
                 context,
@@ -334,9 +360,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: context.colors.card,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.borderGrey),
+                          border: Border.all(color: context.colors.border),
                         ),
                         child: TextField(
                           onChanged: (val) {
@@ -348,14 +374,14 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                             );
                           },
                           decoration: InputDecoration(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.search,
-                              color: AppColors.textGrey,
+                              color: context.colors.textSecondary,
                             ),
                             hintText: 'Search for workout group',
-                            fillColor: Colors.white,
+                            fillColor: context.colors.card,
                             hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-                              color: AppColors.textGrey,
+                              color: context.colors.textSecondary,
                             ),
                             border: InputBorder.none,
                           ),
@@ -375,9 +401,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF8F9FB),
+                              color: context.colors.background,
                               border: Border.all(
-                                color: Colors.grey.shade300,
+                                color: context.colors.border,
                                 width: 1,
                               ),
                               borderRadius: const BorderRadius.vertical(
@@ -396,7 +422,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                                         '${filtered.length} workout groups',
                                         style: AppStyles.text14Px.poppins.w400
                                             .copyWith(
-                                              color: AppColors.textGrey,
+                                              color: context.colors.textSecondary,
                                             ),
                                       ),
                                       _buildFilterButton(isTrainer),
@@ -410,9 +436,12 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                                             child: CircularProgressIndicator(),
                                           )
                                           : filtered.isEmpty
-                                          ? const Center(
+                                          ? Center(
                                             child: Text(
                                               'No workout groups found.',
+                                              style: TextStyle(
+                                                color: context.colors.textPrimary,
+                                              ),
                                             ),
                                           )
                                           : WorkoutGroupsGrid(
@@ -474,13 +503,13 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFFF8F9FB) : Colors.transparent,
+              color: isSelected ? context.colors.background : Colors.transparent,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
               ),
               border:
                   isSelected
-                      ? Border.all(color: Colors.grey.shade300, width: 1)
+                      ? Border.all(color: context.colors.border, width: 1)
                       : Border.all(color: Colors.transparent, width: 1),
             ),
             child: Text(
@@ -490,7 +519,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
               overflow: TextOverflow.ellipsis,
               style: AppStyles.text14Px.poppins.copyWith(
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? Colors.black : AppColors.textDark,
+                color: context.colors.textPrimary,
               ),
             ),
           ),
@@ -500,7 +529,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
               left: 1,
               right: 1,
               height: 2,
-              child: Container(color: const Color(0xFFF8F9FB)),
+              child: Container(color: context.colors.background),
             ),
         ],
       ),
@@ -591,7 +620,7 @@ class WorkoutGroupsGrid extends StatelessWidget {
         crossAxisCount: 2,
         mainAxisSpacing: 14,
         crossAxisSpacing: 14,
-        childAspectRatio: 1.5,
+        childAspectRatio: 1.25,
       ),
       itemCount: groups.length,
       itemBuilder: (context, index) {
@@ -612,6 +641,13 @@ class _WorkoutGroupCard extends StatelessWidget {
     final String groupName = group['name'] as String? ?? '';
     final int planCount = group['plan_count'] as int? ?? 0;
 
+    final user = context.read<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+    final isOrgCreated = group['source'] == 'organization' ||
+        group['source'] == 'gym' ||
+        group['is_preset'] == true;
+    final canEditOrDelete = !isTrainer || !isOrgCreated;
+
     return InkWell(
       onTap: () async {
         await Navigator.push(
@@ -629,14 +665,14 @@ class _WorkoutGroupCard extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: context.colors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: .05),
+              color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : .05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -644,6 +680,7 @@ class _WorkoutGroupCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -656,33 +693,15 @@ class _WorkoutGroupCard extends StatelessWidget {
                       Text(
                         groupName,
                         style: AppStyles.text15Px.poppins.w500.copyWith(
-                          color: AppColors.textDark,
+                          color: context.colors.textPrimary,
                           height: 1.2,
                         ),
                       ),
-                      if (group['source'] == 'organization') ...[
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Organization Created',
-                            style: AppStyles.text10Px.poppins.w500.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
-                PopupMenuButton<String>(
+                if (canEditOrDelete)
+                  PopupMenuButton<String>(
                   color: Colors.white,
                   padding: EdgeInsets.zero,
                   onSelected: (value) async {
@@ -905,7 +924,7 @@ class _WorkoutGroupCard extends StatelessWidget {
                 ),
               ],
             ),
-            const Spacer(),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(

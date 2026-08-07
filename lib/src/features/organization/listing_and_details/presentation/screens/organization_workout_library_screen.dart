@@ -949,6 +949,7 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<int>(
+                                menuMaxHeight: 300,
                                 value: _selectedMuscleId,
                                 hint: const Text('Select the muscle'),
                                 items: [
@@ -1014,6 +1015,7 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
+                                menuMaxHeight: 300,
                                 value: _selectedType,
                                 hint: const Text('Select the type of exercise'),
                                 items:
@@ -1052,6 +1054,7 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<int>(
+                                menuMaxHeight: 300,
                                 value: _selectedEquipmentId,
                                 hint: const Text('Select the equipment used'),
                                 items: [

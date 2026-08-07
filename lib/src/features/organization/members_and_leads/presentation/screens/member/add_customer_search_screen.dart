@@ -9,7 +9,8 @@ class AddCustomerSearchScreen extends StatefulWidget {
   const AddCustomerSearchScreen({super.key, required this.orgId});
 
   @override
-  State<AddCustomerSearchScreen> createState() => _AddCustomerSearchScreenState();
+  State<AddCustomerSearchScreen> createState() =>
+      _AddCustomerSearchScreenState();
 }
 
 class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
@@ -17,16 +18,26 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
   late MembershipCubit _membershipCubit;
 
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _discountController = TextEditingController(text: '0');
-  final TextEditingController _amountReceivedController = TextEditingController(text: '0');
-  
+  final TextEditingController _discountController = TextEditingController(
+    text: '0',
+  );
+  final TextEditingController _amountReceivedController = TextEditingController(
+    text: '0',
+  );
+
   Timer? _debounce;
   MembershipPackageModel? _selectedPlan;
   String _paymentMethod = 'Cash';
   DateTime _startDate = DateTime.now();
   MemberDetailsModel? _manualMemberDetails;
 
-  final List<String> _paymentMethods = ['Cash', 'UPI', 'Debit Card', 'Credit Card', 'Net Banking'];
+  final List<String> _paymentMethods = [
+    'Cash',
+    'UPI',
+    'Debit Card',
+    'Credit Card',
+    'Net Banking',
+  ];
 
   @override
   void initState() {
@@ -71,13 +82,15 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
     } else {
       final searchResult = _cubit.state.searchedCustomer;
       searchResult?.fold(
-        () {}, 
-        (either) => either.fold((l) {}, (r) => customerToAdd = r)
+        () {},
+        (either) => either.fold((l) {}, (r) => customerToAdd = r),
       );
     }
 
     if (customerToAdd == null) {
-      Dialogs.showSnack(msg: 'Please search for a client or enter details manually.');
+      Dialogs.showSnack(
+        msg: 'Please search for a client or enter details manually.',
+      );
       return;
     }
 
@@ -136,22 +149,21 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
       ),
       child: Row(
         children: [
-          ProfileImage(
-            url: customer.profilePicture,
-            radius: 30,
-            isEdit: false,
-          ),
+          ProfileImage(url: customer.profilePicture, radius: 30, isEdit: false),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  (customer.fullName?.isNotEmpty ?? false) 
-                    ? customer.fullName! 
-                    : '${customer.firstName ?? ''} ${customer.lastName ?? ''}'.trim().isEmpty 
-                        ? 'Unknown' 
-                        : '${customer.firstName ?? ''} ${customer.lastName ?? ''}'.trim(),
+                  (customer.fullName?.isNotEmpty ?? false)
+                      ? customer.fullName!
+                      : '${customer.firstName ?? ''} ${customer.lastName ?? ''}'
+                          .trim()
+                          .isEmpty
+                      ? 'Unknown'
+                      : '${customer.firstName ?? ''} ${customer.lastName ?? ''}'
+                          .trim(),
                   style: AppStyles.text16Px.poppins.w600.dark,
                 ),
                 Text(
@@ -163,13 +175,17 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                   children: [
                     if (customer.gender != null)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xffF5F5F5),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
-                          customer.gender![0].toUpperCase() + customer.gender!.substring(1),
+                          customer.gender![0].toUpperCase() +
+                              customer.gender!.substring(1),
                           style: AppStyles.text12Px.poppins.w500.textGrey,
                         ),
                       ),
@@ -223,9 +239,12 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
             children: [
               Text('Fill details', style: AppStyles.text20Px.poppins.w600.dark),
               const SizedBox(height: 24),
-              
+
               if (_manualMemberDetails == null) ...[
-                Text('Search Client by number', style: AppStyles.text14Px.poppins.w500.dark),
+                Text(
+                  'Search Client by number',
+                  style: AppStyles.text14Px.poppins.w500.dark,
+                ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _searchController,
@@ -238,25 +257,32 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: AppColors.borderGrey),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Text("Client doesn't have Discipl app? ", style: AppStyles.text12Px.poppins.w400.textGrey),
+                    Text(
+                      "Client doesn't have Discipl app? ",
+                      style: AppStyles.text12Px.poppins.w400.textGrey,
+                    ),
                     InkWell(
                       onTap: () async {
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BlocProvider.value(
-                              value: _cubit,
-                              child: AddOrEditMemeberScreen(
-                                orgId: widget.orgId,
-                                isFromSearch: true,
-                              ),
-                            ),
+                            builder:
+                                (context) => BlocProvider.value(
+                                  value: _cubit,
+                                  child: AddOrEditMemeberScreen(
+                                    orgId: widget.orgId,
+                                    isFromSearch: true,
+                                  ),
+                                ),
                           ),
                         );
                         if (result != null && result is MemberDetailsModel) {
@@ -265,65 +291,105 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                           });
                         }
                       },
-                      child: Text('Click here', style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.primary, decoration: TextDecoration.underline)),
+                      child: Text(
+                        'Click here',
+                        style: AppStyles.text12Px.poppins.w500.copyWith(
+                          color: AppColors.primary,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                
+
                 BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
                   buildWhen: (p, c) => p.searchedCustomer != c.searchedCustomer,
                   builder: (context, state) {
                     return state.searchedCustomer?.fold(
-                      () => const SizedBox.shrink(),
-                      (either) => either.fold(
-                        (l) => Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Text('This number is not registered in customer app', style: AppStyles.text12Px.poppins.w500.copyWith(color: Colors.red)),
-                              ),
-                              const SizedBox(width: 8),
-                              SizedBox(
-                                height: 32,
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    final number = _searchController.text.trim();
-                                    final message = Uri.encodeComponent("Hi! Please download the Discipl Customer app to proceed.");
-                                    launchUrl(
-                                      Uri.parse('https://wa.me/$number?text=$message'),
-                                      mode: LaunchMode.externalApplication,
-                                    );
-                                  },
-                                  icon: SvgPicture.asset(
-                                    'assets/images/svg/icons/whatsapp.svg',
-                                    height: 16,
-                                    width: 16,
-                                    colorFilter: const ColorFilter.mode(Color(0xFF25D366), BlendMode.srcIn),
+                          () => const SizedBox.shrink(),
+                          (either) => either.fold(
+                            (l) => Padding(
+                              padding: const EdgeInsets.only(top: 16),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'This number is not registered in customer app',
+                                      style: AppStyles.text12Px.poppins.w500
+                                          .copyWith(color: Colors.red),
+                                    ),
                                   ),
-                                  label: Text('Invite', style: AppStyles.text12Px.poppins.w600.copyWith(color: const Color(0xFF25D366))),
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    side: const BorderSide(color: Color(0xFF25D366), width: 1.5),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    height: 32,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        final number =
+                                            _searchController.text.trim();
+                                        final message = Uri.encodeComponent(
+                                          "Hi! Please download the Discipl Customer app to proceed.",
+                                        );
+                                        launchUrl(
+                                          Uri.parse(
+                                            'https://wa.me/$number?text=$message',
+                                          ),
+                                          mode: LaunchMode.externalApplication,
+                                        );
+                                      },
+                                      icon: SvgPicture.asset(
+                                        'assets/images/svg/icons/whatsapp.svg',
+                                        height: 16,
+                                        width: 16,
+                                        colorFilter: const ColorFilter.mode(
+                                          Color(0xFF25D366),
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                      label: Text(
+                                        'Invite',
+                                        style: AppStyles.text12Px.poppins.w600
+                                            .copyWith(
+                                              color: const Color(0xFF25D366),
+                                            ),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        side: const BorderSide(
+                                          color: Color(0xFF25D366),
+                                          width: 1.5,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 0,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
+                            ),
+                            (customer) => _buildProfileCard(customer),
                           ),
-                        ),
-                        (customer) => _buildProfileCard(customer),
-                      ),
-                    ) ?? const SizedBox.shrink();
+                        ) ??
+                        const SizedBox.shrink();
                   },
                 ),
               ] else ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Manual Entry Mode', style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.green)),
+                    Text(
+                      'Manual Entry Mode',
+                      style: AppStyles.text14Px.poppins.w500.copyWith(
+                        color: Colors.green,
+                      ),
+                    ),
                     TextButton(
                       onPressed: () {
                         setState(() {
@@ -350,7 +416,8 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
               const SizedBox(height: 8),
               BlocBuilder<MembershipCubit, MembershipState>(
                 bloc: _membershipCubit,
-                buildWhen: (p, c) => p.membershipPackages != c.membershipPackages,
+                buildWhen:
+                    (p, c) => p.membershipPackages != c.membershipPackages,
                 builder: (context, state) {
                   return state.membershipPackages.fold(
                     () => const CircularProgressIndicator(),
@@ -364,21 +431,30 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.borderGrey),
+                              borderSide: const BorderSide(
+                                color: AppColors.borderGrey,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                           ),
-                          items: plans.map((plan) {
-                            return DropdownMenuItem(
-                              value: plan,
-                              child: Text(plan.name ?? ''),
-                            );
-                          }).toList(),
+                          items:
+                              plans.map((plan) {
+                                return DropdownMenuItem(
+                                  value: plan,
+                                  child: Text(plan.name ?? ''),
+                                );
+                              }).toList(),
                           onChanged: (value) {
                             setState(() {
                               _selectedPlan = value;
                               if (value != null) {
-                                _amountReceivedController.text = value.offerPrice ?? value.actualPrice ?? '0';
+                                _amountReceivedController.text =
+                                    value.offerPrice ??
+                                    value.actualPrice ??
+                                    '0';
                               }
                             });
                           },
@@ -396,7 +472,10 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Discount Amount', style: AppStyles.text14Px.poppins.w500.dark),
+                        Text(
+                          'Discount Amount',
+                          style: AppStyles.text14Px.poppins.w500.dark,
+                        ),
                         const SizedBox(height: 8),
                         TextField(
                           controller: _discountController,
@@ -404,9 +483,14 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.borderGrey),
+                              borderSide: const BorderSide(
+                                color: AppColors.borderGrey,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                           ),
                         ),
                       ],
@@ -422,7 +506,10 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                             text: 'Amount Received',
                             style: AppStyles.text14Px.poppins.w500.dark,
                             children: const [
-                              TextSpan(text: '*', style: TextStyle(color: Colors.red)),
+                              TextSpan(
+                                text: '*',
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ],
                           ),
                         ),
@@ -433,9 +520,14 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.borderGrey),
+                              borderSide: const BorderSide(
+                                color: AppColors.borderGrey,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                           ),
                         ),
                       ],
@@ -458,39 +550,49 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: _paymentMethods.map((method) {
-                  return SizedBox(
-                    width: (MediaQuery.of(context).size.width - 55) / 2,
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _paymentMethod = method;
-                        });
-                      },
-                      child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _paymentMethod == method ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                          color: _paymentMethod == method ? AppColors.primary : AppColors.textGrey,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _getPaymentMethodColor(method),
-                            borderRadius: BorderRadius.circular(16),
+                children:
+                    _paymentMethods.map((method) {
+                      return SizedBox(
+                        width: (MediaQuery.of(context).size.width - 55) / 2,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _paymentMethod = method;
+                            });
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _paymentMethod == method
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_unchecked,
+                                color:
+                                    _paymentMethod == method
+                                        ? AppColors.primary
+                                        : AppColors.textGrey,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _getPaymentMethodColor(method),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Text(
+                                  method,
+                                  style: AppStyles.text12Px.poppins.w500.dark,
+                                ),
+                              ),
+                            ],
                           ),
-                          child: Text(
-                            method,
-                            style: AppStyles.text12Px.poppins.w500.dark,
-                          ),
                         ),
-                      ],
-                    ),
-                  ));
-                }).toList(),
+                      );
+                    }).toList(),
               ),
 
               const SizedBox(height: 24),
@@ -507,7 +609,10 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
               InkWell(
                 onTap: _pickStartDate,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(color: AppColors.borderGrey),
                     borderRadius: BorderRadius.circular(12),
@@ -515,8 +620,14 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(DateFormat('dd MMM yyyy').format(_startDate), style: AppStyles.text14Px.poppins.w400.dark),
-                      const Icon(Icons.keyboard_arrow_down, color: AppColors.textGrey),
+                      Text(
+                        DateFormat('dd MMM yyyy').format(_startDate),
+                        style: AppStyles.text14Px.poppins.w400.dark,
+                      ),
+                      const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: AppColors.textGrey,
+                      ),
                     ],
                   ),
                 ),
@@ -524,7 +635,8 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
 
               const SizedBox(height: 32),
               BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
-                buildWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
+                buildWhen:
+                    (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
                 builder: (context, state) {
                   return Button.filled(
                     size: Size(double.maxFinite, 42.h),

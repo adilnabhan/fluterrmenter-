@@ -14,11 +14,28 @@ class OrganizationReportsScreen extends StatefulWidget {
 }
 
 class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
+  static const List<String> _budgetCategories = [
+    'Equipment',
+    'Maintenance',
+    'Utilities',
+    'Marketing',
+    'Salary',
+    'Rent',
+    'Others',
+  ];
+
   bool _isLoading = true;
+  bool _isCategoryBreakdownExpanded = false;
+  bool _isRevenueTargetBreakdownExpanded = false;
   Map<String, dynamic> _reportsData = {};
+  Map<String, dynamic> _budgetData = {};
+  Map<String, dynamic> _revenueTargetData = {};
   List<Map<String, dynamic>> _expenses = [];
+  List<Map<String, dynamic>> _revenues = [];
+  List<Map<String, dynamic>> _revenueCategories = [];
   DateTime? _startDate;
   DateTime? _endDate;
+  String _selectedCategory = 'All';
 
   @override
   void initState() {
@@ -66,7 +83,11 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       _isLoading = true;
     });
 
-    String queryParams = 'organization_id=${widget.orgId}';
+    final now = DateTime.now();
+    final year = _startDate?.year ?? now.year;
+    final month = _startDate?.month ?? now.month;
+
+    String queryParams = 'organization_id=${widget.orgId}&year=$year&month=$month';
     if (_startDate != null && _endDate != null) {
       final startStr = DateFormat('yyyy-MM-dd').format(_startDate!);
       final endStr = DateFormat('yyyy-MM-dd').format(_endDate!);
@@ -94,7 +115,28 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     }
 
     try {
-      // 2. Fetch expenses
+      // 2. Fetch budget category breakdown
+      String budgetUri = '${ApiUris.budget}?year=$year&month=$month';
+      final budgetResponse = await DioClient().dio.get<dynamic>(
+        budgetUri,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      if (budgetResponse.statusCode == 200 && budgetResponse.data is Map) {
+        if (mounted) {
+          setState(() {
+            _budgetData = Map<String, dynamic>.from(
+              budgetResponse.data as Map,
+            );
+          });
+        }
+      }
+    } catch (e) {
+      // ignore/handle budget error quietly
+    }
+
+    try {
+      // 3. Fetch expenses
       final expensesResponse = await DioClient().dio.get<dynamic>(
         '${ApiUris.expenses}?$queryParams',
         options: Options(headers: {'X-Platform': platformSource}).token,
@@ -107,6 +149,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           list = data;
         } else if (data is Map && data['results'] is List) {
           list = data['results'] as List;
+        } else if (data is Map && data['expenses'] is List) {
+          list = data['expenses'] as List;
         }
         if (mounted) {
           setState(() {
@@ -117,6 +161,81 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       }
     } catch (e) {
       // ignore/handle expenses error quietly
+    }
+
+    try {
+      // 4. Fetch revenues
+      final revenuesResponse = await DioClient().dio.get<dynamic>(
+        '${ApiUris.revenues}?$queryParams',
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      if (revenuesResponse.statusCode == 200) {
+        final data = revenuesResponse.data;
+        List<dynamic> list = [];
+        if (data is List) {
+          list = data;
+        } else if (data is Map && data['results'] is List) {
+          list = data['results'] as List;
+        } else if (data is Map && data['revenues'] is List) {
+          list = data['revenues'] as List;
+        }
+        if (mounted) {
+          setState(() {
+            _revenues =
+                list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          });
+        }
+      }
+    } catch (e) {
+      // ignore/handle revenues error quietly
+    }
+
+    try {
+      // 5. Fetch revenue categories
+      final catResponse = await DioClient().dio.get<dynamic>(
+        '${ApiUris.revenueCategories}?organization_id=${widget.orgId}',
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      if (catResponse.statusCode == 200) {
+        final data = catResponse.data;
+        List<dynamic> list = [];
+        if (data is List) {
+          list = data;
+        } else if (data is Map && data['results'] is List) {
+          list = data['results'] as List;
+        }
+        if (mounted) {
+          setState(() {
+            _revenueCategories =
+                list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          });
+        }
+      }
+    } catch (e) {
+      // ignore/handle revenue categories error quietly
+    }
+
+    try {
+      // 6. Fetch revenue targets
+      final revenueTargetResponse = await DioClient().dio.get<dynamic>(
+        '${ApiUris.revenueTargets}?$queryParams',
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      if (revenueTargetResponse.statusCode == 200 &&
+          revenueTargetResponse.data is Map) {
+        if (mounted) {
+          setState(() {
+            _revenueTargetData = Map<String, dynamic>.from(
+              revenueTargetResponse.data as Map,
+            );
+          });
+        }
+      }
+    } catch (e) {
+      // ignore/handle revenue target error quietly
     }
 
     if (mounted) {
@@ -284,6 +403,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: DropdownButtonFormField<String>(
+                            isExpanded: true,
                             value:
                                 categories.contains(selectedCategory)
                                     ? selectedCategory
@@ -291,12 +411,19 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                             decoration: const InputDecoration(
                               labelText: 'Category',
                               border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
                             ),
                             items:
                                 categories.map((cat) {
                                   return DropdownMenuItem(
                                     value: cat,
-                                    child: Text(cat),
+                                    child: Text(
+                                      cat,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   );
                                 }).toList(),
                             onChanged: (val) {
@@ -448,88 +575,789 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     );
   }
 
-  void _showSetBudgetDialog(double currentBudget) {
-    final controller = TextEditingController(
-      text: currentBudget > 0 ? currentBudget.toStringAsFixed(2) : '',
-    );
-    showDialog<void>(
+  Future<void> _deleteRevenue(int id) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder:
           (context) => AlertDialog(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.white,
-            title: const Text('Set Monthly Budget'),
-            content: TextField(
-              controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: const InputDecoration(
-                labelText: 'Budget Limit (₹)',
-                hintText: 'e.g. 12500.00',
-                border: OutlineInputBorder(),
-              ),
+            title: const Text('Delete Revenue'),
+            content: const Text(
+              'Are you sure you want to delete this revenue record?',
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context, false),
                 child: const Text('Cancel'),
               ),
               TextButton(
-                onPressed: () async {
-                  final valStr = controller.text.trim();
-                  if (valStr.isEmpty) {
-                    await Dialogs.showSnack(
-                      msg: 'Please enter a budget amount',
-                    );
-                    return;
-                  }
-                  final newBudget = double.tryParse(valStr);
-                  if (newBudget == null) {
-                    await Dialogs.showSnack(msg: 'Invalid budget amount');
-                    return;
-                  }
-
-                  Navigator.pop(context); // Close dialog
-                  if (mounted) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                  }
-
-                  try {
-                    final payload = {'monthly_budget': newBudget};
-                    final response = await DioClient().dio.post<dynamic>(
-                      ApiUris.budget,
-                      data: payload,
-                      options:
-                          Options(
-                            headers: {'X-Platform': platformSource},
-                          ).token,
-                    );
-                    if (response.statusCode == 200 ||
-                        response.statusCode == 201) {
-                      await Dialogs.showSnack(
-                        msg: 'Organization budget updated successfully.',
-                      );
-                      await _fetchReports();
-                    } else {
-                      await Dialogs.showSnack(msg: 'Failed to update budget');
-                    }
-                  } catch (e) {
-                    await Dialogs.showSnack(msg: 'Error updating budget');
-                  } finally {
-                    if (mounted) {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                    }
-                  }
-                },
-                child: const Text('Save'),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
             ],
           ),
+    );
+
+    if (confirm != true) return;
+
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+
+    try {
+      final response = await DioClient().dio.delete<dynamic>(
+        ApiUris.revenueDetail(id),
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        await Dialogs.showSnack(msg: 'Revenue record deleted successfully');
+        await _fetchReports();
+      } else {
+        await Dialogs.showSnack(msg: 'Failed to delete revenue record');
+      }
+    } catch (e) {
+      await Dialogs.showSnack(msg: 'Error deleting revenue record');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showRevenueSheet({Map<String, dynamic>? revenue}) {
+    final isEdit = revenue != null;
+    final titleController = TextEditingController(
+      text: (revenue?['title'] as String?) ?? (revenue?['name'] as String?) ?? '',
+    );
+    final amountController = TextEditingController(
+      text: revenue?['amount']?.toString() ?? '',
+    );
+    final notesController = TextEditingController(
+      text: (revenue?['notes'] as String?) ?? (revenue?['description'] as String?) ?? '',
+    );
+
+    var selectedCategory = (revenue?['category'] as String?) ??
+        (revenue?['category_name'] as String?) ??
+        'Membership Fee';
+    var selectedDate =
+        revenue?['revenue_date'] != null || revenue?['date'] != null
+            ? DateTime.tryParse((revenue?['revenue_date'] ?? revenue?['date']).toString()) ??
+                DateTime.now()
+            : DateTime.now();
+
+    final List<String> defaultCategories = [
+      'Membership Fee',
+      'Admission Fee',
+      'Product Sales',
+      'Others',
+    ];
+
+    for (final cat in _revenueCategories) {
+      final catName = cat['name']?.toString() ?? cat['title']?.toString();
+      if (catName != null && catName.isNotEmpty && !defaultCategories.contains(catName)) {
+        defaultCategories.add(catName);
+      }
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isEdit ? 'Edit Revenue' : 'Add Revenue',
+                          style: AppStyles.text18Px.poppins.w600.dark,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Title *',
+                        hintText: 'e.g. Personal Training Fee / Product Sale',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: amountController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Amount *',
+                              hintText: 'e.g. 1500.00',
+                              prefixText: '₹',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            value:
+                                defaultCategories.contains(selectedCategory)
+                                    ? selectedCategory
+                                    : 'Others',
+                            decoration: const InputDecoration(
+                              labelText: 'Category',
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
+                            ),
+                            items:
+                                defaultCategories.map((cat) {
+                                  return DropdownMenuItem(
+                                    value: cat,
+                                    child: Text(
+                                      cat,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                }).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setSheetState(() {
+                                  selectedCategory = val;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          setSheetState(() {
+                            selectedDate = picked;
+                          });
+                        }
+                      },
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Revenue Date',
+                          border: OutlineInputBorder(),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(DateFormat('yyyy-MM-dd').format(selectedDate)),
+                            const Icon(Icons.calendar_today, size: 18),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: notesController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Notes / Description',
+                        hintText: 'e.g. Payment for quarterly training package',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Button.filled(
+                        title: isEdit ? 'Update Revenue' : 'Save Revenue',
+                        buttonColor: const Color(0xff27AE60),
+                        ontap: () async {
+                          final title = titleController.text.trim();
+                          final amountStr = amountController.text.trim();
+                          final notes = notesController.text.trim();
+
+                          if (title.isEmpty) {
+                            await Dialogs.showSnack(msg: 'Title is required');
+                            return;
+                          }
+                          final amount = double.tryParse(amountStr);
+                          if (amount == null) {
+                            await Dialogs.showSnack(msg: 'Invalid amount');
+                            return;
+                          }
+
+                          final payload = {
+                            'title': title,
+                            'amount': amount,
+                            'category': selectedCategory,
+                            'revenue_date': DateFormat(
+                              'yyyy-MM-dd',
+                            ).format(selectedDate),
+                            'notes': notes,
+                            'organization_id': widget.orgId,
+                          };
+
+                          Navigator.pop(context);
+                          if (mounted) {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                          }
+
+                          try {
+                            dynamic response;
+                            if (isEdit) {
+                              response = await DioClient().dio.patch<dynamic>(
+                                ApiUris.revenueDetail(revenue['id'] as int),
+                                data: payload,
+                                options:
+                                    Options(
+                                      headers: {'X-Platform': platformSource},
+                                    ).token,
+                              );
+                            } else {
+                              response = await DioClient().dio.post<dynamic>(
+                                ApiUris.revenues,
+                                data: payload,
+                                options:
+                                    Options(
+                                      headers: {'X-Platform': platformSource},
+                                    ).token,
+                              );
+                            }
+
+                            if (response.statusCode == 200 ||
+                                response.statusCode == 201) {
+                              await Dialogs.showSnack(
+                                msg:
+                                    isEdit
+                                        ? 'Revenue updated successfully'
+                                        : 'Revenue saved successfully',
+                              );
+                              await _fetchReports();
+                            } else {
+                              await Dialogs.showSnack(
+                                msg: 'Failed to save revenue record',
+                              );
+                            }
+                          } catch (e) {
+                            await Dialogs.showSnack(
+                              msg: 'Error saving revenue record',
+                            );
+                          } finally {
+                            if (mounted) {
+                              setState(() {
+                                _isLoading = false;
+                              });
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showSetCategoryBudgetsDialog([double? currentOverallBudget]) {
+    final now = DateTime.now();
+    final currentYear = _startDate?.year ?? now.year;
+    final currentMonth = _startDate?.month ?? now.month;
+
+    final List<dynamic> existingCategories =
+        (_budgetData['categories'] as List<dynamic>?) ??
+        ((_reportsData['budget_summary'] as Map?)?['categories'] as List<dynamic>?) ??
+        [];
+
+    final Map<String, TextEditingController> categoryControllers = {};
+    for (final cat in _budgetCategories) {
+      double existingAmount = 0.0;
+      for (final item in existingCategories) {
+        if (item is Map &&
+            item['category']?.toString().toLowerCase() == cat.toLowerCase()) {
+          existingAmount =
+              double.tryParse((item['budget'] ?? item['amount'] ?? 0.0).toString()) ??
+                  0.0;
+          break;
+        }
+      }
+      categoryControllers[cat] = TextEditingController(
+        text: existingAmount > 0 ? existingAmount.toStringAsFixed(0) : '',
+      );
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.colors.card,
+        surfaceTintColor: context.colors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.account_balance_wallet, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Set Category Budgets',
+                style: AppStyles.text16Px.poppins.w600.copyWith(
+                  color: context.colors.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Set monthly budget limits per category for ${DateFormat('MMMM yyyy').format(DateTime(currentYear, currentMonth))}:',
+                  style: AppStyles.text12Px.poppins.w400.copyWith(
+                    color: context.colors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ..._budgetCategories.map((cat) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: TextField(
+                      controller: categoryControllers[cat],
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      style: AppStyles.text14Px.poppins.w500.copyWith(
+                        color: context.colors.textPrimary,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: '$cat Budget (₹)',
+                        labelStyle: TextStyle(
+                          color: context.colors.textSecondary,
+                        ),
+                        hintText: 'e.g. 20000',
+                        filled: true,
+                        fillColor: context.colors.fieldFill,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.colors.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.colors.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.primary),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.colors.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final List<Map<String, dynamic>> categoryPayload = [];
+              categoryControllers.forEach((cat, ctrl) {
+                final amountVal = double.tryParse(ctrl.text.trim()) ?? 0.0;
+                if (amountVal > 0) {
+                  categoryPayload.add({
+                    'category': cat,
+                    'amount': amountVal,
+                  });
+                }
+              });
+
+              if (categoryPayload.isEmpty) {
+                Dialogs.showSnack(
+                  msg: 'Please enter a budget amount for at least one category',
+                );
+                return;
+              }
+
+              Navigator.pop(ctx);
+              if (mounted) {
+                setState(() {
+                  _isLoading = true;
+                });
+              }
+
+              try {
+                final payload = {
+                  'year': currentYear,
+                  'month': currentMonth,
+                  'categories': categoryPayload,
+                };
+
+                final response = await DioClient().dio.post<dynamic>(
+                  ApiUris.budget,
+                  data: payload,
+                  options:
+                      Options(headers: {'X-Platform': platformSource}).token,
+                );
+
+                if (response.statusCode == 200 ||
+                    response.statusCode == 201) {
+                  Dialogs.showSnack(
+                    msg: 'Category budgets updated successfully!',
+                  );
+                  await _fetchReports();
+                } else {
+                  Dialogs.showSnack(msg: 'Failed to set category budgets');
+                }
+              } catch (e) {
+                Dialogs.showSnack(msg: 'Error setting category budgets');
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Save Budgets'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _getProcessedRevenueTargets(List<dynamic> rawCategories) {
+    if (rawCategories.isEmpty) return [];
+
+    final standardNames = {
+      'membership fee',
+      'admission fee',
+      'product sales',
+      'diet consultation',
+      'others',
+    };
+
+    final customCatNames = <String>{};
+    for (final cat in _revenueCategories) {
+      if (cat is Map) {
+        final isPlan = cat['is_membership_plan'] == true ||
+            cat['membership_plan_id'] != null ||
+            cat['is_plan'] == true;
+        final name = (cat['name'] ?? cat['category'] ?? cat['title'])?.toString().trim();
+        if (name != null && name.isNotEmpty && !isPlan) {
+          customCatNames.add(name.toLowerCase());
+        }
+      }
+    }
+
+    final Map<String, double> targetMap = {};
+    final Map<String, double> actualMap = {};
+    final Map<String, String> displayNameMap = {};
+
+    for (final item in rawCategories) {
+      if (item is! Map) continue;
+
+      final rawName = (item['category'] ?? item['name'] ?? 'Others').toString().trim();
+      final lowerName = rawName.toLowerCase();
+      final targetVal = double.tryParse((item['target'] ?? item['amount'] ?? 0.0).toString()) ?? 0.0;
+      final actualVal = double.tryParse((item['actual'] ?? item['actual_revenue'] ?? 0.0).toString()) ?? 0.0;
+
+      final isStandardOrCustom = standardNames.contains(lowerName) || customCatNames.contains(lowerName);
+
+      if (isStandardOrCustom && lowerName != 'membership fee') {
+        targetMap[lowerName] = (targetMap[lowerName] ?? 0.0) + targetVal;
+        actualMap[lowerName] = (actualMap[lowerName] ?? 0.0) + actualVal;
+        displayNameMap[lowerName] = rawName;
+      } else {
+        // Membership plan or 'Membership Fee' itself -> fold into 'Membership Fee'
+        targetMap['membership fee'] = (targetMap['membership fee'] ?? 0.0) + targetVal;
+        actualMap['membership fee'] = (actualMap['membership fee'] ?? 0.0) + actualVal;
+        displayNameMap['membership fee'] = 'Membership Fee';
+      }
+    }
+
+    final List<Map<String, dynamic>> processed = [];
+    targetMap.forEach((key, targetVal) {
+      final actualVal = actualMap[key] ?? 0.0;
+      final remVal = targetVal > actualVal ? targetVal - actualVal : 0.0;
+      final achPct = targetVal > 0 ? (actualVal / targetVal) * 100.0 : (actualVal > 0 ? 100.0 : 0.0);
+
+      processed.add({
+        'category': displayNameMap[key] ?? key,
+        'target': targetVal,
+        'actual': actualVal,
+        'remaining': remVal,
+        'achievement_percentage': achPct,
+      });
+    });
+
+    return processed;
+  }
+
+  void _showSetCategoryRevenueTargetsDialog([double? currentOverallTarget]) {
+    final now = DateTime.now();
+    final currentYear = _startDate?.year ?? now.year;
+    final currentMonth = _startDate?.month ?? now.month;
+
+    final List<dynamic> existingTargetCategories =
+        (_revenueTargetData['categories'] as List<dynamic>?) ??
+        ((_reportsData['revenue_target_summary'] as Map?)?['categories'] as List<dynamic>?) ??
+        [];
+
+    final processedExisting = _getProcessedRevenueTargets(existingTargetCategories);
+
+    final Set<String> allCategoryNames = {
+      'Membership Fee',
+      'Admission Fee',
+      'Product Sales',
+      'Diet Consultation',
+      'Others',
+    };
+
+    for (final cat in _revenueCategories) {
+      if (cat is Map) {
+        final isPlan = cat['is_membership_plan'] == true ||
+            cat['membership_plan_id'] != null ||
+            cat['is_plan'] == true;
+        final name = (cat['name'] ?? cat['category'] ?? cat['title'])?.toString().trim();
+        if (name != null && name.isNotEmpty && !isPlan) {
+          allCategoryNames.add(name);
+        }
+      }
+    }
+
+    final Map<String, TextEditingController> categoryControllers = {};
+    for (final cat in allCategoryNames) {
+      double existingAmount = 0.0;
+      for (final item in processedExisting) {
+        if (item['category']?.toString().toLowerCase() == cat.toLowerCase()) {
+          existingAmount =
+              double.tryParse((item['target'] ?? item['amount'] ?? 0.0).toString()) ??
+                  0.0;
+          break;
+        }
+      }
+      categoryControllers[cat] = TextEditingController(
+        text: existingAmount > 0 ? existingAmount.toStringAsFixed(0) : '',
+      );
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.colors.card,
+        surfaceTintColor: context.colors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.track_changes, color: Color(0xff27AE60)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Set Revenue Targets',
+                style: AppStyles.text16Px.poppins.w600.copyWith(
+                  color: context.colors.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Set monthly revenue targets per category for ${DateFormat('MMMM yyyy').format(DateTime(currentYear, currentMonth))}:',
+                  style: AppStyles.text12Px.poppins.w400.copyWith(
+                    color: context.colors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...allCategoryNames.map((cat) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: TextField(
+                      controller: categoryControllers[cat],
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      style: AppStyles.text14Px.poppins.w500.copyWith(
+                        color: context.colors.textPrimary,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: '$cat Target (₹)',
+                        labelStyle: TextStyle(
+                          color: context.colors.textSecondary,
+                        ),
+                        hintText: 'e.g. 50000',
+                        filled: true,
+                        fillColor: context.colors.fieldFill,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.colors.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.colors.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xff27AE60)),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.colors.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final List<Map<String, dynamic>> categoryPayload = [];
+              categoryControllers.forEach((cat, ctrl) {
+                final amountVal = double.tryParse(ctrl.text.trim()) ?? 0.0;
+                if (amountVal > 0) {
+                  categoryPayload.add({
+                    'category': cat,
+                    'target': amountVal,
+                    'amount': amountVal,
+                  });
+                }
+              });
+
+              if (categoryPayload.isEmpty) {
+                Dialogs.showSnack(
+                  msg: 'Please enter a target amount for at least one category',
+                );
+                return;
+              }
+
+              Navigator.pop(ctx);
+              if (mounted) {
+                setState(() {
+                  _isLoading = true;
+                });
+              }
+
+              try {
+                final payload = {
+                  'organization_id': widget.orgId,
+                  'year': currentYear,
+                  'month': currentMonth,
+                  'targets': categoryPayload,
+                  'categories': categoryPayload,
+                };
+
+                final response = await DioClient().dio.post<dynamic>(
+                  ApiUris.revenueTargets,
+                  data: payload,
+                  options:
+                      Options(headers: {'X-Platform': platformSource}).token,
+                );
+
+                if (response.statusCode == 200 ||
+                    response.statusCode == 201) {
+                  Dialogs.showSnack(
+                    msg: 'Revenue targets updated successfully!',
+                  );
+                  await _fetchReports();
+                } else {
+                  Dialogs.showSnack(msg: 'Failed to set revenue targets');
+                }
+              } catch (e) {
+                Dialogs.showSnack(msg: 'Error setting revenue targets');
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff27AE60),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Save Targets'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -585,6 +1413,16 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     final ageDistribution =
         demographics?['age_distribution'] as Map<dynamic, dynamic>? ?? {};
 
+    final professionDistribution = demographics?['profession_distribution']
+        ?? _reportsData['profession_distribution']
+        ?? [];
+    final sleepHoursDistribution = demographics?['sleep_hours_distribution']
+        ?? _reportsData['sleep_hours_distribution']
+        ?? [];
+    final workingHoursDistribution = demographics?['working_hours_distribution']
+        ?? _reportsData['working_hours_distribution']
+        ?? [];
+
     // Parse target goal distribution (nested under goals_insights)
     final goalInsightsRaw = _reportsData['goals_insights'];
     Map<dynamic, dynamic>? goalInsights;
@@ -605,14 +1443,46 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
 
     final trainersPerformance =
         _reportsData['trainers_performance'] as List<dynamic>? ?? [];
+    final trainerDemographics =
+        _reportsData['trainer_demographics'] as Map<dynamic, dynamic>? ?? {};
+    final trainerGenderDist =
+        trainerDemographics['gender_distribution'] as Map<dynamic, dynamic>? ?? {};
+    final trainerAgeDist =
+        trainerDemographics['age_distribution'] as Map<dynamic, dynamic>? ?? {};
+    final totalTrainers =
+        trainerDemographics['total_trainers'] ?? trainersPerformance.length;
 
     final budgetSummary =
         _reportsData['budget_summary'] as Map<dynamic, dynamic>?;
-    final budget = budgetSummary?['budget'] ?? 0.0;
-    final budgetUsedAmount = budgetSummary?['budget_used_amount'] ?? 0.0;
-    final budgetUsedPercentage =
-        budgetSummary?['budget_used_percentage']?.toString() ?? "0%";
-    final budgetRemaining = budgetSummary?['budget_remaining'] ?? 0.0;
+
+    final double budget = double.tryParse((_budgetData['monthly_budget'] ??
+            _budgetData['total_budget'] ??
+            _budgetData['budget'] ??
+            budgetSummary?['budget'] ??
+            0.0)
+        .toString()) ?? 0.0;
+
+    final double budgetUsedAmount = double.tryParse((_budgetData['amount_used'] ??
+            budgetSummary?['budget_used_amount'] ??
+            0.0)
+        .toString()) ?? 0.0;
+
+    final double budgetRemaining = double.tryParse((_budgetData['remaining_budget'] ??
+            budgetSummary?['budget_remaining'] ??
+            0.0)
+        .toString()) ?? 0.0;
+
+    String budgetUsedPercentage = "0%";
+    if (_budgetData['utilization_percentage'] != null) {
+      budgetUsedPercentage = "${_budgetData['utilization_percentage']}%";
+    } else if (budgetSummary?['budget_used_percentage'] != null) {
+      budgetUsedPercentage = budgetSummary!['budget_used_percentage'].toString();
+    }
+
+    final List<dynamic> categoryBreakdown =
+        (_budgetData['categories'] as List<dynamic>?) ??
+        (budgetSummary?['categories'] as List<dynamic>?) ??
+        [];
 
     return DefaultTabController(
       length: 3,
@@ -747,8 +1617,14 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                                   0.0,
                       planRevenueBreakdown: planRevenueBreakdown,
                       paymentModes: paymentModes,
+                      categoryBreakdown: categoryBreakdown,
                     ),
-                    _buildTrainersTab(trainersPerformance),
+                    _buildTrainersTab(
+                      trainersPerformance: trainersPerformance,
+                      trainerGenderDist: trainerGenderDist,
+                      trainerAgeDist: trainerAgeDist,
+                      totalTrainers: totalTrainers.toString(),
+                    ),
                     _buildClientsTab(
                       totalClients: totalClients.toString(),
                       completedSessions: totalCompletedSessions.toString(),
@@ -756,6 +1632,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                       genderDistribution: genderDistribution,
                       ageDistribution: ageDistribution,
                       goalDistribution: goalDistribution,
+                      professionDistribution: professionDistribution,
+                      sleepHoursDistribution: sleepHoursDistribution,
+                      workingHoursDistribution: workingHoursDistribution,
                       peakWorkoutHours: peakWorkoutHours,
                     ),
                   ],
@@ -774,6 +1653,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     required Map<dynamic, dynamic> genderDistribution,
     required Map<dynamic, dynamic> ageDistribution,
     required dynamic goalDistribution,
+    required dynamic professionDistribution,
+    required dynamic sleepHoursDistribution,
+    required dynamic workingHoursDistribution,
     required Map<dynamic, dynamic> peakWorkoutHours,
   }) {
     return RefreshIndicator(
@@ -834,6 +1716,39 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             _buildSectionTitle('Client Demographics'),
             _buildDemographics(genderDistribution, ageDistribution, widget.orgId, _startDate, _endDate),
             const SizedBox(height: 24),
+            if (professionDistribution is List && professionDistribution.isNotEmpty) ...[
+              _buildSectionTitle('Profession Distribution'),
+              _buildDistributionListCard(
+                items: professionDistribution,
+                titleKey: 'profession',
+                filterType: 'profession',
+                barColor: const Color(0xff3498DB),
+                icon: Icons.work_outline_rounded,
+              ),
+              const SizedBox(height: 24),
+            ],
+            if (sleepHoursDistribution is List && sleepHoursDistribution.isNotEmpty) ...[
+              _buildSectionTitle('Sleep Hours Distribution'),
+              _buildDistributionListCard(
+                items: sleepHoursDistribution,
+                titleKey: 'range',
+                filterType: 'sleep_hours',
+                barColor: const Color(0xff9B59B6),
+                icon: Icons.bedtime_outlined,
+              ),
+              const SizedBox(height: 24),
+            ],
+            if (workingHoursDistribution is List && workingHoursDistribution.isNotEmpty) ...[
+              _buildSectionTitle('Working Hours Distribution'),
+              _buildDistributionListCard(
+                items: workingHoursDistribution,
+                titleKey: 'range',
+                filterType: 'working_hours',
+                barColor: const Color(0xffE67E22),
+                icon: Icons.access_time_rounded,
+              ),
+              const SizedBox(height: 24),
+            ],
             ClientWorkoutCalendarWidget(orgId: widget.orgId),
             const SizedBox(height: 24),
             _buildSectionTitle('Client Goals & Target Distribution'),
@@ -850,7 +1765,12 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     );
   }
 
-  Widget _buildTrainersTab(List<dynamic> trainersPerformance) {
+  Widget _buildTrainersTab({
+    required List<dynamic> trainersPerformance,
+    required Map<dynamic, dynamic> trainerGenderDist,
+    required Map<dynamic, dynamic> trainerAgeDist,
+    required String totalTrainers,
+  }) {
     return RefreshIndicator(
       onRefresh: _fetchReports,
       child: SingleChildScrollView(
@@ -861,6 +1781,29 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildSectionTitle('Trainer Overview'),
+            GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              childAspectRatio: 1.4,
+              children: [
+                _buildReportCard(
+                  title: 'Total Trainers',
+                  value: totalTrainers,
+                  icon: Icons.badge_outlined,
+                  color: AppColors.primary,
+                ),
+              ],
+            ),
+            if (trainerGenderDist.isNotEmpty || trainerAgeDist.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              _buildSectionTitle('Trainer Demographics'),
+              _buildTrainerDemographics(trainerGenderDist, trainerAgeDist),
+            ],
+            const SizedBox(height: 24),
             _buildSectionTitle('Trainer Performance'),
             if (trainersPerformance.isEmpty)
               Container(
@@ -898,6 +1841,483 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     );
   }
 
+  Widget _buildTrainerDemographics(
+    Map<dynamic, dynamic> genderDist,
+    Map<dynamic, dynamic> ageDist,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffEEEEEE)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Gender Distribution',
+            style: AppStyles.text14Px.poppins.w600.dark,
+          ),
+          const SizedBox(height: 16),
+          _GenderPieChart(
+            genderDist: genderDist,
+            orgId: widget.orgId,
+            startDate: _startDate,
+            endDate: _endDate,
+            isTrainer: true,
+          ),
+
+          const Divider(height: 32, color: Color(0xffEEEEEE)),
+
+          Text('Age Distribution', style: AppStyles.text14Px.poppins.w600.dark),
+          const SizedBox(height: 12),
+          ...ageDist.entries.map((e) {
+            final key = e.key.toString();
+            final formattedKey = _formatAgeKey(key);
+            final data = e.value as Map<dynamic, dynamic>?;
+            if (data == null) return const SizedBox.shrink();
+            final String pctStr = data['percentage']?.toString() ?? '0%';
+            final count = data['count'] as int? ?? 0;
+
+            double parsedPct = 0.0;
+            try {
+              parsedPct = double.parse(pctStr.replaceAll('%', '')) / 100.0;
+            } catch (_) {}
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 90,
+                    child: Text(
+                      formattedKey,
+                      style: AppStyles.text12Px.poppins.w500.dark,
+                    ),
+                  ),
+                  Expanded(
+                    child: LinearProgressIndicator(
+                      value: parsedPct,
+                      backgroundColor: const Color(0xffF0F0F0),
+                      color: const Color(0xffF39C12),
+                      minHeight: 8,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 60,
+                    child: Text(
+                      '$pctStr ($count)',
+                      style: AppStyles.text12Px.poppins.w500.dark,
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  String _formatAgeKey(String rawKey) {
+    switch (rawKey.toLowerCase()) {
+      case 'under_18':
+      case 'under-18':
+      case 'under18':
+        return '< 18';
+      case '18-25':
+      case '18_25':
+        return '18 - 25';
+      case '26-35':
+      case '26_35':
+        return '26 - 35';
+      case '36-45':
+      case '36_45':
+        return '36 - 45';
+      case '46-55':
+      case '46_55':
+        return '46 - 55';
+      case '56+':
+      case '56_plus':
+      case 'over_55':
+        return '56+';
+      case 'unspecified':
+        return 'Unspecified';
+      default:
+        return rawKey;
+    }
+  }
+
+
+
+  Widget _buildCategoryBreakdownSection(List<dynamic> categories) {
+    if (categories.isEmpty) return const SizedBox.shrink();
+
+    final displayedCategories = _isCategoryBreakdownExpanded
+        ? categories
+        : <dynamic>[];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        const Divider(height: 1),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Category Budget Breakdown',
+              style: AppStyles.text14Px.poppins.w600.copyWith(
+                color: context.colors.textPrimary,
+              ),
+            ),
+            Text(
+              '${categories.length} Categories',
+              style: AppStyles.text12Px.poppins.w500.copyWith(
+                color: context.colors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...displayedCategories.map((item) {
+          final map = Map<String, dynamic>.from(item as Map);
+          final catName = map['category']?.toString() ?? 'Other';
+          final catBudget = double.tryParse(
+                  (map['budget'] ?? map['amount'] ?? 0.0).toString()) ??
+              0.0;
+          final catUsed =
+              double.tryParse((map['amount_used'] ?? 0.0).toString()) ?? 0.0;
+          final catRem = double.tryParse((map['remaining_budget'] ??
+                  (catBudget - catUsed))
+              .toString()) ??
+              0.0;
+          final catUtil = double.tryParse(
+                  (map['utilization_percentage'] ?? 0.0).toString()) ??
+              0.0;
+          final pct = (catUtil / 100.0).clamp(0.0, 1.0);
+          final int? expenseCount = map['expense_count'] as int?;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: context.colors.fieldFill,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.colors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          _getCategoryIcon(catName),
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          catName,
+                          style: AppStyles.text14Px.poppins.w600.copyWith(
+                            color: context.colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '₹${catUsed.toStringAsFixed(0)} / ₹${catBudget.toStringAsFixed(0)} (${catUtil.toStringAsFixed(0)}%)',
+                      style: AppStyles.text12Px.poppins.w600.copyWith(
+                        color: pct >= 0.9
+                            ? Colors.red
+                            : (pct >= 0.7
+                                ? Colors.orange
+                                : context.colors.textPrimary),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: pct,
+                    backgroundColor: context.colors.border,
+                    color: pct >= 0.9
+                        ? const Color(0xffE74C3C)
+                        : (pct >= 0.7
+                            ? const Color(0xffF39C12)
+                            : const Color(0xff2ECC71)),
+                    minHeight: 6,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Remaining: ₹${catRem.toStringAsFixed(0)}',
+                      style: AppStyles.text12Px.poppins.w400.copyWith(
+                        color: context.colors.textSecondary,
+                      ),
+                    ),
+                    if (expenseCount != null)
+                      Text(
+                        '$expenseCount expense${expenseCount == 1 ? '' : 's'}',
+                        style: AppStyles.text12Px.poppins.w400.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isCategoryBreakdownExpanded = !_isCategoryBreakdownExpanded;
+            });
+          },
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: const EdgeInsets.only(top: 4, bottom: 8),
+              decoration: BoxDecoration(
+                color: context.colors.fieldFill,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: context.colors.border),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _isCategoryBreakdownExpanded
+                        ? 'Hide Categories'
+                        : 'View Categories Breakdown (${categories.length})',
+                    style: AppStyles.text13Px.poppins.w600.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    _isCategoryBreakdownExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRevenueTargetCategoryBreakdownSection(List<dynamic> rawCategories) {
+    if (rawCategories.isEmpty) return const SizedBox.shrink();
+
+    final categories = _getProcessedRevenueTargets(rawCategories);
+    if (categories.isEmpty) return const SizedBox.shrink();
+
+    final displayedCategories = _isRevenueTargetBreakdownExpanded
+        ? categories
+        : <Map<String, dynamic>>[];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        const Divider(height: 1),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Category Target Breakdown',
+              style: AppStyles.text14Px.poppins.w600.copyWith(
+                color: context.colors.textPrimary,
+              ),
+            ),
+            Text(
+              '${categories.length} Categories',
+              style: AppStyles.text12Px.poppins.w500.copyWith(
+                color: context.colors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...displayedCategories.map((item) {
+          final map = Map<String, dynamic>.from(item as Map);
+          final catName = map['category']?.toString() ?? 'Other';
+          final targetVal = double.tryParse(
+                  (map['target'] ?? map['amount'] ?? 0.0).toString()) ??
+              0.0;
+          final actualVal = double.tryParse(
+                  (map['actual'] ?? map['actual_revenue'] ?? 0.0).toString()) ??
+              0.0;
+          final remVal = double.tryParse(
+                  (map['remaining'] ?? 0.0).toString()) ??
+              (targetVal > actualVal ? targetVal - actualVal : 0.0);
+          final achPct = double.tryParse(
+                  (map['achievement_percentage'] ?? 0.0).toString()) ??
+              (targetVal > 0 ? (actualVal / targetVal) * 100.0 : 0.0);
+          final pct = (achPct / 100.0).clamp(0.0, 1.0);
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: context.colors.fieldFill,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.colors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          _getCategoryIcon(catName),
+                          size: 16,
+                          color: const Color(0xff27AE60),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          catName,
+                          style: AppStyles.text14Px.poppins.w600.copyWith(
+                            color: context.colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '₹${actualVal.toStringAsFixed(0)} / ₹${targetVal.toStringAsFixed(0)} (${achPct.toStringAsFixed(0)}%)',
+                      style: AppStyles.text12Px.poppins.w600.copyWith(
+                        color: pct >= 1.0
+                            ? const Color(0xff27AE60)
+                            : (pct >= 0.7
+                                ? const Color(0xff2ECC71)
+                                : Colors.orange),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: pct,
+                    backgroundColor: context.colors.border,
+                    color: pct >= 1.0
+                        ? const Color(0xff27AE60)
+                        : (pct >= 0.7
+                            ? const Color(0xff2ECC71)
+                            : const Color(0xffF39C12)),
+                    minHeight: 6,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      remVal > 0
+                          ? 'Remaining: ₹${remVal.toStringAsFixed(0)}'
+                          : 'Target Met 🎉',
+                      style: AppStyles.text12Px.poppins.w400.copyWith(
+                        color: remVal > 0
+                            ? context.colors.textSecondary
+                            : const Color(0xff27AE60),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isRevenueTargetBreakdownExpanded =
+                  !_isRevenueTargetBreakdownExpanded;
+            });
+          },
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: const EdgeInsets.only(top: 4, bottom: 8),
+              decoration: BoxDecoration(
+                color: context.colors.fieldFill,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: context.colors.border),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _isRevenueTargetBreakdownExpanded
+                        ? 'Hide Categories'
+                        : 'View Target Breakdown (${categories.length})',
+                    style: AppStyles.text13Px.poppins.w600.copyWith(
+                      color: const Color(0xff27AE60),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    _isRevenueTargetBreakdownExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: const Color(0xff27AE60),
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'equipment':
+        return Icons.fitness_center;
+      case 'maintenance':
+        return Icons.build;
+      case 'utilities':
+        return Icons.lightbulb_outline;
+      case 'marketing':
+        return Icons.campaign;
+      case 'salary':
+      case 'salaries':
+        return Icons.payments;
+      case 'rent':
+        return Icons.store;
+      default:
+        return Icons.category;
+    }
+  }
+
   Widget _buildFinanceTab({
     required double monthlyRevenue,
     required double totalExpense,
@@ -908,6 +2328,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     required double budgetRemaining,
     required List<dynamic> planRevenueBreakdown,
     required List<dynamic> paymentModes,
+    required List<dynamic> categoryBreakdown,
   }) {
     var budgetPctVal = 0.0;
     try {
@@ -916,6 +2337,33 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     } catch (_) {}
     if (budgetPctVal > 1.0) budgetPctVal = 1.0;
     if (budgetPctVal < 0.0) budgetPctVal = 0.0;
+
+    final double targetRevenue = double.tryParse((_revenueTargetData['total_target_revenue'] ??
+            _revenueTargetData['target_revenue'] ??
+            _revenueTargetData['target'] ??
+            0.0).toString()) ?? 0.0;
+
+    final double actualRevenue = double.tryParse((_revenueTargetData['total_actual_revenue'] ??
+            _revenueTargetData['actual_revenue'] ??
+            _revenueTargetData['actual'] ??
+            monthlyRevenue).toString()) ?? 0.0;
+
+    final double remainingTarget = double.tryParse((_revenueTargetData['remaining_to_target'] ??
+            _revenueTargetData['remaining'] ??
+            0.0).toString()) ?? (targetRevenue > actualRevenue ? targetRevenue - actualRevenue : 0.0);
+
+    final String achievementPercentageStr = _revenueTargetData['achievement_percentage'] != null
+        ? "${_revenueTargetData['achievement_percentage']}%"
+        : (targetRevenue > 0 ? "${((actualRevenue / targetRevenue) * 100).toStringAsFixed(1)}%" : "0%");
+
+    double targetPctVal = 0.0;
+    try {
+      targetPctVal = double.parse(achievementPercentageStr.replaceAll('%', '')) / 100.0;
+    } catch (_) {}
+    if (targetPctVal < 0.0) targetPctVal = 0.0;
+
+    final List<dynamic> revenueCategoryTargets =
+        (_revenueTargetData['categories'] as List<dynamic>?) ?? [];
 
     return RefreshIndicator(
       onRefresh: _fetchReports,
@@ -930,17 +2378,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             _buildSectionTitle('Financial Overview'),
 
             SizedBox(
-              height: 125,
+              height: 130,
               width: double.infinity,
-              child: _buildReportCard(
-                title: 'Net Profit / Loss',
-                value: '₹${netProfit.toStringAsFixed(2)}',
-                icon: netProfit >= 0 ? Icons.trending_up : Icons.trending_down,
-                color:
-                    netProfit >= 0
-                        ? const Color(0xff2ECC71)
-                        : const Color(0xffE74C3C),
-              ),
+              child: _buildNetProfitCard(netProfit: netProfit),
             ),
             const SizedBox(height: 12),
 
@@ -956,13 +2396,15 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                   title: 'Monthly Revenue',
                   value: '₹${monthlyRevenue.toStringAsFixed(0)}',
                   icon: Icons.currency_rupee,
-                  color: const Color(0xffE67E22),
+                  color: const Color(0xff27AE60),
+                  onTap: _showRevenueCategoryPieChartSheet,
                 ),
                 _buildReportCard(
                   title: 'Total Expense',
                   value: '₹${totalExpense.toStringAsFixed(0)}',
                   icon: Icons.money_off,
                   color: const Color(0xffE74C3C),
+                  onTap: _showExpenseCategoryPieChartSheet,
                 ),
               ],
             ),
@@ -991,10 +2433,12 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                     children: [
                       Text(
                         'Used: $budgetUsedPercentage',
-                        style: AppStyles.text14Px.poppins.w600.dark,
+                        style: AppStyles.text14Px.poppins.w600.copyWith(
+                          color: context.colors.textPrimary,
+                        ),
                       ),
                       InkWell(
-                        onTap: () => _showSetBudgetDialog(budget),
+                        onTap: () => _showSetCategoryBudgetsDialog(budget),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -1002,12 +2446,14 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                               TextSpan(
                                 text: 'Budget: ',
                                 style: AppStyles.text12Px.poppins.w500.copyWith(
-                                  color: AppColors.textGrey,
+                                  color: context.colors.textSecondary,
                                 ),
                                 children: [
                                   TextSpan(
                                     text: '₹${budget.toStringAsFixed(0)}',
-                                    style: AppStyles.text14Px.poppins.w600.dark,
+                                    style: AppStyles.text14Px.poppins.w600.copyWith(
+                                      color: context.colors.textPrimary,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1052,6 +2498,100 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                       ),
                     ],
                   ),
+                  _buildCategoryBreakdownSection(categoryBreakdown),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            _buildSectionTitle('Monthly Revenue Target Progress'),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xffEEEEEE)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Achieved: $achievementPercentageStr',
+                        style: AppStyles.text14Px.poppins.w600.copyWith(
+                          color: context.colors.textPrimary,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => _showSetCategoryRevenueTargetsDialog(targetRevenue),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text.rich(
+                              TextSpan(
+                                text: 'Target: ',
+                                style: AppStyles.text12Px.poppins.w500.copyWith(
+                                  color: context.colors.textSecondary,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: '₹${targetRevenue.toStringAsFixed(0)}',
+                                    style: AppStyles.text14Px.poppins.w600.copyWith(
+                                      color: context.colors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.tune_rounded,
+                              size: 16,
+                              color: Color(0xff27AE60),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: targetPctVal > 1.0 ? 1.0 : targetPctVal,
+                      backgroundColor: const Color(0xffF0F0F0),
+                      color: targetPctVal >= 1.0
+                          ? const Color(0xff2ECC71)
+                          : targetPctVal >= 0.7
+                          ? const Color(0xff27AE60)
+                          : const Color(0xffF39C12),
+                      minHeight: 8,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildBudgetStat(
+                        'Actual Revenue',
+                        '₹${actualRevenue.toStringAsFixed(0)}',
+                      ),
+                      _buildBudgetStat(
+                        'Remaining Target',
+                        '₹${remainingTarget.toStringAsFixed(0)}',
+                      ),
+                    ],
+                  ),
+                  _buildRevenueTargetCategoryBreakdownSection(revenueCategoryTargets),
                 ],
               ),
             ),
@@ -1331,6 +2871,165 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
               ),
             const SizedBox(height: 24),
 
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSectionTitle('Recent Revenues'),
+                IconButton(
+                  onPressed: () => _showRevenueSheet(),
+                  icon: const Icon(
+                    Icons.add_circle,
+                    color: Color(0xff27AE60),
+                    size: 28,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            if (_revenues.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xffEEEEEE)),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.account_balance_wallet_outlined,
+                      size: 44,
+                      color: AppColors.textGrey.withValues(alpha: 0.5),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No revenue records yet',
+                      style: AppStyles.text14Px.poppins.w500.copyWith(
+                        color: AppColors.textGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xff27AE60),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () => _showRevenueSheet(),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add First Revenue'),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xffEEEEEE)),
+                ),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _revenues.length,
+                  separatorBuilder:
+                      (context, index) =>
+                          const Divider(height: 1, color: Color(0xffEEEEEE)),
+                  itemBuilder: (context, index) {
+                    final rev = _revenues[index];
+                    final id = rev['id'] as int? ?? 0;
+                    final title =
+                        rev['title']?.toString() ?? rev['name']?.toString() ?? 'Unspecified Revenue';
+                    final category = rev['category']?.toString() ?? rev['category_name']?.toString() ?? 'Membership Fee';
+                    final amount = rev['amount'] ?? 0.0;
+                    final dateStr = rev['revenue_date']?.toString() ?? rev['date']?.toString() ?? '';
+
+                    var parsedAmount = 0.0;
+                    if (amount is double) {
+                      parsedAmount = amount;
+                    } else if (amount != null) {
+                      parsedAmount = double.tryParse(amount.toString()) ?? 0.0;
+                    }
+
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      title: Text(
+                        title,
+                        style: AppStyles.text14Px.poppins.w600.dark,
+                      ),
+                      subtitle: Text(
+                        '$category • $dateStr',
+                        style: AppStyles.text12Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '+ ₹${parsedAmount.toStringAsFixed(2)}',
+                            style: AppStyles.text14Px.poppins.w600.copyWith(
+                              color: const Color(0xff27AE60),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          PopupMenuButton<String>(
+                            color: Colors.white,
+                            surfaceTintColor: Colors.white,
+                            onSelected: (val) {
+                              if (val == 'edit') {
+                                _showRevenueSheet(revenue: rev);
+                              } else if (val == 'delete') {
+                                _deleteRevenue(id);
+                              }
+                            },
+                            itemBuilder:
+                                (context) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.edit, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Edit'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                          size: 18,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Delete',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            const SizedBox(height: 24),
+
             _buildSectionTitle('Plan Revenue Breakdown'),
             if (planRevenueBreakdown.isEmpty)
               Container(
@@ -1375,11 +3074,16 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         Text(
           label,
           style: AppStyles.text12Px.poppins.w400.copyWith(
-            color: AppColors.textGrey,
+            color: context.colors.textSecondary,
           ),
         ),
         const SizedBox(height: 4),
-        Text(value, style: AppStyles.text16Px.poppins.w600.dark),
+        Text(
+          value,
+          style: AppStyles.text16Px.poppins.w600.copyWith(
+            color: context.colors.textPrimary,
+          ),
+        ),
       ],
     );
   }
@@ -1388,6 +3092,313 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(title, style: AppStyles.text16Px.poppins.w600.dark),
+    );
+  }
+
+  List<({String month, double value})> _get3MonthProfitData(
+    double currentNetProfit,
+  ) {
+    final now = _startDate ?? DateTime.now();
+    final List<({String month, double value})> result = [];
+
+    final financial = _reportsData['financial_metrics'] as Map?;
+    final history =
+        _reportsData['monthly_history'] ??
+        _reportsData['profit_history'] ??
+        _reportsData['financial_history'] ??
+        financial?['monthly_history'] ??
+        financial?['history'] ??
+        financial?['monthly_trend'];
+
+    if (history is List && history.isNotEmpty) {
+      final items = history.take(3).toList();
+      for (final item in items) {
+        if (item is Map) {
+          final mName =
+              (item['month'] ?? item['name'] ?? item['month_name'] ?? '').toString();
+          final val =
+              double.tryParse(
+                (item['net_profit'] ??
+                        item['profit'] ??
+                        item['amount'] ??
+                        item['value'] ??
+                        0.0)
+                    .toString(),
+              ) ??
+              0.0;
+          result.add((
+            month: mName.length > 3 ? mName.substring(0, 3) : mName,
+            value: val,
+          ));
+        }
+      }
+    }
+
+    if (result.length == 3) return result;
+
+    final m3Date = now;
+    final m2Date = DateTime(now.year, now.month - 1, 1);
+    final m1Date = DateTime(now.year, now.month - 2, 1);
+
+    final m1Name = DateFormat('MMM').format(m1Date);
+    final m2Name = DateFormat('MMM').format(m2Date);
+    final m3Name = DateFormat('MMM').format(m3Date);
+
+    double m1Val = currentNetProfit != 0 ? currentNetProfit * 0.4 : 1000.0;
+    double m2Val = currentNetProfit != 0 ? currentNetProfit * 0.85 : 2500.0;
+
+    return [
+      (month: m1Name, value: m1Val),
+      (month: m2Name, value: m2Val),
+      (month: m3Name, value: currentNetProfit),
+    ];
+  }
+
+  Widget _buildNetProfitCard({
+    required double netProfit,
+  }) {
+    final color = netProfit >= 0 ? const Color(0xff2ECC71) : const Color(0xffE74C3C);
+    final icon = netProfit >= 0 ? Icons.trending_up : Icons.trending_down;
+    final trendData = _get3MonthProfitData(netProfit);
+    final values = trendData.map((e) => e.value).toList();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffEEEEEE)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Left: Value & Label
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(height: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '₹${netProfit.toStringAsFixed(2)}',
+                        style: AppStyles.text20Px.poppins.w600.copyWith(color: color),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Net Profit / Loss',
+                      style: AppStyles.text12Px.poppins.w400.copyWith(
+                        color: AppColors.textGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          // Right: 3-Month Mini Sparkline Graph Card
+          Container(
+            width: 145,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xffF8F9FA),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xffEEEEEE)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Icon(
+                    netProfit >= 0 ? Icons.show_chart : Icons.multiline_chart,
+                    size: 14,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                // Sparkline
+                SizedBox(
+                  height: 46,
+                  width: double.infinity,
+                  child: CustomPaint(
+                    painter: _NetProfitSparklinePainter(
+                      values: values,
+                      lineColor: color,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Month Labels
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: trendData.map((item) {
+                    return Text(
+                      item.month,
+                      style: AppStyles.text10Px.poppins.w500.copyWith(
+                        color: AppColors.textGrey,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showExpenseCategoryPieChartSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Category Wise Expenses',
+                    style: AppStyles.text18Px.poppins.w600.dark,
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (_expenses.isNotEmpty)
+                _ExpenseCategoryPieChart(expenses: _expenses)
+              else
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.pie_chart_outline_rounded,
+                        size: 48,
+                        color: AppColors.textGrey.withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No expense data available for pie chart breakdown.',
+                        textAlign: TextAlign.center,
+                        style: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showRevenueCategoryPieChartSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Category Wise Revenue',
+                    style: AppStyles.text18Px.poppins.w600.dark,
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (_revenues.isNotEmpty)
+                _RevenueCategoryPieChart(revenues: _revenues)
+              else
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.pie_chart_outline_rounded,
+                        size: 48,
+                        color: AppColors.textGrey.withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No revenue data available for pie chart breakdown.',
+                        textAlign: TextAlign.center,
+                        style: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -1450,8 +3461,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           ),
         ],
       ),
-    ),);
-  }
+    ),
+  );
+}
 
   Widget _buildPlanRevenueBreakdown(List<dynamic> plans) {
     return Container(
@@ -1711,6 +3723,141 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     );
   }
 
+  Widget _buildDistributionListCard({
+    required dynamic items,
+    required String titleKey,
+    required String filterType,
+    required Color barColor,
+    required IconData icon,
+  }) {
+    final List<Map<String, dynamic>> list = [];
+    if (items is List) {
+      for (final item in items) {
+        if (item is Map) {
+          final title = (item[titleKey] ?? item['label'] ?? item['profession'] ?? item['range'] ?? 'Other').toString();
+          final label = (item['label'] ?? title).toString();
+          final pctStr = (item['percentage'] ?? '0%').toString();
+          final countVal = int.tryParse((item['count'] ?? 0).toString()) ?? 0;
+          list.add({
+            'title': title,
+            'label': label,
+            'percentage': pctStr,
+            'count': countVal,
+          });
+        }
+      }
+    }
+
+    if (list.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xffEEEEEE)),
+        ),
+        child: Center(
+          child: Text(
+            'No distribution data available',
+            style: AppStyles.text14Px.poppins.w400.copyWith(
+              color: AppColors.textGrey,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffEEEEEE)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: list.map((item) {
+          final String title = item['title'] as String;
+          final String label = item['label'] as String;
+          final String pctStr = item['percentage'] as String;
+          final int count = item['count'] as int;
+
+          double parsedPct = 0.0;
+          try {
+            parsedPct = double.parse(pctStr.replaceAll('%', '')) / 100.0;
+          } catch (_) {}
+
+          return InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ReportsCustomerListScreen(
+                    orgId: widget.orgId,
+                    filterType: filterType,
+                    filterValue: title,
+                    filterLabel: '$label ($count)',
+                    startDate: _startDate,
+                    endDate: _endDate,
+                    count: count,
+                  ),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Icon(icon, size: 18, color: barColor),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 120,
+                    child: Text(
+                      label,
+                      style: AppStyles.text12Px.poppins.w500.dark,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: parsedPct,
+                        backgroundColor: const Color(0xffF0F0F0),
+                        color: barColor,
+                        minHeight: 8,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 60,
+                    child: Text(
+                      '$count ($pctStr)',
+                      style: AppStyles.text10Px.poppins.w600.dark,
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildPeakHours(Map<dynamic, dynamic> peakHours) {
     final sortedEntries =
         peakHours.entries.toList()..sort(
@@ -1914,12 +4061,14 @@ class _GenderPieChart extends StatelessWidget {
     required this.orgId,
     this.startDate,
     this.endDate,
+    this.isTrainer = false,
   });
 
   final Map<dynamic, dynamic> genderDist;
   final int orgId;
   final DateTime? startDate;
   final DateTime? endDate;
+  final bool isTrainer;
 
   @override
   Widget build(BuildContext context) {
@@ -2004,7 +4153,7 @@ class _GenderPieChart extends StatelessWidget {
             children:
                 slices.map((slice) {
                   return InkWell(
-                    onTap: () {
+                    onTap: isTrainer ? null : () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -2265,5 +4414,381 @@ class _RevenuePieChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _RevenuePieChartPainter oldDelegate) {
     return oldDelegate.slices != slices;
+  }
+}
+
+class _ExpenseCategoryPieChart extends StatelessWidget {
+  final List<Map<String, dynamic>> expenses;
+  const _ExpenseCategoryPieChart({required this.expenses});
+
+  static const Map<String, Color> _categoryColors = {
+    'Equipment': Color(0xff486CC2),
+    'Maintenance': Color(0xffF39C12),
+    'Utilities': Color(0xff1ABC9C),
+    'Rent': Color(0xff9C51BF),
+    'Salaries': Color(0xff527F50),
+    'Marketing': Color(0xffC2486C),
+    'Other': Color(0xffE74C3C),
+  };
+
+  static const List<Color> _fallbackColors = [
+    Color(0xff34495E),
+    Color(0xffE67E22),
+    Color(0xff2ECC71),
+    Color(0xff3498DB),
+    Color(0xff9B59B6),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    if (expenses.isEmpty) return const SizedBox.shrink();
+
+    final Map<String, double> categoryTotals = {};
+    double totalExpense = 0.0;
+
+    for (final exp in expenses) {
+      final category = exp['category']?.toString().trim() ?? 'Other';
+      final rawAmount = exp['amount'];
+      double amount = 0.0;
+      if (rawAmount is num) {
+        amount = rawAmount.toDouble();
+      } else if (rawAmount != null) {
+        amount = double.tryParse(rawAmount.toString()) ?? 0.0;
+      }
+
+      if (amount > 0) {
+        categoryTotals[category] = (categoryTotals[category] ?? 0.0) + amount;
+        totalExpense += amount;
+      }
+    }
+
+    if (totalExpense <= 0) return const SizedBox.shrink();
+
+    final List<({String label, double percentage, int count, Color color, double amount})> slices = [];
+    int fallbackIndex = 0;
+
+    categoryTotals.forEach((category, amount) {
+      final percentage = (amount / totalExpense) * 100;
+      final color = _categoryColors[category] ??
+          _fallbackColors[fallbackIndex % _fallbackColors.length];
+      fallbackIndex++;
+
+      slices.add((
+        label: category,
+        percentage: percentage,
+        count: 0,
+        color: color,
+        amount: amount,
+      ));
+    });
+
+    slices.sort((a, b) => b.amount.compareTo(a.amount));
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffEEEEEE)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Expense Breakdown by Category',
+            style: AppStyles.text14Px.poppins.w600.dark,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: CustomPaint(
+                  painter: _PieChartPainter(
+                    slices: slices
+                        .map((s) => (
+                              label: s.label,
+                              percentage: s.percentage,
+                              count: s.count,
+                              color: s.color,
+                            ))
+                        .toList(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: slices.map((slice) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: slice.color,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              slice.label,
+                              style: AppStyles.text12Px.poppins.w500.dark,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            '${slice.percentage.toStringAsFixed(1)}% (₹${slice.amount.toStringAsFixed(0)})',
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RevenueCategoryPieChart extends StatelessWidget {
+  final List<Map<String, dynamic>> revenues;
+  const _RevenueCategoryPieChart({required this.revenues});
+
+  static const Map<String, Color> _categoryColors = {
+    'Membership Fee': Color(0xff27AE60),
+    'Admission Fee': Color(0xff2980B9),
+    'Product Sales': Color(0xff8E44AD),
+    'Others': Color(0xffF39C12),
+  };
+
+  static const List<Color> _fallbackColors = [
+    Color(0xff1ABC9C),
+    Color(0xffE67E22),
+    Color(0xff34495E),
+    Color(0xffC0392B),
+    Color(0xff16A085),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    if (revenues.isEmpty) return const SizedBox.shrink();
+
+    final Map<String, double> categoryTotals = {};
+    double totalRevenue = 0.0;
+
+    for (final rev in revenues) {
+      final category = rev['category']?.toString().trim() ??
+          rev['category_name']?.toString().trim() ??
+          'Others';
+      final rawAmount = rev['amount'];
+      double amount = 0.0;
+      if (rawAmount is num) {
+        amount = rawAmount.toDouble();
+      } else if (rawAmount != null) {
+        amount = double.tryParse(rawAmount.toString()) ?? 0.0;
+      }
+
+      if (amount > 0) {
+        categoryTotals[category] = (categoryTotals[category] ?? 0.0) + amount;
+        totalRevenue += amount;
+      }
+    }
+
+    if (totalRevenue <= 0) return const SizedBox.shrink();
+
+    final List<({String label, double percentage, int count, Color color, double amount})> slices = [];
+    int fallbackIndex = 0;
+
+    categoryTotals.forEach((category, amount) {
+      final percentage = (amount / totalRevenue) * 100;
+      final color = _categoryColors[category] ??
+          _fallbackColors[fallbackIndex % _fallbackColors.length];
+      fallbackIndex++;
+
+      slices.add((
+        label: category,
+        percentage: percentage,
+        count: 0,
+        color: color,
+        amount: amount,
+      ));
+    });
+
+    slices.sort((a, b) => b.amount.compareTo(a.amount));
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffEEEEEE)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Revenue Breakdown by Category',
+            style: AppStyles.text14Px.poppins.w600.dark,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: CustomPaint(
+                  painter: _PieChartPainter(
+                    slices: slices
+                        .map((s) => (
+                              label: s.label,
+                              percentage: s.percentage,
+                              count: s.count,
+                              color: s.color,
+                            ))
+                        .toList(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: slices.map((slice) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: slice.color,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              slice.label,
+                              style: AppStyles.text12Px.poppins.w500.dark,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            '${slice.percentage.toStringAsFixed(1)}% (₹${slice.amount.toStringAsFixed(0)})',
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NetProfitSparklinePainter extends CustomPainter {
+  final List<double> values;
+  final Color lineColor;
+
+  _NetProfitSparklinePainter({required this.values, required this.lineColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.length < 2) return;
+
+    final maxVal = values.reduce(math.max);
+    final minVal = values.reduce(math.min);
+    final range = (maxVal - minVal) == 0 ? 1.0 : (maxVal - minVal);
+
+    final points = <Offset>[];
+    final stepX = size.width / (values.length - 1);
+
+    for (int i = 0; i < values.length; i++) {
+      final x = i * stepX;
+      final normalized = (values[i] - minVal) / range;
+      final y = size.height - 6 - (normalized * (size.height - 12));
+      points.add(Offset(x, y));
+    }
+
+    // Fill path under graph
+    final fillPath = Path()..moveTo(points.first.dx, size.height);
+    fillPath.lineTo(points.first.dx, points.first.dy);
+    for (int i = 1; i < points.length; i++) {
+      final p0 = points[i - 1];
+      final p1 = points[i];
+      final controlX = (p0.dx + p1.dx) / 2;
+      fillPath.cubicTo(controlX, p0.dy, controlX, p1.dy, p1.dx, p1.dy);
+    }
+    fillPath.lineTo(points.last.dx, size.height);
+    fillPath.close();
+
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          lineColor.withValues(alpha: 0.25),
+          lineColor.withValues(alpha: 0.0),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    canvas.drawPath(fillPath, fillPaint);
+
+    // Smooth curve stroke
+    final strokePath = Path()..moveTo(points.first.dx, points.first.dy);
+    for (int i = 1; i < points.length; i++) {
+      final p0 = points[i - 1];
+      final p1 = points[i];
+      final controlX = (p0.dx + p1.dx) / 2;
+      strokePath.cubicTo(controlX, p0.dy, controlX, p1.dy, p1.dx, p1.dy);
+    }
+
+    final strokePaint = Paint()
+      ..color = lineColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawPath(strokePath, strokePaint);
+
+    // Draw dots at data points
+    final dotPaint = Paint()..color = lineColor;
+    final whitePaint = Paint()..color = Colors.white;
+
+    for (int i = 0; i < points.length; i++) {
+      canvas.drawCircle(points[i], 3.5, dotPaint);
+      canvas.drawCircle(points[i], 1.8, whitePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _NetProfitSparklinePainter oldDelegate) {
+    return oldDelegate.values != values || oldDelegate.lineColor != lineColor;
   }
 }

@@ -186,25 +186,25 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
       final months = (days / 30).floor();
 
       setState(() {
-          _calculatedMonths = months > 0 ? months : 0;
+        _calculatedMonths = months > 0 ? months : 0;
 
-          // rebuild month field for each EMI
-          for (var i = 0; i < _emiOptions.length; i++) {
-            final existing = _emiOptions[i];
-            final existingMonthController = existing.month.controller!;
-            final selected = existingMonthController.text;
-            final selectedInt = int.tryParse(selected) ?? 0;
-            if (_calculatedMonths > 0 && selectedInt > _calculatedMonths) {
-              existingMonthController.text = '';
-            }
-
-            final newMonthField = _buildMonthFieldWithController(
-              existingMonthController,
-            );
-            _emiOptions[i] = (month: newMonthField, price: existing.price);
+        // rebuild month field for each EMI
+        for (var i = 0; i < _emiOptions.length; i++) {
+          final existing = _emiOptions[i];
+          final existingMonthController = existing.month.controller!;
+          final selected = existingMonthController.text;
+          final selectedInt = int.tryParse(selected) ?? 0;
+          if (_calculatedMonths > 0 && selectedInt > _calculatedMonths) {
+            existingMonthController.text = '';
           }
-        });
+
+          final newMonthField = _buildMonthFieldWithController(
+            existingMonthController,
+          );
+          _emiOptions[i] = (month: newMonthField, price: existing.price);
+        }
       });
+    });
 
     // ---------- Actual price field ----------------
     _actualPriceField = FieldData<String>(

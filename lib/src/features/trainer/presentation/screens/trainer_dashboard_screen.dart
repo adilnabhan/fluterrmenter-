@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_customers_screen.dart';
@@ -7,8 +8,8 @@ import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/wor
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/account_switcher_sheet.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_pending_verifications_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/client_attendance_screen.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
   const TrainerDashboardScreen({super.key});
@@ -22,6 +23,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   int _workoutGroupsCount = 0;
   int _pendingVerificationsCount = 0;
   int _todaysAssignedWorkoutsCount = 0;
+  int _todayPresentCount = 0;
   List<Map<String, dynamic>> _banners = [];
   bool _isLoading = true;
   int _currentBannerIndex = 0;
@@ -182,11 +184,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           _isLoading = false;
         });
 
-        // Fetch counts in the background only if not already returned by backend stats
-        if (stats['pending_verifications_count'] == null ||
-            stats['workout_groups_count'] == null) {
-          _fetchExtraCounts();
-        }
+        _fetchExtraCounts();
       } else {
         if (!mounted) return;
         setState(() {
@@ -236,6 +234,40 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
         });
       }
     } catch (_) {}
+
+    try {
+      final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final attendanceResponse = await DioClient().dio.get<dynamic>(
+        '${ApiUris.trainerClientAttendance}?date=$dateStr',
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+      if (attendanceResponse.statusCode == 200 && mounted) {
+        final data = attendanceResponse.data;
+        int count = 0;
+        if (data is Map) {
+          final dashboard =
+              (data['dashboard'] ?? data['summary'] ?? {}) as Map;
+          if (dashboard['present_count'] != null) {
+            count = int.tryParse(dashboard['present_count'].toString()) ?? 0;
+          } else if (dashboard['present'] != null) {
+            count = int.tryParse(dashboard['present'].toString()) ?? 0;
+          } else {
+            final clients =
+                (data['clients'] ?? data['results'] ?? []) as List;
+            count = clients.where((c) {
+              if (c is Map) {
+                final status = (c['status'] ?? '').toString().toLowerCase();
+                return status == 'present';
+              }
+              return false;
+            }).length;
+          }
+        }
+        setState(() {
+          _todayPresentCount = count;
+        });
+      }
+    } catch (_) {}
   }
 
 
@@ -249,6 +281,10 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     final workoutGroupsCreated =
         stats['workout_groups_count'] ?? _workoutGroupsCount;
     final averageRating = stats['average_rating'] ?? 0.0;
+    final todayPresentCount = stats['today_present_count'] ??
+        stats['present_count'] ??
+        stats['today_attendance_marked'] ??
+        _todayPresentCount;
 
     final memberInsights =
         _dashboardData['member_insights'] as Map<String, dynamic>? ?? {};
@@ -270,7 +306,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
         trainerName.isNotEmpty ? trainerName : 'Trainer Profile';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.background,
       body:
           _isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -301,15 +337,15 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                               onPressed: () {
                                 const AccountSwitcherSheet().show(context);
                               },
-                              label: const Icon(
+                              label: Icon(
                                 Icons.keyboard_arrow_down_sharp,
-                                color: Color(0xff222222),
+                                color: context.colors.icon,
                                 size: 20,
                               ),
                               icon: Text(
                                 displayName,
                                 style: AppStyles.text14Px.poppins.w600.copyWith(
-                                  color: const Color(0xff222222),
+                                  color: context.colors.textPrimary,
                                 ),
                               ),
                             ),
@@ -317,9 +353,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                               children: [
                                 IconButton(
                                   onPressed: () {},
-                                  icon: const Icon(
+                                  icon: Icon(
                                     Icons.notifications_none_rounded,
-                                    color: Colors.black87,
+                                    color: context.colors.icon,
                                   ),
                                 ),
                                 IconButton(
@@ -333,9 +369,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                       ),
                                     );
                                   },
-                                  icon: const Icon(
+                                  icon: Icon(
                                     Icons.settings_outlined,
-                                    color: Colors.black87,
+                                    color: context.colors.icon,
                                   ),
                                 ),
                               ],
@@ -411,7 +447,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                 title: 'Assigned\nWorkouts',
                                 value: '${stats['todays_assigned_workouts_count'] ?? stats['todays_assigned_workouts'] ?? stats['today_assigned_workouts_count'] ?? stats['assigned_workouts_count'] ?? stats['assigned_plans_count'] ?? 0}',
                                 valueColor: const Color(0xFFD97706),
-                                titleColor: AppColors.textDark,
+                                titleColor: context.colors.textPrimary,
                                 onTap: () async {
                                   await Navigator.push(
                                     context,
@@ -428,7 +464,26 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                 title: 'Average\nRating',
                                 value: '$averageRating',
                                 valueColor: const Color(0xFF16A34A),
-                                titleColor: AppColors.textDark,
+                                titleColor: context.colors.textPrimary,
+                              ),
+                              _buildStatCard(
+                                title: 'Client\nAttendance',
+                                value: '$todayPresentCount',
+                                valueColor: const Color(0xFF3B66D4),
+                                titleColor: context.colors.textPrimary,
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute<void>(
+                                      builder:
+                                          (context) => const ClientAttendanceScreen(
+                                            orgId: 0,
+                                            isTrainer: true,
+                                          ),
+                                    ),
+                                  );
+                                  _fetchDashboardData(isSilent: true);
+                                },
                               ),
                             ],
                           ),
@@ -674,62 +729,50 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     final websiteUrl = banner['website_url'] as String? ?? '';
     final whatsappNumber = banner['whatsapp_number'] as String? ?? '';
 
-    return GestureDetector(
-      onTap: () {
-        if (whatsappNumber.isNotEmpty) {
-          launchUrl(
-            Uri.parse(
-              'https://wa.me/${whatsappNumber.replaceAll(RegExp(r'[^\d+]'), '')}',
-            ),
-          );
-        } else if (websiteUrl.isNotEmpty) {
-          launchUrl(Uri.parse(websiteUrl));
-        }
-      },
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: Colors.grey.shade100,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (imageUrl.isNotEmpty)
-                CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (context, url) =>
-                          const Center(child: CircularProgressIndicator()),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                )
-              else
-                Container(color: Colors.grey.shade300),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.8),
-                        Colors.black.withOpacity(0.0),
-                      ],
-                    ),
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.grey.shade100,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (imageUrl.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                placeholder:
+                    (context, url) =>
+                        const Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+              )
+            else
+              Container(color: Colors.grey.shade300),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.8),
+                      Colors.black.withValues(alpha: 0.0),
+                    ],
                   ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
                         title,
                         style: AppStyles.text16Px.poppins.w700.copyWith(
                           color: Colors.white,
@@ -737,36 +780,44 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (websiteUrl.isNotEmpty ||
-                          whatsappNumber.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              whatsappNumber.isNotEmpty
-                                  ? Icons.phone_outlined
-                                  : Icons.link,
-                              size: 12,
-                              color: Colors.white70,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              whatsappNumber.isNotEmpty
-                                  ? 'Tap to WhatsApp'
-                                  : 'Tap to visit website',
-                              style: AppStyles.text10Px.poppins.w500.copyWith(
-                                color: Colors.white70,
-                              ),
-                            ),
-                          ],
+                    ),
+                    if (whatsappNumber.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          final cleanNum = whatsappNumber.replaceAll(RegExp(r'[^\d+]'), '');
+                          launchUrl(
+                            Uri.parse('https://wa.me/$cleanNum'),
+                            mode: LaunchMode.externalApplication,
+                          );
+                        },
+                        child: SvgPicture.asset(
+                          'assets/images/svg/icons/whatsapp.svg',
+                          height: 28,
+                          width: 28,
                         ),
-                      ],
+                      ),
+                    ] else if (websiteUrl.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          launchUrl(
+                            Uri.parse(websiteUrl),
+                            mode: LaunchMode.externalApplication,
+                          );
+                        },
+                        child: const Icon(
+                          Icons.language,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
                     ],
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -845,19 +896,19 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: gradient == null ? Colors.white : null,
+          color: gradient == null ? context.colors.card : null,
           gradient: gradient,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             if (gradient == null)
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : 0.02),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
           ],
           border: Border.all(
-            color: gradient == null ? Colors.grey.shade300 : Colors.transparent,
+            color: gradient == null ? context.colors.border : Colors.transparent,
             width: 1,
           ),
         ),
@@ -867,9 +918,14 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           children: [
             Text(
               value,
-              style: AppStyles.text28Px.poppins.w600.copyWith(
-                color: valueColor,
-              ),
+              style: (double.tryParse(value) != null || value.length <= 3
+                      ? AppStyles.text28Px
+                      : AppStyles.text22Px)
+                  .poppins
+                  .w600
+                  .copyWith(
+                    color: valueColor,
+                  ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

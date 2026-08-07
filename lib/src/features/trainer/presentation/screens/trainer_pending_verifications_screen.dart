@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reports_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_workout_session_detail_screen.dart';
@@ -592,13 +593,13 @@ class _TrainerPendingVerificationsScreenState
                       selected: _pendingTypeFilter == 'assigned',
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: _pendingTypeFilter == 'assigned' ? Colors.white : AppColors.dark,
+                        color: _pendingTypeFilter == 'assigned' ? Colors.white : context.colors.textPrimary,
                         fontSize: 12,
                         fontWeight: _pendingTypeFilter == 'assigned' ? FontWeight.bold : FontWeight.normal,
                       ),
-                      backgroundColor: Colors.white,
+                      backgroundColor: context.colors.card,
                       side: BorderSide(
-                        color: _pendingTypeFilter == 'assigned' ? AppColors.primary : const Color(0xffEEEEEE),
+                        color: _pendingTypeFilter == 'assigned' ? AppColors.primary : context.colors.border,
                       ),
                       onSelected: (val) {
                         if (val) setState(() => _pendingTypeFilter = 'assigned');
@@ -612,13 +613,13 @@ class _TrainerPendingVerificationsScreenState
                       selected: _pendingTypeFilter == 'self',
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: _pendingTypeFilter == 'self' ? Colors.white : AppColors.dark,
+                        color: _pendingTypeFilter == 'self' ? Colors.white : context.colors.textPrimary,
                         fontSize: 12,
                         fontWeight: _pendingTypeFilter == 'self' ? FontWeight.bold : FontWeight.normal,
                       ),
-                      backgroundColor: Colors.white,
+                      backgroundColor: context.colors.card,
                       side: BorderSide(
-                        color: _pendingTypeFilter == 'self' ? AppColors.primary : const Color(0xffEEEEEE),
+                        color: _pendingTypeFilter == 'self' ? AppColors.primary : context.colors.border,
                       ),
                       onSelected: (val) {
                         if (val) setState(() => _pendingTypeFilter = 'self');
@@ -748,6 +749,7 @@ class _TrainerPendingVerificationsScreenState
                                     (context) =>
                                         TrainerWorkoutSessionDetailScreen(
                                           sessionId: sessionId,
+                                          isAssigned: _isAssignedWorkout(item),
                                         ),
                               ),
                             );
@@ -1061,13 +1063,13 @@ class _TrainerPendingVerificationsScreenState
                       selected: _historyTypeFilter == 'assigned',
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: _historyTypeFilter == 'assigned' ? Colors.white : AppColors.dark,
+                        color: _historyTypeFilter == 'assigned' ? Colors.white : context.colors.textPrimary,
                         fontSize: 12,
                         fontWeight: _historyTypeFilter == 'assigned' ? FontWeight.bold : FontWeight.normal,
                       ),
-                      backgroundColor: Colors.white,
+                      backgroundColor: context.colors.card,
                       side: BorderSide(
-                        color: _historyTypeFilter == 'assigned' ? AppColors.primary : const Color(0xffEEEEEE),
+                        color: _historyTypeFilter == 'assigned' ? AppColors.primary : context.colors.border,
                       ),
                       onSelected: (val) {
                         if (val) setState(() => _historyTypeFilter = 'assigned');
@@ -1081,13 +1083,13 @@ class _TrainerPendingVerificationsScreenState
                       selected: _historyTypeFilter == 'self',
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: _historyTypeFilter == 'self' ? Colors.white : AppColors.dark,
+                        color: _historyTypeFilter == 'self' ? Colors.white : context.colors.textPrimary,
                         fontSize: 12,
                         fontWeight: _historyTypeFilter == 'self' ? FontWeight.bold : FontWeight.normal,
                       ),
-                      backgroundColor: Colors.white,
+                      backgroundColor: context.colors.card,
                       side: BorderSide(
-                        color: _historyTypeFilter == 'self' ? AppColors.primary : const Color(0xffEEEEEE),
+                        color: _historyTypeFilter == 'self' ? AppColors.primary : context.colors.border,
                       ),
                       onSelected: (val) {
                         if (val) setState(() => _historyTypeFilter = 'self');
@@ -1212,6 +1214,7 @@ class _TrainerPendingVerificationsScreenState
                                   builder:
                                       (context) => TrainerWorkoutSessionDetailScreen(
                                         sessionId: sessionId,
+                                        isAssigned: _isAssignedWorkout(item),
                                       ),
                                 ),
                               );

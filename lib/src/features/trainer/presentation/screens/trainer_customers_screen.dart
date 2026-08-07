@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/assign_to_client_bottom_sheet.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
@@ -185,9 +186,9 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     final filtered = _filteredClients;
 
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.colors.background,
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: widget.isPushed ? const PopButton().center : null,
@@ -203,9 +204,9 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                 ),
               );
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.settings_outlined,
-              color: AppColors.textDark,
+              color: context.colors.icon,
             ),
           ),
           const SizedBox(width: 8),
@@ -217,9 +218,9 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.colors.card,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.borderGrey),
+                border: Border.all(color: context.colors.border),
               ),
               child: TextField(
                 onChanged: (val) {
@@ -234,11 +235,11 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                   );
                 },
                 decoration: InputDecoration(
-                  icon: const Icon(Icons.search, color: AppColors.textGrey),
+                  icon: Icon(Icons.search, color: context.colors.textSecondary),
                   hintText: 'Search for name or phone number',
-                  fillColor: Colors.white,
+                  fillColor: context.colors.card,
                   hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-                    color: AppColors.textGrey,
+                    color: context.colors.textSecondary,
                   ),
                   border: InputBorder.none,
                 ),
@@ -278,13 +279,13 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                             ),
                             decoration: BoxDecoration(
                               color:
-                                  isSelected ? AppColors.primary : Colors.white,
+                                  isSelected ? AppColors.primary : context.colors.card,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color:
                                     isSelected
                                         ? AppColors.primary
-                                        : Colors.grey.shade300,
+                                        : context.colors.border,
                                 width: 1,
                               ),
                             ),
@@ -295,7 +296,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                   color:
                                       isSelected
                                           ? Colors.white
-                                          : AppColors.textDark,
+                                          : context.colors.textPrimary,
                                 ),
                               ),
                             ),
@@ -319,8 +320,8 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                     });
                     _fetchClients();
                   },
-                  color: Colors.white,
-                  surfaceTintColor: Colors.white,
+                  color: context.colors.card,
+                  surfaceTintColor: context.colors.card,
                   position: PopupMenuPosition.under,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -386,13 +387,13 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                       color:
                           _statusFilter != 'all'
                               ? const Color(0xffFFEAEA)
-                              : Colors.white,
+                              : context.colors.card,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color:
                             _statusFilter != 'all'
                                 ? AppColors.primary.withOpacity(0.2)
-                                : Colors.grey.shade300,
+                                : context.colors.border,
                       ),
                     ),
                     child: Row(
@@ -404,7 +405,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                           color:
                               _statusFilter != 'all'
                                   ? AppColors.primary
-                                  : AppColors.textDark,
+                                  : context.colors.icon,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -417,7 +418,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                             color:
                                 _statusFilter != 'all'
                                     ? AppColors.primary
-                                    : AppColors.textDark,
+                                    : context.colors.textPrimary,
                           ),
                         ),
                         if (_statusFilter != 'all') ...[
@@ -558,11 +559,12 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: context.colors.card,
                               borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: context.colors.border),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: .02),
+                                  color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : .02),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -627,12 +629,13 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                           children: [
                                             Text(
                                               name,
-                                              style:
-                                                  AppStyles
-                                                      .text14Px
-                                                      .poppins
-                                                      .w600
-                                                      .dark,
+                                              style: AppStyles
+                                                  .text14Px
+                                                  .poppins
+                                                  .w600
+                                                  .copyWith(
+                                                    color: context.colors.textPrimary,
+                                                  ),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
@@ -642,7 +645,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                                   .poppins
                                                   .w500
                                                   .copyWith(
-                                                    color: AppColors.dark,
+                                                    color: context.colors.textSecondary,
                                                   ),
                                             ),
                                           ],
@@ -675,7 +678,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                                   .poppins
                                                   .w500
                                                   .copyWith(
-                                                    color: AppColors.dark,
+                                                    color: context.colors.textSecondary,
                                                   ),
                                             ),
                                             const SizedBox(height: 4),
@@ -686,7 +689,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                                   .poppins
                                                   .w500
                                                   .copyWith(
-                                                    color: AppColors.dark,
+                                                    color: context.colors.textSecondary,
                                                   ),
                                             ),
                                           ],
@@ -780,9 +783,9 @@ class TrainerQuickActionsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -792,39 +795,10 @@ class TrainerQuickActionsSheet extends StatelessWidget {
           Text(
             'Quick actions',
             style: AppStyles.text20Px.poppins.w600.copyWith(
-              color: AppColors.textDark,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 20),
-          // TODO: Uncomment when 'Add Client Directly' feature is needed
-          /*
-          _ActionCard(
-            icon: Icons.person_add_alt_1,
-            iconColor: Colors.white,
-            iconBgColor: const Color(0xFF1877F2),
-            title: 'Add Client Directly',
-            subtitle: 'Quick registration',
-            onTap: () {
-              Navigator.pop(context);
-              final orgId = context.read<AppCubit>().state.currentUser?.mentor?.org?.id;
-              if (orgId != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder:
-                        (context) => BlocProvider(
-                          create: (context) => MembersAndLeadsCubit(orgId: orgId),
-                          child: AddOrEditMemeberScreen(orgId: orgId),
-                        ),
-                  ),
-                );
-              } else {
-                Dialogs.showSnack(msg: 'Your gym/organization is not configured yet.');
-              }
-            },
-          ),
-          const SizedBox(height: 16),
-          */
           _ActionCard(
             icon: Icons.assignment_outlined,
             iconColor: Colors.white,
@@ -917,12 +891,12 @@ class _ActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.isDarkMode ? context.colors.fieldFill : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderGrey),
+          border: Border.all(color: context.colors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -946,14 +920,14 @@ class _ActionCard extends StatelessWidget {
                   Text(
                     title,
                     style: AppStyles.text16Px.poppins.w600.copyWith(
-                      color: AppColors.textDark,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: AppStyles.text14Px.poppins.w400.copyWith(
-                      color: AppColors.textGrey,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -1265,13 +1239,6 @@ class _AssignPlanBottomSheetContentState
 
     final enteredTitle = titleController.text.trim();
     final String finalTitle = enteredTitle.isNotEmpty ? enteredTitle : planName;
-
-    if (!context.mounted) return;
-    final trainerId = context.read<AppCubit>().state.currentUser?.mentor?.id;
-    if (trainerId == null) {
-      Dialogs.showSnack(msg: 'Trainer profile not found.');
-      return;
-    }
 
     if (!mounted) return;
     setState(() {

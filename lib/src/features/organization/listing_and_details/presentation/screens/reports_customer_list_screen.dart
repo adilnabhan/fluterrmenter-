@@ -85,6 +85,12 @@ class _ReportsCustomerListScreenState extends State<ReportsCustomerListScreen> {
         queryParams['age_group'] = widget.filterValue;
       } else if (widget.filterType == 'goal') {
         queryParams['goal'] = widget.filterValue;
+      } else if (widget.filterType == 'profession') {
+        queryParams['profession'] = widget.filterValue;
+      } else if (widget.filterType == 'sleep_hours') {
+        queryParams['sleep_hours'] = widget.filterValue;
+      } else if (widget.filterType == 'working_hours') {
+        queryParams['working_hours'] = widget.filterValue;
       }
 
       if (widget.startDate != null) {
@@ -213,6 +219,15 @@ class _ReportsCustomerListScreenState extends State<ReportsCustomerListScreen> {
                           final image = customer['profile_image']?.toString() ?? '';
                           final status = customer['membership_status']?.toString() ?? 'Active';
                           final goal = customer['goal']?.toString() ?? '';
+                          final profession = customer['profession']?.toString() ?? '';
+                          final sleepHours = customer['sleep_hours']?.toString() ?? '';
+                          final workingHours = customer['working_hours']?.toString() ?? '';
+
+                          final extraTag = profession.isNotEmpty
+                              ? profession
+                              : (sleepHours.isNotEmpty
+                                  ? 'Sleep: $sleepHours'
+                                  : (workingHours.isNotEmpty ? 'Work: $workingHours' : ''));
 
                           return InkWell(
                             onTap: () {
@@ -265,18 +280,37 @@ class _ReportsCustomerListScreenState extends State<ReportsCustomerListScreen> {
                                           phone,
                                           style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
                                         ),
-                                        if (goal.isNotEmpty) ...[
+                                        if (goal.isNotEmpty || extraTag.isNotEmpty) ...[
                                           const SizedBox(height: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.primary.withValues(alpha: 0.08),
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              goal,
-                                              style: AppStyles.text10Px.poppins.w500.copyWith(color: AppColors.primary),
-                                            ),
+                                          Wrap(
+                                            spacing: 6,
+                                            runSpacing: 4,
+                                            children: [
+                                              if (goal.isNotEmpty)
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.primary.withValues(alpha: 0.08),
+                                                    borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                  child: Text(
+                                                    goal,
+                                                    style: AppStyles.text10Px.poppins.w500.copyWith(color: AppColors.primary),
+                                                  ),
+                                                ),
+                                              if (extraTag.isNotEmpty)
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xff3498DB).withValues(alpha: 0.08),
+                                                    borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                  child: Text(
+                                                    extraTag,
+                                                    style: AppStyles.text10Px.poppins.w500.copyWith(color: const Color(0xff3498DB)),
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                         ],
                                       ],

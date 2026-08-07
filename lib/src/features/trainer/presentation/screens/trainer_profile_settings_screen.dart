@@ -1,6 +1,9 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/app/cubit/app_cubit.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/edit_trainer_profile_screen.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/trainer_workout_library_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/contact_support_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/bank_listing_view_screen.dart';
@@ -43,12 +46,33 @@ class _TrainerProfileSettingsScreenState
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8, top: 20),
+      padding: const EdgeInsets.only(left: 4, top: 20, bottom: 8),
       child: Text(
         title,
         style: AppStyles.text13Px.poppins.w500.copyWith(
-          color: AppColors.textDark.withOpacity(0.6),
+          color: context.colors.textSecondary,
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard(List<Widget> children) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: context.isDarkMode ? 0.25 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: children,
       ),
     );
   }
@@ -68,15 +92,10 @@ class _TrainerProfileSettingsScreenState
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(
-            top: isFirst ? const Radius.circular(12) : Radius.zero,
-            bottom: isLast ? const Radius.circular(12) : Radius.zero,
-          ),
           border:
               isLast
                   ? null
-                  : Border(bottom: BorderSide(color: Colors.grey.shade100)),
+                  : Border(bottom: BorderSide(color: context.colors.border)),
         ),
         child: Row(
           children: [
@@ -90,19 +109,19 @@ class _TrainerProfileSettingsScreenState
               Icon(
                 icon,
                 size: 20,
-                color: iconColor ?? AppColors.textDark.withValues(alpha: 0.8),
+                color: iconColor ?? context.colors.icon,
               ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 title,
                 style: AppStyles.text14Px.poppins.w500.copyWith(
-                  color: textColor ?? AppColors.textDark,
+                  color: textColor ?? context.colors.textPrimary,
                 ),
               ),
             ),
             if (textColor == null)
-              Icon(Icons.chevron_right, size: 20, color: AppColors.textDark),
+              Icon(Icons.chevron_right, size: 20, color: context.colors.textSecondary),
           ],
         ),
       ),
@@ -117,12 +136,16 @@ class _TrainerProfileSettingsScreenState
         '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
         leading: const PopButton().center,
-        title: Text('Settings', style: AppStyles.text16Px.poppins.w600.dark),
+        iconTheme: IconThemeData(color: context.colors.icon),
+        title: Text(
+          'Settings',
+          style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
+        ),
         centerTitle: true,
-        backgroundColor: const Color(0xFFF7F7F7),
+        backgroundColor: context.colors.background,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -134,11 +157,12 @@ class _TrainerProfileSettingsScreenState
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.colors.card,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: context.colors.border),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: context.isDarkMode ? 0.25 : 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -165,7 +189,7 @@ class _TrainerProfileSettingsScreenState
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: context.colors.fieldFill,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         clipBehavior: Clip.antiAlias,
@@ -207,7 +231,7 @@ class _TrainerProfileSettingsScreenState
                       children: [
                         Text(
                           trainerName.isNotEmpty ? trainerName : 'Trainer Profile',
-                          style: AppStyles.text16Px.poppins.w600.dark,
+                          style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -215,7 +239,7 @@ class _TrainerProfileSettingsScreenState
                         Text(
                           user?.email ?? 'No email address',
                           style: AppStyles.text12Px.poppins.w400.copyWith(
-                            color: AppColors.textDark.withValues(alpha: 0.5),
+                            color: context.colors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -228,114 +252,237 @@ class _TrainerProfileSettingsScreenState
             ),
 
             _buildSectionHeader('Account & Security'),
-            _buildSettingsItem(
-              icon: Icons.person_outline,
-              title: 'Manage Trainer Profile',
-              isFirst: true,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const EditTrainerProfileScreen(),
-                  ),
-                );
-              },
-            ),
-            _buildSettingsItem(
-              icon: Icons.phone_outlined,
-              title: 'Change Phone number',
-            ),
-            _buildSettingsItem(
-              icon: Icons.credit_card_outlined,
-              title: 'Bank Account Details',
-              isLast: true,
-              onTap: () {
-                if (user?.mentor?.org?.id != null) {
-                  final orgDetails = OrganizationDetailsModel(
-                    id: user!.mentor!.org!.id,
-                    name: user.mentor!.org!.name,
+            _buildSectionCard([
+              _buildSettingsItem(
+                icon: Icons.person_outline,
+                title: 'Manage Trainer Profile',
+                isFirst: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EditTrainerProfileScreen(),
+                    ),
                   );
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => BankListingViewScreen(orgDetails: orgDetails)));
-                }
-              },
-            ),
+                },
+              ),
+              _buildSettingsItem(
+                icon: Icons.phone_outlined,
+                title: 'Change Phone number',
+              ),
+              _buildSettingsItem(
+                icon: Icons.credit_card_outlined,
+                title: 'Bank Account Details',
+                isLast: true,
+                onTap: () {
+                  if (user?.mentor?.org?.id != null) {
+                    final orgDetails = OrganizationDetailsModel(
+                      id: user!.mentor!.org!.id,
+                      name: user.mentor!.org!.name,
+                    );
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => BankListingViewScreen(orgDetails: orgDetails)));
+                  }
+                },
+              ),
+            ]),
+
+            _buildSectionHeader('Workouts'),
+            _buildSectionCard([
+              _buildSettingsItem(
+                icon: Icons.fitness_center,
+                title: 'Workout Library',
+                isFirst: true,
+                isLast: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TrainerWorkoutLibraryScreen(),
+                    ),
+                  );
+                },
+              ),
+            ]),
 
             _buildSectionHeader('Preferences'),
-            _buildSettingsItem(
-              svgIconPath: 'assets/images/svg/icons/discipl_logo.svg',
-              title: 'About Us',
-              isFirst: true,
-              onTap: () {
-                launchUrl(Uri.parse('https://thediscipl.com/'));
-              },
-            ),
-            _buildSettingsItem(
-              icon: Icons.notifications_outlined,
-              title: 'Notifications',
-            ),
-            _buildSettingsItem(
-              icon: Icons.contrast,
-              title: 'Themes',
-              isLast: true,
-            ),
+            _buildSectionCard([
+              _buildSettingsItem(
+                svgIconPath: 'assets/images/svg/icons/discipl_logo.svg',
+                title: 'About Us',
+                isFirst: true,
+                onTap: () {
+                  launchUrl(Uri.parse('https://thediscipl.com/'));
+                },
+              ),
+              _buildSettingsItem(
+                icon: Icons.notifications_outlined,
+                title: 'Notifications',
+              ),
+              _buildSettingsItem(
+                icon: Icons.contrast,
+                title: 'Themes',
+                isLast: true,
+                onTap: () => _showThemeSelectionSheet(context),
+              ),
+            ]),
 
             _buildSectionHeader('Support & Legal'),
-            _buildSettingsItem(
-              icon: Icons.help_outline,
-              title: 'Help Center / FAQ',
-              isFirst: true,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const FaqScreen()),
-                );
-              },
-            ),
-            _buildSettingsItem(
-              icon: Icons.headset_mic_outlined,
-              title: 'Contact Support',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ContactSupportScreen(),
-                  ),
-                );
-              },
-            ),
-            _buildSettingsItem(
-              icon: Icons.description_outlined,
-              title: 'Terms & Conditions',
-              onTap: () {
-                launchUrl(Uri.parse('https://thediscipl.com/terms-conditions'));
-              },
-            ),
-            _buildSettingsItem(
-              icon: Icons.privacy_tip_outlined,
-              title: 'Privacy Policy',
-              isLast: true,
-              onTap: () {
-                launchUrl(Uri.parse('https://thediscipl.com/privacy-policy'));
-              },
-            ),
+            _buildSectionCard([
+              _buildSettingsItem(
+                icon: Icons.help_outline,
+                title: 'Help Center / FAQ',
+                isFirst: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FaqScreen()),
+                  );
+                },
+              ),
+              _buildSettingsItem(
+                icon: Icons.headset_mic_outlined,
+                title: 'Contact Support',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ContactSupportScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsItem(
+                icon: Icons.description_outlined,
+                title: 'Terms & Conditions',
+                onTap: () {
+                  launchUrl(Uri.parse('https://thediscipl.com/terms-conditions'));
+                },
+              ),
+              _buildSettingsItem(
+                icon: Icons.privacy_tip_outlined,
+                title: 'Privacy Policy',
+                isLast: true,
+                onTap: () {
+                  launchUrl(Uri.parse('https://thediscipl.com/privacy-policy'));
+                },
+              ),
+            ]),
 
             const SizedBox(height: 24),
             // Logout
-            _buildSettingsItem(
-              icon: Icons.logout,
-              title: 'Logout',
-              isFirst: true,
-              isLast: true,
-              iconColor: const Color(0xFFE53935),
-              textColor: const Color(0xFFE53935),
-              onTap: () {
-                const LogoutSheet().show(context);
-              },
-            ),
+            _buildSectionCard([
+              _buildSettingsItem(
+                icon: Icons.logout,
+                title: 'Logout',
+                isFirst: true,
+                isLast: true,
+                iconColor: const Color(0xFFE53935),
+                textColor: const Color(0xFFE53935),
+                onTap: () {
+                  const LogoutSheet().show(context);
+                },
+              ),
+            ]),
             const SizedBox(height: 40),
           ],
         ),
       ),
+    );
+  }
+
+  void _showThemeSelectionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return BlocBuilder<AppCubit, AppState>(
+          builder: (context, state) {
+            final currentMode = state.themeMode;
+            return Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Select Theme',
+                    style: AppStyles.text18Px.poppins.w600,
+                  ),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    leading: const Icon(Icons.wb_sunny_outlined),
+                    title: const Text('Light Mode'),
+                    trailing: Radio<ThemeMode>(
+                      value: ThemeMode.light,
+                      groupValue: currentMode,
+                      onChanged: (val) {
+                        if (val != null) {
+                          context.read<AppCubit>().changeThemeMode(val);
+                          Navigator.pop(sheetContext);
+                        }
+                      },
+                    ),
+                    onTap: () {
+                      context.read<AppCubit>().changeThemeMode(ThemeMode.light);
+                      Navigator.pop(sheetContext);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.dark_mode_outlined),
+                    title: const Text('Dark Mode'),
+                    trailing: Radio<ThemeMode>(
+                      value: ThemeMode.dark,
+                      groupValue: currentMode,
+                      onChanged: (val) {
+                        if (val != null) {
+                          context.read<AppCubit>().changeThemeMode(val);
+                          Navigator.pop(sheetContext);
+                        }
+                      },
+                    ),
+                    onTap: () {
+                      context.read<AppCubit>().changeThemeMode(ThemeMode.dark);
+                      Navigator.pop(sheetContext);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.brightness_auto_outlined),
+                    title: const Text('System Default'),
+                    trailing: Radio<ThemeMode>(
+                      value: ThemeMode.system,
+                      groupValue: currentMode,
+                      onChanged: (val) {
+                        if (val != null) {
+                          context.read<AppCubit>().changeThemeMode(val);
+                          Navigator.pop(sheetContext);
+                        }
+                      },
+                    ),
+                    onTap: () {
+                      context.read<AppCubit>().changeThemeMode(ThemeMode.system);
+                      Navigator.pop(sheetContext);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

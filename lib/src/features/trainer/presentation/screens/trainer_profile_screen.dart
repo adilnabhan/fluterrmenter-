@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/account_switcher_sheet.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/edit_trainer_profile_screen.dart';
@@ -59,9 +60,12 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     setState(() => _isLoadingTransformations = true);
     try {
       final currentUser = context.read<AppCubit>().state.currentUser;
-      final orgId = widget.isViewOnly
-          ? _fetchedUser?.mentor?.org?.id
-          : currentUser?.organizationId ?? currentUser?.trainer?.organizationId ?? currentUser?.mentor?.org?.id;
+      final orgId =
+          widget.isViewOnly
+              ? _fetchedUser?.mentor?.org?.id
+              : currentUser?.organizationId ??
+                  currentUser?.trainer?.organizationId ??
+                  currentUser?.mentor?.org?.id;
 
       final Map<String, dynamic> params = {};
       if (orgId != null) {
@@ -231,6 +235,30 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
               return const PortfolioImageModel();
             }).toList();
 
+        final int? parsedClientsCount = int.tryParse(
+              (data['clients_count'] ??
+                      data['client_count'] ??
+                      data['clients'] ??
+                      data['total_clients'] ??
+                      mentorData?['clients_count'] ??
+                      mentorData?['client_count'] ??
+                      mentorData?['clients'] ??
+                      '')
+                  .toString(),
+            );
+
+        final int? parsedVerifiedWorkoutsCount = int.tryParse(
+              (data['verified_workouts_count'] ??
+                      data['verified_workout_count'] ??
+                      data['verified_workouts'] ??
+                      data['total_verified_workouts'] ??
+                      mentorData?['verified_workouts_count'] ??
+                      mentorData?['verified_workout_count'] ??
+                      mentorData?['verified_workouts'] ??
+                      '')
+                  .toString(),
+            );
+
         final fetched = LoginSuccessModel(
           id: data['id'] as int?,
           firstName: data['first_name']?.toString(),
@@ -249,8 +277,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           trainer: TrainerModel(
             certificates: mappedCerts,
             portfolioImages: mappedPortfolio,
-            clientsCount: data['clients_count'] as int?,
-            verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
+            clientsCount: parsedClientsCount,
+            verifiedWorkoutsCount: parsedVerifiedWorkoutsCount,
           ),
           mentor: Mentor(
             org: Org(
@@ -338,6 +366,24 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
               return const PortfolioImageModel();
             }).toList();
 
+        final int? refreshedClientsCount = int.tryParse(
+              (data['clients_count'] ??
+                      data['client_count'] ??
+                      data['clients'] ??
+                      data['total_clients'] ??
+                      '')
+                  .toString(),
+            );
+
+        final int? refreshedVerifiedWorkoutsCount = int.tryParse(
+              (data['verified_workouts_count'] ??
+                      data['verified_workout_count'] ??
+                      data['verified_workouts'] ??
+                      data['total_verified_workouts'] ??
+                      '')
+                  .toString(),
+            );
+
         final updatedUser = currentUser!.copyWith(
           firstName: data['first_name']?.toString() ?? currentUser.firstName,
           lastName: data['last_name']?.toString() ?? currentUser.lastName,
@@ -345,19 +391,22 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
               data['profile_picture']?.toString() ?? currentUser.profilePicture,
           bio: data['bio']?.toString() ?? currentUser.bio,
           location: data['location']?.toString() ?? currentUser.location,
+          gender: data['gender']?.toString() ?? currentUser.gender,
+          dateOfBirth: (data['date_of_birth'] ?? data['dob'] ?? data['dateOfBirth'])?.toString() ?? currentUser.dateOfBirth,
+          experienceYears: int.tryParse((data['experience_years'] ?? data['experience_year'] ?? data['experience'])?.toString() ?? '') ?? currentUser.experienceYears,
           instagram: data['instagram']?.toString() ?? currentUser.instagram,
           facebook: data['facebook']?.toString() ?? currentUser.facebook,
           youtube: data['youtube']?.toString() ?? currentUser.youtube,
           whatsapp: data['whatsapp']?.toString() ?? currentUser.whatsapp,
           trainer:
               currentUser.trainer?.copyWith(
-                clientsCount: data['clients_count'] as int?,
-                verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
+                clientsCount: refreshedClientsCount ?? currentUser.trainer?.clientsCount,
+                verifiedWorkoutsCount: refreshedVerifiedWorkoutsCount ?? currentUser.trainer?.verifiedWorkoutsCount,
                 portfolioImages: mappedPortfolio,
               ) ??
               TrainerModel(
-                clientsCount: data['clients_count'] as int?,
-                verifiedWorkoutsCount: data['verified_workouts_count'] as int?,
+                clientsCount: refreshedClientsCount,
+                verifiedWorkoutsCount: refreshedVerifiedWorkoutsCount,
                 portfolioImages: mappedPortfolio,
               ),
         );
@@ -408,9 +457,9 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
   @override
   Widget build(BuildContext context) {
     if (widget.isViewOnly && _isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xffF7F7F7),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: context.colors.background,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -425,7 +474,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         trainerName.isNotEmpty ? trainerName : 'Trainer Profile';
 
     final portfolioImages = user?.trainer?.portfolioImages ?? [];
-    final heroCarousel =
+    final List<String> heroCarousel =
         portfolioImages.isNotEmpty
             ? portfolioImages
                 .map((e) => e.image ?? '')
@@ -435,7 +484,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     if (heroCarousel.isEmpty) heroCarousel.addAll(_heroImages);
 
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+      backgroundColor: context.colors.background,
       floatingActionButton:
           widget.isViewOnly
               ? null
@@ -519,14 +568,14 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: OutlinedButton.icon(
                                           style: OutlinedButton.styleFrom(
-                                            backgroundColor: Colors.white
-                                                .withOpacity(0.8),
+                                            backgroundColor: context.colors.card
+                                                .withOpacity(0.9),
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 12,
                                               vertical: 6,
                                             ),
-                                            side: const BorderSide(
-                                              color: Colors.transparent,
+                                            side: BorderSide(
+                                              color: context.colors.border,
                                             ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -538,9 +587,9 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                               context,
                                             );
                                           },
-                                          label: const Icon(
+                                          label: Icon(
                                             Icons.keyboard_arrow_down_sharp,
-                                            color: Color(0xff222222),
+                                            color: context.colors.icon,
                                             size: 20,
                                           ),
                                           icon: Text(
@@ -550,9 +599,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                                 .poppins
                                                 .w600
                                                 .copyWith(
-                                                  color: const Color(
-                                                    0xff222222,
-                                                  ),
+                                                  color:
+                                                      context
+                                                          .colors
+                                                          .textPrimary,
                                                 ),
                                           ),
                                         ),
@@ -560,13 +610,12 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                     ),
 
                                     CircleAvatar(
-                                      backgroundColor: Colors.white.withOpacity(
-                                        0.8,
-                                      ),
+                                      backgroundColor: context.colors.card
+                                          .withOpacity(0.9),
                                       child: IconButton(
-                                        icon: const Icon(
+                                        icon: Icon(
                                           Icons.settings,
-                                          color: Colors.black87,
+                                          color: context.colors.icon,
                                           size: 20,
                                         ),
                                         onPressed: () {
@@ -594,13 +643,12 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: CircleAvatar(
-                                  backgroundColor: Colors.white.withValues(
-                                    alpha: .8,
-                                  ),
+                                  backgroundColor: context.colors.card
+                                      .withOpacity(0.9),
                                   child: IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.arrow_back_ios_new,
-                                      color: Colors.black87,
+                                      color: context.colors.icon,
                                     ),
                                     onPressed: () => Navigator.pop(context),
                                   ),
@@ -718,11 +766,12 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.colors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -818,15 +867,16 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: context.colors.fieldFill,
                     shape: BoxShape.circle,
+                    border: Border.all(color: context.colors.border),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.edit,
                     size: 14,
-                    color: Colors.black54,
+                    color: context.colors.icon,
                   ),
                 ),
               ),
@@ -863,11 +913,12 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.colors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -908,7 +959,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                 ? user!.bio!.toString()
                 : 'No description provided.',
             style: AppStyles.text12Px.poppins.w400.copyWith(
-              color: AppColors.textDark,
+              color: context.colors.textPrimary,
               height: 1.5,
             ),
           ),
@@ -934,7 +985,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                     onTap:
                         () => launchUrl(Uri.parse(user!.facebook!.toString())),
                     child: _buildSocialSvgIcon(
-                      'assets/images/svg/icons/face_book.svg',
+                      'assets/images/svg/icons/fb.svg',
+                      fallbackIcon: Icons.facebook,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -978,35 +1030,35 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: context.colors.fieldFill,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         text,
         style: AppStyles.text12Px.poppins.w500.copyWith(
-          color: AppColors.textGrey,
+          color: context.colors.textSecondary,
         ),
       ),
     );
   }
 
-  Widget _buildSocialSvgIcon(String asset) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        shape: BoxShape.circle,
-      ),
+  Widget _buildSocialSvgIcon(String asset, {IconData? fallbackIcon}) {
+    return SizedBox(
+      width: 20,
+      height: 20,
       child: SvgPicture.asset(
         asset,
-        width: 18,
-        height: 18,
-        colorFilter: ColorFilter.mode(Colors.red.shade400, BlendMode.srcIn),
+        width: 20,
+        height: 20,
+        placeholderBuilder:
+            (context) => Icon(
+              fallbackIcon ?? Icons.public,
+              size: 20,
+              color: AppColors.primary,
+            ),
       ),
     );
   }
-
-
 
   Future<void> _deleteTransformation(int id) async {
     final confirm = await showDialog<bool>(
@@ -1373,6 +1425,313 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
       ],
     );
   }
+
+  Widget _buildCertificatesButton() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50.withOpacity(
+                context.isDarkMode ? 0.15 : 1.0,
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.description_outlined,
+              color: Colors.red.shade400,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'View Certificates',
+            style: AppStyles.text14Px.poppins.w600.copyWith(
+              color: context.colors.textPrimary,
+            ),
+          ),
+          const Spacer(),
+          Icon(Icons.chevron_right, color: context.colors.icon, size: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPortfolioButton() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50.withOpacity(
+                context.isDarkMode ? 0.15 : 1.0,
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.collections_outlined,
+              color: Colors.red.shade400,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Manage Portfolio Images',
+            style: AppStyles.text14Px.poppins.w600.copyWith(
+              color: context.colors.textPrimary,
+            ),
+          ),
+          const Spacer(),
+          Icon(Icons.chevron_right, color: context.colors.icon, size: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewsSection(
+    List<Map<String, dynamic>> reviews,
+    int count,
+    double avg,
+    bool isLoading,
+  ) {
+    if (isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (reviews.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Rating & Reviews',
+            style: AppStyles.text14Px.poppins.w600.copyWith(
+              color: context.colors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                avg.toStringAsFixed(1),
+                style: AppStyles.text24Px.poppins.w700.copyWith(
+                  color: context.colors.textPrimary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Row(
+                children: List.generate(5, (index) {
+                  return Icon(
+                    index < avg.floor()
+                        ? Icons.star
+                        : (index < avg ? Icons.star_half : Icons.star_border),
+                    color: Colors.amber,
+                    size: 20,
+                  );
+                }),
+              ),
+            ],
+          ),
+          Text(
+            '$count Reviews',
+            style: AppStyles.text10Px.poppins.w400.copyWith(
+              color: context.colors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...reviews.map(
+            (r) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildReviewItem(r),
+            ),
+          ),
+          if (count > reviews.length)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'View all Reviews',
+                    style: AppStyles.text12Px.poppins.w500.copyWith(
+                      color: context.colors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right, size: 16, color: Colors.red),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewItem(Map<String, dynamic> review) {
+    final name = review['customer_name']?.toString() ?? 'User';
+
+    String date = '';
+    if (review['created_at'] != null) {
+      try {
+        final dt = DateTime.parse(review['created_at'].toString());
+        final months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+        date =
+            '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
+      } catch (_) {}
+    }
+
+    final rating = review['rating']?.toString() ?? '0.0';
+    final comment = review['comment']?.toString() ?? '';
+    final avatar = review['profile_picture']?.toString();
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.colors.fieldFill,
+        border: Border.all(color: context.colors.border),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: context.colors.border,
+                backgroundImage:
+                    avatar != null && avatar.isNotEmpty
+                        ? NetworkImage(avatar)
+                        : null,
+                child:
+                    avatar == null || avatar.isEmpty
+                        ? Icon(
+                          Icons.person,
+                          size: 16,
+                          color: context.colors.icon,
+                        )
+                        : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: AppStyles.text12Px.poppins.w600.copyWith(
+                        color: context.colors.textPrimary,
+                      ),
+                    ),
+                    if (date.isNotEmpty)
+                      Text(
+                        date,
+                        style: AppStyles.text10Px.poppins.w400.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(
+                    context.isDarkMode ? 0.2 : 0.1,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.amber, size: 10),
+                    const SizedBox(width: 2),
+                    Text(
+                      rating,
+                      style: AppStyles.text10Px.poppins.w600.copyWith(
+                        color: context.isDarkMode ? Colors.amber : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (comment.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              comment,
+              style: AppStyles.text10Px.poppins.w400.copyWith(
+                color: context.colors.textSecondary,
+                height: 1.5,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class _AddTransformationSheet extends StatefulWidget {
@@ -1397,7 +1756,10 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
     setState(() => _isSubmitting = true);
     try {
       final currentUser = context.read<AppCubit>().state.currentUser;
-      final orgId = currentUser?.organizationId ?? currentUser?.trainer?.organizationId ?? currentUser?.mentor?.org?.id;
+      final orgId =
+          currentUser?.organizationId ??
+          currentUser?.trainer?.organizationId ??
+          currentUser?.mentor?.org?.id;
 
       final formData = FormData.fromMap({
         'description': _descController.text,
@@ -1603,272 +1965,6 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
       ),
     );
   }
-}
-
-Widget _buildCertificatesButton() {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.red.shade50,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.description_outlined,
-            color: Colors.red.shade400,
-            size: 18,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text('View Certificates', style: AppStyles.text14Px.poppins.w600),
-        const Spacer(),
-        const Icon(Icons.chevron_right, color: Colors.black54, size: 20),
-      ],
-    ),
-  );
-}
-
-Widget _buildPortfolioButton() {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.red.shade50,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.collections_outlined,
-            color: Colors.red.shade400,
-            size: 18,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text('Manage Portfolio Images', style: AppStyles.text14Px.poppins.w600),
-        const Spacer(),
-        const Icon(Icons.chevron_right, color: Colors.black54, size: 20),
-      ],
-    ),
-  );
-}
-
-Widget _buildReviewsSection(
-  List<Map<String, dynamic>> reviews,
-  int count,
-  double avg,
-  bool isLoading,
-) {
-  if (isLoading) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(child: CircularProgressIndicator()),
-    );
-  }
-  if (reviews.isEmpty) {
-    return const SizedBox.shrink();
-  }
-
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Rating & Reviews', style: AppStyles.text14Px.poppins.w600),
-        const SizedBox(height: 8),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              avg.toStringAsFixed(1),
-              style: AppStyles.text24Px.poppins.w700,
-            ),
-            const SizedBox(width: 8),
-            Row(
-              children: List.generate(5, (index) {
-                return Icon(
-                  index < avg.floor()
-                      ? Icons.star
-                      : (index < avg ? Icons.star_half : Icons.star_border),
-                  color: Colors.amber,
-                  size: 20,
-                );
-              }),
-            ),
-          ],
-        ),
-        Text(
-          '$count Reviews',
-          style: AppStyles.text10Px.poppins.w400.copyWith(
-            color: AppColors.textGrey,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...reviews.map(
-          (r) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _buildReviewItem(r),
-          ),
-        ),
-        if (count > reviews.length)
-          Align(
-            alignment: Alignment.centerRight,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'View all Reviews',
-                  style: AppStyles.text12Px.poppins.w500.copyWith(
-                    color: AppColors.textGrey,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(Icons.chevron_right, size: 16, color: Colors.red),
-              ],
-            ),
-          ),
-      ],
-    ),
-  );
-}
-
-Widget _buildReviewItem(Map<String, dynamic> review) {
-  final name = review['customer_name']?.toString() ?? 'User';
-
-  String date = '';
-  if (review['created_at'] != null) {
-    try {
-      final dt = DateTime.parse(review['created_at'].toString());
-      final months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-      date =
-          '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
-    } catch (_) {}
-  }
-
-  final rating = review['rating']?.toString() ?? '0.0';
-  final comment = review['comment']?.toString() ?? '';
-  final avatar = review['profile_picture']?.toString();
-
-  return Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.grey.shade200),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.grey.shade200,
-              backgroundImage:
-                  avatar != null && avatar.isNotEmpty
-                      ? NetworkImage(avatar)
-                      : null,
-              child:
-                  avatar == null || avatar.isEmpty
-                      ? const Icon(Icons.person, size: 16, color: Colors.grey)
-                      : null,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: AppStyles.text12Px.poppins.w600),
-                  if (date.isNotEmpty)
-                    Text(
-                      date,
-                      style: AppStyles.text10Px.poppins.w400.copyWith(
-                        color: AppColors.textGrey,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.star, color: Colors.amber, size: 10),
-                  const SizedBox(width: 2),
-                  Text(rating, style: AppStyles.text10Px.poppins.w600),
-                ],
-              ),
-            ),
-          ],
-        ),
-        if (comment.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Text(
-            comment,
-            style: AppStyles.text10Px.poppins.w400.copyWith(
-              color: AppColors.textDark,
-              height: 1.5,
-            ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ],
-    ),
-  );
 }
 
 // ─── Full-Screen Hero Image Viewer ───────────────────────────────────────────

@@ -366,7 +366,7 @@ class _CreateOrganizationWorkingDetailsScreenState
               width: 24,
               child: Center(
                 child: SvgPicture.asset(
-                  'assets/images/svg/icons/face_book.svg',
+                  'assets/images/svg/icons/fb.svg',
                   height: 24,
                   width: 24,
                 ),
