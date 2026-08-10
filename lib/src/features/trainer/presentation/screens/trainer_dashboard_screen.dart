@@ -183,8 +183,6 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           }
           _isLoading = false;
         });
-
-        _fetchExtraCounts();
       } else {
         if (!mounted) return;
         setState(() {
@@ -201,90 +199,17 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     }
   }
 
-  Future<void> _fetchExtraCounts() async {
-    try {
-      final groupsResponse = await DioClient().dio.get<dynamic>(
-        ApiUris.workoutGroups,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-      if (groupsResponse.statusCode == 200 && mounted) {
-        final List<dynamic> data =
-            (groupsResponse.data is Map)
-                ? (groupsResponse.data['results'] as List<dynamic>? ?? [])
-                : (groupsResponse.data as List<dynamic>);
-        setState(() {
-          _workoutGroupsCount = data.length;
-        });
-      }
-    } catch (_) {}
-
-    try {
-      final pendingResponse = await DioClient().dio.get<dynamic>(
-        ApiUris.pendingVerifications,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-      if (pendingResponse.statusCode == 200 &&
-          pendingResponse.data is Map &&
-          mounted) {
-        final pendingData = pendingResponse.data as Map;
-        final pendingList =
-            pendingData['pending_verifications'] as List<dynamic>? ?? [];
-        setState(() {
-          _pendingVerificationsCount = pendingList.length;
-        });
-      }
-    } catch (_) {}
-
-    try {
-      final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final attendanceResponse = await DioClient().dio.get<dynamic>(
-        '${ApiUris.trainerClientAttendance}?date=$dateStr',
-        options: Options(headers: {'X-Platform': platformSource}).token,
-      );
-      if (attendanceResponse.statusCode == 200 && mounted) {
-        final data = attendanceResponse.data;
-        int count = 0;
-        if (data is Map) {
-          final dashboard =
-              (data['dashboard'] ?? data['summary'] ?? {}) as Map;
-          if (dashboard['present_count'] != null) {
-            count = int.tryParse(dashboard['present_count'].toString()) ?? 0;
-          } else if (dashboard['present'] != null) {
-            count = int.tryParse(dashboard['present'].toString()) ?? 0;
-          } else {
-            final clients =
-                (data['clients'] ?? data['results'] ?? []) as List;
-            count = clients.where((c) {
-              if (c is Map) {
-                final status = (c['status'] ?? '').toString().toLowerCase();
-                return status == 'present';
-              }
-              return false;
-            }).length;
-          }
-        }
-        setState(() {
-          _todayPresentCount = count;
-        });
-      }
-    } catch (_) {}
-  }
-
-
-
   @override
   Widget build(BuildContext context) {
     final stats = _dashboardData['stats'] as Map<String, dynamic>? ?? {};
     final activeClients = stats['active_clients'] ?? 0;
-    final pendingVerifications =
-        stats['pending_verifications_count'] ?? _pendingVerificationsCount;
+    final pendingVerifications = stats['pending_verifications_count'] ??
+        stats['pending_verifications'] ??
+        stats['pending_count'] ??
+        _pendingVerificationsCount;
     final workoutGroupsCreated =
         stats['workout_groups_count'] ?? _workoutGroupsCount;
     final averageRating = stats['average_rating'] ?? 0.0;
-    final todayPresentCount = stats['today_present_count'] ??
-        stats['present_count'] ??
-        stats['today_attendance_marked'] ??
-        _todayPresentCount;
 
     final memberInsights =
         _dashboardData['member_insights'] as Map<String, dynamic>? ?? {};
@@ -468,7 +393,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                               ),
                               _buildStatCard(
                                 title: 'Client\nAttendance',
-                                value: '$todayPresentCount',
+                                value: '${stats['today_present_count'] ?? stats['present_count'] ?? stats['client_attendance_count'] ?? stats['active_clients'] ?? activeClients}',
                                 valueColor: const Color(0xFF3B66D4),
                                 titleColor: context.colors.textPrimary,
                                 onTap: () async {

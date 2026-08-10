@@ -55,7 +55,32 @@ class _TrainerAssignedWorkoutsScreenState
       return;
     }
 
-    // Fetch for all clients of the trainer
+    final Map<String, dynamic> queryParams = {
+      'status': 'all',
+      'page_size': 100,
+    };
+
+    // Fetch for all clients of the trainer using new single endpoint
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.trainerAssignedWorkouts,
+        queryParameters: queryParams,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200) {
+        final workouts = _parseWorkoutsResponse(response.data, 'Client', 0);
+        if (mounted) {
+          setState(() {
+            _assignedWorkouts = workouts;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+    } catch (_) {}
+
+    // Fallback: Fetch per client if single endpoint is unavailable
     try {
       final clientsRes = await DioClient().dio.get<dynamic>(
         ApiUris.trainerCustomers,
@@ -114,11 +139,11 @@ class _TrainerAssignedWorkoutsScreenState
     if (data is List) {
       list = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     } else if (data is Map) {
-      final listData = data['assigned_plans'] ??
+      final listData = data['results'] ??
+          data['assigned_plans'] ??
           data['assigned_workouts'] ??
-          data['results'] ??
-          data['data'] ??
-          data['plans'];
+          data['plans'] ??
+          data['data'];
       if (listData is List) {
         list = listData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
       }
@@ -128,8 +153,12 @@ class _TrainerAssignedWorkoutsScreenState
       item['client_name'] = item['client_name'] ??
           item['customer_name'] ??
           item['customer']?['name'] ??
-          clientName;
-      item['customer_id'] = item['customer_id'] ?? customerId;
+          item['client']?['name'] ??
+          (clientName != 'Client' ? clientName : null) ??
+          'Client';
+      item['customer_id'] = item['customer_id'] ??
+          item['client_id'] ??
+          (customerId > 0 ? customerId : null);
     }
 
     return list;
@@ -261,88 +290,103 @@ class _TrainerAssignedWorkoutsScreenState
       ),
       body: Column(
         children: [
-          // Filter Chips & Sort Controls
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          // Filter Segment Bar & Calendar Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                // Filter Chip: Today
-                ChoiceChip(
-                  label: Text('Today (${DateFormat('MMM d').format(DateTime.now())})'),
-                  selected: _dateFilter == 'today',
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    color: _dateFilter == 'today' ? Colors.white : AppColors.dark,
-                    fontWeight: _dateFilter == 'today' ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 12,
-                  ),
-                  backgroundColor: Colors.white,
-                  side: BorderSide(
-                    color: _dateFilter == 'today' ? AppColors.primary : const Color(0xffEEEEEE),
-                  ),
-                  onSelected: (selected) {
-                    if (selected && _dateFilter != 'today') {
-                      setState(() {
-                        _dateFilter = 'today';
-                        _customSelectedDate = null;
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    height: 46,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffE2E8F0).withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        // Today Filter
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              if (_dateFilter != 'today') {
+                                setState(() {
+                                  _dateFilter = 'today';
+                                  _customSelectedDate = null;
+                                });
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: _dateFilter == 'today' ? const Color(0xffE53E3E) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (_dateFilter == 'today') ...[
+                                    const Icon(Icons.check, size: 16, color: Colors.white),
+                                    const SizedBox(width: 4),
+                                  ],
+                                  Text(
+                                    'Today',
+                                    style: AppStyles.text13Px.poppins.w600.copyWith(
+                                      color: _dateFilter == 'today' ? Colors.white : const Color(0xff4A5568),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
 
-                // Filter Chip: All Workouts
-                ChoiceChip(
-                  label: const Text('All Workouts'),
-                  selected: _dateFilter == 'all',
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    color: _dateFilter == 'all' ? Colors.white : AppColors.dark,
-                    fontWeight: _dateFilter == 'all' ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 12,
+                        // All Workouts Filter
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              if (_dateFilter != 'all') {
+                                setState(() {
+                                  _dateFilter = 'all';
+                                  _customSelectedDate = null;
+                                });
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: _dateFilter == 'all' ? const Color(0xffE53E3E) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (_dateFilter == 'all') ...[
+                                    const Icon(Icons.check, size: 16, color: Colors.white),
+                                    const SizedBox(width: 4),
+                                  ],
+                                  Text(
+                                    'All Workouts',
+                                    style: AppStyles.text13Px.poppins.w600.copyWith(
+                                      color: _dateFilter == 'all' ? Colors.white : const Color(0xff4A5568),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  backgroundColor: Colors.white,
-                  side: BorderSide(
-                    color: _dateFilter == 'all' ? AppColors.primary : const Color(0xffEEEEEE),
-                  ),
-                  onSelected: (selected) {
-                    if (selected && _dateFilter != 'all') {
-                      setState(() {
-                        _dateFilter = 'all';
-                        _customSelectedDate = null;
-                      });
-                    }
-                  },
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
 
-                // Filter Chip: Select Date
-                ChoiceChip(
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.calendar_today, size: 14),
-                      const SizedBox(width: 4),
-                      Text(
-                        _customSelectedDate != null
-                            ? DateFormat('MMM d').format(_customSelectedDate!)
-                            : 'Pick Date',
-                      ),
-                    ],
-                  ),
-                  selected: _dateFilter == 'custom',
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    color: _dateFilter == 'custom' ? Colors.white : AppColors.dark,
-                    fontWeight: _dateFilter == 'custom' ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 12,
-                  ),
-                  backgroundColor: Colors.white,
-                  side: BorderSide(
-                    color: _dateFilter == 'custom' ? AppColors.primary : const Color(0xffEEEEEE),
-                  ),
-                  onSelected: (selected) async {
+                // Calendar Picker Box
+                InkWell(
+                  onTap: () async {
                     final picked = await showDatePicker(
                       context: context,
                       initialDate: _customSelectedDate ?? DateTime.now(),
@@ -356,38 +400,22 @@ class _TrainerAssignedWorkoutsScreenState
                       });
                     }
                   },
-                ),
-
-                const SizedBox(width: 8),
-
-                // Date Sort Toggle Button
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      _sortNewestFirst = !_sortNewestFirst;
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    width: 46,
+                    height: 46,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xffEEEEEE)),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _dateFilter == 'custom' ? const Color(0xffE53E3E) : const Color(0xffE2E8F0),
+                        width: _dateFilter == 'custom' ? 1.5 : 1,
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _sortNewestFirst ? Icons.arrow_downward : Icons.arrow_upward,
-                          size: 14,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _sortNewestFirst ? 'Newest' : 'Oldest',
-                          style: AppStyles.text12Px.poppins.w600.copyWith(color: AppColors.primary),
-                        ),
-                      ],
+                    child: Icon(
+                      Icons.calendar_month_outlined,
+                      size: 22,
+                      color: _dateFilter == 'custom' ? const Color(0xffE53E3E) : const Color(0xff2D3748),
                     ),
                   ),
                 ),
@@ -397,23 +425,23 @@ class _TrainerAssignedWorkoutsScreenState
 
           // Search Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: TextField(
-              onChanged: (val) => setState(() => _searchQuery = val),
-              decoration: InputDecoration(
-                hintText: 'Search by workout name or client...',
-                hintStyle: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.textGrey),
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xffEEEEEE)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xffEEEEEE)),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Container(
+              height: 46,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xffE2E8F0)),
+              ),
+              child: TextField(
+                onChanged: (val) => setState(() => _searchQuery = val),
+                style: AppStyles.text14Px.poppins.w500.dark,
+                decoration: InputDecoration(
+                  hintText: 'Search by workout name or client...',
+                  hintStyle: AppStyles.text13Px.poppins.w400.copyWith(color: const Color(0xffA0AEC0)),
+                  prefixIcon: const Icon(Icons.search, size: 20, color: Color(0xff718096)),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 11),
                 ),
               ),
             ),
@@ -483,6 +511,7 @@ class _TrainerAssignedWorkoutsScreenState
                               (workout['routines'] as List?)?.length ??
                               (workout['workout_days'] as List?)?.length ??
                               0;
+                          final isActive = status.toLowerCase() == 'active';
 
                           return InkWell(
                             onTap: planId > 0
@@ -500,106 +529,148 @@ class _TrainerAssignedWorkoutsScreenState
                                 : null,
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
-                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xffEEEEEE)),
+                                border: Border.all(color: const Color(0xffE2E8F0)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.02),
+                                    color: Colors.black.withValues(alpha: 0.02),
                                     blurRadius: 8,
                                     offset: const Offset(0, 3),
                                   ),
                                 ],
                               ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      Icons.fitness_center,
-                                      color: AppColors.primary,
-                                      size: 24,
-                                    ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: isActive
+                                        ? const Border(
+                                            left: BorderSide(color: Color(0xff27AE60), width: 4),
+                                          )
+                                        : null,
                                   ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                title,
-                                                style: AppStyles.text14Px.poppins.w600.dark,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
+                                  padding: const EdgeInsets.all(14),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Top Row: Icon Avatar + Title & Client + Status Badge
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 44,
+                                            height: 44,
+                                            decoration: BoxDecoration(
+                                              color: isActive
+                                                  ? const Color(0xffFFDCDA)
+                                                  : const Color(0xffE2E8F0),
+                                              shape: BoxShape.circle,
                                             ),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 3,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: status.toLowerCase() == 'active'
-                                                    ? Colors.green.withValues(alpha: 0.12)
-                                                    : AppColors.primary.withValues(alpha: 0.12),
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: Text(
-                                                status.toUpperCase(),
-                                                style: AppStyles.text10Px.poppins.w700.copyWith(
-                                                  color: status.toLowerCase() == 'active'
-                                                      ? Colors.green
-                                                      : AppColors.primary,
+                                            child: Icon(
+                                              Icons.fitness_center_rounded,
+                                              color: isActive ? const Color(0xffC53030) : const Color(0xff4A5568),
+                                              size: 20,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  title,
+                                                  style: AppStyles.text15Px.poppins.w600.dark,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
+                                                const SizedBox(height: 2),
+                                                Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.person_outline,
+                                                      size: 13,
+                                                      color: Color(0xff718096),
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Expanded(
+                                                      child: Text(
+                                                        clientName,
+                                                        style: AppStyles.text12Px.poppins.w400.copyWith(
+                                                          color: const Color(0xff4A5568),
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: isActive
+                                                  ? const Color(0xffC6F6D5)
+                                                  : const Color(0xffE2E8F0),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              status.toUpperCase(),
+                                              style: AppStyles.text10Px.poppins.w700.copyWith(
+                                                color: isActive
+                                                    ? const Color(0xff22543D)
+                                                    : const Color(0xff4A5568),
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Icon(Icons.person_outline, size: 14, color: AppColors.primary),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              clientName,
-                                              style: AppStyles.text12Px.poppins.w500.dark,
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          routinesCount > 0
-                                              ? '$routinesCount Workout Routines / Days'
-                                              : 'Workout Plan Details',
-                                          style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                                        ),
-                                        if (assignedDate.isNotEmpty) ...[
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            'Assigned: $assignedDate',
-                                            style: AppStyles.text10Px.poppins.w400.copyWith(color: AppColors.textGrey),
                                           ),
                                         ],
-                                      ],
-                                    ),
+                                      ),
+
+                                      const SizedBox(height: 10),
+                                      const Divider(height: 1, color: Color(0xffEDF2F7)),
+                                      const SizedBox(height: 10),
+
+                                      // Bottom Row: Routines/Days + Date + Chevron
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                routinesCount > 0
+                                                    ? '$routinesCount Workout Routines / Days'
+                                                    : 'Workout Plan Details',
+                                                style: AppStyles.text12Px.poppins.w500.copyWith(
+                                                  color: const Color(0xff4A5568),
+                                                ),
+                                              ),
+                                              if (assignedDate.isNotEmpty) ...[
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  'Assigned: $assignedDate',
+                                                  style: AppStyles.text10Px.poppins.w500.copyWith(
+                                                    color: const Color(0xff718096),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                          const Icon(
+                                            Icons.chevron_right_rounded,
+                                            color: Color(0xff718096),
+                                            size: 20,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  const Icon(
-                                    Icons.chevron_right,
-                                    color: AppColors.textGrey,
-                                    size: 20,
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                           );

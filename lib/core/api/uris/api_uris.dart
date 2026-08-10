@@ -125,6 +125,7 @@ final class ApiUris {
   static final trainerCustomers = '${_v1}trainer/customers/';
   static String trainerCustomerDetails(int customerId) =>
       '${_v1}trainer/customers/$customerId/';
+  static final trainerAssignedWorkouts = '${_v1}trainer/assigned-workouts/';
   static String trainerClientAssignedWorkouts(int customerId) =>
       '${_v1}trainer/clients/$customerId/assigned-workouts/';
   static String customerAssignedWorkouts(int customerId) =>
@@ -166,6 +167,10 @@ final class ApiUris {
   static final equipment = '${_v1}trainer/equipment/';
   static final exerciseTypes = '${_v1}trainer/exercise-types/';
   static final workoutExercises = '${_v1}trainer/exercises/';
+  static final customerExercises = '${_v1}customers/exercises/';
+  static final trainerMuscleClassification = '${_v1}trainer/muscle-classification/';
+  static final customerMuscleClassification = '${_v1}customers/muscle-classification/';
+  static final gymMuscleClassification = '${_v1}fitnesscenter/muscle-classification/';
 
   // Plan-day exercise endpoints
   static String planDayExercises(int dayId) =>

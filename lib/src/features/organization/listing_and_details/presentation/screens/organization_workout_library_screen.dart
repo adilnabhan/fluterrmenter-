@@ -366,20 +366,99 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
   List<Map<String, dynamic>> _filteredExercises = [];
   bool _isLoading = true;
 
+  // Major & Sub Muscle Classification Filter State
+  String _selectedMajorMuscle = 'All';
+  String _selectedSubMuscle = 'All';
+
+  List<String> _majorMuscles = [
+    'All',
+    'Abs',
+    'Back',
+    'Biceps',
+    'Chest',
+    'Forearms',
+    'Legs',
+    'Neck',
+    'Shoulders',
+    'Triceps',
+    'Others',
+  ];
+  Map<String, List<Map<String, dynamic>>> _subMusclesMap = {};
+
   @override
   void initState() {
     super.initState();
+    _fetchMuscleClassification();
     _fetchGlobalExercises();
   }
 
-  Future<void> _fetchGlobalExercises() async {
+  Future<void> _fetchMuscleClassification() async {
     try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.gymMuscleClassification,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (response.statusCode == 200 && response.data is Map) {
+        final data = response.data as Map<String, dynamic>;
+        final List<dynamic>? allMajors = data['all_major_muscles'] as List?;
+        final List<dynamic>? majorList = data['major_muscles'] as List?;
+
+        final Map<String, List<Map<String, dynamic>>> subMap = {};
+        if (majorList != null) {
+          for (var item in majorList) {
+            if (item is Map) {
+              final name = item['name']?.toString() ?? '';
+              final subs = (item['sub_muscles'] as List? ?? [])
+                  .map((s) => Map<String, dynamic>.from(s as Map))
+                  .toList();
+              if (name.isNotEmpty) {
+                subMap[name] = subs;
+              }
+            }
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            if (allMajors != null && allMajors.isNotEmpty) {
+              _majorMuscles = allMajors.map((e) => e.toString()).toList();
+            }
+            _subMusclesMap = subMap;
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _fetchGlobalExercises() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final queryParams = <String, dynamic>{
+        'source': 'library',
+        if (_selectedMajorMuscle != 'All') 'major_muscle': _selectedMajorMuscle,
+        if (_selectedSubMuscle != 'All' && _selectedSubMuscle.isNotEmpty)
+          'sub_muscle': _selectedSubMuscle,
+        if (_searchController.text.trim().isNotEmpty)
+          'search': _searchController.text.trim(),
+      };
+
       final res = await DioClient().dio.get<dynamic>(
-        '${ApiUris.workoutExercises}?source=library',
+        ApiUris.workoutExercises,
+        queryParameters: queryParams,
+        options: Options(headers: {'X-Platform': platformSource}),
       );
       if (!mounted) return;
 
-      final dataList = res.data as List;
+      dynamic data = res.data;
+      List<dynamic> dataList = [];
+      if (data is Map && data['results'] is List) {
+        dataList = data['results'] as List;
+      } else if (data is List) {
+        dataList = data;
+      }
+
       setState(() {
         _globalExercises =
             dataList
@@ -399,18 +478,7 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
   }
 
   void _onSearchChanged(String query) {
-    if (query.isEmpty) {
-      setState(() => _filteredExercises = List.from(_globalExercises));
-      return;
-    }
-    final lowerQuery = query.toLowerCase();
-    setState(() {
-      _filteredExercises =
-          _globalExercises.where((ex) {
-            final name = ex['name']?.toString().toLowerCase() ?? '';
-            return name.contains(lowerQuery);
-          }).toList();
-    });
+    _fetchGlobalExercises();
   }
 
   Future<void> _addExerciseToLibrary(Map<String, dynamic> ex) async {
@@ -449,7 +517,7 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.6,
+      height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -501,7 +569,150 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+
+          // Major Muscle Horizontal Scroll Pills
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: SizedBox(
+              height: 36,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: _majorMuscles.length,
+                itemBuilder: (context, index) {
+                  final majorName = _majorMuscles[index];
+                  final isSelected =
+                      _selectedMajorMuscle.toLowerCase() == majorName.toLowerCase();
+
+                  return GestureDetector(
+                    onTap: () {
+                      if (_selectedMajorMuscle.toLowerCase() != majorName.toLowerCase()) {
+                        setState(() {
+                          _selectedMajorMuscle = majorName;
+                          _selectedSubMuscle = 'All';
+                        });
+                        _fetchGlobalExercises();
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.primary : const Color(0xFFF1F1F1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: Text(
+                          majorName,
+                          style: AppStyles.text13Px.poppins.w600.copyWith(
+                            color: isSelected ? Colors.white : AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // Sub Muscle Horizontal Scroll Pills
+          if (_selectedMajorMuscle != 'All') ...[
+            Builder(
+              builder: (context) {
+                final subList = _subMusclesMap[_selectedMajorMuscle] ??
+                    _subMusclesMap[_majorMuscles.firstWhere(
+                      (m) => m.toLowerCase() == _selectedMajorMuscle.toLowerCase(),
+                      orElse: () => _selectedMajorMuscle,
+                    )] ?? [];
+                final List<Map<String, dynamic>> subPills = [
+                  {
+                    'name': 'All ${_selectedMajorMuscle}',
+                    'slug': 'All',
+                    'count': null,
+                  },
+                  ...subList,
+                ];
+
+                return Padding(
+                  padding: const EdgeInsets.only(top: 4, bottom: 8),
+                  child: SizedBox(
+                    height: 34,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: subPills.length,
+                      itemBuilder: (context, index) {
+                        final subItem = subPills[index];
+                        final subName = subItem['name']?.toString() ?? '';
+                        final count = subItem['count'] as int?;
+                        final String displayName =
+                            count != null && count > 0
+                                ? '$subName ($count)'
+                                : subName;
+
+                        final isSelected =
+                            (index == 0 &&
+                                (_selectedSubMuscle == 'All' ||
+                                    _selectedSubMuscle.isEmpty)) ||
+                            (_selectedSubMuscle.toLowerCase() ==
+                                subName.toLowerCase());
+
+                        return GestureDetector(
+                          onTap: () {
+                            final targetSub = index == 0 ? 'All' : subName;
+                            if (_selectedSubMuscle.toLowerCase() != targetSub.toLowerCase()) {
+                              setState(() {
+                                _selectedSubMuscle = targetSub;
+                              });
+                              _fetchGlobalExercises();
+                            }
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? const Color(0xFFFFEAEA)
+                                      : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color:
+                                    isSelected
+                                        ? AppColors.primary
+                                        : const Color(0xFFE2E8F0),
+                                width: isSelected ? 1.5 : 1.0,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                displayName,
+                                style: AppStyles.text12Px.poppins.w500.copyWith(
+                                  color:
+                                      isSelected
+                                          ? AppColors.primary
+                                          : AppColors.textDark,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+          const SizedBox(height: 8),
           Expanded(
             child: Stack(
               children: [

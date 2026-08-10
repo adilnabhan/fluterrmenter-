@@ -575,6 +575,386 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     );
   }
 
+  void _showAllExpensesSheet() {
+    String searchQuery = '';
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final query = searchQuery.trim().toLowerCase();
+            final filtered = _expenses.where((exp) {
+              if (query.isEmpty) return true;
+              final title = (exp['title'] ?? '').toString().toLowerCase();
+              final category = (exp['category'] ?? '').toString().toLowerCase();
+              return title.contains(query) || category.contains(query);
+            }).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.85,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xffCBD5E1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'All Expenses (${_expenses.length})',
+                          style: AppStyles.text18Px.poppins.w600.dark,
+                        ),
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _showExpenseSheet();
+                              },
+                              icon: const Icon(Icons.add_circle, color: AppColors.primary, size: 26),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.close),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: TextField(
+                      onChanged: (val) {
+                        setSheetState(() => searchQuery = val);
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search expenses by name or category...',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        filled: true,
+                        fillColor: const Color(0xffF8FAFC),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xffE2E8F0)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xffE2E8F0)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? const Center(child: Text('No expenses found'))
+                        : ListView.separated(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, __) =>
+                                const Divider(height: 1, color: Color(0xffEEEEEE)),
+                            itemBuilder: (context, index) {
+                              final exp = filtered[index];
+                              final id = exp['id'] as int? ?? 0;
+                              final title = exp['title']?.toString() ?? 'Unspecified Expense';
+                              final category = exp['category']?.toString() ?? 'Other';
+                              final amount = exp['amount'] ?? 0.0;
+                              final dateStr = exp['expense_date']?.toString() ?? '';
+
+                              var parsedAmount = 0.0;
+                              if (amount is double) {
+                                parsedAmount = amount;
+                              } else if (amount != null) {
+                                parsedAmount = double.tryParse(amount.toString()) ?? 0.0;
+                              }
+
+                              return ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 4,
+                                ),
+                                title: Text(
+                                  title,
+                                  style: AppStyles.text14Px.poppins.w600.dark,
+                                ),
+                                subtitle: Text(
+                                  '$category • $dateStr',
+                                  style: AppStyles.text12Px.poppins.w400.copyWith(
+                                    color: AppColors.textGrey,
+                                  ),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '₹${parsedAmount.toStringAsFixed(2)}',
+                                      style: AppStyles.text14Px.poppins.w600.copyWith(
+                                        color: const Color(0xffE74C3C),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    PopupMenuButton<String>(
+                                      color: Colors.white,
+                                      surfaceTintColor: Colors.white,
+                                      onSelected: (val) {
+                                        Navigator.pop(context);
+                                        if (val == 'edit') {
+                                          _showExpenseSheet(expense: exp);
+                                        } else if (val == 'delete') {
+                                          _deleteExpense(id);
+                                        }
+                                      },
+                                      itemBuilder: (context) => [
+                                        const PopupMenuItem(
+                                          value: 'edit',
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.edit, size: 18),
+                                              SizedBox(width: 8),
+                                              Text('Edit'),
+                                            ],
+                                          ),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'delete',
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
+                                                size: 18,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Delete',
+                                                style: TextStyle(color: Colors.red),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showAllRevenuesSheet() {
+    String searchQuery = '';
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final query = searchQuery.trim().toLowerCase();
+            final filtered = _revenues.where((rev) {
+              if (query.isEmpty) return true;
+              final title = (rev['title'] ?? rev['name'] ?? '').toString().toLowerCase();
+              final category = (rev['category'] ?? rev['category_name'] ?? '').toString().toLowerCase();
+              return title.contains(query) || category.contains(query);
+            }).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.85,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xffCBD5E1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'All Revenues (${_revenues.length})',
+                          style: AppStyles.text18Px.poppins.w600.dark,
+                        ),
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _showRevenueSheet();
+                              },
+                              icon: const Icon(Icons.add_circle, color: Color(0xff27AE60), size: 26),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.close),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: TextField(
+                      onChanged: (val) {
+                        setSheetState(() => searchQuery = val);
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search revenues by name or category...',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        filled: true,
+                        fillColor: const Color(0xffF8FAFC),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xffE2E8F0)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xffE2E8F0)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? const Center(child: Text('No revenues found'))
+                        : ListView.separated(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, __) =>
+                                const Divider(height: 1, color: Color(0xffEEEEEE)),
+                            itemBuilder: (context, index) {
+                              final rev = filtered[index];
+                              final id = rev['id'] as int? ?? 0;
+                              final title = rev['title']?.toString() ?? rev['name']?.toString() ?? 'Unspecified Revenue';
+                              final category = rev['category']?.toString() ?? rev['category_name']?.toString() ?? 'Membership Fee';
+                              final amount = rev['amount'] ?? 0.0;
+                              final dateStr = rev['revenue_date']?.toString() ?? rev['date']?.toString() ?? '';
+
+                              var parsedAmount = 0.0;
+                              if (amount is double) {
+                                parsedAmount = amount;
+                              } else if (amount != null) {
+                                parsedAmount = double.tryParse(amount.toString()) ?? 0.0;
+                              }
+
+                              return ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 4,
+                                ),
+                                title: Text(
+                                  title,
+                                  style: AppStyles.text14Px.poppins.w600.dark,
+                                ),
+                                subtitle: Text(
+                                  '$category • $dateStr',
+                                  style: AppStyles.text12Px.poppins.w400.copyWith(
+                                    color: AppColors.textGrey,
+                                  ),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '+ ₹${parsedAmount.toStringAsFixed(2)}',
+                                      style: AppStyles.text14Px.poppins.w600.copyWith(
+                                        color: const Color(0xff27AE60),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    PopupMenuButton<String>(
+                                      color: Colors.white,
+                                      surfaceTintColor: Colors.white,
+                                      onSelected: (val) {
+                                        Navigator.pop(context);
+                                        if (val == 'edit') {
+                                          _showRevenueSheet(revenue: rev);
+                                        } else if (val == 'delete') {
+                                          _deleteRevenue(id);
+                                        }
+                                      },
+                                      itemBuilder: (context) => [
+                                        const PopupMenuItem(
+                                          value: 'edit',
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.edit, size: 18),
+                                              SizedBox(width: 8),
+                                              Text('Edit'),
+                                            ],
+                                          ),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'delete',
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
+                                                size: 18,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Delete',
+                                                style: TextStyle(color: Colors.red),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _deleteRevenue(int id) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -2716,13 +3096,27 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildSectionTitle('Recent Expenses'),
-                IconButton(
-                  onPressed: () => _showExpenseSheet(),
-                  icon: const Icon(
-                    Icons.add_circle,
-                    color: AppColors.primary,
-                    size: 28,
-                  ),
+                Row(
+                  children: [
+                    if (_expenses.length > 5)
+                      GestureDetector(
+                        onTap: () => _showAllExpensesSheet(),
+                        child: Text(
+                          'View All (${_expenses.length})',
+                          style: AppStyles.text13Px.poppins.w600.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    IconButton(
+                      onPressed: () => _showExpenseSheet(),
+                      icon: const Icon(
+                        Icons.add_circle,
+                        color: AppColors.primary,
+                        size: 28,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -2774,99 +3168,123 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xffEEEEEE)),
                 ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _expenses.length,
-                  separatorBuilder:
-                      (context, index) =>
-                          const Divider(height: 1, color: Color(0xffEEEEEE)),
-                  itemBuilder: (context, index) {
-                    final exp = _expenses[index];
-                    final id = exp['id'] as int? ?? 0;
-                    final title =
-                        exp['title']?.toString() ?? 'Unspecified Expense';
-                    final category = exp['category']?.toString() ?? 'Other';
-                    final amount = exp['amount'] ?? 0.0;
-                    final dateStr = exp['expense_date']?.toString() ?? '';
+                child: Column(
+                  children: [
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _expenses.length > 5 ? 5 : _expenses.length,
+                      separatorBuilder:
+                          (context, index) =>
+                              const Divider(height: 1, color: Color(0xffEEEEEE)),
+                      itemBuilder: (context, index) {
+                        final exp = _expenses[index];
+                        final id = exp['id'] as int? ?? 0;
+                        final title =
+                            exp['title']?.toString() ?? 'Unspecified Expense';
+                        final category = exp['category']?.toString() ?? 'Other';
+                        final amount = exp['amount'] ?? 0.0;
+                        final dateStr = exp['expense_date']?.toString() ?? '';
 
-                    var parsedAmount = 0.0;
-                    if (amount is double) {
-                      parsedAmount = amount;
-                    } else if (amount != null) {
-                      parsedAmount = double.tryParse(amount.toString()) ?? 0.0;
-                    }
+                        var parsedAmount = 0.0;
+                        if (amount is double) {
+                          parsedAmount = amount;
+                        } else if (amount != null) {
+                          parsedAmount = double.tryParse(amount.toString()) ?? 0.0;
+                        }
 
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      title: Text(
-                        title,
-                        style: AppStyles.text14Px.poppins.w600.dark,
-                      ),
-                      subtitle: Text(
-                        '$category • $dateStr',
-                        style: AppStyles.text12Px.poppins.w400.copyWith(
-                          color: AppColors.textGrey,
-                        ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '₹${parsedAmount.toStringAsFixed(2)}',
-                            style: AppStyles.text14Px.poppins.w600.copyWith(
-                              color: const Color(0xffE74C3C),
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          title: Text(
+                            title,
+                            style: AppStyles.text14Px.poppins.w600.dark,
+                          ),
+                          subtitle: Text(
+                            '$category • $dateStr',
+                            style: AppStyles.text12Px.poppins.w400.copyWith(
+                              color: AppColors.textGrey,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          PopupMenuButton<String>(
-                            color: Colors.white,
-                            surfaceTintColor: Colors.white,
-                            onSelected: (val) {
-                              if (val == 'edit') {
-                                _showExpenseSheet(expense: exp);
-                              } else if (val == 'delete') {
-                                _deleteExpense(id);
-                              }
-                            },
-                            itemBuilder:
-                                (context) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.edit, size: 18),
-                                        SizedBox(width: 8),
-                                        Text('Edit'),
-                                      ],
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                          size: 18,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '₹${parsedAmount.toStringAsFixed(2)}',
+                                style: AppStyles.text14Px.poppins.w600.copyWith(
+                                  color: const Color(0xffE74C3C),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              PopupMenuButton<String>(
+                                color: Colors.white,
+                                surfaceTintColor: Colors.white,
+                                onSelected: (val) {
+                                  if (val == 'edit') {
+                                    _showExpenseSheet(expense: exp);
+                                  } else if (val == 'delete') {
+                                    _deleteExpense(id);
+                                  }
+                                },
+                                itemBuilder:
+                                    (context) => [
+                                      const PopupMenuItem(
+                                        value: 'edit',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.edit, size: 18),
+                                            SizedBox(width: 8),
+                                            Text('Edit'),
+                                          ],
                                         ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Delete',
-                                          style: TextStyle(color: Colors.red),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                              size: 18,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Delete',
+                                              style: TextStyle(color: Colors.red),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                      ),
+                                    ],
+                              ),
+                            ],
                           ),
-                        ],
+                        );
+                      },
+                    ),
+                    if (_expenses.length > 5) ...[
+                      const Divider(height: 1, color: Color(0xffEEEEEE)),
+                      InkWell(
+                        onTap: () => _showAllExpensesSheet(),
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(16),
+                        ),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'View All ${_expenses.length} Expenses',
+                            style: AppStyles.text13Px.poppins.w600.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
                       ),
-                    );
-                  },
+                    ],
+                  ],
                 ),
               ),
             const SizedBox(height: 24),
@@ -2875,13 +3293,27 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildSectionTitle('Recent Revenues'),
-                IconButton(
-                  onPressed: () => _showRevenueSheet(),
-                  icon: const Icon(
-                    Icons.add_circle,
-                    color: Color(0xff27AE60),
-                    size: 28,
-                  ),
+                Row(
+                  children: [
+                    if (_revenues.length > 5)
+                      GestureDetector(
+                        onTap: () => _showAllRevenuesSheet(),
+                        child: Text(
+                          'View All (${_revenues.length})',
+                          style: AppStyles.text13Px.poppins.w600.copyWith(
+                            color: const Color(0xff27AE60),
+                          ),
+                        ),
+                      ),
+                    IconButton(
+                      onPressed: () => _showRevenueSheet(),
+                      icon: const Icon(
+                        Icons.add_circle,
+                        color: Color(0xff27AE60),
+                        size: 28,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -2933,99 +3365,123 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xffEEEEEE)),
                 ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _revenues.length,
-                  separatorBuilder:
-                      (context, index) =>
-                          const Divider(height: 1, color: Color(0xffEEEEEE)),
-                  itemBuilder: (context, index) {
-                    final rev = _revenues[index];
-                    final id = rev['id'] as int? ?? 0;
-                    final title =
-                        rev['title']?.toString() ?? rev['name']?.toString() ?? 'Unspecified Revenue';
-                    final category = rev['category']?.toString() ?? rev['category_name']?.toString() ?? 'Membership Fee';
-                    final amount = rev['amount'] ?? 0.0;
-                    final dateStr = rev['revenue_date']?.toString() ?? rev['date']?.toString() ?? '';
+                child: Column(
+                  children: [
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _revenues.length > 5 ? 5 : _revenues.length,
+                      separatorBuilder:
+                          (context, index) =>
+                              const Divider(height: 1, color: Color(0xffEEEEEE)),
+                      itemBuilder: (context, index) {
+                        final rev = _revenues[index];
+                        final id = rev['id'] as int? ?? 0;
+                        final title =
+                            rev['title']?.toString() ?? rev['name']?.toString() ?? 'Unspecified Revenue';
+                        final category = rev['category']?.toString() ?? rev['category_name']?.toString() ?? 'Membership Fee';
+                        final amount = rev['amount'] ?? 0.0;
+                        final dateStr = rev['revenue_date']?.toString() ?? rev['date']?.toString() ?? '';
 
-                    var parsedAmount = 0.0;
-                    if (amount is double) {
-                      parsedAmount = amount;
-                    } else if (amount != null) {
-                      parsedAmount = double.tryParse(amount.toString()) ?? 0.0;
-                    }
+                        var parsedAmount = 0.0;
+                        if (amount is double) {
+                          parsedAmount = amount;
+                        } else if (amount != null) {
+                          parsedAmount = double.tryParse(amount.toString()) ?? 0.0;
+                        }
 
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      title: Text(
-                        title,
-                        style: AppStyles.text14Px.poppins.w600.dark,
-                      ),
-                      subtitle: Text(
-                        '$category • $dateStr',
-                        style: AppStyles.text12Px.poppins.w400.copyWith(
-                          color: AppColors.textGrey,
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          title: Text(
+                            title,
+                            style: AppStyles.text14Px.poppins.w600.dark,
+                          ),
+                          subtitle: Text(
+                            '$category • $dateStr',
+                            style: AppStyles.text12Px.poppins.w400.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '+ ₹${parsedAmount.toStringAsFixed(2)}',
+                                style: AppStyles.text14Px.poppins.w600.copyWith(
+                                  color: const Color(0xff27AE60),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              PopupMenuButton<String>(
+                                color: Colors.white,
+                                surfaceTintColor: Colors.white,
+                                onSelected: (val) {
+                                  if (val == 'edit') {
+                                    _showRevenueSheet(revenue: rev);
+                                  } else if (val == 'delete') {
+                                    _deleteRevenue(id);
+                                  }
+                                },
+                                itemBuilder:
+                                    (context) => [
+                                      const PopupMenuItem(
+                                        value: 'edit',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.edit, size: 18),
+                                            SizedBox(width: 8),
+                                            Text('Edit'),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                              size: 18,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Delete',
+                                              style: TextStyle(color: Colors.red),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    if (_revenues.length > 5) ...[
+                      const Divider(height: 1, color: Color(0xffEEEEEE)),
+                      InkWell(
+                        onTap: () => _showAllRevenuesSheet(),
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(16),
                         ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '+ ₹${parsedAmount.toStringAsFixed(2)}',
-                            style: AppStyles.text14Px.poppins.w600.copyWith(
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'View All ${_revenues.length} Revenues',
+                            style: AppStyles.text13Px.poppins.w600.copyWith(
                               color: const Color(0xff27AE60),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          PopupMenuButton<String>(
-                            color: Colors.white,
-                            surfaceTintColor: Colors.white,
-                            onSelected: (val) {
-                              if (val == 'edit') {
-                                _showRevenueSheet(revenue: rev);
-                              } else if (val == 'delete') {
-                                _deleteRevenue(id);
-                              }
-                            },
-                            itemBuilder:
-                                (context) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.edit, size: 18),
-                                        SizedBox(width: 8),
-                                        Text('Edit'),
-                                      ],
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                          size: 18,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Delete',
-                                          style: TextStyle(color: Colors.red),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                          ),
-                        ],
+                        ),
                       ),
-                    );
-                  },
+                    ],
+                  ],
                 ),
               ),
             const SizedBox(height: 24),

@@ -15,13 +15,14 @@ abstract class Dialogs {
     bool showIcon = false,
   }) async {
     if (Platform.isAndroid || Platform.isIOS) {
+      await Fluttertoast.cancel();
       await Fluttertoast.showToast(
         msg: msg ?? 'Something went wrong! Please try again later.',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
-        backgroundColor: AppColors.primary,
+        backgroundColor: const Color(0xFF4B5563),
         textColor: Colors.white,
-        fontSize: 16,
+        fontSize: 12,
         fontAsset: 'assets/fonts/Poppins-Regular.ttf',
       );
       return;

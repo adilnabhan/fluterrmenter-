@@ -38,8 +38,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchAttendance() async {
-    setState(() => _isLoading = true);
+  Future<void> _fetchAttendance({bool silent = false}) async {
+    if (!silent) setState(() => _isLoading = true);
 
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -74,14 +74,18 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                 data['holiday_title'] ?? data['holiday_name'] ?? data['title'] ?? 'Gym Holiday';
           }
 
-          setState(() {
-            _clients = clients.cast<Map<String, dynamic>>();
-            _dashboard = dashboard;
-          });
+          if (mounted) {
+            setState(() {
+              _clients = clients.cast<Map<String, dynamic>>();
+              _dashboard = dashboard;
+            });
+          }
         } else if (response.data is List) {
-          setState(() {
-            _clients = (response.data as List<dynamic>).cast<Map<String, dynamic>>();
-          });
+          if (mounted) {
+            setState(() {
+              _clients = (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+            });
+          }
         }
       }
 
@@ -108,13 +112,15 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
             }
           }
 
-          setState(() {
-            _monthHolidays = monthHolMap;
-            if (monthHolMap.containsKey(dateStr)) {
-              _dashboard['is_holiday'] = true;
-              _dashboard['holiday_name'] = monthHolMap[dateStr];
-            }
-          });
+          if (mounted) {
+            setState(() {
+              _monthHolidays = monthHolMap;
+              if (monthHolMap.containsKey(dateStr)) {
+                _dashboard['is_holiday'] = true;
+                _dashboard['holiday_name'] = monthHolMap[dateStr];
+              }
+            });
+          }
         }
       } catch (_) {}
     } catch (e) {
@@ -130,23 +136,29 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
               final data = response.data as Map<String, dynamic>;
               final clients =
                   (data['clients'] ?? data['results'] ?? []) as List<dynamic>;
-              setState(() {
-                _clients = clients.cast<Map<String, dynamic>>();
-              });
+              if (mounted) {
+                setState(() {
+                  _clients = clients.cast<Map<String, dynamic>>();
+                });
+              }
             } else if (response.data is List) {
-              setState(() {
-                _clients = (response.data as List<dynamic>).cast<Map<String, dynamic>>();
-              });
+              if (mounted) {
+                setState(() {
+                  _clients = (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+                });
+              }
             }
           }
         } catch (_) {
-          Dialogs.showSnack(msg: 'Failed to load client attendance.');
+          if (!silent) Dialogs.showSnack(msg: 'Failed to load client attendance.');
         }
       } else {
-        Dialogs.showSnack(msg: 'Failed to load client attendance.');
+        if (!silent) Dialogs.showSnack(msg: 'Failed to load client attendance.');
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (!silent && mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -157,6 +169,27 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     String? checkOut,
     int? attendanceId,
   }) async {
+    // Optimistically update target client item in local state immediately
+    if (mounted) {
+      setState(() {
+        for (var i = 0; i < _clients.length; i++) {
+          final cId = _clients[i]['client_id'] ?? _clients[i]['customer_id'] ?? _clients[i]['id'];
+          if (cId == clientId) {
+            _clients[i]['status'] = status.toLowerCase();
+            _clients[i]['has_marked'] = true;
+            _clients[i]['is_marked'] = true;
+            if (checkIn != null && checkIn.isNotEmpty) {
+              _clients[i]['check_in'] = checkIn;
+            }
+            if (checkOut != null && checkOut.isNotEmpty) {
+              _clients[i]['check_out'] = checkOut;
+            }
+            break;
+          }
+        }
+      });
+    }
+
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
       final payload = <String, dynamic>{
@@ -167,21 +200,22 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       if (checkIn != null && checkIn.isNotEmpty) payload['check_in'] = checkIn;
       if (checkOut != null && checkOut.isNotEmpty) payload['check_out'] = checkOut;
 
+      dynamic response;
       if (widget.isTrainer) {
-        await DioClient().dio.post<dynamic>(
+        response = await DioClient().dio.post<dynamic>(
           ApiUris.trainerClientAttendanceMark,
           data: payload,
           options: Options(headers: {'X-Platform': platformSource}).token,
         );
       } else {
         if (attendanceId != null) {
-          await DioClient().dio.patch<dynamic>(
+          response = await DioClient().dio.patch<dynamic>(
             ApiUris.clientAttendanceDetail(attendanceId),
             data: payload,
             options: Options(headers: {'X-Platform': platformSource}).token,
           );
         } else {
-          await DioClient().dio.post<dynamic>(
+          response = await DioClient().dio.post<dynamic>(
             ApiUris.clientAttendance,
             data: payload,
             options: Options(headers: {'X-Platform': platformSource}).token,
@@ -189,10 +223,27 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         }
       }
 
+      // Map newly assigned attendance_id locally if returned
+      if (response != null && response.data is Map) {
+        final resData = response.data as Map<String, dynamic>;
+        final newId = resData['id'] ?? resData['attendance_id'];
+        if (newId != null && mounted) {
+          setState(() {
+            for (var i = 0; i < _clients.length; i++) {
+              final cId = _clients[i]['client_id'] ?? _clients[i]['customer_id'] ?? _clients[i]['id'];
+              if (cId == clientId) {
+                _clients[i]['attendance_id'] = newId;
+                break;
+              }
+            }
+          });
+        }
+      }
+
       Dialogs.showSnack(msg: 'Attendance marked successfully!');
-      _fetchAttendance();
     } catch (e) {
       Dialogs.showSnack(msg: 'Failed to mark attendance.');
+      _fetchAttendance(silent: true);
     }
   }
 
@@ -757,46 +808,41 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         : 'Gym Holiday';
   }
 
-  int get _presentCount => _clients.where((c) {
-        final s = (c['status'] ?? '').toString().toLowerCase();
-        final isMarked = c['attendance_id'] != null ||
-            c['has_marked'] == true ||
-            (c['check_in'] != null &&
-                c['check_in'].toString().isNotEmpty &&
-                c['check_in'].toString() != 'null');
-        if (_isFutureDate && !isMarked) return false;
-        return s == 'present';
-      }).length;
-
-  int get _absentCount {
-    if (_isFutureDate) {
-      return _clients.where((c) {
-        final s = (c['status'] ?? '').toString().toLowerCase();
-        final isMarked = c['attendance_id'] != null ||
-            c['has_marked'] == true ||
-            (c['check_in'] != null &&
-                c['check_in'].toString().isNotEmpty &&
-                c['check_in'].toString() != 'null');
-        return isMarked && s == 'absent';
-      }).length;
-    }
-    return _clients
-        .where((c) => (c['status'] ?? '').toString().toLowerCase() == 'absent')
-        .length;
+  bool _isClientMarked(Map<String, dynamic> c) {
+    if (c['attendance_id'] != null) return true;
+    if (c['has_marked'] == true || c['is_marked'] == true || c['marked'] == true) return true;
+    final checkIn = c['check_in']?.toString();
+    if (checkIn != null && checkIn.isNotEmpty && checkIn != 'null') return true;
+    return false;
   }
-  int get _holidayCount => _dashboard['clients_on_holiday'] as int? ?? _clients.where((c) => (c['status'] ?? '') == 'holiday' || c['is_holiday'] == true).length;
+
+  String _getClientStatus(Map<String, dynamic> c) {
+    final clientIsHoliday = c['is_holiday'] == true ||
+        (c['status'] ?? '').toString().toLowerCase() == 'holiday' ||
+        _isHoliday;
+    if (clientIsHoliday) return 'holiday';
+
+    final isMarked = _isClientMarked(c);
+    if (!isMarked) return 'unmarked';
+
+    final s = (c['status'] ?? 'unmarked').toString().toLowerCase();
+    if (s == 'not_marked' || s == 'unmarked' || s.isEmpty) return 'unmarked';
+    return s;
+  }
+
+  int get _presentCount => _clients.where((c) => _getClientStatus(c) == 'present').length;
+  int get _absentCount => _clients.where((c) => _getClientStatus(c) == 'absent').length;
+  int get _unmarkedCount => _clients.where((c) => _getClientStatus(c) == 'unmarked' || _getClientStatus(c) == 'not_marked').length;
+  int get _holidayCount => _dashboard['clients_on_holiday'] as int? ?? _clients.where((c) => _getClientStatus(c) == 'holiday').length;
 
   List<Map<String, dynamic>> get _filteredClients {
     var list = _clients;
     if (_statusFilter != 'all') {
       list = list.where((c) {
-        String st = (c['status'] ?? 'not_marked').toString().toLowerCase();
-        final isMarked = c['attendance_id'] != null ||
-            c['has_marked'] == true ||
-            (c['check_in'] != null &&
-                c['check_in'].toString().isNotEmpty &&
-                c['check_in'].toString() != 'null');
-        if (_isFutureDate && !isMarked) st = 'not_marked';
+        final st = _getClientStatus(c);
+        if (_statusFilter == 'unmarked' || _statusFilter == 'not_marked') {
+          return st == 'unmarked' || st == 'not_marked';
+        }
         return st == _statusFilter;
       }).toList();
     }
@@ -818,15 +864,17 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         return (bg: const Color(0xffFDEDEC), fg: const Color(0xffE74C3C), label: 'Absent');
       case 'holiday':
         return (bg: const Color(0xffEAF2F8), fg: const Color(0xff2471A3), label: 'Holiday');
+      case 'unmarked':
+      case 'not_marked':
       default:
-        return (bg: const Color(0xffF2F4F4), fg: const Color(0xff7F8C8D), label: 'Not Marked');
+        return (bg: const Color(0xffF2F4F4), fg: const Color(0xff7F8C8D), label: 'Unmarked');
     }
   }
 
   void _showMarkAttendanceSheet(Map<String, dynamic> client) {
     final clientId = client['client_id'] as int? ?? client['customer_id'] as int? ?? client['id'] as int? ?? 0;
     final clientName = (client['name'] ?? client['customer_name'] ?? 'Client').toString();
-    final currentStatus = (client['status'] ?? 'not_marked').toString();
+    final currentStatus = _getClientStatus(client);
     final attendanceId = client['attendance_id'] as int?;
 
     final clientIsHoliday = client['is_holiday'] == true || currentStatus == 'holiday' || _isHoliday;
@@ -838,7 +886,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         gravity: ToastGravity.BOTTOM,
         backgroundColor: const Color(0xFF4B5563),
         textColor: Colors.white,
-        fontSize: 13,
+        fontSize: 12,
       );
       return;
     }
@@ -1159,17 +1207,13 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             ? (isHolidayDay ? const Color(0xff486CC2) : AppColors.primary)
                             : isToday
                                 ? AppColors.primary.withValues(alpha: 0.08)
-                                : isHolidayDay
-                                    ? const Color(0xffEAF2F8)
-                                    : Colors.transparent,
+                                : Colors.transparent,
                         borderRadius: BorderRadius.circular(16),
                         border: isSelected
                             ? null
-                            : isHolidayDay
-                                ? Border.all(color: const Color(0xffAED6F1))
-                                : isToday
-                                    ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
-                                    : null,
+                            : isToday
+                                ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
+                                : null,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -1183,9 +1227,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                 style: AppStyles.text12Px.poppins.w500.copyWith(
                                   color: isSelected
                                       ? Colors.white
-                                      : isHolidayDay
-                                          ? const Color(0xff2471A3)
-                                          : AppColors.textGrey,
+                                      : AppColors.textGrey,
                                 ),
                               ),
                               if (isHolidayDay) ...[
@@ -1193,7 +1235,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                 Icon(
                                   Icons.beach_access,
                                   size: 10,
-                                  color: isSelected ? Colors.white : const Color(0xff2471A3),
+                                  color: isSelected ? Colors.white : AppColors.textGrey,
                                 ),
                               ],
                             ],
@@ -1204,9 +1246,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             style: AppStyles.text18Px.poppins.w700.copyWith(
                               color: isSelected
                                   ? Colors.white
-                                  : isHolidayDay
-                                      ? const Color(0xff2471A3)
-                                      : AppColors.dark,
+                                  : AppColors.dark,
                             ),
                           ),
                           Text(
@@ -1214,9 +1254,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             style: AppStyles.text10Px.poppins.w400.copyWith(
                               color: isSelected
                                   ? Colors.white.withValues(alpha: 0.85)
-                                  : isHolidayDay
-                                      ? const Color(0xff2471A3)
-                                      : AppColors.textGrey,
+                                  : AppColors.textGrey,
                             ),
                           ),
                         ],
@@ -1242,8 +1280,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     }
 
     final cards = [
-      (label: 'Present', count: _presentCount, color: const Color(0xff27AE60), icon: Icons.people_alt_outlined),
-      (label: 'Absent', count: _absentCount, color: const Color(0xffE74C3C), icon: Icons.person_off_outlined),
+      (label: 'Present', count: _presentCount, color: const Color(0xff27AE60), icon: Icons.people_alt_outlined, value: 'present'),
+      (label: 'Absent', count: _absentCount, color: const Color(0xffE74C3C), icon: Icons.person_off_outlined, value: 'absent'),
     ];
 
     return Container(
@@ -1251,7 +1289,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
       child: Row(
         children: cards.map((card) {
-          final filterVal = card.label.toLowerCase();
+          final filterVal = card.value;
           final isFiltered = _statusFilter == filterVal;
 
           return Expanded(
@@ -1347,18 +1385,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   Widget _buildClientTile(Map<String, dynamic> client) {
     final name = (client['name'] ?? client['customer_name'] ?? 'Unknown').toString();
     final plan = (client['plan_name'] ?? client['membership_plan'] ?? '').toString();
-    String rawStatus = (client['status'] ?? 'not_marked').toString().toLowerCase();
-    final isExplicitlyMarked = client['attendance_id'] != null ||
-        client['has_marked'] == true ||
-        client['is_marked'] == true ||
-        (client['check_in'] != null &&
-            client['check_in'].toString().isNotEmpty &&
-            client['check_in'].toString() != 'null');
-    if (_isFutureDate && !isExplicitlyMarked) {
-      rawStatus = 'not_marked';
-    }
-    final clientIsHoliday = client['is_holiday'] == true || rawStatus == 'holiday' || _isHoliday;
-    final status = clientIsHoliday ? 'holiday' : rawStatus;
+    final status = _getClientStatus(client);
+    final clientIsHoliday = status == 'holiday';
     final checkIn = (client['check_in'] ?? '').toString();
     final checkOut = (client['check_out'] ?? '').toString();
     final profilePic = client['profile_picture'] as String?;
@@ -1388,20 +1416,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         child: Row(
           children: [
             // Avatar
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              backgroundImage: profilePic != null && profilePic.isNotEmpty
-                  ? CachedNetworkImageProvider(profilePic)
-                  : null,
-              child: profilePic == null || profilePic.isEmpty
-                  ? Text(
-                      name.isNotEmpty ? name[0].toUpperCase() : '?',
-                      style: AppStyles.text16Px.poppins.w600.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : null,
+            ClipOval(
+              child: ProfileImage(
+                isEdit: false,
+                url: profilePic,
+                radius: 48,
+              ),
             ),
             const SizedBox(width: 12),
 
@@ -1497,7 +1517,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       (value: 'present', label: 'Present', color: const Color(0xff27AE60)),
       (value: 'absent', label: 'Absent', color: const Color(0xffE74C3C)),
       (value: 'holiday', label: 'Holiday', color: const Color(0xff2471A3)),
-      (value: 'not_marked', label: 'Not Marked', color: const Color(0xff7F8C8D)),
+      (value: 'unmarked', label: 'Unmarked', color: const Color(0xff7F8C8D)),
     ];
 
     showModalBottomSheet<void>(

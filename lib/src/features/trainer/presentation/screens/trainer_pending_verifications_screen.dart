@@ -40,7 +40,8 @@ class _TrainerPendingVerificationsScreenState
     final type = (item['workout_type'] ??
             item['session_type'] ??
             item['type'] ??
-            item['workout_category'] ??
+            item['plan_type'] ??
+            item['category'] ??
             '')
         .toString()
         .toLowerCase();
@@ -48,7 +49,8 @@ class _TrainerPendingVerificationsScreenState
     if (type.contains('self') || type.contains('custom') || type.contains('own')) return false;
 
     final isAssigned = item['is_assigned'] as bool? ??
-        item['is_assigned_workout'] as bool?;
+        item['is_assigned_workout'] as bool? ??
+        item['is_assigned_to_me'] as bool?;
     if (isAssigned != null) return isAssigned;
 
     final isSelf = item['is_self_workout'] as bool? ??
@@ -56,11 +58,20 @@ class _TrainerPendingVerificationsScreenState
         item['is_self'] as bool?;
     if (isSelf != null) return !isSelf;
 
+    if (item['assigned_by'] != null || item['assigned_by_id'] != null || item['trainer_id'] != null) {
+      return true;
+    }
+
     final planId = item['customer_workout_plan_id'] ??
         item['plan_id'] ??
         item['workout_plan_id'] ??
-        item['plan'];
-    return planId != null && planId != 0;
+        item['plan'] ??
+        item['assigned_workout_plan'] ??
+        item['assigned_plan_id'] ??
+        item['plan_day_id'] ??
+        item['plan_day'] ??
+        item['assignment_id'];
+    return planId != null && planId != 0 && planId != '' && planId != 'null';
   }
 
   Widget _buildWorkoutTypeBadge(Map<String, dynamic> item) {
@@ -163,6 +174,8 @@ class _TrainerPendingVerificationsScreenState
     super.dispose();
   }
 
+  final Map<int, bool> _sessionAssignmentMap = {};
+
   Future<void> _fetchPendingVerifications() async {
     if (!mounted) return;
     setState(() {
@@ -191,12 +204,19 @@ class _TrainerPendingVerificationsScreenState
         final data = response.data as Map;
         final pendingList =
             data['pending_verifications'] as List<dynamic>? ?? [];
+        final parsedPending = pendingList
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+        for (final item in parsedPending) {
+          final sId = item['session_id'] as int? ?? item['id'] as int?;
+          if (sId != null && sId > 0) {
+            _sessionAssignmentMap[sId] = _isAssignedWorkout(item);
+          }
+        }
+
         if (mounted) {
           setState(() {
-            _pendingVerifications =
-                pendingList
-                    .map((e) => Map<String, dynamic>.from(e as Map))
-                    .toList();
+            _pendingVerifications = parsedPending;
             _isLoadingPending = false;
           });
         }
@@ -293,10 +313,19 @@ class _TrainerPendingVerificationsScreenState
 
       if (response.statusCode == 200 && response.data is List) {
         final data = response.data as List<dynamic>;
+        final parsedHistory =
+            data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+
+        for (final item in parsedHistory) {
+          final sId = item['session_id'] as int? ?? item['id'] as int?;
+          if (sId != null && sId > 0 && _sessionAssignmentMap.containsKey(sId)) {
+            item['is_assigned'] = _sessionAssignmentMap[sId];
+          }
+        }
+
         if (mounted) {
           setState(() {
-            _verificationHistory =
-                data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+            _verificationHistory = parsedHistory;
             _isLoadingHistory = false;
           });
         }
