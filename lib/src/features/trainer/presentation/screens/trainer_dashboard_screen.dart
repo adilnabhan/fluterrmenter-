@@ -393,7 +393,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                               ),
                               _buildStatCard(
                                 title: 'Client\nAttendance',
-                                value: '${stats['today_present_count'] ?? stats['present_count'] ?? stats['client_attendance_count'] ?? stats['active_clients'] ?? activeClients}',
+                                value: '${stats['today_client_attendance_count'] ?? stats['today_present_count'] ?? stats['present_count'] ?? stats['client_attendance_count'] ?? stats['active_clients'] ?? activeClients}',
                                 valueColor: const Color(0xFF3B66D4),
                                 titleColor: context.colors.textPrimary,
                                 onTap: () async {

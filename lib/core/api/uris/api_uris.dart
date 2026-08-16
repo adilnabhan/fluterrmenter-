@@ -133,6 +133,7 @@ final class ApiUris {
   static String customerAssignedWorkoutsAll(int customerId) =>
       '${_v1}customers/assigned-workouts-all/?customer_id=$customerId';
   static final trainerReports = '${_v1}trainer/reports/';
+  static final trainerClientsTrained = '${_v1}trainer/reports/clients-trained/';
   static final trainerReviews = '${_v1}trainer/reviews/';
   static final trainerClientAttendance = '${_v1}trainer/client-attendance/';
   static final trainerClientAttendanceMark =

@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_screen.dart';
 
 class OrganizationDashboardScaffold extends StatefulWidget {
   const OrganizationDashboardScaffold({

@@ -125,7 +125,9 @@ class _WordFieldState extends State<WordField> {
     if ((widget.label?.isEmpty ?? true) && widget.labelStyle != null) {
       throw Exception('Label != null && Label.isEmpty != true');
     }
-    final labelStyle = widget.labelStyle ?? AppStyles.text14Px.poppins.w500.dark;
+    final labelStyle = (widget.labelStyle ?? AppStyles.text14Px.poppins.w500).copyWith(
+      color: widget.labelStyle?.color ?? context.colors.textPrimary,
+    );
     var border = widget.decoration?.border ?? context.theme.inputDecorationTheme.border;
     var errorBorder = widget.decoration?.errorBorder ?? context.theme.inputDecorationTheme.errorBorder;
     var focusedBorder = widget.decoration?.focusedBorder ?? context.theme.inputDecorationTheme.focusedBorder;

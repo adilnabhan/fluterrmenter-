@@ -13,6 +13,8 @@ import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+final ValueNotifier<int> trainerProfileRefreshTrigger = ValueNotifier<int>(0);
+
 class TrainerMainProfileScreen extends StatefulWidget {
   final String? trainerId;
   final bool isViewOnly;
@@ -49,10 +51,19 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     super.initState();
     if (widget.isViewOnly && widget.trainerId != null) {
       _fetchTrainerDetails();
+    } else {
+      _handleRefresh(silent: true);
     }
     _fetchReviews();
     _fetchPortfolioImages();
     _fetchTransformations();
+  }
+
+  @override
+  void dispose() {
+    _heroPagerController.dispose();
+    _transformationPageController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchTransformations() async {
@@ -332,7 +343,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     }
   }
 
-  Future<void> _handleRefresh() async {
+  Future<void> _handleRefresh({bool silent = false}) async {
     _fetchPortfolioImages();
     if (widget.isViewOnly && widget.trainerId != null) {
       await _fetchTrainerDetails();
@@ -412,10 +423,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         );
 
         appCubit.addUser(updatedUser);
-        Dialogs.showSnack(msg: 'Profile refreshed!');
+        if (!silent) Dialogs.showSnack(msg: 'Profile refreshed!');
       }
     } catch (e) {
-      Dialogs.showSnack(msg: 'Failed to refresh profile.');
+      if (!silent) Dialogs.showSnack(msg: 'Failed to refresh profile.');
     }
   }
 
@@ -426,12 +437,6 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1470&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?q=80&w=1470&auto=format&fit=crop',
   ];
-
-  @override
-  void dispose() {
-    _heroPagerController.dispose();
-    super.dispose();
-  }
 
   void _openFullScreen(
     BuildContext context,
@@ -1592,25 +1597,104 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
               child: _buildReviewItem(r),
             ),
           ),
-          if (count > reviews.length)
+          if (reviews.isNotEmpty)
             Align(
               alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'View all Reviews',
-                    style: AppStyles.text12Px.poppins.w500.copyWith(
-                      color: context.colors.textSecondary,
-                    ),
+              child: InkWell(
+                onTap: () => _showAllReviewsSheet(context),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'View all Reviews',
+                        style: AppStyles.text14Px.poppins.w600.copyWith(
+                          color: const Color(0xffD92D20),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: Color(0xffD92D20),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.chevron_right, size: 16, color: Colors.red),
-                ],
+                ),
               ),
             ),
         ],
       ),
+    );
+  }
+
+  void _showAllReviewsSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: BoxDecoration(
+            color: context.colors.background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.textGrey.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'All Reviews (${_reviews.length})',
+                    style: AppStyles.text18Px.poppins.w600.copyWith(
+                      color: context.colors.textPrimary,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(Icons.close, color: context.colors.icon),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: _reviews.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No reviews yet',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: AppColors.textGrey,
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: _reviews.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          return _buildReviewItem(_reviews[index]);
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -1645,11 +1729,18 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     final avatar = review['profile_picture']?.toString();
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.colors.fieldFill,
-        border: Border.all(color: context.colors.border),
+        color: Colors.white,
+        border: Border.all(color: const Color(0xffEEEEEE)),
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1657,19 +1748,19 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           Row(
             children: [
               CircleAvatar(
-                radius: 16,
-                backgroundColor: context.colors.border,
+                radius: 18,
+                backgroundColor: const Color(0xffEEEEEE),
                 backgroundImage:
                     avatar != null && avatar.isNotEmpty
                         ? NetworkImage(avatar)
                         : null,
                 child:
                     avatar == null || avatar.isEmpty
-                        ? Icon(
-                          Icons.person,
-                          size: 16,
-                          color: context.colors.icon,
-                        )
+                        ? const Icon(
+                            Icons.person,
+                            size: 18,
+                            color: Colors.grey,
+                          )
                         : null,
               ),
               const SizedBox(width: 12),
@@ -1679,36 +1770,34 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                   children: [
                     Text(
                       name,
-                      style: AppStyles.text12Px.poppins.w600.copyWith(
-                        color: context.colors.textPrimary,
+                      style: AppStyles.text14Px.poppins.w600.copyWith(
+                        color: AppColors.textDark,
                       ),
                     ),
                     if (date.isNotEmpty)
                       Text(
                         date,
                         style: AppStyles.text10Px.poppins.w400.copyWith(
-                          color: context.colors.textSecondary,
+                          color: const Color(0xff666666),
                         ),
                       ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(
-                    context.isDarkMode ? 0.2 : 0.1,
-                  ),
-                  borderRadius: BorderRadius.circular(4),
+                  color: const Color(0xffFFF8E7),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 10),
-                    const SizedBox(width: 2),
+                    const Icon(Icons.star, color: Colors.amber, size: 12),
+                    const SizedBox(width: 3),
                     Text(
                       rating,
-                      style: AppStyles.text10Px.poppins.w600.copyWith(
-                        color: context.isDarkMode ? Colors.amber : Colors.black,
+                      style: AppStyles.text12Px.poppins.w600.copyWith(
+                        color: Colors.black,
                       ),
                     ),
                   ],
@@ -1718,15 +1807,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           ),
           if (comment.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(
-              comment,
-              style: AppStyles.text10Px.poppins.w400.copyWith(
-                color: context.colors.textSecondary,
-                height: 1.5,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
+            _ReadMoreText(text: comment),
           ],
         ],
       ),
@@ -2106,6 +2187,69 @@ class _HeroImageFullScreenState extends State<_HeroImageFullScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ReadMoreText extends StatefulWidget {
+  final String text;
+  const _ReadMoreText({required this.text});
+
+  @override
+  State<_ReadMoreText> createState() => _ReadMoreTextState();
+}
+
+class _ReadMoreTextState extends State<_ReadMoreText> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppStyles.text13Px.poppins.w400.copyWith(
+      color: AppColors.textDark,
+      height: 1.5,
+    );
+
+    return LayoutBuilder(
+      builder: (context, size) {
+        final span = TextSpan(text: widget.text, style: style);
+        final tp = TextPainter(
+          text: span,
+          maxLines: 3,
+          textDirection: Directionality.of(context),
+        );
+        tp.layout(maxWidth: size.maxWidth);
+
+        if (tp.didExceedMaxLines) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.text,
+                maxLines: _isExpanded ? null : 3,
+                overflow:
+                    _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                style: style,
+              ),
+              const SizedBox(height: 4),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+                child: Text(
+                  _isExpanded ? 'Read less' : 'Read more',
+                  style: AppStyles.text12Px.poppins.w600.copyWith(
+                    color: const Color(0xffD92D20),
+                  ),
+                ),
+              ),
+            ],
+          );
+        } else {
+          return Text(widget.text, style: style);
+        }
+      },
     );
   }
 }

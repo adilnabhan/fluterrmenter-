@@ -513,10 +513,63 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                           Color statusColor = const Color(0xff27AE60);
                           Color statusBgColor = const Color(0xffE2F6EA);
 
-                          final membershipEndDateStr =
-                              client['membership_end_date'] as String? ??
-                              (client['membership'] as Map?)?['end_date']
-                                  as String?;
+                          Map<String, dynamic>? membershipMap;
+                          if (client['membership'] is Map) {
+                            membershipMap = Map<String, dynamic>.from(
+                              client['membership'] as Map,
+                            );
+                          } else if (client['membership'] is List &&
+                              (client['membership'] as List).isNotEmpty) {
+                            final first = (client['membership'] as List).first;
+                            if (first is Map) {
+                              membershipMap = Map<String, dynamic>.from(
+                                first as Map,
+                              );
+                            }
+                          } else if (client['memberships'] is List &&
+                              (client['memberships'] as List).isNotEmpty) {
+                            final first = (client['memberships'] as List).first;
+                            if (first is Map) {
+                              membershipMap = Map<String, dynamic>.from(
+                                first as Map,
+                              );
+                            }
+                          }
+
+                          final String? memStatus = (membershipMap?['status'] ??
+                                  membershipMap?['membership_status'] ??
+                                  client['membership_status'] ??
+                                  client['status'])
+                              ?.toString()
+                              .toLowerCase();
+
+                          final String? rootEndDate = (client['membership_end_date'] ??
+                                  client['end_date'] ??
+                                  client['valid_to'])
+                              ?.toString();
+                          final String? mapEndDate = (membershipMap?['end_date'] ??
+                                  membershipMap?['membership_end_date'] ??
+                                  membershipMap?['expiry_date'] ??
+                                  membershipMap?['expire_date'] ??
+                                  membershipMap?['valid_to'])
+                              ?.toString();
+                          final String? membershipEndDateStr =
+                              (rootEndDate != null &&
+                                      rootEndDate.trim().isNotEmpty)
+                                  ? rootEndDate.trim()
+                                  : (mapEndDate != null &&
+                                          mapEndDate.trim().isNotEmpty)
+                                  ? mapEndDate.trim()
+                                  : null;
+
+                          if (memStatus == 'expired' ||
+                              memStatus == 'inactive' ||
+                              memStatus == 'completed') {
+                            statusText = 'Expired';
+                            statusColor = Colors.red;
+                            statusBgColor = Colors.red.shade50;
+                          }
+
                           if (membershipEndDateStr != null &&
                               membershipEndDateStr.isNotEmpty) {
                             final endDate = DateTime.tryParse(
@@ -544,7 +597,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                 }
                                 statusColor = Colors.red;
                                 statusBgColor = Colors.red.shade50;
-                              } else if (diff <= 10) {
+                              } else if (diff <= 10 && memStatus != 'expired') {
                                 statusText =
                                     diff == 0
                                         ? 'Expires today'
@@ -553,6 +606,16 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                 statusBgColor = Colors.orange.shade50;
                               }
                             }
+                          }
+
+                          // Check API-level is_active_member flag as final authority
+                          final bool? isActiveMember =
+                              client['is_active_member'] as bool?;
+                          if (isActiveMember == false &&
+                              statusText == 'Active') {
+                            statusText = 'Expired';
+                            statusColor = Colors.red;
+                            statusBgColor = Colors.red.shade50;
                           }
 
                           return Container(
@@ -1260,10 +1323,11 @@ class _AssignPlanBottomSheetContentState
           final newPlanId = data['id'] as int;
           if (!mounted) return;
           setState(() {
+            _submittingMap[planId] = false;
             _assigningMap[widget.customerId] = false;
           });
           // ignore: use_build_context_synchronously
-          Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute<void>(
               builder:
@@ -1280,6 +1344,7 @@ class _AssignPlanBottomSheetContentState
         }
         if (!mounted) return;
         setState(() {
+          _submittingMap[planId] = false;
           _assigningMap[widget.customerId] = false;
         });
         return;

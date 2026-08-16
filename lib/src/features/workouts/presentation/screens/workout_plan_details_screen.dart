@@ -1423,8 +1423,9 @@ class _SelectExerciseSheetContentState
                         final subItem = subPills[index];
                         final subName = subItem['name']?.toString() ?? '';
                         final count = subItem['count'] as int?;
+                        final bool showCount = _selectedTab == 2;
                         final String displayName =
-                            count != null && count > 0
+                            showCount && count != null && count > 0
                                 ? '$subName ($count)'
                                 : subName;
 

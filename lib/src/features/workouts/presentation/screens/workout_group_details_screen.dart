@@ -85,7 +85,6 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         ApiUris.workoutPlans,
         queryParameters: {
           'group': widget.groupId,
-          if (widget.source != null) 'source': widget.source,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),

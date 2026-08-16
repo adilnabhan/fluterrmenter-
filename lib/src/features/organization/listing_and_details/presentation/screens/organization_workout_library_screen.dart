@@ -649,11 +649,7 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
                       itemBuilder: (context, index) {
                         final subItem = subPills[index];
                         final subName = subItem['name']?.toString() ?? '';
-                        final count = subItem['count'] as int?;
-                        final String displayName =
-                            count != null && count > 0
-                                ? '$subName ($count)'
-                                : subName;
+                        final String displayName = subName;
 
                         final isSelected =
                             (index == 0 &&

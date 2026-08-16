@@ -1058,201 +1058,265 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
             const SizedBox(height: 24),
 
             // Membership
-            Text(
-              'Membership',
-              style: AppStyles.text16Px.poppins.w600.copyWith(
-                color: context.colors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: context.colors.card,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: context.colors.border),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(
-                      context.isDarkMode ? 0.2 : 0.04,
-                    ),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Top Green Banner
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color:
-                          context.isDarkMode
-                              ? Colors.green.shade900.withOpacity(0.3)
-                              : Colors.green.shade100,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
+            Builder(
+              builder: (context) {
+                final String? memStatusStr =
+                    membership['status']?.toString().toLowerCase();
+                final bool isExpired = memStatusStr == 'expired' ||
+                    (hasProgress && remainingDays <= 0) ||
+                    progress >= 1.0;
+                final bool isExpiringSoon =
+                    !isExpired && hasProgress && remainingDays <= 10;
+
+                final Color topBannerBg = membership.isEmpty
+                    ? (context.isDarkMode
+                        ? Colors.grey.shade800
+                        : Colors.grey.shade200)
+                    : isExpired
+                        ? (context.isDarkMode
+                            ? Colors.red.shade900.withValues(alpha: 0.3)
+                            : const Color(0xffFFEAEA))
+                        : isExpiringSoon
+                            ? (context.isDarkMode
+                                ? Colors.orange.shade900.withValues(alpha: 0.3)
+                                : Colors.orange.shade100)
+                            : (context.isDarkMode
+                                ? Colors.green.shade900.withValues(alpha: 0.3)
+                                : Colors.green.shade100);
+
+                final Color iconBg = membership.isEmpty
+                    ? Colors.grey.shade500
+                    : isExpired
+                        ? Colors.red.shade500
+                        : isExpiringSoon
+                            ? Colors.orange.shade700
+                            : Colors.green.shade500;
+
+                final String badgeText = membership.isEmpty
+                    ? 'No Membership'
+                    : isExpired
+                        ? 'Expired'
+                        : isExpiringSoon
+                            ? 'Expiring Soon'
+                            : 'Active';
+
+                final Color badgeColor = membership.isEmpty
+                    ? Colors.grey
+                    : isExpired
+                        ? Colors.red.shade600
+                        : isExpiringSoon
+                            ? Colors.orange.shade800
+                            : Colors.green.shade600;
+
+                final Color accentColor = isExpired
+                    ? Colors.red.shade600
+                    : isExpiringSoon
+                        ? Colors.orange.shade700
+                        : Colors.green;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Membership',
+                      style: AppStyles.text16Px.poppins.w600.copyWith(
+                        color: context.colors.textPrimary,
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade500,
-                            borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colors.card,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: context.colors.border),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: context.isDarkMode ? 0.2 : 0.04,
+                            ),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                          child: const Icon(
-                            Icons.fitness_center,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              membership['plan_name'] as String? ?? 'No Plan',
-                              style: AppStyles.text16Px.poppins.w600.copyWith(
-                                color: context.colors.textPrimary,
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          // Top Banner
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: topBannerBg,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: context.colors.card,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircleAvatar(
-                                    radius: 3,
-                                    backgroundColor: Colors.green.shade500,
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: iconBg,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    membership.isNotEmpty
-                                        ? 'Active'
-                                        : 'Inactive',
-                                    style: AppStyles.text12Px.poppins.w500
-                                        .copyWith(color: Colors.green.shade500),
+                                  child: const Icon(
+                                    Icons.fitness_center,
+                                    color: Colors.white,
+                                    size: 24,
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Bottom Details
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Membership Progress',
-                              style: AppStyles.text14Px.poppins.w600.copyWith(
-                                color: context.colors.textPrimary,
-                              ),
-                            ),
-                            Text(
-                              '${(progress * 100).toInt()}%',
-                              style: AppStyles.text14Px.poppins.w600.copyWith(
-                                color: Colors.green,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        LinearProgressIndicator(
-                          value: progress,
-                          backgroundColor: context.colors.border,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Colors.green,
-                          ),
-                          minHeight: 4,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          hasProgress
-                              ? (remainingDays > 0
-                                  ? '🕒 $remainingDays days remaining'
-                                  : '✅ Membership completed')
-                              : '🕒 N/A',
-                          style: AppStyles.text12Px.poppins.w500.copyWith(
-                            color:
-                                remainingDays > 0
-                                    ? Colors.orange.shade700
-                                    : Colors.green,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildDetailItem(
-                                icon: Icons.calendar_today,
-                                label: 'Start Date',
-                                value: _formatDate(
-                                  membership['start_date'] as String?,
                                 ),
-                                color: Colors.blue,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildDetailItem(
-                                icon: Icons.event_busy,
-                                label: 'End Date',
-                                value: _formatDate(
-                                  membership['end_date'] as String?,
+                                const SizedBox(width: 12),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      membership['plan_name'] as String? ??
+                                          'No Plan',
+                                      style: AppStyles.text16Px.poppins.w600
+                                          .copyWith(
+                                        color: context.colors.textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: context.colors.card,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 3,
+                                            backgroundColor: badgeColor,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            badgeText,
+                                            style: AppStyles.text12Px.poppins
+                                                .w500
+                                                .copyWith(color: badgeColor),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                color: Colors.red,
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildDetailItem(
-                                icon: Icons.currency_rupee,
-                                label: 'Amount',
-                                value:
-                                    membership['amount'] != null
-                                        ? '${membership['amount']}'
-                                        : 'N/A',
-                                color: Colors.green,
-                              ),
+                          ),
+                          // Bottom Details
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Membership Progress',
+                                      style: AppStyles.text14Px.poppins.w600
+                                          .copyWith(
+                                        color: context.colors.textPrimary,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${(progress * 100).toInt()}%',
+                                      style: AppStyles.text14Px.poppins.w600
+                                          .copyWith(
+                                        color: accentColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                LinearProgressIndicator(
+                                  value: progress,
+                                  backgroundColor: context.colors.border,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    accentColor,
+                                  ),
+                                  minHeight: 4,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  hasProgress
+                                      ? (remainingDays > 0
+                                          ? '🕒 $remainingDays days remaining'
+                                          : '✅ Membership completed')
+                                      : '🕒 N/A',
+                                  style: AppStyles.text12Px.poppins.w500.copyWith(
+                                    color:
+                                        remainingDays > 0
+                                            ? Colors.orange.shade700
+                                            : Colors.green,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildDetailItem(
+                                        icon: Icons.calendar_today,
+                                        label: 'Start Date',
+                                        value: _formatDate(
+                                          membership['start_date'] as String?,
+                                        ),
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildDetailItem(
+                                        icon: Icons.event_busy,
+                                        label: 'End Date',
+                                        value: _formatDate(
+                                          membership['end_date'] as String?,
+                                        ),
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildDetailItem(
+                                        icon: Icons.currency_rupee,
+                                        label: 'Amount',
+                                        value:
+                                            membership['amount'] != null
+                                                ? '${membership['amount']}'
+                                                : 'N/A',
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildDetailItem(
+                                        icon: Icons.payment,
+                                        label: 'Payment',
+                                        value: paymentStatus.toUpperCase(),
+                                        color: _getPaymentStatusColor(paymentStatus),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildDetailItem(
-                                icon: Icons.payment,
-                                label: 'Payment',
-                                value: paymentStatus.toUpperCase(),
-                                color: _getPaymentStatusColor(paymentStatus),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 24),
 

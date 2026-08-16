@@ -27,9 +27,9 @@ class _AppViewState extends State<AppView> {
     /// 🔥 IMPORTANT: wait until HydratedCubit restores state
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = _cubit.state.currentUser;
-      // if (user?.refresh?.isNotEmpty == true) {
-      _cubit.refreshToken();
-      // }
+      if (user?.refresh?.isNotEmpty == true) {
+        _cubit.refreshToken();
+      }
     });
   }
 

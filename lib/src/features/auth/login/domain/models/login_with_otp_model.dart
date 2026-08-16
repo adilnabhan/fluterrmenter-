@@ -36,8 +36,26 @@ class LoginSuccessModel with _$LoginSuccessModel {
     @JsonKey(name: 'organization_name') String? organizationName,
   }) = _LoginWithOtpEntity;
 
-  factory LoginSuccessModel.fromJson(Map<String, dynamic> json) =>
-      _$LoginSuccessModelFromJson(json);
+  factory LoginSuccessModel.fromJson(Map<String, dynamic> json) {
+    final modJson = Map<String, dynamic>.from(json);
+    if (modJson['refresh'] == null) {
+      if (modJson['refresh_token'] != null) {
+        modJson['refresh'] = modJson['refresh_token'];
+      } else if (modJson['tokens'] is Map) {
+        final tokens = modJson['tokens'] as Map<String, dynamic>;
+        modJson['refresh'] = tokens['refresh'] ?? tokens['refresh_token'];
+      }
+    }
+    if (modJson['access'] == null) {
+      if (modJson['access_token'] != null) {
+        modJson['access'] = modJson['access_token'];
+      } else if (modJson['tokens'] is Map) {
+        final tokens = modJson['tokens'] as Map<String, dynamic>;
+        modJson['access'] = tokens['access'] ?? tokens['access_token'];
+      }
+    }
+    return _$LoginSuccessModelFromJson(modJson);
+  }
 }
 
 @freezed

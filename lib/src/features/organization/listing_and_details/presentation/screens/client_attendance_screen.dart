@@ -26,26 +26,46 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   String _statusFilter = 'all';
   final _searchController = TextEditingController();
 
+  int _currentPage = 1;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _fetchAttendance();
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoading &&
+        !_isLoadingMore &&
+        _hasMore) {
+      _loadMoreAttendance();
+    }
+  }
+
   Future<void> _fetchAttendance({bool silent = false}) async {
     if (!silent) setState(() => _isLoading = true);
+    _currentPage = 1;
+    _hasMore = true;
 
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
       String url = widget.isTrainer
-          ? '${ApiUris.trainerClientAttendance}?date=$dateStr'
-          : '${ApiUris.clientAttendance}?date=$dateStr';
+          ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=1'
+          : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=1';
       if (_searchQuery.isNotEmpty) {
         url += '&search=${Uri.encodeComponent(_searchQuery)}';
       }
@@ -61,7 +81,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           final clients =
               (data['clients'] ?? data['results'] ?? data['data'] ?? []) as List<dynamic>;
           final dashboard =
-              (data['dashboard'] ?? data['summary'] ?? {}) as Map<String, dynamic>;
+              (data['dashboard'] ?? data['summary'] ?? data) as Map<String, dynamic>;
 
           final isHolidayRoot = data['is_holiday'] == true ||
               data['is_holiday'] == 1 ||
@@ -74,23 +94,32 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                 data['holiday_title'] ?? data['holiday_name'] ?? data['title'] ?? 'Gym Holiday';
           }
 
+          final hasNext = data['next'] != null;
+          final totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+          final newClients = clients.cast<Map<String, dynamic>>();
+
           if (mounted) {
             setState(() {
-              _clients = clients.cast<Map<String, dynamic>>();
-              _dashboard = dashboard;
+              _clients = newClients;
+              _dashboard = Map<String, dynamic>.from(dashboard);
+              _hasMore = hasNext ||
+                  (totalCount != null
+                      ? newClients.length < totalCount
+                      : newClients.length >= 10);
             });
           }
         } else if (response.data is List) {
+          final newClients = (response.data as List<dynamic>).cast<Map<String, dynamic>>();
           if (mounted) {
             setState(() {
-              _clients = (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+              _clients = newClients;
+              _hasMore = false;
             });
           }
         }
       }
 
       try {
-        final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
         final monthStr = DateFormat('yyyy-MM').format(_selectedDate);
         final orgParam = widget.orgId != 0 ? '&organization_id=${widget.orgId}' : '';
         final holResp = await DioClient().dio.get<dynamic>(
@@ -124,40 +153,66 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         }
       } catch (_) {}
     } catch (e) {
-      if (widget.isTrainer) {
-        try {
-          final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-          final response = await DioClient().dio.get<dynamic>(
-            '${ApiUris.trainerClientAttendance}?date=$dateStr',
-            options: Options(headers: {'X-Platform': platformSource}).token,
-          );
-          if (response.statusCode == 200) {
-            if (response.data is Map) {
-              final data = response.data as Map<String, dynamic>;
-              final clients =
-                  (data['clients'] ?? data['results'] ?? []) as List<dynamic>;
-              if (mounted) {
-                setState(() {
-                  _clients = clients.cast<Map<String, dynamic>>();
-                });
-              }
-            } else if (response.data is List) {
-              if (mounted) {
-                setState(() {
-                  _clients = (response.data as List<dynamic>).cast<Map<String, dynamic>>();
-                });
-              }
-            }
-          }
-        } catch (_) {
-          if (!silent) Dialogs.showSnack(msg: 'Failed to load client attendance.');
+      if (!silent) Dialogs.showSnack(msg: 'Failed to load client attendance.');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _loadMoreAttendance() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final nextPage = _currentPage + 1;
+      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      String url = widget.isTrainer
+          ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=$nextPage'
+          : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=$nextPage';
+      if (_searchQuery.isNotEmpty) {
+        url += '&search=${Uri.encodeComponent(_searchQuery)}';
+      }
+
+      final response = await DioClient().dio.get<dynamic>(
+        url,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      if (response.statusCode == 200 && response.data is Map) {
+        final data = response.data as Map<String, dynamic>;
+        final newClientsRaw =
+            (data['clients'] ?? data['results'] ?? data['data'] ?? []) as List<dynamic>;
+        final newClients = newClientsRaw.cast<Map<String, dynamic>>();
+        final hasNext = data['next'] != null;
+        final totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+
+        if (mounted) {
+          setState(() {
+            _clients.addAll(newClients);
+            _currentPage = nextPage;
+            _hasMore = hasNext ||
+                (totalCount != null
+                    ? _clients.length < totalCount
+                    : newClients.isNotEmpty);
+            _isLoadingMore = false;
+          });
         }
       } else {
-        if (!silent) Dialogs.showSnack(msg: 'Failed to load client attendance.');
+        if (mounted) {
+          setState(() {
+            _hasMore = false;
+            _isLoadingMore = false;
+          });
+        }
       }
-    } finally {
-      if (!silent && mounted) {
-        setState(() => _isLoading = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hasMore = false;
+          _isLoadingMore = false;
+        });
       }
     }
   }
@@ -1156,10 +1211,20 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                     : RefreshIndicator(
                         onRefresh: _fetchAttendance,
                         child: ListView.separated(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          itemCount: _filteredClients.length,
+                          itemCount: _filteredClients.length + (_isLoadingMore ? 1 : 0),
                           separatorBuilder: (_, __) => const SizedBox(height: 8),
                           itemBuilder: (context, index) {
+                            if (index == _filteredClients.length) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
                             return _buildClientTile(_filteredClients[index]);
                           },
                         ),
@@ -1403,6 +1468,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       }
     }
 
+    final memStatus = (client['membership_status'] ?? '').toString().toLowerCase();
+    final isExpiredMem = memStatus == 'expired';
+
     return InkWell(
       onTap: () => _showMarkAttendanceSheet(client),
       borderRadius: BorderRadius.circular(16),
@@ -1430,11 +1498,36 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    name,
-                    style: AppStyles.text14Px.poppins.w600.dark,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          name,
+                          style: AppStyles.text14Px.poppins.w600.dark,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (isExpiredMem) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffFDEDEC),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Expired',
+                            style: AppStyles.text10Px.poppins.w600.copyWith(
+                              color: const Color(0xffE74C3C),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   if (plan.isNotEmpty && plan != 'null')
                     Text(

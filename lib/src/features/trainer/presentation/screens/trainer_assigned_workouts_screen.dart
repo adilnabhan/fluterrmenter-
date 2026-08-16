@@ -22,6 +22,13 @@ class TrainerAssignedWorkoutsScreen extends StatefulWidget {
 class _TrainerAssignedWorkoutsScreenState
     extends State<TrainerAssignedWorkoutsScreen> {
   bool _isLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  bool _hasFetchedAll = false;
+  int _currentPage = 1;
+  static const int _pageSize = 20;
+
+  late final ScrollController _scrollController;
 
   List<Map<String, dynamic>> _assignedWorkouts = [];
   String _searchQuery = '';
@@ -34,12 +41,56 @@ class _TrainerAssignedWorkoutsScreenState
   @override
   void initState() {
     super.initState();
-    _loadAssignedWorkouts();
+    _scrollController = ScrollController()..addListener(_onScroll);
+    _loadAssignedWorkouts(resetPage: true, forceRefresh: true);
   }
 
-  Future<void> _loadAssignedWorkouts() async {
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoading &&
+        !_isLoadingMore &&
+        _hasMore) {
+      _loadMoreAssignedWorkouts();
+    }
+  }
+
+  Future<void> _loadMoreAssignedWorkouts() async {
+    if (!mounted || _isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    _currentPage++;
+    await _loadAssignedWorkouts(resetPage: false, fetchAll: true);
+  }
+
+  Future<void> _loadAssignedWorkouts({
+    bool resetPage = true,
+    bool forceRefresh = false,
+    bool fetchAll = false,
+  }) async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
+
+    // If all workouts are already in memory and user is just toggling tabs, switch instantly without reloading
+    if (!forceRefresh && _hasFetchedAll && resetPage) {
+      return;
+    }
+
+    if (resetPage) {
+      setState(() {
+        _isLoading = true;
+        _currentPage = 1;
+        _hasMore = true;
+        if (forceRefresh) {
+          _assignedWorkouts = [];
+          _hasFetchedAll = false;
+        }
+      });
+    }
 
     if (widget.customerId != null) {
       final workouts = await _fetchAssignedWorkoutsForClient(
@@ -50,17 +101,32 @@ class _TrainerAssignedWorkoutsScreenState
         setState(() {
           _assignedWorkouts = workouts;
           _isLoading = false;
+          _isLoadingMore = false;
+          _hasMore = false;
+          _hasFetchedAll = true;
         });
       }
       return;
     }
 
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final Map<String, dynamic> queryParams = {
-      'status': 'all',
-      'page_size': 100,
+      'page': _currentPage,
+      'page_size': _pageSize,
     };
 
-    // Fetch for all clients of the trainer using new single endpoint
+    if (fetchAll || _dateFilter == 'all') {
+      queryParams['status'] = 'all';
+    } else if (_dateFilter == 'today') {
+      queryParams['date'] = todayStr;
+      queryParams['status'] = 'active';
+    } else if (_dateFilter == 'custom' && _customSelectedDate != null) {
+      queryParams['date'] = DateFormat('yyyy-MM-dd').format(_customSelectedDate!);
+    } else {
+      queryParams['status'] = 'all';
+    }
+
+    // Fetch for all clients of the trainer using single endpoint
     try {
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.trainerAssignedWorkouts,
@@ -72,8 +138,17 @@ class _TrainerAssignedWorkoutsScreenState
         final workouts = _parseWorkoutsResponse(response.data, 'Client', 0);
         if (mounted) {
           setState(() {
-            _assignedWorkouts = workouts;
+            if (resetPage) {
+              _assignedWorkouts = workouts;
+            } else {
+              _assignedWorkouts.addAll(workouts);
+            }
+            _hasMore = workouts.length >= _pageSize;
+            if (fetchAll || _dateFilter == 'all') {
+              _hasFetchedAll = true;
+            }
             _isLoading = false;
+            _isLoadingMore = false;
           });
         }
         return;
@@ -81,52 +156,76 @@ class _TrainerAssignedWorkoutsScreenState
     } catch (_) {}
 
     // Fallback: Fetch per client if single endpoint is unavailable
-    try {
-      final clientsRes = await DioClient().dio.get<dynamic>(
-        ApiUris.trainerCustomers,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+    if (resetPage) {
+      try {
+        final clientsRes = await DioClient().dio.get<dynamic>(
+          ApiUris.trainerCustomers,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
 
-      if (clientsRes.statusCode == 200) {
-        List<dynamic> dataList = [];
-        if (clientsRes.data is List) {
-          dataList = clientsRes.data as List;
-        } else if (clientsRes.data is Map && clientsRes.data['results'] is List) {
-          dataList = clientsRes.data['results'] as List;
-        }
+        if (clientsRes.statusCode == 200) {
+          List<dynamic> dataList = [];
+          if (clientsRes.data is List) {
+            dataList = clientsRes.data as List;
+          } else if (clientsRes.data is Map && clientsRes.data['results'] is List) {
+            dataList = clientsRes.data['results'] as List;
+          }
 
-        final clients =
-            dataList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          final clients =
+              dataList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
-        final List<Future<List<Map<String, dynamic>>>> futures = [];
-        for (final client in clients) {
-          final profile = client['profile'] as Map? ?? client;
-          final cid = client['id'] as int? ?? client['customer_id'] as int?;
-          final cname = profile['name']?.toString() ??
-              profile['first_name']?.toString() ??
-              'Client';
-          if (cid != null) {
-            futures.add(_fetchAssignedWorkoutsForClient(cid, cname));
+          final List<Future<List<Map<String, dynamic>>>> futures = [];
+          for (final client in clients) {
+            final profile = client['profile'] as Map? ?? client;
+            final cid = client['id'] as int? ?? client['customer_id'] as int?;
+            final cname = profile['name']?.toString() ??
+                profile['first_name']?.toString() ??
+                'Client';
+            if (cid != null) {
+              futures.add(_fetchAssignedWorkoutsForClient(cid, cname));
+            }
+          }
+
+          final results = await Future.wait(futures);
+          final List<Map<String, dynamic>> combinedWorkouts = [];
+          for (final res in results) {
+            combinedWorkouts.addAll(res);
+          }
+
+          if (mounted) {
+            setState(() {
+              _assignedWorkouts = combinedWorkouts;
+              _isLoading = false;
+              _isLoadingMore = false;
+              _hasMore = false;
+              _hasFetchedAll = true;
+            });
+          }
+        } else {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+              _isLoadingMore = false;
+              _hasMore = false;
+            });
           }
         }
-
-        final results = await Future.wait(futures);
-        final List<Map<String, dynamic>> combinedWorkouts = [];
-        for (final res in results) {
-          combinedWorkouts.addAll(res);
-        }
-
+      } catch (_) {
         if (mounted) {
           setState(() {
-            _assignedWorkouts = combinedWorkouts;
             _isLoading = false;
+            _isLoadingMore = false;
+            _hasMore = false;
           });
         }
-      } else {
-        if (mounted) setState(() => _isLoading = false);
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
+    } else {
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+          _hasMore = false;
+        });
+      }
     }
   }
 
@@ -284,7 +383,7 @@ class _TrainerAssignedWorkoutsScreenState
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: AppColors.dark),
-            onPressed: _loadAssignedWorkouts,
+            onPressed: () => _loadAssignedWorkouts(resetPage: true),
           ),
         ],
       ),
@@ -351,6 +450,9 @@ class _TrainerAssignedWorkoutsScreenState
                                   _dateFilter = 'all';
                                   _customSelectedDate = null;
                                 });
+                                if (!_hasFetchedAll) {
+                                  _loadAssignedWorkouts(resetPage: true, fetchAll: true);
+                                }
                               }
                             },
                             borderRadius: BorderRadius.circular(10),
@@ -398,6 +500,9 @@ class _TrainerAssignedWorkoutsScreenState
                         _customSelectedDate = picked;
                         _dateFilter = 'custom';
                       });
+                      if (!_hasFetchedAll) {
+                        _loadAssignedWorkouts(resetPage: true);
+                      }
                     }
                   },
                   borderRadius: BorderRadius.circular(12),
@@ -475,6 +580,9 @@ class _TrainerAssignedWorkoutsScreenState
                                 ),
                                 onPressed: () {
                                   setState(() => _dateFilter = 'all');
+                                  if (!_hasFetchedAll) {
+                                    _loadAssignedWorkouts(resetPage: true, fetchAll: true);
+                                  }
                                 },
                                 child: const Text('View All Workouts', style: TextStyle(color: Colors.white)),
                               ),
@@ -483,10 +591,19 @@ class _TrainerAssignedWorkoutsScreenState
                         ),
                       )
                     : ListView.separated(
+                        controller: _scrollController,
                         padding: const EdgeInsets.all(16),
-                        itemCount: filteredWorkouts.length,
+                        itemCount: filteredWorkouts.length + (_isLoadingMore ? 1 : 0),
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
+                          if (index == filteredWorkouts.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              ),
+                            );
+                          }
                           final workout = filteredWorkouts[index];
                           final planId = workout['plan_id'] as int? ??
                               workout['customer_workout_plan_id'] as int? ??

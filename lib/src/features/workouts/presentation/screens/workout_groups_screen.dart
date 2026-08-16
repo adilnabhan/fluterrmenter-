@@ -430,24 +430,32 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                                   ),
                                 ),
                                 Expanded(
-                                  child:
-                                      _isLoading
-                                          ? const Center(
+                                  child: RefreshIndicator(
+                                    onRefresh: _fetchGroups,
+                                    child: _isLoading
+                                        ? const Center(
                                             child: CircularProgressIndicator(),
                                           )
-                                          : filtered.isEmpty
-                                          ? Center(
-                                            child: Text(
-                                              'No workout groups found.',
-                                              style: TextStyle(
-                                                color: context.colors.textPrimary,
+                                        : filtered.isEmpty
+                                        ? SingleChildScrollView(
+                                            physics: const AlwaysScrollableScrollPhysics(),
+                                            child: SizedBox(
+                                              height: MediaQuery.of(context).size.height * 0.4,
+                                              child: Center(
+                                                child: Text(
+                                                  'No workout groups found.',
+                                                  style: TextStyle(
+                                                    color: context.colors.textPrimary,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           )
-                                          : WorkoutGroupsGrid(
+                                        : WorkoutGroupsGrid(
                                             groups: filtered,
                                             onReturn: _fetchGroups,
                                           ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -615,6 +623,7 @@ class WorkoutGroupsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(22, 0, 22, 180),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -639,7 +648,14 @@ class _WorkoutGroupCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final int groupId = group['id'] as int;
     final String groupName = group['name'] as String? ?? '';
-    final int planCount = group['plan_count'] as int? ?? 0;
+    final int planCount = group['plan_count'] as int? ??
+        group['plans_count'] as int? ??
+        group['total_plans'] as int? ??
+        (group['plans'] is List ? (group['plans'] as List).length : null) ??
+        (group['workout_plans'] is List
+            ? (group['workout_plans'] as List).length
+            : null) ??
+        0;
 
     final user = context.read<AppCubit>().state.currentUser;
     final isTrainer = user?.userRole == 35;

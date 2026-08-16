@@ -276,14 +276,14 @@ class AppCubit extends HydratedCubit<AppState> {
 
     try {
       final user = state.currentUser;
-      final refreshToken = user?.refresh;
+      if (user == null) {
+        return;
+      }
+      final refreshToken = user.refresh;
 
-      // 🚪 No refresh token → logout
+      // 🚪 No refresh token → don't aggressively log out unless authentication failure occurs
       if (refreshToken == null || refreshToken.isEmpty) {
-        print('❌ AppCubit: No refresh token found. Logging out.');
-        if (state.currentUser != null) {
-          emit(state.copyWith(currentUser: null));
-        }
+        print('⚠️ AppCubit: No refresh token found for current user.');
         return;
       }
 
@@ -330,7 +330,7 @@ class AppCubit extends HydratedCubit<AppState> {
           // ✅ Update tokens
           print('✅ AppCubit: Updating user with new tokens.');
 
-          final updatedUser = user!.copyWith(
+          final updatedUser = user.copyWith(
             access: access,
             refresh: refresh ?? user.refresh,
           );

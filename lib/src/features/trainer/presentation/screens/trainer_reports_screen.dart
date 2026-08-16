@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_clients_trained_screen.dart';
 
 final ValueNotifier<int> reportsRefreshTrigger = ValueNotifier<int>(0);
 
@@ -84,15 +85,22 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
     // Daily Stats
     final dailyClientsTrained = _dailyReport['clients_trained_count'] ?? 0;
     final dailyWorkoutsAssigned =
-        _dailyReport['workout_plans_given_count'] ?? 0;
+        _dailyReport['workouts_assigned_count'] ??
+        _dailyReport['workout_plans_given_count'] ??
+        0;
     final dailyWorkoutsCompleted =
         _dailyReport['workouts_completed_count'] ?? 0;
-    final dailyAttendance = _dailyReport['attendance_rate']?.toString() ?? "0%";
+    final dailyVerifiedWorkouts =
+        _dailyReport['verified_workouts_count'] ??
+        _dailyReport['verified_workouts'] ??
+        0;
 
     // Monthly Stats
     final monthlyClientsTrained = _monthlyReport['clients_trained_count'] ?? 0;
     final monthlyWorkoutsAssigned =
-        _monthlyReport['workout_plans_given_count'] ?? 0;
+        _monthlyReport['workouts_assigned_count'] ??
+        _monthlyReport['workout_plans_given_count'] ??
+        0;
     final monthlyCompletionRate =
         _monthlyReport['completion_rate']?.toString() ?? "0%";
     final monthlyActiveProgress =
@@ -145,6 +153,16 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                             value: '$dailyClientsTrained',
                             icon: Icons.people_outline,
                             color: const Color(0xff486CC2),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) =>
+                                          const TrainerClientsTrainedScreen(),
+                                ),
+                              );
+                            },
                           ),
                           _buildReportCard(
                             title: 'Workouts Assigned',
@@ -159,9 +177,9 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                             color: const Color(0xff527F50),
                           ),
                           _buildReportCard(
-                            title: 'Attendance Rate',
-                            value: dailyAttendance,
-                            icon: Icons.calendar_today_outlined,
+                            title: 'Verified Workouts',
+                            value: '$dailyVerifiedWorkouts',
+                            icon: Icons.verified_outlined,
                             color: const Color(0xffE67E22),
                           ),
                         ],
@@ -187,7 +205,7 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                         child: Column(
                           children: [
                             _buildReportRow(
-                              'Total Clients Assigned',
+                              'Total Clients Trained',
                               '$monthlyClientsTrained',
                             ),
                             Divider(
@@ -233,45 +251,50 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
     required String value,
     required IconData icon,
     required Color color,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: context.colors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.colors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                value,
-                style: AppStyles.text24Px.poppins.w700.copyWith(
-                  fontSize: 28,
-                  color: context.colors.textPrimary,
-                ),
-              ),
-              Icon(icon, color: color, size: 24),
-            ],
-          ),
-          Text(
-            title,
-            style: AppStyles.text12Px.poppins.w500.copyWith(
-              color: context.colors.textSecondary,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: context.colors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.colors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  value,
+                  style: AppStyles.text24Px.poppins.w700.copyWith(
+                    fontSize: 28,
+                    color: context.colors.textPrimary,
+                  ),
+                ),
+                Icon(icon, color: color, size: 24),
+              ],
+            ),
+            Text(
+              title,
+              style: AppStyles.text12Px.poppins.w500.copyWith(
+                color: context.colors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
