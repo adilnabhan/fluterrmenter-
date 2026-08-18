@@ -630,6 +630,12 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                 _exercises.add(newEx);
               });
             },
+            onRemoveExercise: (String workoutId) {
+              if (!mounted) return;
+              setState(() {
+                _exercises.removeWhere((item) => item.workoutId == workoutId);
+              });
+            },
           ),
     );
   }
@@ -847,6 +853,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
 class SelectExerciseSheetContent extends StatefulWidget {
   final List<WorkoutExercise> existingExercises;
   final Function(WorkoutExercise)? onAddExercise;
+  final Function(String)? onRemoveExercise;
   final String title;
   final bool isPage;
 
@@ -854,6 +861,7 @@ class SelectExerciseSheetContent extends StatefulWidget {
     super.key,
     this.existingExercises = const [],
     this.onAddExercise,
+    this.onRemoveExercise,
     this.title = 'Select Workout',
     this.isPage = false,
   });
@@ -1522,44 +1530,39 @@ class _SelectExerciseSheetContentState
                         );
 
                         return InkWell(
-                          onTap:
-                              isAdded
-                                  ? null
-                                  : () {
-                                    final WorkoutExercise
-                                    newEx = WorkoutExercise(
-                                      id:
-                                          'temp_${DateTime.now().millisecondsSinceEpoch}_$index',
-                                      workoutId: idStr,
-                                      name: item['name'] as String? ?? '',
-                                      muscle:
-                                          item['primary_muscle_group_name']
-                                              as String? ??
-                                          'General',
-                                      equipment:
-                                          item['equipment_name'] as String? ??
-                                          'None',
-                                      type: item['type'] as String? ?? 'Other',
-                                      videoLink:
-                                          item['video_url'] as String? ?? '',
-                                      trackBy:
-                                          item['track_by']
-                                              ?.toString()
-                                              .toLowerCase() ??
-                                          'reps',
-                                      sets: const [
-                                        {'set_number': 1},
-                                      ],
-                                    );
-                                    widget.onAddExercise?.call(newEx);
-                                    Dialogs.showSnack(
-                                      msg: '${newEx.name} added to plan list',
-                                    );
-                                    if (!mounted) return;
-                                    setState(
-                                      () {},
-                                    ); // Refresh local added check
-                                  },
+                          onTap: () {
+                            final exName = item['name'] as String? ?? 'Exercise';
+                            if (isAdded) {
+                              if (widget.onRemoveExercise != null) {
+                                widget.onRemoveExercise!(idStr);
+                              } else {
+                                widget.existingExercises.removeWhere((e) => e.workoutId == idStr);
+                              }
+                              Dialogs.showSnack(
+                                msg: '$exName removed from plan',
+                              );
+                            } else {
+                              final WorkoutExercise newEx = WorkoutExercise(
+                                id: 'temp_${DateTime.now().millisecondsSinceEpoch}_$index',
+                                workoutId: idStr,
+                                name: exName,
+                                muscle: item['primary_muscle_group_name'] as String? ?? 'General',
+                                equipment: item['equipment_name'] as String? ?? 'None',
+                                type: item['type'] as String? ?? 'Other',
+                                videoLink: item['video_url'] as String? ?? '',
+                                trackBy: item['track_by']?.toString().toLowerCase() ?? 'reps',
+                                sets: const [
+                                  {'set_number': 1},
+                                ],
+                              );
+                              widget.onAddExercise?.call(newEx);
+                              Dialogs.showSnack(
+                                msg: '$exName added to plan list',
+                              );
+                            }
+                            if (!mounted) return;
+                            setState(() {});
+                          },
                           child: _SelectExerciseItem(
                             exercise: WorkoutExercise(
                               id: '',

@@ -467,7 +467,6 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.contrast,
                 title: 'Themes',
                 isLast: true,
-                onTap: () => _showThemeSelectionSheet(context),
               ),
             ]),
 

@@ -6,7 +6,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/auth/login/domain/models/login_with_otp_model.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class TrainerCertificatesScreen extends StatefulWidget {
   final String? trainerId;
@@ -185,6 +185,46 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
     }
   }
 
+  /// Resolves a certificate URL to a full absolute URL
+  String _resolveUrl(String url) {
+    if (url.startsWith('/')) {
+      return 'https://discipl-backend.onrender.com$url';
+    } else if (!url.startsWith('http')) {
+      return 'https://$url';
+    }
+    return url;
+  }
+
+  /// Opens a certificate — PDFs in SfPdfViewer, images in a full-screen dialog
+  void _openCertificate(CertificateModel cert) {
+    if (cert.certificate == null || cert.certificate!.isEmpty) {
+      Fluttertoast.showToast(msg: 'Certificate file is missing');
+      return;
+    }
+
+    final url = _resolveUrl(cert.certificate!);
+    final lowerUrl = url.split('?').first.toLowerCase();
+    final isPdf = lowerUrl.endsWith('.pdf');
+    final title = cert.name?.isNotEmpty == true ? cert.name! : 'Certificate';
+
+    if (isPdf) {
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => _CertificatePdfViewerPage(url: url, title: title),
+        ),
+      );
+    } else {
+      // Image — show in a full-screen dialog with pinch-to-zoom
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => _CertificateImageViewerPage(url: url, title: title),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final certificates = _certificates;
@@ -257,7 +297,8 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final cert = certificates[index];
-        final isPdf = cert.certificate?.toLowerCase().endsWith('.pdf') == true;
+        final certUrl = cert.certificate ?? '';
+        final isPdf = certUrl.split('?').first.toLowerCase().endsWith('.pdf');
 
         return Container(
           decoration: BoxDecoration(
@@ -290,7 +331,7 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
                       : ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          cert.certificate ?? '',
+                          _resolveUrl(certUrl),
                           fit: BoxFit.cover,
                           errorBuilder:
                               (_, __, ___) =>
@@ -320,46 +361,215 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
                       onPressed: () => _deleteCertificate(cert.id!),
                     )
                     : null,
-            onTap: () async {
-              if (cert.certificate == null || cert.certificate!.isEmpty) {
-                Fluttertoast.showToast(msg: 'Certificate file is missing');
-                return;
-              }
-
-              Fluttertoast.showToast(msg: 'Opening certificate...');
-
-              var urlString = cert.certificate!;
-              if (urlString.startsWith('/')) {
-                urlString = 'https://discipl-backend.onrender.com$urlString';
-              } else if (!urlString.startsWith('http')) {
-                urlString = 'https://$urlString';
-              }
-
-              final uri = Uri.tryParse(urlString);
-              if (uri != null) {
-                try {
-                  final launched = await launchUrl(
-                    uri,
-                    mode: LaunchMode.externalApplication,
-                  );
-                  if (!launched) {
-                    Fluttertoast.showToast(
-                      msg: 'Could not find an app to open: $urlString',
-                    );
-                  }
-                } catch (e) {
-                  Fluttertoast.showToast(msg: 'Error launching: $e');
-                }
-              } else {
-                Fluttertoast.showToast(msg: 'Invalid URL format');
-              }
-            },
+            onTap: () => _openCertificate(cert),
           ),
         );
       },
     );
   }
 }
+
+/// Full-screen PDF viewer page using Syncfusion
+class _CertificatePdfViewerPage extends StatefulWidget {
+  final String url;
+  final String title;
+
+  const _CertificatePdfViewerPage({required this.url, required this.title});
+
+  @override
+  State<_CertificatePdfViewerPage> createState() =>
+      _CertificatePdfViewerPageState();
+}
+
+class _CertificatePdfViewerPageState extends State<_CertificatePdfViewerPage> {
+  final PdfViewerController _pdfViewerController = PdfViewerController();
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        title: Text(
+          widget.title,
+          style: AppStyles.text16Px.poppins.w600.dark,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.black,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          if (_errorMessage == null)
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.black),
+              onPressed: () {
+                setState(() {
+                  _isLoading = true;
+                  _errorMessage = null;
+                });
+              },
+            ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          if (_errorMessage == null)
+            SfPdfViewer.network(
+              widget.url,
+              controller: _pdfViewerController,
+              canShowScrollHead: true,
+              canShowScrollStatus: true,
+              canShowPaginationDialog: true,
+              onDocumentLoaded: (details) {
+                if (mounted) {
+                  setState(() => _isLoading = false);
+                }
+              },
+              onDocumentLoadFailed: (details) {
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                    _errorMessage = details.description.isNotEmpty
+                        ? details.description
+                        : 'Failed to load PDF document.';
+                  });
+                }
+              },
+            ),
+          if (_isLoading && _errorMessage == null)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+          if (_errorMessage != null)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Could not open PDF',
+                      style: AppStyles.text16Px.poppins.w600.dark,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: AppStyles.text12Px.poppins.w400.copyWith(
+                        color: AppColors.textGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isLoading = true;
+                          _errorMessage = null;
+                        });
+                      },
+                      child: const Text(
+                        'Retry',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-screen image viewer page with pinch-to-zoom
+class _CertificateImageViewerPage extends StatelessWidget {
+  final String url;
+  final String title;
+
+  const _CertificateImageViewerPage({required this.url, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Text(
+          title,
+          style: AppStyles.text16Px.poppins.w600.copyWith(color: Colors.white),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 0.5,
+          maxScale: 4.0,
+          child: Image.network(
+            url,
+            fit: BoxFit.contain,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                  color: Colors.white,
+                ),
+              );
+            },
+            errorBuilder: (_, __, ___) => Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.broken_image, color: Colors.white54, size: 64),
+                const SizedBox(height: 16),
+                Text(
+                  'Failed to load image',
+                  style: AppStyles.text14Px.poppins.w400.copyWith(
+                    color: Colors.white54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 class _AddCertificateSheet extends StatefulWidget {
   final Function(File file, String name, String issuedBy, String issuedDate)

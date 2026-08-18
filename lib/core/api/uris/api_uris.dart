@@ -149,6 +149,10 @@ final class ApiUris {
   ///============================= Transformations =============================\\\
   static final transformations = '${_v1}fitnesscenter/transformations/';
   static String deleteTransformation(int id) => '${_v1}fitnesscenter/transformations/$id/';
+  static String trainerTransformationImages(String trainerId) =>
+      '${_v1}mentor/trainers/$trainerId/transformation-images/';
+  static String deleteTrainerTransformationImage(String trainerId, dynamic imageId) =>
+      '${_v1}mentor/trainers/$trainerId/transformation-images/$imageId/';
 
   ///============================= Workouts =============================\\\
   static final gymExercises = '${_v1}fitnesscenter/exercises/';

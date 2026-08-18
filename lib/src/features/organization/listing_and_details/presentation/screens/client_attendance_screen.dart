@@ -1,6 +1,9 @@
+import 'dart:math' as math;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/member_detials_screen.dart';
 
 class ClientAttendanceScreen extends StatefulWidget {
   final int orgId;
@@ -12,11 +15,14 @@ class ClientAttendanceScreen extends StatefulWidget {
     this.isTrainer = false,
   });
 
+  static void clearCache() {}
+
   @override
   State<ClientAttendanceScreen> createState() => _ClientAttendanceScreenState();
 }
 
 class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
+
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
   List<Map<String, dynamic>> _clients = [];
@@ -56,34 +62,69 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     }
   }
 
-  Future<void> _fetchAttendance({bool silent = false}) async {
-    if (!silent) setState(() => _isLoading = true);
+  Future<void> _fetchAttendance({
+    bool silent = false,
+    bool forceRefresh = false,
+  }) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _clients = [];
+        _dashboard = {};
+      });
+    }
     _currentPage = 1;
     _hasMore = true;
 
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-      String url = widget.isTrainer
-          ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=1'
-          : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=1';
+      String url =
+          widget.isTrainer
+              ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=1'
+              : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=1';
       if (_searchQuery.isNotEmpty) {
         url += '&search=${Uri.encodeComponent(_searchQuery)}';
       }
 
       final response = await DioClient().dio.get<dynamic>(
         url,
-        options: Options(headers: {'X-Platform': platformSource}).token,
+        options: Options(headers: {'X-Platform': platformSource}),
       );
 
       if (response.statusCode == 200) {
         if (response.data is Map) {
           final data = response.data as Map<String, dynamic>;
-          final clients =
-              (data['clients'] ?? data['results'] ?? data['data'] ?? []) as List<dynamic>;
-          final dashboard =
-              (data['dashboard'] ?? data['summary'] ?? data) as Map<String, dynamic>;
+          
+          List<dynamic> rawClientsList = [];
+          bool hasNext = false;
+          int? totalCount;
 
-          final isHolidayRoot = data['is_holiday'] == true ||
+          final clientsRaw = data['clients'];
+          if (clientsRaw is List) {
+            rawClientsList = clientsRaw;
+            hasNext = data['next'] != null;
+            totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+          } else if (clientsRaw is Map) {
+            final clientsMap = Map<String, dynamic>.from(clientsRaw as Map);
+            rawClientsList = (clientsMap['results'] ?? clientsMap['data'] ?? []) as List<dynamic>;
+            hasNext = clientsMap['next'] != null || data['next'] != null;
+            totalCount = (clientsMap['count'] ?? data['count'] ?? data['total_clients_count']) as int?;
+          } else if (data['results'] is List) {
+            rawClientsList = data['results'] as List<dynamic>;
+            hasNext = data['next'] != null;
+            totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+          } else if (data['data'] is List) {
+            rawClientsList = data['data'] as List<dynamic>;
+            hasNext = data['next'] != null;
+            totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+          }
+
+          final dashboard =
+              (data['dashboard'] ?? data['summary'] ?? data)
+                  as Map<String, dynamic>;
+
+          final isHolidayRoot =
+              data['is_holiday'] == true ||
               data['is_holiday'] == 1 ||
               data['is_holiday'] == 'true' ||
               data['holiday'] == true ||
@@ -91,25 +132,28 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           if (isHolidayRoot) {
             dashboard['is_holiday'] = true;
             dashboard['holiday_name'] =
-                data['holiday_title'] ?? data['holiday_name'] ?? data['title'] ?? 'Gym Holiday';
+                data['holiday_title'] ??
+                data['holiday_name'] ??
+                data['title'] ??
+                'Gym Holiday';
           }
 
-          final hasNext = data['next'] != null;
-          final totalCount = (data['count'] ?? data['total_clients_count']) as int?;
-          final newClients = clients.cast<Map<String, dynamic>>();
+          final newClients = rawClientsList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
           if (mounted) {
             setState(() {
               _clients = newClients;
               _dashboard = Map<String, dynamic>.from(dashboard);
-              _hasMore = hasNext ||
+              _hasMore =
+                  hasNext ||
                   (totalCount != null
                       ? newClients.length < totalCount
                       : newClients.length >= 10);
             });
           }
         } else if (response.data is List) {
-          final newClients = (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+          final newClients =
+              (response.data as List<dynamic>).map((e) => Map<String, dynamic>.from(e as Map)).toList();
           if (mounted) {
             setState(() {
               _clients = newClients;
@@ -121,22 +165,26 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
       try {
         final monthStr = DateFormat('yyyy-MM').format(_selectedDate);
-        final orgParam = widget.orgId != 0 ? '&organization_id=${widget.orgId}' : '';
+        final orgParam =
+            widget.orgId != 0 ? '&organization_id=${widget.orgId}' : '';
         final holResp = await DioClient().dio.get<dynamic>(
           '${ApiUris.gymHolidays}?month=$monthStr$orgParam',
-          options: Options(headers: {'X-Platform': platformSource}).token,
+          options: Options(headers: {'X-Platform': platformSource}),
         );
         if (holResp.statusCode == 200) {
-          final holList = holResp.data is List
-              ? (holResp.data as List<dynamic>)
-              : (holResp.data is Map && holResp.data['results'] is List)
+          final holList =
+              holResp.data is List
+                  ? (holResp.data as List<dynamic>)
+                  : (holResp.data is Map && holResp.data['results'] is List)
                   ? (holResp.data['results'] as List<dynamic>)
                   : [];
           final Map<String, String> monthHolMap = {};
           for (final h in holList) {
             if (h is Map && h['date'] != null) {
               final d = h['date'].toString();
-              final name = (h['title'] ?? h['name'] ?? h['description'] ?? 'Gym Holiday').toString();
+              final name =
+                  (h['title'] ?? h['name'] ?? h['description'] ?? 'Gym Holiday')
+                      .toString();
               monthHolMap[d] = name;
             }
           }
@@ -152,7 +200,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           }
         }
       } catch (_) {}
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('❌ _fetchAttendance error: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
       if (!silent) Dialogs.showSnack(msg: 'Failed to load client attendance.');
     } finally {
       if (mounted) {
@@ -168,31 +218,49 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     try {
       final nextPage = _currentPage + 1;
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-      String url = widget.isTrainer
-          ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=$nextPage'
-          : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=$nextPage';
+      String url =
+          widget.isTrainer
+              ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=$nextPage'
+              : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=$nextPage';
       if (_searchQuery.isNotEmpty) {
         url += '&search=${Uri.encodeComponent(_searchQuery)}';
       }
 
       final response = await DioClient().dio.get<dynamic>(
         url,
-        options: Options(headers: {'X-Platform': platformSource}).token,
+        options: Options(headers: {'X-Platform': platformSource}),
       );
 
       if (response.statusCode == 200 && response.data is Map) {
         final data = response.data as Map<String, dynamic>;
-        final newClientsRaw =
-            (data['clients'] ?? data['results'] ?? data['data'] ?? []) as List<dynamic>;
-        final newClients = newClientsRaw.cast<Map<String, dynamic>>();
-        final hasNext = data['next'] != null;
-        final totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+        List<dynamic> rawClientsList = [];
+        bool hasNext = false;
+        int? totalCount;
+
+        final clientsRaw = data['clients'];
+        if (clientsRaw is List) {
+          rawClientsList = clientsRaw;
+          hasNext = data['next'] != null;
+          totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+        } else if (clientsRaw is Map) {
+          final clientsMap = Map<String, dynamic>.from(clientsRaw as Map);
+          rawClientsList = (clientsMap['results'] ?? clientsMap['data'] ?? []) as List<dynamic>;
+          hasNext = clientsMap['next'] != null || data['next'] != null;
+          totalCount = (clientsMap['count'] ?? data['count'] ?? data['total_clients_count']) as int?;
+        } else if (data['results'] is List) {
+          rawClientsList = data['results'] as List<dynamic>;
+          hasNext = data['next'] != null;
+          totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+        }
+
+        final newClients = rawClientsList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
         if (mounted) {
           setState(() {
             _clients.addAll(newClients);
             _currentPage = nextPage;
-            _hasMore = hasNext ||
+            _hasMore =
+                hasNext ||
                 (totalCount != null
                     ? _clients.length < totalCount
                     : newClients.isNotEmpty);
@@ -228,7 +296,10 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     if (mounted) {
       setState(() {
         for (var i = 0; i < _clients.length; i++) {
-          final cId = _clients[i]['client_id'] ?? _clients[i]['customer_id'] ?? _clients[i]['id'];
+          final cId =
+              _clients[i]['client_id'] ??
+              _clients[i]['customer_id'] ??
+              _clients[i]['id'];
           if (cId == clientId) {
             _clients[i]['status'] = status.toLowerCase();
             _clients[i]['has_marked'] = true;
@@ -243,6 +314,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           }
         }
       });
+
     }
 
     try {
@@ -253,27 +325,28 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         'status': status.toLowerCase(),
       };
       if (checkIn != null && checkIn.isNotEmpty) payload['check_in'] = checkIn;
-      if (checkOut != null && checkOut.isNotEmpty) payload['check_out'] = checkOut;
+      if (checkOut != null && checkOut.isNotEmpty)
+        payload['check_out'] = checkOut;
 
       dynamic response;
       if (widget.isTrainer) {
         response = await DioClient().dio.post<dynamic>(
           ApiUris.trainerClientAttendanceMark,
           data: payload,
-          options: Options(headers: {'X-Platform': platformSource}).token,
+          options: Options(headers: {'X-Platform': platformSource}),
         );
       } else {
         if (attendanceId != null) {
           response = await DioClient().dio.patch<dynamic>(
             ApiUris.clientAttendanceDetail(attendanceId),
             data: payload,
-            options: Options(headers: {'X-Platform': platformSource}).token,
+            options: Options(headers: {'X-Platform': platformSource}),
           );
         } else {
           response = await DioClient().dio.post<dynamic>(
             ApiUris.clientAttendance,
             data: payload,
-            options: Options(headers: {'X-Platform': platformSource}).token,
+            options: Options(headers: {'X-Platform': platformSource}),
           );
         }
       }
@@ -285,7 +358,10 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         if (newId != null && mounted) {
           setState(() {
             for (var i = 0; i < _clients.length; i++) {
-              final cId = _clients[i]['client_id'] ?? _clients[i]['customer_id'] ?? _clients[i]['id'];
+              final cId =
+                  _clients[i]['client_id'] ??
+                  _clients[i]['customer_id'] ??
+                  _clients[i]['id'];
               if (cId == clientId) {
                 _clients[i]['attendance_id'] = newId;
                 break;
@@ -306,7 +382,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     try {
       await DioClient().dio.delete<dynamic>(
         ApiUris.clientAttendanceDetail(attendanceId),
-        options: Options(headers: {'X-Platform': platformSource}).token,
+        options: Options(headers: {'X-Platform': platformSource}),
       );
       Dialogs.showSnack(msg: 'Attendance record deleted.');
       _fetchAttendance();
@@ -336,13 +412,13 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         await DioClient().dio.patch<dynamic>(
           ApiUris.gymHolidayDetail(holidayId),
           data: payload,
-          options: Options(headers: {'X-Platform': platformSource}).token,
+          options: Options(headers: {'X-Platform': platformSource}),
         );
       } else {
         await DioClient().dio.post<dynamic>(
           ApiUris.gymHolidays,
           data: payload,
-          options: Options(headers: {'X-Platform': platformSource}).token,
+          options: Options(headers: {'X-Platform': platformSource}),
         );
       }
 
@@ -357,7 +433,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     try {
       await DioClient().dio.delete<dynamic>(
         ApiUris.gymHolidayDetail(holidayId),
-        options: Options(headers: {'X-Platform': platformSource}).token,
+        options: Options(headers: {'X-Platform': platformSource}),
       );
       Dialogs.showSnack(msg: 'Holiday deleted successfully.');
       _fetchAttendance();
@@ -371,14 +447,15 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       final monthStr = DateFormat('yyyy-MM').format(_selectedDate);
       final response = await DioClient().dio.get<dynamic>(
         '${ApiUris.gymHolidays}?month=$monthStr&organization_id=${widget.orgId}',
-        options: Options(headers: {'X-Platform': platformSource}).token,
+        options: Options(headers: {'X-Platform': platformSource}),
       );
 
       if (response.statusCode == 200) {
         if (response.data is List) {
           return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
         } else if (response.data is Map && response.data['results'] is List) {
-          return (response.data['results'] as List<dynamic>).cast<Map<String, dynamic>>();
+          return (response.data['results'] as List<dynamic>)
+              .cast<Map<String, dynamic>>();
         }
       }
     } catch (_) {}
@@ -398,11 +475,15 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           future: _fetchMonthlyHolidays(),
           builder: (ctx, snapshot) {
             final holidays = snapshot.data ?? [];
-            final isLoading = snapshot.connectionState == ConnectionState.waiting;
+            final isLoading =
+                snapshot.connectionState == ConnectionState.waiting;
 
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -437,7 +518,10 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                               elevation: 0,
                             ),
                             icon: const Icon(Icons.add, size: 16),
@@ -461,7 +545,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         ),
                         child: Text(
                           'No holidays scheduled for ${DateFormat('MMMM yyyy').format(_selectedDate)}',
-                          style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                          style: AppStyles.text14Px.poppins.w400.copyWith(
+                            color: AppColors.textGrey,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       )
@@ -473,10 +559,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         child: ListView.separated(
                           shrinkWrap: true,
                           itemCount: holidays.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          separatorBuilder:
+                              (_, __) => const SizedBox(height: 10),
                           itemBuilder: (ctx, index) {
                             final hol = holidays[index];
-                            final title = hol['title']?.toString() ?? 'Gym Holiday';
+                            final title =
+                                hol['title']?.toString() ?? 'Gym Holiday';
                             final dateStr = hol['date']?.toString() ?? '';
                             final desc = hol['description']?.toString() ?? '';
                             final id = hol['id'] as int?;
@@ -486,28 +574,51 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                               decoration: BoxDecoration(
                                 color: const Color(0xffEAF2F8),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: const Color(0xff2471A3).withValues(alpha: 0.2)),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xff2471A3,
+                                  ).withValues(alpha: 0.2),
+                                ),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.beach_access, color: Color(0xff2471A3), size: 24),
+                                  const Icon(
+                                    Icons.beach_access,
+                                    color: Color(0xff2471A3),
+                                    size: 24,
+                                  ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           title,
-                                          style: AppStyles.text14Px.poppins.w600.copyWith(color: const Color(0xff2471A3)),
+                                          style: AppStyles.text14Px.poppins.w600
+                                              .copyWith(
+                                                color: const Color(0xff2471A3),
+                                              ),
                                         ),
                                         Text(
                                           dateStr,
-                                          style: AppStyles.text12Px.poppins.w500.dark,
+                                          style:
+                                              AppStyles
+                                                  .text12Px
+                                                  .poppins
+                                                  .w500
+                                                  .dark,
                                         ),
                                         if (desc.isNotEmpty)
                                           Text(
                                             desc,
-                                            style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                                            style: AppStyles
+                                                .text12Px
+                                                .poppins
+                                                .w400
+                                                .copyWith(
+                                                  color: AppColors.textGrey,
+                                                ),
                                           ),
                                       ],
                                     ),
@@ -516,9 +627,15 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                     IconButton(
                                       onPressed: () {
                                         Navigator.pop(ctx);
-                                        _showSetHolidaySheet(existingHoliday: hol);
+                                        _showSetHolidaySheet(
+                                          existingHoliday: hol,
+                                        );
                                       },
-                                      icon: const Icon(Icons.edit_outlined, color: AppColors.primary, size: 20),
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        color: AppColors.primary,
+                                        size: 20,
+                                      ),
                                     ),
                                     if (id != null)
                                       IconButton(
@@ -526,7 +643,11 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                           Navigator.pop(ctx);
                                           _deleteHoliday(id);
                                         },
-                                        icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.red,
+                                          size: 20,
+                                        ),
                                       ),
                                   ],
                                 ],
@@ -551,7 +672,10 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       existingHoliday = {
         'id': _dashboard['holiday_id'] ?? _dashboard['id'],
         'title': _holidayName,
-        'description': _dashboard['holiday_description'] ?? _dashboard['description'] ?? '',
+        'description':
+            _dashboard['holiday_description'] ??
+            _dashboard['description'] ??
+            '',
         'date': DateFormat('yyyy-MM-dd').format(_selectedDate),
       };
     }
@@ -690,18 +814,21 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         fillColor: const Color(0xffF8F9FA),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xffEEEEEE)),
+                          borderSide: const BorderSide(
+                            color: Color(0xffEEEEEE),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xffEEEEEE)),
+                          borderSide: const BorderSide(
+                            color: Color(0xffEEEEEE),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14,
@@ -731,18 +858,21 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         fillColor: const Color(0xffF8F9FA),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xffEEEEEE)),
+                          borderSide: const BorderSide(
+                            color: Color(0xffEEEEEE),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xffEEEEEE)),
+                          borderSide: const BorderSide(
+                            color: Color(0xffEEEEEE),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14,
@@ -760,7 +890,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         onPressed: () async {
                           final title = titleController.text.trim();
                           if (title.isEmpty) {
-                            Dialogs.showSnack(msg: 'Please enter holiday title');
+                            Dialogs.showSnack(
+                              msg: 'Please enter holiday title',
+                            );
                             return;
                           }
                           Navigator.pop(ctx);
@@ -825,8 +957,11 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   bool get _isFutureDate {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final selectedDay =
-        DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    final selectedDay = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
     return selectedDay.isAfter(today);
   }
 
@@ -835,11 +970,14 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     if (_monthHolidays.containsKey(dateStr)) return true;
     if (_dashboard['is_holiday'] == true ||
         _dashboard['is_holiday'] == 1 ||
-        _dashboard['is_holiday'] == 'true') return true;
+        _dashboard['is_holiday'] == 'true')
+      return true;
     if (_clients.isNotEmpty &&
         _clients.every((c) {
           final st = c['status']?.toString().toLowerCase();
-          return st == 'holiday' || c['is_holiday'] == true || c['is_holiday'] == 1;
+          return st == 'holiday' ||
+              c['is_holiday'] == true ||
+              c['is_holiday'] == 1;
         })) {
       return true;
     }
@@ -865,14 +1003,18 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
   bool _isClientMarked(Map<String, dynamic> c) {
     if (c['attendance_id'] != null) return true;
-    if (c['has_marked'] == true || c['is_marked'] == true || c['marked'] == true) return true;
+    if (c['has_marked'] == true ||
+        c['is_marked'] == true ||
+        c['marked'] == true)
+      return true;
     final checkIn = c['check_in']?.toString();
     if (checkIn != null && checkIn.isNotEmpty && checkIn != 'null') return true;
     return false;
   }
 
   String _getClientStatus(Map<String, dynamic> c) {
-    final clientIsHoliday = c['is_holiday'] == true ||
+    final clientIsHoliday =
+        c['is_holiday'] == true ||
         (c['status'] ?? '').toString().toLowerCase() == 'holiday' ||
         _isHoliday;
     if (clientIsHoliday) return 'holiday';
@@ -885,28 +1027,157 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     return s;
   }
 
-  int get _presentCount => _clients.where((c) => _getClientStatus(c) == 'present').length;
-  int get _absentCount => _clients.where((c) => _getClientStatus(c) == 'absent').length;
-  int get _unmarkedCount => _clients.where((c) => _getClientStatus(c) == 'unmarked' || _getClientStatus(c) == 'not_marked').length;
-  int get _holidayCount => _dashboard['clients_on_holiday'] as int? ?? _clients.where((c) => _getClientStatus(c) == 'holiday').length;
+  // --- Member status & filter helpers ---
+  bool _isClientExpired(Map<String, dynamic> c) {
+    final bool? isActiveMember = c['is_active_member'] as bool?;
+    if (isActiveMember == false) return true;
+
+    final memStatus =
+        (c['membership_status'] ??
+                c['membership']?['status'] ??
+                c['membership']?['membership_status'] ??
+                c['status'])
+            ?.toString()
+            .toLowerCase();
+    if (memStatus == 'expired' ||
+        memStatus == 'inactive' ||
+        memStatus == 'completed') {
+      return true;
+    }
+
+    final endDateStr =
+        (c['membership_end_date'] ??
+                c['end_date'] ??
+                c['valid_to'] ??
+                c['membership']?['end_date'] ??
+                c['membership']?['expiry_date'])
+            ?.toString();
+    if (endDateStr != null && endDateStr.isNotEmpty) {
+      final end = DateTime.tryParse(endDateStr);
+      if (end != null) {
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final endDay = DateTime(end.year, end.month, end.day);
+        if (endDay.isBefore(today)) return true;
+      }
+    }
+    return false;
+  }
+
+  bool _isClientActive(Map<String, dynamic> c) {
+    if (_isClientExpired(c)) return false;
+    final bool? isActiveMember = c['is_active_member'] as bool?;
+    if (isActiveMember == true) return true;
+
+    final memStatus =
+        (c['membership_status'] ??
+                c['membership']?['status'] ??
+                c['membership']?['membership_status'] ??
+                c['status'])
+            ?.toString()
+            .toLowerCase();
+    if (memStatus == 'active' || memStatus == 'running') return true;
+
+    return true;
+  }
+
+  bool _isClientPendingFee(Map<String, dynamic> c) {
+    final payStatus =
+        (c['payment_status'] ??
+                c['fee_status'] ??
+                c['membership']?['payment_status'] ??
+                c['membership_payment_status'] ??
+                '')
+            .toString()
+            .toLowerCase();
+    if (payStatus == 'pending' ||
+        payStatus == 'unpaid' ||
+        payStatus == 'partial' ||
+        payStatus == 'due' ||
+        payStatus == 'overdue') {
+      return true;
+    }
+
+    if (c['has_pending_fee'] == true ||
+        c['pending_fee'] == true ||
+        c['is_fee_pending'] == true) {
+      return true;
+    }
+
+    final pendingAmount = double.tryParse(
+      (c['pending_amount'] ?? c['due_amount'] ?? c['fee_due'] ?? 0).toString(),
+    );
+    if (pendingAmount != null && pendingAmount > 0) {
+      return true;
+    }
+
+    return false;
+  }
+
+  int get _presentCount =>
+      (_dashboard['present_count'] ?? _dashboard['clients_present_today']) as int? ??
+      _clients.where((c) => _getClientStatus(c) == 'present').length;
+
+  int get _absentCount =>
+      (_dashboard['absent_count'] ?? _dashboard['clients_absent_today']) as int? ??
+      _clients.where((c) => _getClientStatus(c) == 'absent').length;
+
+  int get _unmarkedCount =>
+      _dashboard['unmarked_count'] as int? ??
+      _clients
+          .where(
+            (c) =>
+                _getClientStatus(c) == 'unmarked' ||
+                _getClientStatus(c) == 'not_marked',
+          )
+          .length;
+
+  int get _holidayCount =>
+      (_dashboard['holiday_count'] ?? _dashboard['clients_holiday'] ?? _dashboard['clients_on_holiday']) as int? ??
+      _clients.where((c) => _getClientStatus(c) == 'holiday').length;
+
+  int get _activeMembersCount => _clients.where(_isClientActive).length;
+  int get _expiredMembersCount => _clients.where(_isClientExpired).length;
+  int get _pendingFeeCount => _clients.where(_isClientPendingFee).length;
 
   List<Map<String, dynamic>> get _filteredClients {
     var list = _clients;
     if (_statusFilter != 'all') {
-      list = list.where((c) {
-        final st = _getClientStatus(c);
-        if (_statusFilter == 'unmarked' || _statusFilter == 'not_marked') {
-          return st == 'unmarked' || st == 'not_marked';
-        }
-        return st == _statusFilter;
-      }).toList();
+      list =
+          list.where((c) {
+            switch (_statusFilter) {
+              case 'active':
+                return _isClientActive(c);
+              case 'expired':
+                return _isClientExpired(c);
+              case 'pending_fee':
+                return _isClientPendingFee(c);
+              case 'present':
+                return _getClientStatus(c) == 'present';
+              case 'absent':
+                return _getClientStatus(c) == 'absent';
+              case 'holiday':
+                return _getClientStatus(c) == 'holiday';
+              case 'unmarked':
+              case 'not_marked':
+                return _getClientStatus(c) == 'unmarked' ||
+                    _getClientStatus(c) == 'not_marked';
+              default:
+                return true;
+            }
+          }).toList();
     }
     if (_searchQuery.isEmpty) return list;
     final q = _searchQuery.toLowerCase();
     return list.where((c) {
-      final name = (c['name'] ?? c['customer_name'] ?? '').toString().toLowerCase();
+      final name =
+          (c['name'] ?? c['customer_name'] ?? '').toString().toLowerCase();
       final mobile = (c['mobile'] ?? '').toString().toLowerCase();
-      return name.contains(q) || mobile.contains(q);
+      final plan =
+          (c['plan_name'] ?? c['membership_plan'] ?? '')
+              .toString()
+              .toLowerCase();
+      return name.contains(q) || mobile.contains(q) || plan.contains(q);
     }).toList();
   }
 
@@ -914,25 +1185,49 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   ({Color bg, Color fg, String label}) _statusStyle(String status) {
     switch (status) {
       case 'present':
-        return (bg: const Color(0xffE8F8F5), fg: const Color(0xff27AE60), label: 'Present');
+        return (
+          bg: const Color(0xffE8F8F5),
+          fg: const Color(0xff27AE60),
+          label: 'Present',
+        );
       case 'absent':
-        return (bg: const Color(0xffFDEDEC), fg: const Color(0xffE74C3C), label: 'Absent');
+        return (
+          bg: const Color(0xffFDEDEC),
+          fg: AppColors.primary,
+          label: 'Absent',
+        );
       case 'holiday':
-        return (bg: const Color(0xffEAF2F8), fg: const Color(0xff2471A3), label: 'Holiday');
+        return (
+          bg: const Color(0xffEAF2F8),
+          fg: const Color(0xff2471A3),
+          label: 'Holiday',
+        );
       case 'unmarked':
       case 'not_marked':
       default:
-        return (bg: const Color(0xffF2F4F4), fg: const Color(0xff7F8C8D), label: 'Unmarked');
+        return (
+          bg: const Color(0xffF2F4F4),
+          fg: const Color(0xff7F8C8D),
+          label: 'Unmarked',
+        );
     }
   }
 
   void _showMarkAttendanceSheet(Map<String, dynamic> client) {
-    final clientId = client['client_id'] as int? ?? client['customer_id'] as int? ?? client['id'] as int? ?? 0;
-    final clientName = (client['name'] ?? client['customer_name'] ?? 'Client').toString();
+    final clientId =
+        client['client_id'] as int? ??
+        client['customer_id'] as int? ??
+        client['id'] as int? ??
+        0;
+    final clientName =
+        (client['name'] ?? client['customer_name'] ?? 'Client').toString();
     final currentStatus = _getClientStatus(client);
     final attendanceId = client['attendance_id'] as int?;
 
-    final clientIsHoliday = client['is_holiday'] == true || currentStatus == 'holiday' || _isHoliday;
+    final clientIsHoliday =
+        client['is_holiday'] == true ||
+        currentStatus == 'holiday' ||
+        _isHoliday;
     if (clientIsHoliday) {
       Fluttertoast.cancel();
       Fluttertoast.showToast(
@@ -947,13 +1242,26 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     }
 
     final statuses = [
-      (value: 'present', label: 'Present', color: const Color(0xff27AE60), icon: Icons.check_circle_outline),
-      (value: 'absent', label: 'Absent', color: const Color(0xffE74C3C), icon: Icons.cancel_outlined),
+      (
+        value: 'present',
+        label: 'Present',
+        color: const Color(0xff27AE60),
+        icon: Icons.check_circle_outline,
+      ),
+      (
+        value: 'absent',
+        label: 'Absent',
+        color: AppColors.primary,
+        icon: Icons.cancel_outlined,
+      ),
     ];
 
-    String selectedStatus = currentStatus;
-    String? checkIn;
-    String? checkOut;
+    String selectedStatus =
+        currentStatus == 'unmarked' || currentStatus == 'not_marked'
+            ? 'present'
+            : currentStatus;
+    String? checkIn = client['check_in']?.toString();
+    String? checkOut = client['check_out']?.toString();
 
     showModalBottomSheet<void>(
       context: context,
@@ -993,7 +1301,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                     const SizedBox(height: 4),
                     Text(
                       clientName,
-                      style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                      style: AppStyles.text14Px.poppins.w400.copyWith(
+                        color: AppColors.textGrey,
+                      ),
                     ),
                     const SizedBox(height: 20),
 
@@ -1008,29 +1318,52 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             setModalState(() => selectedStatus = status.value);
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                             decoration: BoxDecoration(
-                              color: isSelected ? status.color.withValues(alpha: 0.1) : const Color(0xffF8F9FA),
+                              color:
+                                  isSelected
+                                      ? status.color.withValues(alpha: 0.1)
+                                      : const Color(0xffF8F9FA),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: isSelected ? status.color : const Color(0xffEEEEEE),
+                                color:
+                                    isSelected
+                                        ? status.color
+                                        : const Color(0xffEEEEEE),
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
                             child: Row(
                               children: [
-                                Icon(status.icon, color: status.color, size: 22),
+                                Icon(
+                                  status.icon,
+                                  color: status.color,
+                                  size: 22,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     status.label,
-                                    style: isSelected
-                                        ? AppStyles.text14Px.poppins.w600.copyWith(color: status.color)
-                                        : AppStyles.text14Px.poppins.w400.dark,
+                                    style:
+                                        isSelected
+                                            ? AppStyles.text14Px.poppins.w600
+                                                .copyWith(color: status.color)
+                                            : AppStyles
+                                                .text14Px
+                                                .poppins
+                                                .w400
+                                                .dark,
                                   ),
                                 ),
                                 if (isSelected)
-                                  Icon(Icons.check_circle, color: status.color, size: 20),
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: status.color,
+                                    size: 20,
+                                  ),
                               ],
                             ),
                           ),
@@ -1048,7 +1381,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             child: _TimePickerField(
                               label: 'Check-in',
                               value: checkIn,
-                              onChanged: (v) => setModalState(() => checkIn = v),
+                              onChanged:
+                                  (v) => setModalState(() => checkIn = v),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -1056,7 +1390,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             child: _TimePickerField(
                               label: 'Check-out',
                               value: checkOut,
-                              onChanged: (v) => setModalState(() => checkOut = v),
+                              onChanged:
+                                  (v) => setModalState(() => checkOut = v),
                             ),
                           ),
                         ],
@@ -1089,7 +1424,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         ),
                         child: Text(
                           'Save Attendance',
-                          style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white),
+                          style: AppStyles.text14Px.poppins.w600.copyWith(
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -1145,8 +1482,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           // Horizontal Date Picker
           _buildDatePicker(),
 
-          // Summary Cards
-          _buildSummaryCards(),
+          // Summary Pie Chart & Metrics
+          _buildAttendancePieChartSummary(),
 
           if (_isHoliday)
             Container(
@@ -1179,56 +1516,71 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
               ),
             ),
 
-          // Search Bar
+          // Search Bar & Active Filter Bar
           _buildSearchBar(),
 
           // Client List
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredClients.isEmpty
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _filteredClients.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.people_outline,
-                              size: 48,
-                              color: AppColors.textGrey.withValues(alpha: 0.5),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.people_outline,
+                            size: 48,
+                            color: AppColors.textGrey.withValues(alpha: 0.5),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _searchQuery.isNotEmpty
+                                ? 'No clients match your search'
+                                : _statusFilter != 'all'
+                                ? 'No clients found for "${_getFilterLabel(_statusFilter)}"'
+                                : 'No clients found for this date',
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: AppColors.textGrey,
                             ),
-                            const SizedBox(height: 12),
-                            Text(
-                              _searchQuery.isNotEmpty
-                                  ? 'No clients match your search'
-                                  : 'No clients found for this date',
-                              style: AppStyles.text14Px.poppins.w500.copyWith(
-                                color: AppColors.textGrey,
-                              ),
+                          ),
+                          if (_statusFilter != 'all') ...[
+                            const SizedBox(height: 8),
+                            TextButton(
+                              onPressed:
+                                  () => setState(() => _statusFilter = 'all'),
+                              child: const Text('Clear Filter'),
                             ),
                           ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _fetchAttendance,
-                        child: ListView.separated(
-                          controller: _scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          itemCount: _filteredClients.length + (_isLoadingMore ? 1 : 0),
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            if (index == _filteredClients.length) {
-                              return const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            }
-                            return _buildClientTile(_filteredClients[index]);
-                          },
-                        ),
+                        ],
                       ),
+                    )
+                    : RefreshIndicator(
+                      onRefresh: () => _fetchAttendance(forceRefresh: true),
+                      child: ListView.separated(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        itemCount:
+                            _filteredClients.length + (_isLoadingMore ? 1 : 0),
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          if (index == _filteredClients.length) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(12),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+                          return _buildClientTile(_filteredClients[index]);
+                        },
+                      ),
+                    ),
           ),
         ],
       ),
@@ -1250,84 +1602,105 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           ),
           Expanded(
             child: Row(
-              children: dates.map((date) {
-                final isSelected = date.year == _selectedDate.year &&
-                    date.month == _selectedDate.month &&
-                    date.day == _selectedDate.day;
-                final isToday = date.year == today.year &&
-                    date.month == today.month &&
-                    date.day == today.day;
-                final dateStr = DateFormat('yyyy-MM-dd').format(date);
-                final isHolidayDay = _monthHolidays.containsKey(dateStr) ||
-                    (isSelected && _isHoliday);
+              children:
+                  dates.map((date) {
+                    final isSelected =
+                        date.year == _selectedDate.year &&
+                        date.month == _selectedDate.month &&
+                        date.day == _selectedDate.day;
+                    final isToday =
+                        date.year == today.year &&
+                        date.month == today.month &&
+                        date.day == today.day;
+                    final dateStr = DateFormat('yyyy-MM-dd').format(date);
+                    final isHolidayDay =
+                        _monthHolidays.containsKey(dateStr) ||
+                        (isSelected && _isHoliday);
 
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectDate(date),
-                    child: Container(
-                      height: 72,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? (isHolidayDay ? const Color(0xff486CC2) : AppColors.primary)
-                            : isToday
-                                ? AppColors.primary.withValues(alpha: 0.08)
-                                : Colors.transparent,
-                        borderRadius: BorderRadius.circular(16),
-                        border: isSelected
-                            ? null
-                            : isToday
-                                ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
-                                : null,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () => _selectDate(date),
+                        child: Container(
+                          height: 72,
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          decoration: BoxDecoration(
+                            color:
+                                isSelected
+                                    ? (isHolidayDay
+                                        ? const Color(0xff486CC2)
+                                        : AppColors.primary)
+                                    : isToday
+                                    ? AppColors.primary.withValues(alpha: 0.08)
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                            border:
+                                isSelected
+                                    ? null
+                                    : isToday
+                                    ? Border.all(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                    )
+                                    : null,
+                          ),
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
                             children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    DateFormat(
+                                      'E',
+                                    ).format(date).substring(0, 3),
+                                    style: AppStyles.text12Px.poppins.w500
+                                        .copyWith(
+                                          color:
+                                              isSelected
+                                                  ? Colors.white
+                                                  : AppColors.textGrey,
+                                        ),
+                                  ),
+                                  if (isHolidayDay) ...[
+                                    const SizedBox(width: 2),
+                                    Icon(
+                                      Icons.beach_access,
+                                      size: 10,
+                                      color:
+                                          isSelected
+                                              ? Colors.white
+                                              : AppColors.textGrey,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 2),
                               Text(
-                                DateFormat('E').format(date).substring(0, 3),
-                                style: AppStyles.text12Px.poppins.w500.copyWith(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : AppColors.textGrey,
+                                '${date.day}',
+                                style: AppStyles.text18Px.poppins.w700.copyWith(
+                                  color:
+                                      isSelected
+                                          ? Colors.white
+                                          : AppColors.dark,
                                 ),
                               ),
-                              if (isHolidayDay) ...[
-                                const SizedBox(width: 2),
-                                Icon(
-                                  Icons.beach_access,
-                                  size: 10,
-                                  color: isSelected ? Colors.white : AppColors.textGrey,
+                              Text(
+                                DateFormat('MMM').format(date),
+                                style: AppStyles.text10Px.poppins.w400.copyWith(
+                                  color:
+                                      isSelected
+                                          ? Colors.white.withValues(alpha: 0.85)
+                                          : AppColors.textGrey,
                                 ),
-                              ],
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${date.day}',
-                            style: AppStyles.text18Px.poppins.w700.copyWith(
-                              color: isSelected
-                                  ? Colors.white
-                                  : AppColors.dark,
-                            ),
-                          ),
-                          Text(
-                            DateFormat('MMM').format(date),
-                            style: AppStyles.text10Px.poppins.w400.copyWith(
-                              color: isSelected
-                                  ? Colors.white.withValues(alpha: 0.85)
-                                  : AppColors.textGrey,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    );
+                  }).toList(),
             ),
           ),
           IconButton(
@@ -1339,119 +1712,366 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     );
   }
 
-  Widget _buildSummaryCards() {
+  /// Interactive Attendance Pie Chart & Summary Card
+  Widget _buildAttendancePieChartSummary() {
     if (_isHoliday) {
       return const SizedBox.shrink();
     }
 
-    final cards = [
-      (label: 'Present', count: _presentCount, color: const Color(0xff27AE60), icon: Icons.people_alt_outlined, value: 'present'),
-      (label: 'Absent', count: _absentCount, color: const Color(0xffE74C3C), icon: Icons.person_off_outlined, value: 'absent'),
+    final total = _clients.length;
+    final present = _presentCount;
+    final absent = _absentCount;
+    final unmarked = _unmarkedCount;
+    final holiday = _holidayCount;
+
+    final presentPct = total > 0 ? (present / total) * 100 : 0.0;
+
+    final slices = [
+      (
+        label: 'Present',
+        count: present,
+        percentage: present.toDouble(),
+        color: const Color(0xff27AE60),
+        key: 'present',
+      ),
+      (
+        label: 'Absent',
+        count: absent,
+        percentage: absent.toDouble(),
+        color: AppColors.primary,
+        key: 'absent',
+      ),
+      (
+        label: 'Unmarked',
+        count: unmarked,
+        percentage: unmarked.toDouble(),
+        color: const Color(0xff95A5A6),
+        key: 'unmarked',
+      ),
+      if (holiday > 0)
+        (
+          label: 'Holiday',
+          count: holiday,
+          percentage: holiday.toDouble(),
+          color: const Color(0xff2471A3),
+          key: 'holiday',
+        ),
     ];
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-      child: Row(
-        children: cards.map((card) {
-          final filterVal = card.value;
-          final isFiltered = _statusFilter == filterVal;
-
-          return Expanded(
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _statusFilter = isFiltered ? 'all' : filterVal;
-                });
-              },
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: card.color.withValues(alpha: isFiltered ? 0.2 : 0.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: isFiltered
-                      ? Border.all(color: card.color, width: 1.5)
-                      : null,
-                ),
-                child: Column(
-                  children: [
-                    Icon(card.icon, color: card.color, size: 24),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${card.count}',
-                      style: AppStyles.text18Px.poppins.w700.copyWith(color: card.color),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xffF9FAFB),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xffEEEEEE)),
+        ),
+        child: Row(
+          children: [
+            // Donut Pie Chart with central Attendance %
+            SizedBox(
+              width: 86,
+              height: 86,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CustomPaint(
+                    size: const Size(86, 86),
+                    painter: _ClientAttendancePieChartPainter(
+                      slices:
+                          slices
+                              .map(
+                                (s) => (
+                                  percentage: s.percentage,
+                                  color: s.color,
+                                ),
+                              )
+                              .toList(),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      card.label,
-                      style: AppStyles.text10Px.poppins.w500.copyWith(color: card.color),
-                    ),
-                  ],
-                ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${presentPct.toStringAsFixed(0)}%',
+                        style: AppStyles.text14Px.poppins.w700.copyWith(
+                          color: const Color(0xff27AE60),
+                        ),
+                      ),
+                      Text(
+                        'Present',
+                        style: AppStyles.text10Px.poppins.w500.copyWith(
+                          color: AppColors.textGrey,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          );
-        }).toList(),
+            const SizedBox(width: 14),
+
+            // Slices summary & Quick Filter Chips
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Attendance Report',
+                        style: AppStyles.text12Px.poppins.w600.dark,
+                      ),
+                      GestureDetector(
+                        onTap: _showAttendanceReportSheet,
+                        child: Text(
+                          'View Details >',
+                          style: AppStyles.text10Px.poppins.w600.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children:
+                        slices.map((s) {
+                          final isSelected = _statusFilter == s.key;
+                          return InkWell(
+                            onTap: () {
+                              setState(() {
+                                _statusFilter = isSelected ? 'all' : s.key;
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    isSelected
+                                        ? s.color.withValues(alpha: 0.18)
+                                        : s.color.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color:
+                                      isSelected
+                                          ? s.color
+                                          : s.color.withValues(alpha: 0.25),
+                                  width: isSelected ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 3.5,
+                                    backgroundColor: s.color,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${s.label}: ${s.count}',
+                                    style: AppStyles.text10Px.poppins.w600
+                                        .copyWith(color: s.color),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSearchBar() {
+    final hasFilter = _statusFilter != 'all';
+
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-      child: Row(
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xffF5F5F5),
-                borderRadius: BorderRadius.circular(12),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xffF5F5F5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                    decoration: InputDecoration(
+                      hintText: 'Search clients...',
+                      hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                        color: AppColors.textGrey,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: AppColors.textGrey,
+                        size: 20,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    style: AppStyles.text14Px.poppins.w400.dark,
+                  ),
+                ),
               ),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (v) => setState(() => _searchQuery = v),
-                decoration: InputDecoration(
-                  hintText: 'Search clients...',
-                  hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+              const SizedBox(width: 8),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color:
+                      hasFilter ? AppColors.primary : const Color(0xffF5F5F5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  onPressed: _showStatusFilterSheet,
+                  icon: Icon(
+                    Icons.tune,
+                    color: hasFilter ? Colors.white : AppColors.textGrey,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (hasFilter) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(
+                  'Filtered by: ',
+                  style: AppStyles.text12Px.poppins.w400.copyWith(
                     color: AppColors.textGrey,
                   ),
-                  prefixIcon: const Icon(Icons.search, color: AppColors.textGrey, size: 20),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
-                style: AppStyles.text14Px.poppins.w400.dark,
-              ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _getFilterLabel(_statusFilter),
+                        style: AppStyles.text12Px.poppins.w600.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => setState(() => _statusFilter = 'all'),
+                        child: const Icon(
+                          Icons.close,
+                          size: 14,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xffF5F5F5),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              onPressed: () {
-                _showStatusFilterSheet();
-              },
-              icon: const Icon(Icons.tune, color: AppColors.textGrey, size: 20),
-            ),
-          ),
+          ],
         ],
       ),
     );
   }
 
+  String _getFilterLabel(String key) {
+    switch (key) {
+      case 'active':
+        return 'Active Members';
+      case 'expired':
+        return 'Expired Members';
+      case 'pending_fee':
+        return 'Pending Fee';
+      case 'present':
+        return 'Present';
+      case 'absent':
+        return 'Absent';
+      case 'unmarked':
+        return 'Unmarked';
+      case 'holiday':
+        return 'Holiday';
+      default:
+        return 'All';
+    }
+  }
+
+  void _openClientDetail(Map<String, dynamic> client) {
+    final customerId =
+        client['customer_id'] as int? ??
+        client['client_id'] as int? ??
+        client['id'] as int? ??
+        client['user_id'] as int? ??
+        0;
+    if (customerId == 0) return;
+
+    if (widget.isTrainer) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => TrainerClientDetailScreen(customerId: customerId),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => MemberDetialsScreen(
+                memberId: customerId,
+                orgId: widget.orgId,
+              ),
+        ),
+      );
+    }
+  }
+
+  /// Client Tile - Tap card to view details, tap 'Unmarked' badge to mark attendance
   Widget _buildClientTile(Map<String, dynamic> client) {
-    final name = (client['name'] ?? client['customer_name'] ?? 'Unknown').toString();
-    final plan = (client['plan_name'] ?? client['membership_plan'] ?? '').toString();
+    final name =
+        (client['name'] ?? client['customer_name'] ?? 'Unknown').toString();
+    final plan =
+        (client['plan_name'] ?? client['membership_plan'] ?? '').toString();
     final status = _getClientStatus(client);
     final clientIsHoliday = status == 'holiday';
+    final isUnmarked = status == 'unmarked' || status == 'not_marked';
     final checkIn = (client['check_in'] ?? '').toString();
     final checkOut = (client['check_out'] ?? '').toString();
     final profilePic = client['profile_picture'] as String?;
@@ -1460,7 +2080,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     final hasTimings = checkIn.isNotEmpty && checkIn != 'null';
     String timingText = '';
     if (clientIsHoliday) {
-      timingText = (client['holiday_name'] ?? client['holiday_title'] ?? _holidayName).toString();
+      timingText =
+          (client['holiday_name'] ?? client['holiday_title'] ?? _holidayName)
+              .toString();
     } else if (hasTimings) {
       timingText = _formatTime(checkIn);
       if (checkOut.isNotEmpty && checkOut != 'null') {
@@ -1468,11 +2090,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       }
     }
 
-    final memStatus = (client['membership_status'] ?? '').toString().toLowerCase();
-    final isExpiredMem = memStatus == 'expired';
+    final isExpired = _isClientExpired(client);
+    final isPendingFee = _isClientPendingFee(client);
+    final isActive = _isClientActive(client);
 
     return InkWell(
-      onTap: () => _showMarkAttendanceSheet(client),
+      onTap: () => _openClientDetail(client),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(14),
@@ -1485,15 +2108,11 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           children: [
             // Avatar
             ClipOval(
-              child: ProfileImage(
-                isEdit: false,
-                url: profilePic,
-                radius: 48,
-              ),
+              child: ProfileImage(isEdit: false, url: profilePic, radius: 48),
             ),
             const SizedBox(width: 12),
 
-            // Name & Plan
+            // Name, Plan & Membership/Fee tags
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1508,7 +2127,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (isExpiredMem) ...[
+                      if (isExpired) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -1516,13 +2135,49 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xffFDEDEC),
+                            color: AppColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             'Expired',
                             style: AppStyles.text10Px.poppins.w600.copyWith(
-                              color: const Color(0xffE74C3C),
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ] else if (isPendingFee) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffFEF5E7),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Pending Fee',
+                            style: AppStyles.text10Px.poppins.w600.copyWith(
+                              color: const Color(0xffE67E22),
+                            ),
+                          ),
+                        ),
+                      ] else if (isActive && _statusFilter == 'active') ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffE8F8F5),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Active',
+                            style: AppStyles.text10Px.poppins.w600.copyWith(
+                              color: const Color(0xff27AE60),
                             ),
                           ),
                         ),
@@ -1542,40 +2197,87 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
               ),
             ),
 
-            // Status + Timing/Holiday Name
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: style.bg,
-                    borderRadius: BorderRadius.circular(20),
+            // Status action button: ONLY "Unmarked" allows tap to mark attendance
+            if (isUnmarked) ...[
+              InkWell(
+                onTap: () => _showMarkAttendanceSheet(client),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  child: Text(
-                    style.label,
-                    style: AppStyles.text12Px.poppins.w600.copyWith(color: style.fg),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffF2F4F4),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xffBDC3C7)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Unmarked',
+                        style: AppStyles.text12Px.poppins.w600.copyWith(
+                          color: const Color(0xff7F8C8D),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: Color(0xff7F8C8D),
+                      ),
+                    ],
                   ),
                 ),
-                if (clientIsHoliday || hasTimings) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    timingText,
-                    style: AppStyles.text10Px.poppins.w400.copyWith(
-                      color: clientIsHoliday ? const Color(0xff2471A3) : AppColors.textGrey,
+              ),
+            ] else ...[
+              // Already marked status - tapping badge allows edit, tapping card opens details
+              GestureDetector(
+                onTap: () => _showMarkAttendanceSheet(client),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: style.bg,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        style.label,
+                        style: AppStyles.text12Px.poppins.w600.copyWith(
+                          color: style.fg,
+                        ),
+                      ),
                     ),
-                  ),
-                ] else ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    '—',
-                    style: AppStyles.text12Px.poppins.w400.copyWith(
-                      color: AppColors.textGrey,
-                    ),
-                  ),
-                ],
-              ],
-            ),
+                    if (clientIsHoliday || hasTimings) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        timingText,
+                        style: AppStyles.text10Px.poppins.w400.copyWith(
+                          color:
+                              clientIsHoliday
+                                  ? const Color(0xff2471A3)
+                                  : AppColors.textGrey,
+                        ),
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '—',
+                        style: AppStyles.text12Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
 
             const SizedBox(width: 4),
             Icon(
@@ -1598,71 +2300,491 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         final period = hour >= 12 ? 'PM' : 'AM';
         if (hour > 12) hour -= 12;
         if (hour == 0) hour = 12;
-        return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} $period';
+        return '$hour:${minute.toString().padLeft(2, '0')} $period';
       }
     } catch (_) {}
     return time;
   }
 
+  /// Filter Bottom Sheet - includes Active, Expired, Pending Fee, and attendance statuses
   void _showStatusFilterSheet() {
-    final statuses = [
-      (value: 'all', label: 'All Clients', color: AppColors.primary),
-      (value: 'present', label: 'Present', color: const Color(0xff27AE60)),
-      (value: 'absent', label: 'Absent', color: const Color(0xffE74C3C)),
-      (value: 'holiday', label: 'Holiday', color: const Color(0xff2471A3)),
-      (value: 'unmarked', label: 'Unmarked', color: const Color(0xff7F8C8D)),
+    final filterOptions = [
+      (
+        value: 'all',
+        label: 'All Clients',
+        count: _clients.length,
+        color: AppColors.primary,
+        icon: Icons.people_outline,
+      ),
+      (
+        value: 'active',
+        label: 'Active Members',
+        count: _activeMembersCount,
+        color: const Color(0xff27AE60),
+        icon: Icons.check_circle_outline,
+      ),
+      (
+        value: 'expired',
+        label: 'Expired Members',
+        count: _expiredMembersCount,
+        color: AppColors.primary,
+        icon: Icons.cancel_outlined,
+      ),
+      (
+        value: 'pending_fee',
+        label: 'Pending Fee',
+        count: _pendingFeeCount,
+        color: const Color(0xffE67E22),
+        icon: Icons.payment_outlined,
+      ),
+      (
+        value: 'present',
+        label: 'Present Today',
+        count: _presentCount,
+        color: const Color(0xff27AE60),
+        icon: Icons.person_add_alt_1_outlined,
+      ),
+      (
+        value: 'absent',
+        label: 'Absent Today',
+        count: _absentCount,
+        color: AppColors.primary,
+        icon: Icons.person_off_outlined,
+      ),
+      (
+        value: 'unmarked',
+        label: 'Unmarked',
+        count: _unmarkedCount,
+        color: const Color(0xff7F8C8D),
+        icon: Icons.help_outline,
+      ),
+      if (_holidayCount > 0)
+        (
+          value: 'holiday',
+          label: 'Gym Holiday',
+          count: _holidayCount,
+          color: const Color(0xff2471A3),
+          icon: Icons.beach_access_outlined,
+        ),
     ];
 
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Filter by Status',
-                style: AppStyles.text16Px.poppins.w600.dark,
-              ),
-              const SizedBox(height: 8),
-              ...statuses.map((status) {
-                return ListTile(
-                  leading: CircleAvatar(
-                    radius: 8,
-                    backgroundColor: status.color,
+                const SizedBox(height: 16),
+                Text(
+                  'Filter Clients',
+                  style: AppStyles.text16Px.poppins.w600.dark,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Select status or membership state to filter',
+                  style: AppStyles.text12Px.poppins.w400.copyWith(
+                    color: AppColors.textGrey,
                   ),
-                  title: Text(
-                    status.label,
-                    style: AppStyles.text14Px.poppins.w400.dark,
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    setState(() {
-                      _statusFilter = status.value;
-                    });
-                  },
-                );
-              }),
-              const SizedBox(height: 12),
-            ],
+                ),
+                const SizedBox(height: 12),
+                ...filterOptions.map((opt) {
+                  final isSelected = _statusFilter == opt.value;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        setState(() {
+                          _statusFilter = opt.value;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              isSelected
+                                  ? opt.color.withValues(alpha: 0.1)
+                                  : const Color(0xffF8F9FA),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                isSelected
+                                    ? opt.color
+                                    : const Color(0xffEEEEEE),
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(opt.icon, color: opt.color, size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                opt.label,
+                                style:
+                                    isSelected
+                                        ? AppStyles.text14Px.poppins.w600
+                                            .copyWith(color: opt.color)
+                                        : AppStyles.text14Px.poppins.w400.dark,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    isSelected
+                                        ? opt.color.withValues(alpha: 0.2)
+                                        : Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${opt.count}',
+                                style: AppStyles.text12Px.poppins.w600.copyWith(
+                                  color:
+                                      isSelected ? opt.color : AppColors.dark,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  /// Full Attendance Report Bottom Sheet with Pie Chart
+  void _showAttendanceReportSheet() {
+    final total = _clients.length;
+    final present = _presentCount;
+    final absent = _absentCount;
+    final unmarked = _unmarkedCount;
+    final holiday = _holidayCount;
+
+    final presentPct = total > 0 ? (present / total) * 100 : 0.0;
+    final absentPct = total > 0 ? (absent / total) * 100 : 0.0;
+    final unmarkedPct = total > 0 ? (unmarked / total) * 100 : 0.0;
+
+    final slices = [
+      (
+        label: 'Present',
+        count: present,
+        percentage: present.toDouble(),
+        color: const Color(0xff27AE60),
+      ),
+      (
+        label: 'Absent',
+        count: absent,
+        percentage: absent.toDouble(),
+        color: AppColors.primary,
+      ),
+      (
+        label: 'Unmarked',
+        count: unmarked,
+        percentage: unmarked.toDouble(),
+        color: const Color(0xff95A5A6),
+      ),
+      if (holiday > 0)
+        (
+          label: 'Holiday',
+          count: holiday,
+          percentage: holiday.toDouble(),
+          color: const Color(0xff2471A3),
+        ),
+    ];
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Attendance Analytics',
+                      style: AppStyles.text16Px.poppins.w600.dark,
+                    ),
+                    Text(
+                      DateFormat('MMM dd, yyyy').format(_selectedDate),
+                      style: AppStyles.text12Px.poppins.w500.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Large Pie Chart
+                Center(
+                  child: SizedBox(
+                    width: 140,
+                    height: 140,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CustomPaint(
+                          size: const Size(140, 140),
+                          painter: _ClientAttendancePieChartPainter(
+                            strokeWidth: 26.0,
+                            slices:
+                                slices
+                                    .map(
+                                      (s) => (
+                                        percentage: s.percentage,
+                                        color: s.color,
+                                      ),
+                                    )
+                                    .toList(),
+                          ),
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${presentPct.toStringAsFixed(0)}%',
+                              style: AppStyles.text20Px.poppins.w700.copyWith(
+                                color: const Color(0xff27AE60),
+                              ),
+                            ),
+                            Text(
+                              'Attendance Rate',
+                              style: AppStyles.text10Px.poppins.w500.copyWith(
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Breakdown list
+                _buildReportBreakdownRow(
+                  label: 'Present',
+                  count: present,
+                  percentage: presentPct,
+                  color: const Color(0xff27AE60),
+                  icon: Icons.check_circle_outline,
+                ),
+                const SizedBox(height: 10),
+                _buildReportBreakdownRow(
+                  label: 'Absent',
+                  count: absent,
+                  percentage: absentPct,
+                  color: AppColors.primary,
+                  icon: Icons.cancel_outlined,
+                ),
+                const SizedBox(height: 10),
+                _buildReportBreakdownRow(
+                  label: 'Unmarked',
+                  count: unmarked,
+                  percentage: unmarkedPct,
+                  color: const Color(0xff95A5A6),
+                  icon: Icons.help_outline,
+                ),
+                if (holiday > 0) ...[
+                  const SizedBox(height: 10),
+                  _buildReportBreakdownRow(
+                    label: 'Gym Holiday',
+                    count: holiday,
+                    percentage: total > 0 ? (holiday / total) * 100 : 0.0,
+                    color: const Color(0xff2471A3),
+                    icon: Icons.beach_access_outlined,
+                  ),
+                ],
+
+                const SizedBox(height: 16),
+                const Divider(color: Color(0xffEEEEEE)),
+                const SizedBox(height: 12),
+
+                // Membership summary info
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildMiniMetric('Total Clients', '$total', AppColors.dark),
+                    _buildMiniMetric(
+                      'Active',
+                      '$_activeMembersCount',
+                      const Color(0xff27AE60),
+                    ),
+                    _buildMiniMetric(
+                      'Expired',
+                      '$_expiredMembersCount',
+                      const Color(0xffE74C3C),
+                    ),
+                    _buildMiniMetric(
+                      'Pending Fee',
+                      '$_pendingFeeCount',
+                      const Color(0xffE67E22),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildReportBreakdownRow({
+    required String label,
+    required int count,
+    required double percentage,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xffF8F9FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xffEEEEEE)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(label, style: AppStyles.text14Px.poppins.w500.dark),
+          ),
+          Text(
+            '$count (${percentage.toStringAsFixed(1)}%)',
+            style: AppStyles.text14Px.poppins.w600.copyWith(color: color),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniMetric(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: AppStyles.text16Px.poppins.w700.copyWith(color: color),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: AppStyles.text10Px.poppins.w500.copyWith(
+            color: AppColors.textGrey,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Custom Donut Pie Chart Painter
+class _ClientAttendancePieChartPainter extends CustomPainter {
+  final List<({double percentage, Color color})> slices;
+  final double strokeWidth;
+
+  _ClientAttendancePieChartPainter({
+    required this.slices,
+    this.strokeWidth = 14.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final total = slices.fold<double>(0, (sum, item) => sum + item.percentage);
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) / 2;
+    final rect = Rect.fromCircle(
+      center: center,
+      radius: radius - strokeWidth / 2,
+    );
+
+    if (total <= 0) {
+      final bgPaint =
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = strokeWidth
+            ..color = const Color(0xffE5E7EB);
+      canvas.drawCircle(center, radius - strokeWidth / 2, bgPaint);
+      return;
+    }
+
+    var startAngle = -math.pi / 2;
+
+    for (final slice in slices) {
+      if (slice.percentage <= 0) continue;
+      final sweepAngle = (slice.percentage / total) * 2 * math.pi;
+      final paint =
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = strokeWidth
+            ..color = slice.color
+            ..strokeCap = StrokeCap.butt;
+
+      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
+      startAngle += sweepAngle;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ClientAttendancePieChartPainter oldDelegate) {
+    return oldDelegate.slices != slices ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }
 
@@ -1722,7 +2844,8 @@ class _TimePickerField extends StatelessWidget {
                   Text(
                     value ?? 'Select',
                     style: AppStyles.text14Px.poppins.w500.copyWith(
-                      color: value != null ? AppColors.dark : AppColors.textGrey,
+                      color:
+                          value != null ? AppColors.dark : AppColors.textGrey,
                     ),
                   ),
                 ],

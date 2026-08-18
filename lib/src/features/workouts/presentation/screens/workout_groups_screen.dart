@@ -627,9 +627,9 @@ class WorkoutGroupsGrid extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(22, 0, 22, 180),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisSpacing: 14,
-        crossAxisSpacing: 14,
-        childAspectRatio: 1.25,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.50,
       ),
       itemCount: groups.length,
       itemBuilder: (context, index) {
@@ -681,7 +681,7 @@ class _WorkoutGroupCard extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: context.colors.card,
           borderRadius: BorderRadius.circular(16),

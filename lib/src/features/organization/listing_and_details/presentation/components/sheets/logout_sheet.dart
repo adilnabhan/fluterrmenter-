@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
 
 class LogoutSheet extends StatelessWidget {
   const LogoutSheet({super.key});
@@ -28,6 +29,8 @@ class LogoutSheet extends StatelessWidget {
               child: Button.filled(
                 buttonColor: AppColors.primary,
                 ontap: () {
+                  ClientAttendanceScreen.clearCache();
+                  TrainerAssignedWorkoutsScreen.clearCache();
                   context.read<AppCubit>().removeUser();
                   context.pushAndRemoveUntil(const SentOtpScreen());
                 },

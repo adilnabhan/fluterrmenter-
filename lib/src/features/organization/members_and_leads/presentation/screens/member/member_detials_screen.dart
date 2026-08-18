@@ -3,9 +3,14 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/trainer_client_workout_history_calendar.dart';
 
 class MemberDetialsScreen extends StatefulWidget {
-  const MemberDetialsScreen({required this.memberId, super.key});
+  const MemberDetialsScreen({
+    required this.memberId,
+    this.orgId,
+    super.key,
+  });
 
   final int memberId;
+  final int? orgId;
 
   @override
   State<MemberDetialsScreen> createState() => _MemberDetialsScreenState();
@@ -13,13 +18,34 @@ class MemberDetialsScreen extends StatefulWidget {
 
 class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
   late final MembersAndLeadsCubit _cubit;
+  bool _isLocalCubit = false;
   List<Map<String, dynamic>> _workoutHistory = [];
 
   @override
   void initState() {
     super.initState();
-    _cubit = context.read<MembersAndLeadsCubit>();
+    MembersAndLeadsCubit? existingCubit;
+    try {
+      existingCubit = context.read<MembersAndLeadsCubit>();
+    } catch (_) {
+      existingCubit = null;
+    }
+
+    if (existingCubit != null) {
+      _cubit = existingCubit;
+    } else {
+      _isLocalCubit = true;
+      _cubit = MembersAndLeadsCubit(orgId: widget.orgId ?? 0);
+    }
     _fetch();
+  }
+
+  @override
+  void dispose() {
+    if (_isLocalCubit) {
+      _cubit.close();
+    }
+    super.dispose();
   }
 
   Future<void> _fetchWorkoutHistory() async {
@@ -49,7 +75,9 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
+    return BlocProvider<MembersAndLeadsCubit>.value(
+      value: _cubit,
+      child: BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
       listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
       listener: (context, state) {
         state.createOrUpdateMember?.fold(() => null, (t) {
@@ -154,8 +182,9 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildProfileDetails(MemberDetailsModel data) {
     return Column(

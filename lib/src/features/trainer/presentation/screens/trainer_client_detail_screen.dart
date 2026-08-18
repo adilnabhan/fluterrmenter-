@@ -3,6 +3,7 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:intl/intl.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/trainer_client_workout_history_calendar.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
 
 class TrainerClientDetailScreen extends StatefulWidget {
   const TrainerClientDetailScreen({required this.customerId, super.key});
@@ -22,6 +23,29 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   bool _isAssignedWorkoutsExpanded = false;
   bool _isLoading = true;
 
+  List<Map<String, dynamic>> get _todayAssignedWorkouts {
+    final now = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
+
+    return _assignedWorkouts.where((workout) {
+      final String? rawDate =
+          workout['start_date']?.toString() ??
+          workout['assigned_date']?.toString() ??
+          workout['date']?.toString() ??
+          workout['created_at']?.toString();
+
+      if (rawDate == null || rawDate.isEmpty) return false;
+      try {
+        final parsed = DateTime.tryParse(rawDate);
+        if (parsed != null) {
+          final workoutDateStr = DateFormat('yyyy-MM-dd').format(parsed);
+          return workoutDateStr == todayStr;
+        }
+      } catch (_) {}
+      return rawDate.contains(todayStr);
+    }).toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -35,13 +59,37 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     if (data is List) {
       return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     } else if (data is Map) {
-      final listData = data['assigned_plans'] ??
-          data['assigned_workouts'] ??
-          data['results'] ??
-          data['data'] ??
-          data['plans'];
-      if (listData is List) {
-        return listData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      if (data['results'] is List && (data['results'] as List).isNotEmpty) {
+        return (data['results'] as List)
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      } else {
+        final plans = data['assigned_plans'] is List
+            ? (data['assigned_plans'] as List)
+            : [];
+        final sessions = data['assigned_sessions'] is List
+            ? (data['assigned_sessions'] as List)
+            : [];
+        final workouts = data['assigned_workouts'] is List
+            ? (data['assigned_workouts'] as List)
+            : [];
+        final genericPlans =
+            data['plans'] is List ? (data['plans'] as List) : [];
+        final dataItems =
+            data['data'] is List ? (data['data'] as List) : [];
+
+        final combined = [
+          ...plans,
+          ...sessions,
+          ...workouts,
+          ...genericPlans,
+          ...dataItems,
+        ];
+        if (combined.isNotEmpty) {
+          return combined
+              .map((e) => Map<String, dynamic>.from(e as Map))
+              .toList();
+        }
       }
     }
     return [];
@@ -49,22 +97,25 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
 
   Future<void> _fetchAssignedWorkouts() async {
     List<Map<String, dynamic>> workoutsList = [];
-    bool fetched = false;
 
-    // 1. Primary endpoint: GET /api/v1/trainer/clients/{customer_id}/assigned-workouts/
+    // Primary endpoint with server-side date filter for today
     try {
+      final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final url = '${ApiUris.trainerClientAssignedWorkouts(widget.customerId)}?date=$todayStr';
+      debugPrint('📋 Fetching assigned workouts: $url');
       final response = await DioClient().dio.get<dynamic>(
-        ApiUris.trainerClientAssignedWorkouts(widget.customerId),
+        url,
         options: Options(headers: {'X-Platform': platformSource}),
       );
+      debugPrint('📋 Response status: ${response.statusCode}');
+      debugPrint('📋 Response data type: ${response.data.runtimeType}');
       if (response.statusCode == 200) {
         workoutsList = _parseWorkoutsResponse(response.data);
-        if (workoutsList.isNotEmpty) fetched = true;
+        debugPrint('📋 Parsed workouts count: ${workoutsList.length}');
       }
-    } catch (_) {}
-
-    // 2. Fallback: GET /api/v1/customers/assigned-workouts/?customer_id={customer_id}&status=all
-    if (!fetched) {
+    } catch (e) {
+      debugPrint('❌ Primary assigned workouts API failed: $e');
+      // Fallback only if primary fails
       try {
         final response = await DioClient().dio.get<dynamic>(
           ApiUris.customerAssignedWorkouts(widget.customerId),
@@ -72,7 +123,6 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         );
         if (response.statusCode == 200) {
           workoutsList = _parseWorkoutsResponse(response.data);
-          if (workoutsList.isNotEmpty) fetched = true;
         }
       } catch (_) {}
     }
@@ -259,7 +309,12 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     );
   }
 
-  Widget _buildMetricTile(String title, String value, {String? label, String? extra}) {
+  Widget _buildMetricTile(
+    String title,
+    String value, {
+    String? label,
+    String? extra,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -306,7 +361,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
               ),
               child: Text(
                 label,
@@ -402,7 +459,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                       _buildMetricTile(
                         'BMI (Body Mass Index)',
                         '${bmi['value'] ?? 'N/A'}',
-                        label: bmi['label']?.toString() ?? bmi['category']?.toString(),
+                        label:
+                            bmi['label']?.toString() ??
+                            bmi['category']?.toString(),
                       ),
                       _buildMetricTile(
                         'BMR (Basal Metabolic Rate)',
@@ -410,11 +469,14 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                       ),
                       _buildMetricTile(
                         'Body Fat Percentage',
-                        bodyFat['percentage'] != null ? '${bodyFat['percentage']}%' : 'N/A',
+                        bodyFat['percentage'] != null
+                            ? '${bodyFat['percentage']}%'
+                            : 'N/A',
                         label: bodyFat['category']?.toString(),
-                        extra: bodyFat['navy_method_percentage'] != null
-                            ? 'Navy Method: ${bodyFat['navy_method_percentage']}%'
-                            : null,
+                        extra:
+                            bodyFat['navy_method_percentage'] != null
+                                ? 'Navy Method: ${bodyFat['navy_method_percentage']}%'
+                                : null,
                       ),
                       _buildMetricTile(
                         'WHR (Waist-to-Hip Ratio)',
@@ -445,19 +507,40 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                           child: Column(
                             children: [
                               if (inputs['height_cm'] != null)
-                                _buildMeasurementRow('Height', '${inputs['height_cm']} cm'),
+                                _buildMeasurementRow(
+                                  'Height',
+                                  '${inputs['height_cm']} cm',
+                                ),
                               if (inputs['weight_kg'] != null)
-                                _buildMeasurementRow('Weight', '${inputs['weight_kg']} kg'),
+                                _buildMeasurementRow(
+                                  'Weight',
+                                  '${inputs['weight_kg']} kg',
+                                ),
                               if (inputs['neck_cm'] != null)
-                                _buildMeasurementRow('Neck', '${inputs['neck_cm']} cm'),
+                                _buildMeasurementRow(
+                                  'Neck',
+                                  '${inputs['neck_cm']} cm',
+                                ),
                               if (inputs['waist_cm'] != null)
-                                _buildMeasurementRow('Waist', '${inputs['waist_cm']} cm'),
+                                _buildMeasurementRow(
+                                  'Waist',
+                                  '${inputs['waist_cm']} cm',
+                                ),
                               if (inputs['hip_cm'] != null)
-                                _buildMeasurementRow('Hip', '${inputs['hip_cm']} cm'),
+                                _buildMeasurementRow(
+                                  'Hip',
+                                  '${inputs['hip_cm']} cm',
+                                ),
                               if (inputs['gender'] != null)
-                                _buildMeasurementRow('Gender', '${inputs['gender']}'.toUpperCase()),
+                                _buildMeasurementRow(
+                                  'Gender',
+                                  '${inputs['gender']}'.toUpperCase(),
+                                ),
                               if (inputs['age'] != null)
-                                _buildMeasurementRow('Age', '${inputs['age']} yrs'),
+                                _buildMeasurementRow(
+                                  'Age',
+                                  '${inputs['age']} yrs',
+                                ),
                             ],
                           ),
                         ),
@@ -497,15 +580,19 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     final String bloodGroup = profile['blood_group'] as String? ?? 'N/A';
 
     // Body Metrix
-    final metricsMap = _bodyMatrixData?['metrics'] as Map<dynamic, dynamic>? ?? {};
+    final metricsMap =
+        _bodyMatrixData?['metrics'] as Map<dynamic, dynamic>? ?? {};
     final bmiObj = metricsMap['bmi'] as Map<dynamic, dynamic>? ?? {};
     final bmrObj = metricsMap['bmr'] as Map<dynamic, dynamic>? ?? {};
     final bodyFatObj = metricsMap['body_fat'] as Map<dynamic, dynamic>? ?? {};
     final whrObj = metricsMap['whr'] as Map<dynamic, dynamic>? ?? {};
 
-    final String bmi = bmiObj['value']?.toString() ?? (profile['bmi'] ?? 'XX').toString();
-    final String bmiLabel = bmiObj['label']?.toString() ?? bmiObj['category']?.toString() ?? '';
-    final String bmr = bmrObj['value']?.toString() ?? (profile['bmr'] ?? 'XX').toString();
+    final String bmi =
+        bmiObj['value']?.toString() ?? (profile['bmi'] ?? 'XX').toString();
+    final String bmiLabel =
+        bmiObj['label']?.toString() ?? bmiObj['category']?.toString() ?? '';
+    final String bmr =
+        bmrObj['value']?.toString() ?? (profile['bmr'] ?? 'XX').toString();
     final String bmrUnit = bmrObj['unit']?.toString() ?? '';
     final String? bodyFatPct = bodyFatObj['percentage']?.toString();
     final String? bodyFatCategory = bodyFatObj['category']?.toString();
@@ -518,32 +605,46 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     final String weight = (profile['weight'] ?? 'N/A').toString();
     final String healthIssues = (profile['health_issues'] ?? 'NO').toString();
 
-    final inputsMap = _bodyMatrixData?['inputs'] as Map<dynamic, dynamic>? ?? {};
-    final String displayHeight = inputsMap['height_cm'] != null
-        ? '${inputsMap['height_cm']} CM'
-        : (height == 'N/A' ? 'N/A' : (height.toLowerCase().contains('cm') ? height.toUpperCase() : '$height CM'));
-    final String displayWeight = inputsMap['weight_kg'] != null
-        ? '${inputsMap['weight_kg']} KG'
-        : (weight == 'N/A' ? 'N/A' : (weight.toLowerCase().contains('kg') ? weight.toUpperCase() : '$weight KG'));
+    final inputsMap =
+        _bodyMatrixData?['inputs'] as Map<dynamic, dynamic>? ?? {};
+    final String displayHeight =
+        inputsMap['height_cm'] != null
+            ? '${inputsMap['height_cm']} CM'
+            : (height == 'N/A'
+                ? 'N/A'
+                : (height.toLowerCase().contains('cm')
+                    ? height.toUpperCase()
+                    : '$height CM'));
+    final String displayWeight =
+        inputsMap['weight_kg'] != null
+            ? '${inputsMap['weight_kg']} KG'
+            : (weight == 'N/A'
+                ? 'N/A'
+                : (weight.toLowerCase().contains('kg')
+                    ? weight.toUpperCase()
+                    : '$weight KG'));
 
     // Target Goals Parsing
-    final dynamic rawGoals = profile['target_goal'] ??
+    final dynamic rawGoals =
+        profile['target_goal'] ??
         profile['target_goals'] ??
         profile['goal'] ??
         _clientData['target_goal'] ??
         _clientData['target_goals'];
     List<String> targetGoals = [];
     if (rawGoals is List) {
-      targetGoals = rawGoals
-          .map((e) => e.toString().replaceAll('_', ' ').trim())
-          .where((s) => s.isNotEmpty)
-          .toList();
+      targetGoals =
+          rawGoals
+              .map((e) => e.toString().replaceAll('_', ' ').trim())
+              .where((s) => s.isNotEmpty)
+              .toList();
     } else if (rawGoals is String && rawGoals.isNotEmpty) {
-      targetGoals = rawGoals
-          .split(',')
-          .map((e) => e.replaceAll('_', ' ').trim())
-          .where((s) => s.isNotEmpty)
-          .toList();
+      targetGoals =
+          rawGoals
+              .split(',')
+              .map((e) => e.replaceAll('_', ' ').trim())
+              .where((s) => s.isNotEmpty)
+              .toList();
     }
 
     // Payment Status fallback check
@@ -583,7 +684,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         iconTheme: IconThemeData(color: context.colors.icon),
         title: Text(
           'Details',
-          style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
+          style: AppStyles.text16Px.poppins.w600.copyWith(
+            color: context.colors.textPrimary,
+          ),
         ),
         centerTitle: true,
         actions: [
@@ -602,10 +705,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               },
             ),
           IconButton(
-            icon: Icon(
-              Icons.settings_outlined,
-              color: context.colors.icon,
-            ),
+            icon: Icon(Icons.settings_outlined, color: context.colors.icon),
             onPressed: () {},
           ),
         ],
@@ -765,25 +865,28 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: targetGoals.map((goal) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
-                    ),
-                    child: Text(
-                      goal,
-                      style: AppStyles.text12Px.poppins.w500.copyWith(
-                        color: Colors.red,
-                      ),
-                    ),
-                  );
-                }).toList(),
+                children:
+                    targetGoals.map((goal) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.red.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Text(
+                          goal,
+                          style: AppStyles.text12Px.poppins.w500.copyWith(
+                            color: Colors.red,
+                          ),
+                        ),
+                      );
+                    }).toList(),
               ),
               const SizedBox(height: 24),
             ] else ...[
@@ -830,16 +933,18 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                 children: [
                                   Text(
                                     'BMI',
-                                    style: AppStyles.text12Px.poppins.w600.copyWith(
-                                      color: context.colors.textSecondary,
-                                    ),
+                                    style: AppStyles.text12Px.poppins.w600
+                                        .copyWith(
+                                          color: context.colors.textSecondary,
+                                        ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     bmi,
-                                    style: AppStyles.text22Px.poppins.w700.copyWith(
-                                      color: context.colors.textPrimary,
-                                    ),
+                                    style: AppStyles.text22Px.poppins.w700
+                                        .copyWith(
+                                          color: context.colors.textPrimary,
+                                        ),
                                   ),
                                   const SizedBox(height: 6),
                                   Row(
@@ -856,10 +961,14 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        bmiLabel.isNotEmpty ? bmiLabel : 'Normal',
-                                        style: AppStyles.text12Px.poppins.w500.copyWith(
-                                          color: context.colors.textSecondary,
-                                        ),
+                                        bmiLabel.isNotEmpty
+                                            ? bmiLabel
+                                            : 'Normal',
+                                        style: AppStyles.text12Px.poppins.w500
+                                            .copyWith(
+                                              color:
+                                                  context.colors.textSecondary,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -874,16 +983,18 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                 children: [
                                   Text(
                                     'Body Fat',
-                                    style: AppStyles.text12Px.poppins.w600.copyWith(
-                                      color: context.colors.textSecondary,
-                                    ),
+                                    style: AppStyles.text12Px.poppins.w600
+                                        .copyWith(
+                                          color: context.colors.textSecondary,
+                                        ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     bodyFatPct ?? '16.8',
-                                    style: AppStyles.text22Px.poppins.w700.copyWith(
-                                      color: context.colors.textPrimary,
-                                    ),
+                                    style: AppStyles.text22Px.poppins.w700
+                                        .copyWith(
+                                          color: context.colors.textPrimary,
+                                        ),
                                   ),
                                   const SizedBox(height: 6),
                                   Row(
@@ -900,12 +1011,15 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        bodyFatCategory != null && bodyFatCategory.isNotEmpty
+                                        bodyFatCategory != null &&
+                                                bodyFatCategory.isNotEmpty
                                             ? bodyFatCategory
                                             : 'Fitness',
-                                        style: AppStyles.text12Px.poppins.w500.copyWith(
-                                          color: context.colors.textSecondary,
-                                        ),
+                                        style: AppStyles.text12Px.poppins.w500
+                                            .copyWith(
+                                              color:
+                                                  context.colors.textSecondary,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -935,7 +1049,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                     decoration: BoxDecoration(
                                       color: context.colors.card,
                                       shape: BoxShape.circle,
-                                      border: Border.all(color: context.colors.border),
+                                      border: Border.all(
+                                        color: context.colors.border,
+                                      ),
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black.withOpacity(0.04),
@@ -982,7 +1098,10 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
 
                     // Embedded Height & Weight Box
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: context.colors.card,
                         borderRadius: BorderRadius.circular(16),
@@ -1003,16 +1122,18 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                 const SizedBox(width: 10),
                                 Text(
                                   'Height',
-                                  style: AppStyles.text14Px.poppins.w500.copyWith(
-                                    color: context.colors.textPrimary,
-                                  ),
+                                  style: AppStyles.text14Px.poppins.w500
+                                      .copyWith(
+                                        color: context.colors.textPrimary,
+                                      ),
                                 ),
                                 const Spacer(),
                                 Text(
                                   displayHeight,
-                                  style: AppStyles.text14Px.poppins.w600.copyWith(
-                                    color: context.colors.textPrimary,
-                                  ),
+                                  style: AppStyles.text14Px.poppins.w600
+                                      .copyWith(
+                                        color: context.colors.textPrimary,
+                                      ),
                                 ),
                               ],
                             ),
@@ -1034,16 +1155,18 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                 const SizedBox(width: 10),
                                 Text(
                                   'Weight',
-                                  style: AppStyles.text14Px.poppins.w500.copyWith(
-                                    color: context.colors.textPrimary,
-                                  ),
+                                  style: AppStyles.text14Px.poppins.w500
+                                      .copyWith(
+                                        color: context.colors.textPrimary,
+                                      ),
                                 ),
                                 const Spacer(),
                                 Text(
                                   displayWeight,
-                                  style: AppStyles.text14Px.poppins.w600.copyWith(
-                                    color: context.colors.textPrimary,
-                                  ),
+                                  style: AppStyles.text14Px.poppins.w600
+                                      .copyWith(
+                                        color: context.colors.textPrimary,
+                                      ),
                                 ),
                               ],
                             ),
@@ -1062,55 +1185,61 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               builder: (context) {
                 final String? memStatusStr =
                     membership['status']?.toString().toLowerCase();
-                final bool isExpired = memStatusStr == 'expired' ||
+                final bool isExpired =
+                    memStatusStr == 'expired' ||
                     (hasProgress && remainingDays <= 0) ||
                     progress >= 1.0;
                 final bool isExpiringSoon =
                     !isExpired && hasProgress && remainingDays <= 10;
 
-                final Color topBannerBg = membership.isEmpty
-                    ? (context.isDarkMode
-                        ? Colors.grey.shade800
-                        : Colors.grey.shade200)
-                    : isExpired
+                final Color topBannerBg =
+                    membership.isEmpty
+                        ? (context.isDarkMode
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade200)
+                        : isExpired
                         ? (context.isDarkMode
                             ? Colors.red.shade900.withValues(alpha: 0.3)
                             : const Color(0xffFFEAEA))
                         : isExpiringSoon
-                            ? (context.isDarkMode
-                                ? Colors.orange.shade900.withValues(alpha: 0.3)
-                                : Colors.orange.shade100)
-                            : (context.isDarkMode
-                                ? Colors.green.shade900.withValues(alpha: 0.3)
-                                : Colors.green.shade100);
+                        ? (context.isDarkMode
+                            ? Colors.orange.shade900.withValues(alpha: 0.3)
+                            : Colors.orange.shade100)
+                        : (context.isDarkMode
+                            ? Colors.green.shade900.withValues(alpha: 0.3)
+                            : Colors.green.shade100);
 
-                final Color iconBg = membership.isEmpty
-                    ? Colors.grey.shade500
-                    : isExpired
+                final Color iconBg =
+                    membership.isEmpty
+                        ? Colors.grey.shade500
+                        : isExpired
                         ? Colors.red.shade500
                         : isExpiringSoon
-                            ? Colors.orange.shade700
-                            : Colors.green.shade500;
+                        ? Colors.orange.shade700
+                        : Colors.green.shade500;
 
-                final String badgeText = membership.isEmpty
-                    ? 'No Membership'
-                    : isExpired
+                final String badgeText =
+                    membership.isEmpty
+                        ? 'No Membership'
+                        : isExpired
                         ? 'Expired'
                         : isExpiringSoon
-                            ? 'Expiring Soon'
-                            : 'Active';
+                        ? 'Expiring Soon'
+                        : 'Active';
 
-                final Color badgeColor = membership.isEmpty
-                    ? Colors.grey
-                    : isExpired
+                final Color badgeColor =
+                    membership.isEmpty
+                        ? Colors.grey
+                        : isExpired
                         ? Colors.red.shade600
                         : isExpiringSoon
-                            ? Colors.orange.shade800
-                            : Colors.green.shade600;
+                        ? Colors.orange.shade800
+                        : Colors.green.shade600;
 
-                final Color accentColor = isExpired
-                    ? Colors.red.shade600
-                    : isExpiringSoon
+                final Color accentColor =
+                    isExpired
+                        ? Colors.red.shade600
+                        : isExpiringSoon
                         ? Colors.orange.shade700
                         : Colors.green;
 
@@ -1173,8 +1302,8 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                           'No Plan',
                                       style: AppStyles.text16Px.poppins.w600
                                           .copyWith(
-                                        color: context.colors.textPrimary,
-                                      ),
+                                            color: context.colors.textPrimary,
+                                          ),
                                     ),
                                     const SizedBox(height: 4),
                                     Container(
@@ -1196,7 +1325,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                           const SizedBox(width: 4),
                                           Text(
                                             badgeText,
-                                            style: AppStyles.text12Px.poppins
+                                            style: AppStyles
+                                                .text12Px
+                                                .poppins
                                                 .w500
                                                 .copyWith(color: badgeColor),
                                           ),
@@ -1222,15 +1353,13 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                       'Membership Progress',
                                       style: AppStyles.text14Px.poppins.w600
                                           .copyWith(
-                                        color: context.colors.textPrimary,
-                                      ),
+                                            color: context.colors.textPrimary,
+                                          ),
                                     ),
                                     Text(
                                       '${(progress * 100).toInt()}%',
                                       style: AppStyles.text14Px.poppins.w600
-                                          .copyWith(
-                                        color: accentColor,
-                                      ),
+                                          .copyWith(color: accentColor),
                                     ),
                                   ],
                                 ),
@@ -1250,12 +1379,13 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                           ? '🕒 $remainingDays days remaining'
                                           : '✅ Membership completed')
                                       : '🕒 N/A',
-                                  style: AppStyles.text12Px.poppins.w500.copyWith(
-                                    color:
-                                        remainingDays > 0
-                                            ? Colors.orange.shade700
-                                            : Colors.green,
-                                  ),
+                                  style: AppStyles.text12Px.poppins.w500
+                                      .copyWith(
+                                        color:
+                                            remainingDays > 0
+                                                ? Colors.orange.shade700
+                                                : Colors.green,
+                                      ),
                                 ),
                                 const SizedBox(height: 16),
                                 Row(
@@ -1303,7 +1433,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                         icon: Icons.payment,
                                         label: 'Payment',
                                         value: paymentStatus.toUpperCase(),
-                                        color: _getPaymentStatusColor(paymentStatus),
+                                        color: _getPaymentStatusColor(
+                                          paymentStatus,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1331,167 +1463,226 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                       color: context.colors.textPrimary,
                     ),
                   ),
-                  Text(
-                    '${_assignedWorkouts.length} Plans',
-                    style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.primary),
+                  InkWell(
+                    onTap: () {
+                      final clientName =
+                          (_clientData['name'] ??
+                                  _clientData['first_name'] ??
+                                  _clientData['user']?['name'] ??
+                                  'Client')
+                              .toString();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder:
+                              (context) => TrainerAssignedWorkoutsScreen(
+                                customerId: widget.customerId,
+                                customerName: clientName,
+                              ),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'View All (${_assignedWorkouts.length})',
+                            style: AppStyles.text12Px.poppins.w600.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              ...(_isAssignedWorkoutsExpanded
-                      ? _assignedWorkouts
-                      : _assignedWorkouts.take(3).toList())
-                  .map((workout) {
-                final planId = workout['plan_id'] as int? ?? workout['customer_workout_plan_id'] as int? ?? workout['workout_plan_id'] as int? ?? workout['id'] as int? ?? 0;
-                final title = (workout['plan_name'] ?? workout['title'] ?? workout['name'] ?? workout['workout_plan_name'] ?? 'Workout Plan').toString();
-                final rawStatus = (workout['status'] ?? workout['assignment_status'] ?? 'Active').toString().toLowerCase();
-                final bool isCompleted = workout['is_completed'] == true || workout['completed'] == true || rawStatus == 'completed' || rawStatus == 'done';
-                final String? rawDate = workout['start_date']?.toString() ?? workout['assigned_date']?.toString() ?? workout['date']?.toString() ?? workout['created_at']?.toString();
-                final String formattedDate = rawDate != null && rawDate.isNotEmpty ? _formatDate(rawDate) : '';
-
-                // Date logic to determine Missed vs Pending vs Completed
-                DateTime? workoutDate;
-                if (rawDate != null && rawDate.isNotEmpty) {
-                  workoutDate = DateTime.tryParse(rawDate);
-                }
-
-                final now = DateTime.now();
-                final today = DateTime(now.year, now.month, now.day);
-
-                final bool isMissed = !isCompleted &&
-                    (rawStatus == 'missed' ||
-                        (workoutDate != null &&
-                            DateTime(workoutDate.year, workoutDate.month, workoutDate.day).isBefore(today)));
-
-                Color statusColor;
-                IconData statusIcon;
-                String statusLabel;
-
-                if (isCompleted) {
-                  statusColor = Colors.green;
-                  statusIcon = Icons.check_circle_rounded;
-                  statusLabel = 'Completed';
-                } else if (isMissed) {
-                  statusColor = Colors.red;
-                  statusIcon = Icons.cancel_rounded;
-                  statusLabel = 'Missed';
-                } else {
-                  statusColor = AppColors.primary;
-                  statusIcon = Icons.fitness_center;
-                  statusLabel = 'Pending';
-                }
-
-                return Container(
+              if (_todayAssignedWorkouts.isEmpty) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 20,
+                    horizontal: 16,
+                  ),
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: context.colors.card,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: context.colors.border),
                   ),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.event_available_outlined,
+                        size: 32,
+                        color: context.colors.textSecondary,
                       ),
-                      child: Icon(
-                        statusIcon,
-                        color: statusColor,
-                        size: 24,
-                      ),
-                    ),
-                    title: Text(
-                      title,
-                      style: AppStyles.text16Px.poppins.w600.copyWith(
-                        color: context.colors.textPrimary,
-                      ),
-                    ),
-                    subtitle: Row(
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            shape: BoxShape.circle,
-                          ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No workout assigned for today',
+                        style: AppStyles.text14Px.poppins.w500.copyWith(
+                          color: context.colors.textSecondary,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          statusLabel,
-                          style: AppStyles.text12Px.poppins.w500.copyWith(
-                            color: statusColor,
-                          ),
-                        ),
-                        if (formattedDate.isNotEmpty && formattedDate != 'N/A') ...[
-                          Text(
-                            '  •  $formattedDate',
-                            style: AppStyles.text12Px.poppins.w400.copyWith(
-                              color: context.colors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: context.colors.icon,
-                    ),
-                    onTap: planId > 0
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute<void>(
-                                builder: (context) => WorkoutPlanDetailsScreen(planId: planId, planTitle: title),
-                              ),
-                            );
-                          }
-                        : null,
+                      ),
+                    ],
                   ),
-                );
-              }),
-              if (_assignedWorkouts.length > 3) ...[
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isAssignedWorkoutsExpanded = !_isAssignedWorkoutsExpanded;
-                    });
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    margin: const EdgeInsets.only(top: 4, bottom: 12),
+                ),
+              ] else ...[
+                ..._todayAssignedWorkouts.map((workout) {
+                  final planId =
+                      workout['plan_id'] as int? ??
+                      workout['customer_workout_plan_id'] as int? ??
+                      workout['workout_plan_id'] as int? ??
+                      workout['id'] as int? ??
+                      0;
+                  final title =
+                      (workout['plan_name'] ??
+                              workout['title'] ??
+                              workout['name'] ??
+                              workout['workout_plan_name'] ??
+                              'Workout Plan')
+                          .toString();
+                  final rawStatus =
+                      (workout['status'] ??
+                              workout['assignment_status'] ??
+                              'Active')
+                          .toString()
+                          .toLowerCase();
+                  final bool isCompleted =
+                      workout['is_completed'] == true ||
+                      workout['completed'] == true ||
+                      rawStatus == 'completed' ||
+                      rawStatus == 'done';
+                  final String? rawDate =
+                      workout['start_date']?.toString() ??
+                      workout['assigned_date']?.toString() ??
+                      workout['date']?.toString() ??
+                      workout['created_at']?.toString();
+                  final String formattedDate =
+                      rawDate != null && rawDate.isNotEmpty
+                          ? _formatDate(rawDate)
+                          : '';
+
+                  DateTime? workoutDate;
+                  if (rawDate != null && rawDate.isNotEmpty) {
+                    workoutDate = DateTime.tryParse(rawDate);
+                  }
+
+                  final now = DateTime.now();
+                  final today = DateTime(now.year, now.month, now.day);
+
+                  final bool isMissed =
+                      !isCompleted &&
+                      (rawStatus == 'missed' ||
+                          (workoutDate != null &&
+                              DateTime(
+                                workoutDate.year,
+                                workoutDate.month,
+                                workoutDate.day,
+                              ).isBefore(today)));
+
+                  Color statusColor;
+                  IconData statusIcon;
+                  String statusLabel;
+
+                  if (isCompleted) {
+                    statusColor = Colors.green;
+                    statusIcon = Icons.check_circle_rounded;
+                    statusLabel = 'Completed';
+                  } else if (isMissed) {
+                    statusColor = Colors.red;
+                    statusIcon = Icons.cancel_rounded;
+                    statusLabel = 'Missed';
+                  } else {
+                    statusColor = AppColors.primary;
+                    statusIcon = Icons.fitness_center;
+                    statusLabel = 'Pending';
+                  }
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
                       color: context.colors.card,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: context.colors.border),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _isAssignedWorkoutsExpanded
-                              ? 'Show Less'
-                              : 'Show All Workouts (${_assignedWorkouts.length})',
-                          style: AppStyles.text13Px.poppins.w600.copyWith(
-                            color: AppColors.primary,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 4,
+                      ),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(statusIcon, color: statusColor, size: 24),
+                      ),
+                      title: Text(
+                        title,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
+                          color: context.colors.textPrimary,
+                        ),
+                      ),
+                      subtitle: Row(
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: statusColor,
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(
-                          _isAssignedWorkoutsExpanded
-                              ? Icons.keyboard_arrow_up
-                              : Icons.keyboard_arrow_down,
-                          color: AppColors.primary,
-                          size: 20,
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            statusLabel,
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: statusColor,
+                            ),
+                          ),
+                          if (formattedDate.isNotEmpty &&
+                              formattedDate != 'N/A') ...[
+                            Text(
+                              '  •  $formattedDate',
+                              style: AppStyles.text12Px.poppins.w400.copyWith(
+                                color: context.colors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      trailing: Icon(
+                        Icons.chevron_right,
+                        color: context.colors.icon,
+                      ),
+                      onTap:
+                          planId > 0
+                              ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder:
+                                        (context) => WorkoutPlanDetailsScreen(
+                                          planId: planId,
+                                          planTitle: title,
+                                        ),
+                                  ),
+                                );
+                              }
+                              : null,
                     ),
-                  ),
-                ),
+                  );
+                }),
               ],
               const SizedBox(height: 24),
             ],
@@ -1500,9 +1691,10 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
             if (membership.isNotEmpty) ...[
               TrainerClientWorkoutHistoryCalendar(
                 customerId: widget.customerId,
-                startDate: membership['start_date'] != null
-                    ? DateTime.tryParse(membership['start_date'].toString())
-                    : null,
+                startDate:
+                    membership['start_date'] != null
+                        ? DateTime.tryParse(membership['start_date'].toString())
+                        : null,
                 workoutHistory: _workoutHistory,
               ),
               const SizedBox(height: 24),

@@ -9,6 +9,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/src/features/auth/login/domain/models/login_with_otp_model.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -66,45 +67,132 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     super.dispose();
   }
 
+  String? _getTrainerId() {
+    if (widget.isViewOnly && widget.trainerId != null) {
+      return widget.trainerId;
+    }
+    final currentUser = context.read<AppCubit>().state.currentUser;
+    return currentUser?.trainer?.id?.toString() ??
+        currentUser?.mentor?.id?.toString() ??
+        currentUser?.id?.toString() ??
+        widget.trainerId;
+  }
+
   Future<void> _fetchTransformations() async {
     if (!mounted) return;
     setState(() => _isLoadingTransformations = true);
     try {
-      final currentUser = context.read<AppCubit>().state.currentUser;
-      final orgId =
-          widget.isViewOnly
-              ? _fetchedUser?.mentor?.org?.id
-              : currentUser?.organizationId ??
-                  currentUser?.trainer?.organizationId ??
-                  currentUser?.mentor?.org?.id;
+      final trainerId = _getTrainerId();
+      Response<dynamic>? res;
 
-      final Map<String, dynamic> params = {};
-      if (orgId != null) {
-        params['organization_id'] = orgId;
-      }
-      if (widget.isViewOnly && widget.trainerId != null) {
-        params['trainer_id'] = widget.trainerId;
+      if (trainerId != null && trainerId.isNotEmpty) {
+        try {
+          res = await DioClient().dio.get<dynamic>(
+            ApiUris.trainerTransformationImages(trainerId),
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+        } catch (_) {}
       }
 
-      final res = await DioClient().dio.get<dynamic>(
-        ApiUris.transformations,
-        queryParameters: params,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-      if (res.statusCode == 200) {
-        final data = res.data;
-        List<dynamic> results = [];
-        if (data is Map) {
-          results = data['transformations'] as List? ?? [];
-        } else if (data is List) {
-          results = data;
+      if (res == null || res.statusCode != 200) {
+        final currentUser = context.read<AppCubit>().state.currentUser;
+        final orgId =
+            widget.isViewOnly
+                ? _fetchedUser?.mentor?.org?.id
+                : currentUser?.organizationId ??
+                    currentUser?.trainer?.organizationId ??
+                    currentUser?.mentor?.org?.id;
+
+        final Map<String, dynamic> params = {};
+        if (orgId != null) {
+          params['organization_id'] = orgId;
+        }
+        if (widget.isViewOnly && widget.trainerId != null) {
+          params['trainer_id'] = widget.trainerId;
         }
 
-        final mapped =
-            results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        res = await DioClient().dio.get<dynamic>(
+          ApiUris.transformations,
+          queryParameters: params,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      }
+
+      if (res != null && res.statusCode == 200) {
+        final data = res.data;
+        List<dynamic> rawResults = [];
+        if (data is Map) {
+          rawResults = data['transformation_images'] as List? ??
+              data['transformations'] as List? ??
+              data['results'] as List? ??
+              data['data'] as List? ??
+              [];
+        } else if (data is List) {
+          rawResults = data;
+        }
+
+        final List<Map<String, dynamic>> parsedTransformations = [];
+        final bool hasImageType = rawResults.any(
+          (e) => e is Map && e.containsKey('image_type'),
+        );
+
+        if (hasImageType) {
+          final beforeItems = <Map<String, dynamic>>[];
+          final afterItems = <Map<String, dynamic>>[];
+          final otherItems = <Map<String, dynamic>>[];
+
+          for (final item in rawResults) {
+            final map = item is Map<String, dynamic>
+                ? item
+                : Map<String, dynamic>.from(item as Map);
+            final type = (map['image_type'] ?? '').toString().toLowerCase();
+            if (type == 'before') {
+              beforeItems.add(map);
+            } else if (type == 'after') {
+              afterItems.add(map);
+            } else {
+              otherItems.add(map);
+            }
+          }
+
+          final maxCount = math.max(beforeItems.length, afterItems.length);
+          for (int i = 0; i < maxCount; i++) {
+            final before = i < beforeItems.length ? beforeItems[i] : null;
+            final after = i < afterItems.length ? afterItems[i] : null;
+
+            final String beforeUrl =
+                (before?['image'] ?? before?['image_url'] ?? '').toString();
+            final String afterUrl =
+                (after?['image'] ?? after?['image_url'] ?? '').toString();
+            final String desc =
+                (after?['description'] ?? before?['description'] ?? '').toString();
+
+            parsedTransformations.add({
+              'id': after?['id'] ?? before?['id'],
+              'before_id': before?['id'],
+              'after_id': after?['id'],
+              'before_image': beforeUrl,
+              'after_image': afterUrl,
+              'before_image_url': beforeUrl,
+              'after_image_url': afterUrl,
+              'description': desc,
+            });
+          }
+
+          for (final item in otherItems) {
+            parsedTransformations.add(item);
+          }
+        } else {
+          for (final e in rawResults) {
+            if (e is Map) {
+              parsedTransformations.add(Map<String, dynamic>.from(e));
+            }
+          }
+        }
+
         if (mounted) {
           setState(() {
-            _transformations = mapped;
+            _transformations = parsedTransformations;
             _isLoadingTransformations = false;
           });
         }
@@ -1065,7 +1153,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     );
   }
 
-  Future<void> _deleteTransformation(int id) async {
+  Future<void> _deleteTransformation(dynamic item) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -1092,7 +1180,55 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     if (confirm != true) return;
 
     try {
-      await DioClient().dio.delete<dynamic>(ApiUris.deleteTransformation(id));
+      final trainerId = _getTrainerId();
+      bool deleted = false;
+      dynamic mainId =
+          item is Map
+              ? (item['after_id'] ?? item['before_id'] ?? item['id'])
+              : item;
+
+      if (trainerId != null && trainerId.isNotEmpty) {
+        try {
+          if (item is Map &&
+              item['before_id'] != null &&
+              item['after_id'] != null &&
+              item['before_id'] != item['after_id']) {
+            await DioClient().dio.delete<dynamic>(
+              ApiUris.deleteTrainerTransformationImage(
+                trainerId,
+                item['before_id'],
+              ),
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+            await DioClient().dio.delete<dynamic>(
+              ApiUris.deleteTrainerTransformationImage(
+                trainerId,
+                item['after_id'],
+              ),
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+            deleted = true;
+          } else if (mainId != null) {
+            final res = await DioClient().dio.delete<dynamic>(
+              ApiUris.deleteTrainerTransformationImage(trainerId, mainId),
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+            if (res.statusCode == 200 || res.statusCode == 204) {
+              deleted = true;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (!deleted && mainId != null) {
+        final parsedId = int.tryParse(mainId.toString());
+        if (parsedId != null) {
+          await DioClient().dio.delete<dynamic>(
+            ApiUris.deleteTransformation(parsedId),
+          );
+        }
+      }
+
       Fluttertoast.showToast(msg: 'Transformation deleted');
       _fetchTransformations();
     } catch (e) {
@@ -1143,6 +1279,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                         builder:
                             (context) => _AddTransformationSheet(
                               onSuccess: _fetchTransformations,
+                              trainerId: _getTrainerId(),
                             ),
                       );
                     },
@@ -1386,7 +1523,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                           right: 12,
                           child: InkWell(
                             onTap:
-                                () => _deleteTransformation(trans['id'] as int),
+                                () => _deleteTransformation(trans),
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: const BoxDecoration(
@@ -1817,7 +1954,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
 
 class _AddTransformationSheet extends StatefulWidget {
   final VoidCallback onSuccess;
-  const _AddTransformationSheet({required this.onSuccess});
+  final String? trainerId;
+  const _AddTransformationSheet({required this.onSuccess, this.trainerId});
   @override
   State<_AddTransformationSheet> createState() =>
       _AddTransformationSheetState();
@@ -1830,8 +1968,8 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
   bool _isSubmitting = false;
 
   Future<void> _submit() async {
-    if (_beforeFile == null || _afterFile == null) {
-      Fluttertoast.showToast(msg: 'Please select both before and after images');
+    if (_beforeFile == null && _afterFile == null) {
+      Fluttertoast.showToast(msg: 'Please select at least one image');
       return;
     }
     setState(() => _isSubmitting = true);
@@ -1841,19 +1979,72 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
           currentUser?.organizationId ??
           currentUser?.trainer?.organizationId ??
           currentUser?.mentor?.org?.id;
+      final trainerId = widget.trainerId ??
+          currentUser?.trainer?.id?.toString() ??
+          currentUser?.mentor?.id?.toString() ??
+          currentUser?.id?.toString();
 
-      final formData = FormData.fromMap({
-        'description': _descController.text,
-        'before_image': await MultipartFile.fromFile(_beforeFile!.path),
-        'after_image': await MultipartFile.fromFile(_afterFile!.path),
-        if (orgId != null) 'organization_id': orgId,
-      });
-      final res = await DioClient().dio.post<dynamic>(
-        ApiUris.transformations,
-        data: formData,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-      if (res.statusCode == 200 || res.statusCode == 201) {
+      bool success = false;
+      if (trainerId != null && trainerId.isNotEmpty) {
+        try {
+          bool beforeOk = true;
+          bool afterOk = true;
+
+          if (_beforeFile != null) {
+            final beforeData = FormData.fromMap({
+              'image': await MultipartFile.fromFile(_beforeFile!.path),
+              'image_type': 'before',
+              if (_descController.text.trim().isNotEmpty)
+                'description': _descController.text.trim(),
+            });
+            final resB = await DioClient().dio.post<dynamic>(
+              ApiUris.trainerTransformationImages(trainerId),
+              data: beforeData,
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+            beforeOk = resB.statusCode == 200 || resB.statusCode == 201;
+          }
+
+          if (_afterFile != null) {
+            final afterData = FormData.fromMap({
+              'image': await MultipartFile.fromFile(_afterFile!.path),
+              'image_type': 'after',
+              if (_descController.text.trim().isNotEmpty)
+                'description': _descController.text.trim(),
+            });
+            final resA = await DioClient().dio.post<dynamic>(
+              ApiUris.trainerTransformationImages(trainerId),
+              data: afterData,
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+            afterOk = resA.statusCode == 200 || resA.statusCode == 201;
+          }
+
+          if (beforeOk && afterOk) {
+            success = true;
+          }
+        } catch (_) {}
+      }
+
+      if (!success && _beforeFile != null && _afterFile != null) {
+        final formDataMap = <String, dynamic>{
+          'description': _descController.text,
+          'before_image': await MultipartFile.fromFile(_beforeFile!.path),
+          'after_image': await MultipartFile.fromFile(_afterFile!.path),
+        };
+        if (orgId != null) formDataMap['organization_id'] = orgId;
+
+        final res = await DioClient().dio.post<dynamic>(
+          ApiUris.transformations,
+          data: FormData.fromMap(formDataMap),
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+        if (res.statusCode == 200 || res.statusCode == 201) {
+          success = true;
+        }
+      }
+
+      if (success) {
         Fluttertoast.showToast(msg: 'Transformation added successfully');
         widget.onSuccess();
         if (mounted) Navigator.pop(context);
@@ -1865,7 +2056,9 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
       String errMsg = 'Failed to add transformation';
       if (e is DioException) {
         final data = e.response?.data;
-        if (data is Map && data['message'] != null) {
+        if (data is Map && data['error'] != null) {
+          errMsg = data['error'].toString();
+        } else if (data is Map && data['message'] != null) {
           errMsg = data['message'].toString();
         } else if (data != null) {
           errMsg = data.toString();

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/domain/model/trainer_attendance_model.dart';
@@ -638,6 +639,10 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                   : ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
+                        // Attendance Overview Pie Chart
+                        _buildTrainerAttendancePieChart(_reportData!.summary),
+                        const SizedBox(height: 16),
+
                         // Summary Grid
                         GridView.count(
                           crossAxisCount: 3,
@@ -804,5 +809,172 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
         ),
       ],
     );
+  }
+
+  Widget _buildTrainerAttendancePieChart(TrainerAttendanceReportSummary summary) {
+    final total = summary.fullDay + summary.halfDay + summary.leave + summary.holiday + summary.notMarked;
+    final attended = summary.fullDay + summary.halfDay;
+    final rate = total > 0 ? (attended / total) * 100 : 0.0;
+
+    final slices = [
+      (label: 'Full Day', count: summary.fullDay, color: const Color(0xff27AE60)),
+      (label: 'Half Day', count: summary.halfDay, color: const Color(0xffF39C12)),
+      (label: 'Leave', count: summary.leave, color: AppColors.primary),
+      (label: 'Holiday', count: summary.holiday, color: const Color(0xff2980B9)),
+      (label: 'Not Marked', count: summary.notMarked, color: const Color(0xff7F8C8D)),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xffEEEEEE)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Attendance Distribution',
+                style: AppStyles.text14Px.poppins.w600.dark,
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: rate >= 80 ? const Color(0xffE8F8F5) : const Color(0xffFEF9E7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${rate.toStringAsFixed(1)}% Attended',
+                  style: AppStyles.text12Px.poppins.w700.copyWith(
+                    color: rate >= 80 ? const Color(0xff117A65) : const Color(0xffD35400),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CustomPaint(
+                      size: const Size(100, 100),
+                      painter: _TrainerAttendancePieChartPainter(
+                        slices: slices
+                            .map((s) => (percentage: s.count.toDouble(), color: s.color))
+                            .toList(),
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$total',
+                          style: AppStyles.text16Px.poppins.w700.dark,
+                        ),
+                        Text(
+                          'Records',
+                          style: AppStyles.text10Px.poppins.w400.copyWith(
+                            color: AppColors.textGrey,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  children: slices.map((s) {
+                    final pct = total > 0 ? (s.count / total) * 100 : 0.0;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        children: [
+                          CircleAvatar(radius: 4, backgroundColor: s.color),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              s.label,
+                              style: AppStyles.text12Px.poppins.w400.dark,
+                            ),
+                          ),
+                          Text(
+                            '${s.count} (${pct.toStringAsFixed(0)}%)',
+                            style: AppStyles.text12Px.poppins.w600.copyWith(color: s.color),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Custom Donut Pie Chart Painter for Trainer Attendance
+class _TrainerAttendancePieChartPainter extends CustomPainter {
+  final List<({double percentage, Color color})> slices;
+  final double strokeWidth;
+
+  _TrainerAttendancePieChartPainter({
+    required this.slices,
+    this.strokeWidth = 16.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final total = slices.fold<double>(0, (sum, item) => sum + item.percentage);
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) / 2;
+    final rect = Rect.fromCircle(
+      center: center,
+      radius: radius - strokeWidth / 2,
+    );
+
+    if (total <= 0) {
+      final bgPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..color = const Color(0xffEEEEEE);
+      canvas.drawCircle(center, radius - strokeWidth / 2, bgPaint);
+      return;
+    }
+
+    var startAngle = -math.pi / 2;
+
+    for (final slice in slices) {
+      if (slice.percentage <= 0) continue;
+      final sweepAngle = (slice.percentage / total) * 2 * math.pi;
+      final paint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..color = slice.color
+        ..strokeCap = StrokeCap.butt;
+
+      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
+      startAngle += sweepAngle;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrainerAttendancePieChartPainter oldDelegate) {
+    return oldDelegate.slices != slices || oldDelegate.strokeWidth != strokeWidth;
   }
 }
