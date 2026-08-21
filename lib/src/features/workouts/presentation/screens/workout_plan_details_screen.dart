@@ -8,12 +8,14 @@ class WorkoutPlanDetailsScreen extends StatefulWidget {
     super.key,
     required this.planTitle,
     required this.planId,
+    this.planDayId,
     this.assignToCustomerId,
     this.isInstantWorkout = false,
   });
 
   final String planTitle;
   final int planId;
+  final int? planDayId;
   final int? assignToCustomerId;
   final bool? isInstantWorkout;
 
@@ -53,10 +55,18 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
         );
         final List<dynamic> days = data['days'] as List<dynamic>? ?? [];
         if (days.isNotEmpty) {
-          final firstDay = Map<String, dynamic>.from(days[0] as Map);
-          _dayId = firstDay['id'] as int?;
+          Map<String, dynamic> targetDay =
+              Map<String, dynamic>.from(days[0] as Map);
+          if (widget.planDayId != null) {
+            final found = days.firstWhere(
+              (d) => (d as Map)['id'] == widget.planDayId,
+              orElse: () => days[0],
+            );
+            targetDay = Map<String, dynamic>.from(found as Map);
+          }
+          _dayId = targetDay['id'] as int?;
           final List<dynamic> exerciseList =
-              firstDay['exercises'] as List<dynamic>? ?? [];
+              targetDay['exercises'] as List<dynamic>? ?? [];
 
           final parsedExercises =
               exerciseList.map((e) {

@@ -134,6 +134,100 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     }
   }
 
+  Future<void> _deleteAssignedWorkout(Map<String, dynamic> workout) async {
+    final assignmentId = (workout['customer_workout_plan_id'] is int)
+        ? workout['customer_workout_plan_id'] as int
+        : (workout['customer_workout_plan'] is int)
+            ? workout['customer_workout_plan'] as int
+            : (workout['customer_workout_plan'] is Map &&
+                    workout['customer_workout_plan']['id'] is int)
+                ? workout['customer_workout_plan']['id'] as int
+                : (workout['assignment_id'] is int)
+                    ? workout['assignment_id'] as int
+                    : (workout['id'] is int)
+                        ? workout['id'] as int
+                        : 0;
+
+    if (assignmentId <= 0) {
+      Dialogs.showSnack(msg: 'Unable to identify assigned workout ID.');
+      return;
+    }
+
+    final title = (workout['plan_name'] ??
+            workout['title'] ??
+            workout['name'] ??
+            workout['workout_plan_name'] ??
+            'Workout Plan')
+        .toString();
+
+    final clientName = (_clientData['name'] ??
+            _clientData['first_name'] ??
+            _clientData['user']?['name'] ??
+            'Client')
+        .toString();
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Delete Assigned Workout'),
+        content: Text(
+          'Are you sure you want to delete "$title" for $clientName?\n\nThis will remove the assignment and uncompleted future workout sessions.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xffE53E3E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final response = await DioClient().dio.delete<dynamic>(
+        ApiUris.trainerDeleteAssignedWorkout(assignmentId),
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        String successMsg = 'Assigned workout deleted successfully.';
+        if (response.data is Map && response.data['message'] != null) {
+          successMsg = response.data['message'].toString();
+        }
+        Dialogs.showSnack(msg: successMsg);
+        _fetchAssignedWorkouts();
+      } else {
+        Dialogs.showSnack(msg: 'Failed to delete assigned workout.');
+      }
+    } on DioException catch (e) {
+      String errorMsg = 'Error deleting assigned workout.';
+      if (e.response?.data is Map) {
+        final data = e.response!.data as Map;
+        errorMsg = data['detail']?.toString() ??
+            data['message']?.toString() ??
+            errorMsg;
+      }
+      Dialogs.showSnack(msg: errorMsg);
+    } catch (e) {
+      Dialogs.showSnack(msg: 'Error: ${e.toString()}');
+    }
+  }
+
   Future<void> _fetchWorkoutHistory() async {
     try {
       final response = await DioClient().dio.get<dynamic>(
@@ -1560,7 +1654,8 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                       workout['is_completed'] == true ||
                       workout['completed'] == true ||
                       rawStatus == 'completed' ||
-                      rawStatus == 'done';
+                      rawStatus == 'done' ||
+                      rawStatus == 'verified';
                   final String? rawDate =
                       workout['start_date']?.toString() ??
                       workout['assigned_date']?.toString() ??
@@ -1661,9 +1756,54 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                           ],
                         ],
                       ),
-                      trailing: Icon(
-                        Icons.chevron_right,
-                        color: context.colors.icon,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!isCompleted)
+                            PopupMenuButton<String>(
+                              icon: Icon(
+                                Icons.more_vert_rounded,
+                                size: 20,
+                                color: context.colors.icon,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onSelected: (val) {
+                                if (val == 'delete') {
+                                  _deleteAssignedWorkout(workout);
+                                }
+                              },
+                              itemBuilder:
+                                  (context) => [
+                                    PopupMenuItem<String>(
+                                      value: 'delete',
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: const [
+                                          Icon(
+                                            Icons.delete_outline_rounded,
+                                            color: Color(0xffE53E3E),
+                                            size: 18,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'Delete Assignment',
+                                            style: TextStyle(
+                                              color: Color(0xffE53E3E),
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                            ),
+                          Icon(
+                            Icons.chevron_right,
+                            color: context.colors.icon,
+                          ),
+                        ],
                       ),
                       onTap:
                           planId > 0

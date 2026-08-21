@@ -234,7 +234,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
       backgroundColor: context.colors.background,
       body:
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? _buildDashboardShimmer()
               : SafeArea(
                 child: RefreshIndicator(
                   onRefresh: _fetchDashboardData,
@@ -582,6 +582,90 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     );
   }
 
+  Widget _buildDashboardShimmer() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top App Bar Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                KShimmer(width: 120, height: 36, radius: 20),
+                Row(
+                  children: [
+                    KShimmer(width: 32, height: 32, radius: 16),
+                    SizedBox(width: 12),
+                    KShimmer(width: 32, height: 32, radius: 16),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Banner Shimmer
+            const KShimmer(width: double.infinity, height: 180, radius: 16),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                KShimmer(width: 8, height: 8, radius: 4),
+                SizedBox(width: 6),
+                KShimmer(width: 8, height: 8, radius: 4),
+                SizedBox(width: 6),
+                KShimmer(width: 8, height: 8, radius: 4),
+              ],
+            ),
+            const SizedBox(height: 22),
+
+            // Stats Grid Shimmer
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: GridView.count(
+                padding: EdgeInsets.zero,
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                childAspectRatio: 1.6,
+                children: List.generate(5, (index) => _buildStatCardShimmer()),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCardShimmer() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              KShimmer(width: 30, height: 28, radius: 4),
+              KShimmer(width: 24, height: 24, radius: 12),
+            ],
+          ),
+          const KShimmer(width: 70, height: 10, radius: 4),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBannerCarousel() {
     final List<Widget> items =
         _banners.isNotEmpty
@@ -672,7 +756,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                 fit: BoxFit.cover,
                 placeholder:
                     (context, url) =>
-                        const Center(child: CircularProgressIndicator()),
+                        const KShimmer(width: double.infinity, height: double.infinity, radius: 16),
                 errorWidget: (context, url, error) => const Icon(Icons.error),
               )
             else

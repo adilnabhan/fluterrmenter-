@@ -8,10 +8,12 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 class AssignToClientBottomSheet extends StatefulWidget {
   final int planId;
   final String planTitle;
+  final bool isMultiDayGroup;
 
   const AssignToClientBottomSheet({
     required this.planId,
     required this.planTitle,
+    this.isMultiDayGroup = false,
     super.key,
   });
 
@@ -249,10 +251,28 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Start Date (Optional)',
-                    style: AppStyles.text12Px.poppins.w500.copyWith(
-                      color: AppColors.textGrey,
+                  RichText(
+                    text: TextSpan(
+                      text: 'Start Date ',
+                      style: AppStyles.text12Px.poppins.w500.copyWith(
+                        color: AppColors.textDark,
+                      ),
+                      children: [
+                        if (widget.isMultiDayGroup)
+                          TextSpan(
+                            text: '*',
+                            style: AppStyles.text12Px.poppins.w600.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          )
+                        else
+                          TextSpan(
+                            text: '(Optional)',
+                            style: AppStyles.text12Px.poppins.w400.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -286,7 +306,9 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                             child: Text(
                               selectedDate != null
                                   ? "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}"
-                                  : 'Select start date (Default: Today)',
+                                  : (widget.isMultiDayGroup
+                                      ? 'Select start date'
+                                      : 'Select start date (Default: Today)'),
                               style: AppStyles.text14Px.poppins.w400.copyWith(
                                 color:
                                     selectedDate != null
@@ -317,17 +339,26 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                     ),
                   ),
                 ),
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext, 'customize'),
-                  child: Text(
-                    'Customize',
-                    style: AppStyles.text14Px.poppins.w500.copyWith(
-                      color: AppColors.primary,
+                if (!widget.isMultiDayGroup)
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, 'customize'),
+                    child: Text(
+                      'Customize',
+                      style: AppStyles.text14Px.poppins.w500.copyWith(
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
-                ),
                 ElevatedButton(
-                  onPressed: () => Navigator.pop(dialogContext, 'assign'),
+                  onPressed: () {
+                    if (widget.isMultiDayGroup && selectedDate == null) {
+                      Dialogs.showSnack(
+                        msg: 'Please select a start date for multi-day workout',
+                      );
+                      return;
+                    }
+                    Navigator.pop(dialogContext, 'assign');
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
@@ -399,17 +430,90 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
       }
 
       // 2. Assign workout plan
+      final DateTime startDate = selectedDate ?? DateTime.now();
+      List<Map<String, dynamic>> assignDays = [];
+      DateTime calculatedEndDate = startDate.add(const Duration(days: 6));
+
+      if (widget.isMultiDayGroup) {
+        try {
+          final groupPlansRes = await dio.get<dynamic>(
+            ApiUris.workoutPlans,
+            queryParameters: {'group': widget.planId},
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+          if (groupPlansRes.statusCode == 200 && groupPlansRes.data is List) {
+            final plansList = groupPlansRes.data as List;
+            if (plansList.isNotEmpty) {
+              final masterPlanId = plansList[0]['id'] as int;
+              final planDetailRes = await dio.get<dynamic>(
+                ApiUris.workoutPlanDetail(masterPlanId),
+                options: Options(headers: {'X-Platform': platformSource}),
+              );
+              if (planDetailRes.statusCode == 200 && planDetailRes.data is Map) {
+                final rawDays = planDetailRes.data['days'] as List? ?? [];
+                if (rawDays.isNotEmpty) {
+                  assignDays = [];
+                  for (int i = 0; i < rawDays.length; i++) {
+                    final dayMap = Map<String, dynamic>.from(rawDays[i] as Map);
+                    final dayDate = startDate.add(Duration(days: i));
+                    final String dayDateStr =
+                        "${dayDate.year}-${dayDate.month.toString().padLeft(2, '0')}-${dayDate.day.toString().padLeft(2, '0')}";
+                    final int pId = (dayMap['plan'] as int?) ??
+                        (dayMap['plan_id'] as int?) ??
+                        (dayMap['id'] as int);
+
+                    final String dayTitle =
+                        (dayMap['plan_name'] as String?) ??
+                        (dayMap['name'] as String?) ??
+                        (dayMap['title'] as String?) ??
+                        'Day ${i + 1}';
+
+                    assignDays.add({
+                      'date': dayDateStr,
+                      'title': dayTitle,
+                      'plan_name': dayTitle,
+                      'plan_id': pId,
+                      'is_rest_day': dayMap['is_rest_day'] ?? false,
+                    });
+                    calculatedEndDate = dayDate;
+                  }
+                }
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
+      final String startDateStr =
+          "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}";
+      final String endDateStr =
+          "${calculatedEndDate.year}-${calculatedEndDate.month.toString().padLeft(2, '0')}-${calculatedEndDate.day.toString().padLeft(2, '0')}";
+
       final response = await dio.post<dynamic>(
-        ApiUris.assignWorkoutPlan(widget.planId),
-        data: {
-          'customer_id': customerId,
-          'title': finalTitle,
-          if (notesController.text.trim().isNotEmpty)
-            'notes': notesController.text.trim(),
-          if (selectedDate != null)
-            'start_date':
-                "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}",
-        },
+        widget.isMultiDayGroup
+            ? ApiUris.multiDayAssign
+            : ApiUris.assignWorkoutPlan(widget.planId),
+        data:
+            widget.isMultiDayGroup
+                ? {
+                  'customer_id': customerId,
+                  'group_id': widget.planId,
+                  'plan_name': finalTitle,
+                  'plan_type': 'custom_range',
+                  'start_date': startDateStr,
+                  'end_date': endDateStr,
+                  if (notesController.text.trim().isNotEmpty)
+                    'notes': notesController.text.trim(),
+                  'conflict_resolution': 'replace',
+                  if (assignDays.isNotEmpty) 'days': assignDays,
+                }
+                : {
+                  'customer_id': customerId,
+                  'title': finalTitle,
+                  if (notesController.text.trim().isNotEmpty)
+                    'notes': notesController.text.trim(),
+                  if (selectedDate != null) 'start_date': startDateStr,
+                },
         options: Options(headers: {'X-Platform': platformSource}),
       );
 

@@ -121,7 +121,7 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
       ),
       body:
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? _buildShimmerLoading()
               : RefreshIndicator(
                 onRefresh: _fetchReports,
                 child: SingleChildScrollView(
@@ -324,6 +324,133 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Daily Report Header
+          Text(
+            'Daily Report',
+            style: AppStyles.text16Px.poppins.w600.copyWith(
+              color: context.colors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // 2x2 Grid Shimmer Cards
+          GridView.count(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.4,
+            children: List.generate(4, (index) => _buildCardShimmer()),
+          ),
+          const SizedBox(height: 28),
+
+          // Monthly Report Header
+          Text(
+            'Monthly Performance Report',
+            style: AppStyles.text16Px.poppins.w600.copyWith(
+              color: context.colors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Monthly Report Container Shimmer
+          Container(
+            width: double.maxFinite,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: context.colors.card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: context.colors.border),
+            ),
+            child: Column(
+              children: [
+                _buildRowShimmer(leftWidth: 160, rightWidth: 30),
+                Divider(
+                  height: 24,
+                  thickness: 1,
+                  color: context.colors.divider,
+                ),
+                _buildRowShimmer(leftWidth: 150, rightWidth: 40),
+                Divider(
+                  height: 24,
+                  thickness: 1,
+                  color: context.colors.divider,
+                ),
+                _buildRowShimmer(leftWidth: 170, rightWidth: 50),
+                Divider(
+                  height: 24,
+                  thickness: 1,
+                  color: context.colors.divider,
+                ),
+                _buildRowShimmer(leftWidth: 140, rightWidth: 120, twoLinesRight: true),
+              ],
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCardShimmer() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: const [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              KShimmer(width: 28, height: 28, radius: 14),
+              KShimmer(width: 50, height: 10, radius: 4),
+            ],
+          ),
+          KShimmer(width: double.infinity, height: 26, radius: 8),
+          KShimmer(width: 80, height: 10, radius: 4),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRowShimmer({
+    required double leftWidth,
+    required double rightWidth,
+    bool twoLinesRight = false,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        KShimmer(width: leftWidth, height: 14, radius: 6),
+        if (twoLinesRight)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              KShimmer(width: rightWidth, height: 12, radius: 6),
+              const SizedBox(height: 4),
+              KShimmer(width: rightWidth * 0.7, height: 10, radius: 6),
+            ],
+          )
+        else
+          KShimmer(width: rightWidth, height: 14, radius: 6),
       ],
     );
   }

@@ -468,7 +468,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
           Expanded(
             child:
                 _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? _buildClientsShimmer()
                     : filtered.isEmpty
                     ? Center(
                       child: Text(
@@ -834,6 +834,64 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
           onSuccess: () {
             _fetchClients(forceRefresh: true);
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildClientsShimmer() {
+    return ListView.separated(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+      itemCount: 5,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        return Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: context.colors.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: context.colors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const KShimmer(width: 48, height: 48, radius: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        KShimmer(width: 120, height: 14, radius: 4),
+                        SizedBox(height: 6),
+                        KShimmer(width: 70, height: 12, radius: 4),
+                      ],
+                    ),
+                  ),
+                  const KShimmer(width: 50, height: 14, radius: 4),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: const [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      KShimmer(width: 110, height: 12, radius: 4),
+                      SizedBox(height: 4),
+                      KShimmer(width: 90, height: 12, radius: 4),
+                    ],
+                  ),
+                  KShimmer(width: 110, height: 32, radius: 16),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );

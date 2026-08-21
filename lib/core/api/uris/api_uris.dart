@@ -126,6 +126,8 @@ final class ApiUris {
   static String trainerCustomerDetails(int customerId) =>
       '${_v1}trainer/customers/$customerId/';
   static final trainerAssignedWorkouts = '${_v1}trainer/assigned-workouts/';
+  static String trainerDeleteAssignedWorkout(int customerWorkoutPlanId) =>
+      '${_v1}trainer/assigned-workouts/$customerWorkoutPlanId/';
   static String trainerClientAssignedWorkouts(int customerId) =>
       '${_v1}trainer/clients/$customerId/assigned-workouts/';
   static String customerAssignedWorkouts(int customerId) =>
@@ -184,6 +186,22 @@ final class ApiUris {
       '${_v1}trainer/plan-days/$dayId/exercises/$exerciseId/';
   static String planDayExercisesReorder(int dayId) =>
       '${_v1}trainer/plan-days/$dayId/exercises/reorder/';
+
+  // Multi-Day Workout endpoints
+  static final multiDayAssign = '${_v1}trainer/multi-day-assign/';
+  static String multiDayAssignPreview({
+    required int customerId,
+    required String startDate,
+    required String endDate,
+    required String planType,
+  }) =>
+      '${_v1}trainer/multi-day-assign/preview/?customer_id=$customerId&start_date=$startDate&end_date=$endDate&plan_type=$planType';
+  static String assignWorkoutPlanTemplate(int planId) =>
+      '${_v1}trainer/workout-plans/$planId/assign/';
+  static String workoutPlanDays(int planId) =>
+      '${_v1}trainer/workout-plans/$planId/days/';
+  static String updateMultiDayAssignmentDay(int cwpId, int planDayId) =>
+      '${_v1}trainer/multi-day-assign/$cwpId/days/$planDayId/';
 
   // Customer workout history
   static String customerWorkoutHistory(int customerId) =>

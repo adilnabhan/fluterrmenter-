@@ -4,6 +4,7 @@ import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/cre
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_group_details_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/assign_to_client_bottom_sheet.dart';
 
 class WorkoutGroupsScreen extends StatefulWidget {
   const WorkoutGroupsScreen({super.key, this.orgId});
@@ -255,7 +256,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
     );
   }
 
-  Future<void> _createGroup(String name) async {
+  Future<void> _createGroup(String name, {String? nameInternal}) async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
@@ -269,7 +270,13 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
     try {
       final response = await DioClient().dio.post<dynamic>(
         ApiUris.workoutGroups,
-        data: {'name': name, 'type': groupType, 'source': source},
+        data: {
+          'name': name,
+          if (nameInternal != null && nameInternal.isNotEmpty)
+            'name_internal': nameInternal,
+          'type': groupType,
+          'source': source,
+        },
         options: Options(
           headers: {'X-Platform': platformSource, 'Connection': 'close'},
         ),
@@ -290,6 +297,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                     groupId: groupId,
                     groupTitle: createdName,
                     source: source,
+                    groupType: groupType,
                   ),
             ),
           ).then((_) {
@@ -425,7 +433,8 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                                               color: context.colors.textSecondary,
                                             ),
                                       ),
-                                      _buildFilterButton(isTrainer),
+                                       if (_selectedTabIndex == 0)
+                                         _buildFilterButton(isTrainer),
                                     ],
                                   ),
                                 ),
@@ -433,9 +442,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                                   child: RefreshIndicator(
                                     onRefresh: _fetchGroups,
                                     child: _isLoading
-                                        ? const Center(
-                                            child: CircularProgressIndicator(),
-                                          )
+                                        ? _buildShimmerGrid()
                                         : filtered.isEmpty
                                         ? SingleChildScrollView(
                                             physics: const AlwaysScrollableScrollPhysics(),
@@ -454,6 +461,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                                         : WorkoutGroupsGrid(
                                             groups: filtered,
                                             onReturn: _fetchGroups,
+                                            isMultiDay: _selectedTabIndex == 1,
                                           ),
                                   ),
                                 ),
@@ -486,6 +494,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
             right: 0,
             child: Center(
               child: CreateGroupButton(
+                label: 'Create new group',
                 onTap: () {
                   _showCreateGroupSheet(context);
                 },
@@ -545,6 +554,8 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
   }
 
   void _showCreateGroupSheet(BuildContext context) {
+    final isMultiDay = _selectedTabIndex == 1;
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -559,7 +570,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
               20,
               25,
               20,
-              MediaQuery.of(context).viewInsets.bottom + 55,
+              MediaQuery.of(context).viewInsets.bottom + 25,
             ),
             child: Form(
               key: _formKey,
@@ -568,12 +579,14 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Create a Single-Day group',
-                    style: AppStyles.text15Px.poppins.w600.copyWith(
+                    isMultiDay
+                        ? 'Create a Multi-Day group'
+                        : 'Create a Single-Day group',
+                    style: AppStyles.text18Px.poppins.w600.copyWith(
                       color: AppColors.textDark,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   Field(data: _groupName),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -590,14 +603,14 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFD30000),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: Text(
-                        'Create group',
-                        style: AppStyles.text15Px.poppins.w600.copyWith(
+                        'Create Group',
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
                           color: Colors.white,
                         ),
                       ),
@@ -609,6 +622,51 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
           ),
     );
   }
+
+  Widget _buildShimmerGrid() {
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(22, 0, 22, 180),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.50,
+      ),
+      itemCount: 8,
+      itemBuilder: (context, index) {
+        return Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: context.colors.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: context.colors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  KShimmer(width: 100, height: 14, radius: 4),
+                  SizedBox(height: 6),
+                  KShimmer(width: 70, height: 12, radius: 4),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  KShimmer(width: 50, height: 12, radius: 4),
+                  KShimmer(width: 14, height: 14, radius: 4),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 class WorkoutGroupsGrid extends StatelessWidget {
@@ -616,12 +674,29 @@ class WorkoutGroupsGrid extends StatelessWidget {
     super.key,
     required this.groups,
     required this.onReturn,
+    this.isMultiDay = false,
   });
   final List<Map<String, dynamic>> groups;
   final VoidCallback onReturn;
+  final bool isMultiDay;
 
   @override
   Widget build(BuildContext context) {
+    if (isMultiDay) {
+      return ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(22, 0, 22, 180),
+        itemCount: groups.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          return _MultiDayWorkoutGroupCard(
+            group: groups[index],
+            onReturn: onReturn,
+          );
+        },
+      );
+    }
+
     return GridView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(22, 0, 22, 180),
@@ -674,6 +749,7 @@ class _WorkoutGroupCard extends StatelessWidget {
                   groupId: groupId,
                   groupTitle: groupName,
                   source: group['source'] as String?,
+                  groupType: group['type'] as String?,
                 ),
           ),
         );
@@ -961,6 +1037,352 @@ class _WorkoutGroupCard extends StatelessWidget {
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MultiDayWorkoutGroupCard extends StatelessWidget {
+  const _MultiDayWorkoutGroupCard({
+    required this.group,
+    required this.onReturn,
+  });
+  final Map<String, dynamic> group;
+  final VoidCallback onReturn;
+
+  @override
+  Widget build(BuildContext context) {
+    final int groupId = group['id'] as int;
+    final String groupName = group['name'] as String? ?? '';
+    final int planCount = group['plan_count'] as int? ??
+        group['plans_count'] as int? ??
+        group['total_plans'] as int? ??
+        (group['plans'] is List ? (group['plans'] as List).length : null) ??
+        (group['workout_plans'] is List
+            ? (group['workout_plans'] as List).length
+            : null) ??
+        0;
+
+    final user = context.read<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+    final isOrgCreated = group['source'] == 'organization' ||
+        group['source'] == 'gym' ||
+        group['is_preset'] == true;
+    final canEditOrDelete = !isTrainer || !isOrgCreated;
+
+    return InkWell(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder:
+                (context) => WorkoutGroupDetailsScreen(
+                  groupId: groupId,
+                  groupTitle: groupName,
+                  source: group['source'] as String?,
+                  groupType: 'multi_day',
+                ),
+          ),
+        );
+        onReturn();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: context.colors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.colors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(
+                alpha: context.isDarkMode ? 0.2 : .05,
+              ),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    groupName,
+                    style: AppStyles.text16Px.poppins.w600.copyWith(
+                      color: context.colors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        '$planCount plans',
+                        style: AppStyles.text13Px.poppins.w400.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: context.colors.textSecondary,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            InkWell(
+              onTap: () {
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder:
+                      (context) => AssignToClientBottomSheet(
+                        planId: groupId,
+                        planTitle: groupName,
+                        isMultiDayGroup: true,
+                      ),
+                );
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF2E7D32),
+                    width: 1.5,
+                  ),
+                ),
+                child: Text(
+                  'Assign to',
+                  style: AppStyles.text12Px.poppins.w600.copyWith(
+                    color: const Color(0xFF2E7D32),
+                  ),
+                ),
+              ),
+            ),
+            if (canEditOrDelete) ...[
+              const SizedBox(width: 8),
+              PopupMenuButton<String>(
+                color: Colors.white,
+                padding: EdgeInsets.zero,
+                onSelected: (value) async {
+                  if (value == 'rename') {
+                    final nameController = TextEditingController(
+                      text: groupName,
+                    );
+                    final newName = await showDialog<String>(
+                      context: context,
+                      builder: (dialogContext) {
+                        return AlertDialog(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: Text(
+                            'Rename Workout Group',
+                            style: AppStyles.text16Px.poppins.w600,
+                          ),
+                          content: TextField(
+                            controller: nameController,
+                            decoration: InputDecoration(
+                              hintText: 'Enter new name',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed:
+                                  () => Navigator.pop(dialogContext, null),
+                              child: Text(
+                                'Cancel',
+                                style: AppStyles.text14Px.poppins.w500.copyWith(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed:
+                                  () => Navigator.pop(
+                                    dialogContext,
+                                    nameController.text.trim(),
+                                  ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Text(
+                                'Save',
+                                style: AppStyles.text14Px.poppins.w600.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (newName != null &&
+                        newName.isNotEmpty &&
+                        newName != groupName) {
+                      try {
+                        final response = await DioClient().dio.put<dynamic>(
+                          ApiUris.workoutGroupDetail(groupId),
+                          data: {'name': newName},
+                        );
+                        if (response.statusCode == 200 ||
+                            response.statusCode == 204) {
+                          Dialogs.showSnack(
+                            msg: 'Workout group renamed successfully',
+                          );
+                          onReturn();
+                        } else {
+                          Dialogs.showSnack(
+                            msg: 'Failed to rename workout group',
+                          );
+                        }
+                      } catch (e) {
+                        Dialogs.showSnack(
+                          msg: 'Error renaming group: ${e.toString()}',
+                        );
+                      }
+                    }
+                  } else if (value == 'delete') {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (dialogContext) {
+                        return AlertDialog(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: Text(
+                            'Delete Workout Group',
+                            style: AppStyles.text16Px.poppins.w600,
+                          ),
+                          content: const Text(
+                            'Are you sure you want to delete this workout group?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed:
+                                  () => Navigator.pop(dialogContext, false),
+                              child: Text(
+                                'Cancel',
+                                style: AppStyles.text14Px.poppins.w500.copyWith(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed:
+                                  () => Navigator.pop(dialogContext, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Text(
+                                'Delete',
+                                style: AppStyles.text14Px.poppins.w600.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirmed == true) {
+                      try {
+                        final response = await DioClient().dio.delete<dynamic>(
+                          ApiUris.workoutGroupDetail(groupId),
+                        );
+                        if (response.statusCode == 200 ||
+                            response.statusCode == 204) {
+                          Dialogs.showSnack(
+                            msg: 'Workout group deleted successfully',
+                          );
+                          onReturn();
+                        } else {
+                          Dialogs.showSnack(
+                            msg: 'Failed to delete workout group',
+                          );
+                        }
+                      } catch (e) {
+                        Dialogs.showSnack(
+                          msg: 'Error deleting group: ${e.toString()}',
+                        );
+                      }
+                    }
+                  }
+                },
+                itemBuilder:
+                    (context) => [
+                      PopupMenuItem<String>(
+                        value: 'rename',
+                        child: Row(
+                          children: const [
+                            Icon(
+                              Icons.edit_outlined,
+                              color: AppColors.textDark,
+                              size: 20,
+                            ),
+                            SizedBox(width: 8),
+                            Text('Rename'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Row(
+                          children: const [
+                            Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            SizedBox(width: 8),
+                            Text('Delete', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                child: CircleAvatar(
+                  backgroundColor: Colors.grey.shade100,
+                  radius: 16,
+                  child: const Icon(
+                    Icons.more_vert,
+                    color: AppColors.textGrey,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

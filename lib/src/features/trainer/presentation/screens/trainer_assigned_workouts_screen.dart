@@ -351,9 +351,9 @@ class _TrainerAssignedWorkoutsScreenState
 
   String _extractDateString(Map<String, dynamic> item) {
     final raw =
-        (item['scheduled_date'] ??
+        (item['start_date'] ??
+                item['scheduled_date'] ??
                 item['session_date'] ??
-                item['start_date'] ??
                 item['assigned_date'] ??
                 item['date'] ??
                 item['created_at'] ??
@@ -363,6 +363,96 @@ class _TrainerAssignedWorkoutsScreenState
       return raw.substring(0, 10);
     }
     return raw;
+  }
+
+  Future<void> _deleteAssignedWorkout(Map<String, dynamic> workout) async {
+    final assignmentId = (workout['customer_workout_plan_id'] is int)
+        ? workout['customer_workout_plan_id'] as int
+        : (workout['customer_workout_plan'] is int)
+            ? workout['customer_workout_plan'] as int
+            : (workout['customer_workout_plan'] is Map &&
+                    workout['customer_workout_plan']['id'] is int)
+                ? workout['customer_workout_plan']['id'] as int
+                : (workout['assignment_id'] is int)
+                    ? workout['assignment_id'] as int
+                    : (workout['id'] is int)
+                        ? workout['id'] as int
+                        : 0;
+
+    if (assignmentId <= 0) {
+      Dialogs.showSnack(msg: 'Unable to identify assigned workout ID.');
+      return;
+    }
+
+    final title = (workout['plan_name'] ??
+            workout['title'] ??
+            workout['name'] ??
+            workout['workout_plan_name'] ??
+            'Workout Plan')
+        .toString();
+
+    final clientName = (workout['client_name'] ?? 'Client').toString();
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Delete Assigned Workout'),
+        content: Text(
+          'Are you sure you want to delete "$title" for $clientName?\n\nThis will remove the assignment and uncompleted future workout sessions.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xffE53E3E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final response = await DioClient().dio.delete<dynamic>(
+        ApiUris.trainerDeleteAssignedWorkout(assignmentId),
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        String successMsg = 'Assigned workout deleted successfully.';
+        if (response.data is Map && response.data['message'] != null) {
+          successMsg = response.data['message'].toString();
+        }
+        Dialogs.showSnack(msg: successMsg);
+        _loadAssignedWorkouts(resetPage: true, forceRefresh: true);
+      } else {
+        Dialogs.showSnack(msg: 'Failed to delete assigned workout.');
+      }
+    } on DioException catch (e) {
+      String errorMsg = 'Error deleting assigned workout.';
+      if (e.response?.data is Map) {
+        final data = e.response!.data as Map;
+        errorMsg = data['detail']?.toString() ??
+            data['message']?.toString() ??
+            errorMsg;
+      }
+      Dialogs.showSnack(msg: errorMsg);
+    } catch (e) {
+      Dialogs.showSnack(msg: 'Error: ${e.toString()}');
+    }
   }
 
   Widget _buildDateHeader() {
@@ -602,6 +692,13 @@ class _TrainerAssignedWorkoutsScreenState
                                     workout['assignment_status'] ??
                                     'Active')
                                 .toString();
+                        final rawStatus = status.toLowerCase();
+                        final bool isCompleted =
+                            workout['is_completed'] == true ||
+                            workout['completed'] == true ||
+                            rawStatus == 'completed' ||
+                            rawStatus == 'done' ||
+                            rawStatus == 'verified';
                         final assignedDate = _extractDateString(workout);
                         final routinesCount =
                             workout['total_days'] as int? ??
@@ -610,7 +707,7 @@ class _TrainerAssignedWorkoutsScreenState
                             (workout['routines'] as List?)?.length ??
                             (workout['workout_days'] as List?)?.length ??
                             0;
-                        final isActive = status.toLowerCase() == 'active';
+                        final isActive = rawStatus == 'active';
 
                         return InkWell(
                           onTap:
@@ -733,37 +830,89 @@ class _TrainerAssignedWorkoutsScreenState
                                             ],
                                           ),
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                isActive
-                                                    ? const Color(0xffC6F6D5)
-                                                    : const Color(0xffE2E8F0),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            status.toUpperCase(),
-                                            style: AppStyles
-                                                .text10Px
-                                                .poppins
-                                                .w700
-                                                .copyWith(
-                                                  color:
-                                                      isActive
-                                                          ? const Color(
-                                                            0xff22543D,
-                                                          )
-                                                          : const Color(
-                                                            0xff4A5568,
-                                                          ),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    isActive
+                                                        ? const Color(0xffC6F6D5)
+                                                        : const Color(0xffE2E8F0),
+                                                borderRadius: BorderRadius.circular(
+                                                  8,
                                                 ),
-                                          ),
+                                              ),
+                                              child: Text(
+                                                status.toUpperCase(),
+                                                style: AppStyles
+                                                    .text10Px
+                                                    .poppins
+                                                    .w700
+                                                    .copyWith(
+                                                      color:
+                                                          isActive
+                                                              ? const Color(
+                                                                0xff22543D,
+                                                              )
+                                                              : const Color(
+                                                                0xff4A5568,
+                                                              ),
+                                                    ),
+                                              ),
+                                            ),
+                                            if (!isCompleted)
+                                              PopupMenuButton<String>(
+                                                icon: const Icon(
+                                                  Icons.more_vert_rounded,
+                                                  size: 20,
+                                                  color: Color(0xff718096),
+                                                ),
+                                                padding: EdgeInsets.zero,
+                                                constraints:
+                                                    const BoxConstraints(),
+                                                onSelected: (val) {
+                                                  if (val == 'delete') {
+                                                    _deleteAssignedWorkout(workout);
+                                                  }
+                                                },
+                                                itemBuilder:
+                                                    (context) => [
+                                                      PopupMenuItem<String>(
+                                                        value: 'delete',
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: const [
+                                                            Icon(
+                                                              Icons.delete_outline_rounded,
+                                                              color: Color(
+                                                                0xffE53E3E,
+                                                              ),
+                                                              size: 18,
+                                                            ),
+                                                            SizedBox(width: 8),
+                                                            Text(
+                                                              'Delete Assignment',
+                                                              style: TextStyle(
+                                                                color: Color(
+                                                                  0xffE53E3E,
+                                                                ),
+                                                                fontSize: 13,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                              ),
+                                          ],
                                         ),
                                       ],
                                     ),
