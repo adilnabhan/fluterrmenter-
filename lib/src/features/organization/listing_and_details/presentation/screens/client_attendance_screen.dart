@@ -1718,11 +1718,14 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       return const SizedBox.shrink();
     }
 
-    final total = _clients.length;
     final present = _presentCount;
     final absent = _absentCount;
     final unmarked = _unmarkedCount;
     final holiday = _holidayCount;
+
+    final total = (_dashboard['total_clients_count'] as int?) ??
+        (_dashboard['count'] as int?) ??
+        (present + absent + unmarked + holiday);
 
     final presentPct = total > 0 ? (present / total) * 100 : 0.0;
 
@@ -2488,11 +2491,14 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
   /// Full Attendance Report Bottom Sheet with Pie Chart
   void _showAttendanceReportSheet() {
-    final total = _clients.length;
     final present = _presentCount;
     final absent = _absentCount;
     final unmarked = _unmarkedCount;
     final holiday = _holidayCount;
+
+    final total = (_dashboard['total_clients_count'] as int?) ??
+        (_dashboard['count'] as int?) ??
+        (present + absent + unmarked + holiday);
 
     final presentPct = total > 0 ? (present / total) * 100 : 0.0;
     final absentPct = total > 0 ? (absent / total) * 100 : 0.0;

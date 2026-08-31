@@ -194,7 +194,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
   ) async {
     final titleController = TextEditingController(text: widget.planTitle);
     final notesController = TextEditingController();
-    DateTime? selectedDate;
+    DateTime? selectedDate = widget.isMultiDayGroup ? DateTime.now() : null;
     final action = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
@@ -213,24 +213,44 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextField(
-                    controller: titleController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter workout title',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade400),
+                  if (widget.isMultiDayGroup)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
                       ),
-                      enabledBorder: OutlineInputBorder(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF7F7F8),
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade400),
+                        border: Border.all(color: Colors.grey.shade300),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.primary),
+                      child: Text(
+                        widget.planTitle,
+                        style: AppStyles.text14Px.poppins.w600.copyWith(
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    )
+                  else
+                    TextField(
+                      controller: titleController,
+                      decoration: InputDecoration(
+                        hintText: 'Enter workout title',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade400),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade400),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.primary),
+                        ),
                       ),
                     ),
-                  ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: notesController,

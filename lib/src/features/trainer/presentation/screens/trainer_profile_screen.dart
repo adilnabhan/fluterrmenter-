@@ -420,6 +420,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           }
         });
         _fetchTransformations();
+        _fetchReviews();
       } else {
         if (!mounted) return;
         setState(() => _isLoading = false);
@@ -433,6 +434,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
 
   Future<void> _handleRefresh({bool silent = false}) async {
     _fetchPortfolioImages();
+    _fetchReviews();
     if (widget.isViewOnly && widget.trainerId != null) {
       await _fetchTrainerDetails();
       return;

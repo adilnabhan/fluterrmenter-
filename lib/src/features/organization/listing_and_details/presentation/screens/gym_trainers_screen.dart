@@ -313,7 +313,44 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
             child: RefreshIndicator(
               onRefresh: _fetchTrainers,
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: 6,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              const KShimmer(width: 48, height: 48, radius: 24),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    KShimmer(width: 120, height: 14, radius: 4),
+                                    SizedBox(height: 6),
+                                    KShimmer(width: 80, height: 12, radius: 4),
+                                  ],
+                                ),
+                              ),
+                              const KShimmer(width: 20, height: 20, radius: 4),
+                            ],
+                          ),
+                        );
+                      },
+                    )
                   : filteredTrainers.isEmpty
                       ? ListView(
                           physics: const AlwaysScrollableScrollPhysics(),

@@ -221,7 +221,7 @@ class _TrainerClientWorkoutHistoryCalendarState
   ) {
     return Container(
       key: _calendarCardKey,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.light,
         borderRadius: BorderRadius.circular(16),
@@ -236,22 +236,22 @@ class _TrainerClientWorkoutHistoryCalendarState
       child: Column(
         children: [
           _buildHeader(canGoPrev, canGoNext),
-          const SizedBox(height: 22),
+          const SizedBox(height: 12),
           _buildCalendar(),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 16,
             runSpacing: 8,
             children: [
-              _buildColorHint(Colors.green, 'Verified'),
-              _buildColorHint(Colors.amber.shade500, 'Assigned'),
-              _buildColorHint(const Color(0xFF5F7AC5), 'Rest'),
-              _buildColorHint(Colors.red, 'Missed'),
+              _buildColorHint(const Color(0xFF019C37), 'Verified'),
+              _buildColorHint(const Color(0xFFD1AC19), 'Assigned'),
+              _buildColorHint(const Color(0xFF3949AB), 'Rest'),
+              _buildColorHint(const Color(0xFFCF0B10), 'Missed'),
             ],
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Divider(color: Colors.grey.shade200, thickness: 1),
           ),
           _buildProgress(percent, percentInt, assignedCount, missedCount, restCount),
@@ -324,8 +324,8 @@ class _TrainerClientWorkoutHistoryCalendarState
       focusedDay: _focusedDay,
       startingDayOfWeek: StartingDayOfWeek.monday,
       headerVisible: false,
-      rowHeight: 60,
-      daysOfWeekHeight: 46,
+      rowHeight: 42,
+      daysOfWeekHeight: 26,
       availableGestures: AvailableGestures.none,
       onPageChanged: (focusedDay) {
         setState(() {
@@ -336,10 +336,10 @@ class _TrainerClientWorkoutHistoryCalendarState
       calendarBuilders: CalendarBuilders(
         dowBuilder: (context, day) {
           return Container(
-            alignment: Alignment.topCenter,
+            alignment: Alignment.center,
             child: Text(
               DateFormat.E().format(day).substring(0, 3),
-              style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.grey),
+              style: AppStyles.text12Px.poppins.w600.copyWith(color: Colors.grey.shade700),
             ),
           );
         },
@@ -358,12 +358,12 @@ class _TrainerClientWorkoutHistoryCalendarState
     int rest,
   ) {
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         children: [
           CircularPercentIndicator(
-            radius: 55,
-            lineWidth: 12,
+            radius: 50,
+            lineWidth: 10,
             percent: percent,
             animation: true,
             circularStrokeCap: CircularStrokeCap.round,
@@ -372,7 +372,7 @@ class _TrainerClientWorkoutHistoryCalendarState
             center: Text(
               "$percentInt%\nTotal Done",
               textAlign: TextAlign.center,
-              style: AppStyles.text13Px.poppins.w700,
+              style: AppStyles.text12Px.poppins.w700,
             ),
           ),
           const SizedBox(width: 10),
@@ -380,9 +380,9 @@ class _TrainerClientWorkoutHistoryCalendarState
             child: Column(
               children: [
                 _summaryItem("Completed Days", "$assigned Days", Colors.green.shade100, AppColors.dark),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 _summaryItem("Rest Days", "$rest Days", Colors.blue.shade100, AppColors.dark),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 _summaryItem("Missed Days", "$missed Days", Colors.red.shade100, AppColors.dark),
               ],
             ),
@@ -394,7 +394,7 @@ class _TrainerClientWorkoutHistoryCalendarState
 
   Widget _summaryItem(String title, String value, Color bgColor, Color textColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
       child: Row(
         children: [
@@ -413,51 +413,58 @@ class _TrainerClientWorkoutHistoryCalendarState
     if (state == CalendarDayState.verified) {
       return _dayState(
         day: day,
-        bgColor: const Color(0xFFE8F5E9),
-        borderColor: isToday ? Colors.orange.shade400 : Colors.transparent,
-        topIcon: SvgPicture.asset('assets/images/svg/icons/double_tick.svg', width: 17, height: 17),
+        bgColor: const Color(0xFF238644),
+        borderColor: isToday ? const Color(0xFFFF9800) : Colors.transparent,
+        textColor: const Color(0xFFD3EED8),
       );
     }
-    
+
     if (state == CalendarDayState.assigned) {
       return _dayState(
         day: day,
-        bgColor: const Color(0xFFFFF9C4),
-        borderColor: isToday ? Colors.orange.shade400 : Colors.transparent,
-        topIcon: SvgPicture.asset('assets/images/svg/icons/single_yellow_tick.svg', width: 17, height: 17),
+        bgColor: const Color(0xFFD1AC19),
+        borderColor: isToday ? const Color(0xFFFF9800) : Colors.transparent,
+        textColor: const Color(0xFFF6F0D6),
       );
     }
 
     if (state == CalendarDayState.missed) {
       return _dayState(
         day: day,
-        bgColor: const Color(0xFFFFEBEE),
-        borderColor: isToday ? Colors.orange.shade400 : Colors.transparent,
-        topIcon: SvgPicture.asset('assets/images/svg/icons/cross.svg', width: 17, height: 17),
+        bgColor: const Color(0xFFD32F2F),
+        borderColor: isToday ? const Color(0xFFFF9800) : Colors.transparent,
+        textColor: const Color(0xFFF9D8DA),
       );
     }
 
     final isRest = state == CalendarDayState.rest;
+    if (isRest) {
+      return _dayState(
+        day: day,
+        bgColor: const Color(0xFF3949AB),
+        borderColor: isToday ? const Color(0xFFFF9800) : Colors.transparent,
+        textColor: const Color(0xFFE2EAF8),
+      );
+    }
+
     final startDateOnly = DateTime(_firstWorkoutDate.year, _firstWorkoutDate.month, _firstWorkoutDate.day);
     final isBeforeStart = dateOnly.isBefore(startDateOnly);
+    final isFuture = dateOnly.isAfter(DateTime.now());
 
-    final dayTextColor = isRest
-        ? const Color.fromRGBO(95, 122, 197, 1)
-        : isBeforeStart
-            ? Colors.grey.shade400
-            : const Color(0xFF212121);
+    final bgColor = (isBeforeStart || isFuture) ? const Color(0xFFFAFAFA) : const Color(0xFFD32F2F);
+    final dayTextColor = (isBeforeStart || isFuture) ? Colors.grey.shade400 : const Color(0xFFF9D8DA);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+      margin: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: isRest ? const Color(0xFFF3F6FB) : const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(8),
-        border: isToday ? Border.all(color: Colors.orange.shade400, width: 1.5) : null,
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10),
+        border: isToday ? Border.all(color: const Color(0xFFFF9800), width: 1.5) : null,
       ),
       alignment: Alignment.center,
       child: Text(
         '${day.day}',
-        style: AppStyles.text14Px.poppins.w500.copyWith(color: dayTextColor),
+        style: AppStyles.text13Px.poppins.w600.copyWith(color: dayTextColor),
       ),
     );
   }
@@ -466,38 +473,19 @@ class _TrainerClientWorkoutHistoryCalendarState
     required DateTime day,
     required Color bgColor,
     required Color borderColor,
-    required Widget topIcon,
+    required Color textColor,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: borderColor, width: 1.5),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '${day.day}',
-              style: AppStyles.text14Px.poppins.w500.copyWith(color: Colors.black87),
-            ),
-          ),
-          Positioned(
-            top: -6,
-            right: -6,
-            child: Container(
-              decoration: BoxDecoration(
-                color: bgColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
-              ),
-              child: ClipOval(child: topIcon),
-            ),
-          ),
-        ],
+      margin: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10),
+        border: borderColor != Colors.transparent ? Border.all(color: borderColor, width: 1.5) : null,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        '${day.day}',
+        style: AppStyles.text13Px.poppins.w600.copyWith(color: textColor),
       ),
     );
   }

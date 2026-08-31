@@ -245,6 +245,204 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     }
   }
 
+  Widget _buildReportsShimmer() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // "Financial Overview" title shimmer
+          const KShimmer(width: 160, height: 20, radius: 6),
+          const SizedBox(height: 16),
+          // Net Profit / Loss card with mini chart
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFEEEEEE)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      KShimmer(width: 28, height: 28, radius: 14),
+                      SizedBox(height: 12),
+                      KShimmer(width: 120, height: 24, radius: 6),
+                      SizedBox(height: 6),
+                      KShimmer(width: 90, height: 12, radius: 4),
+                    ],
+                  ),
+                ),
+                const KShimmer(width: 120, height: 60, radius: 8),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Monthly Revenue & Total Expense row
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      KShimmer(width: 28, height: 28, radius: 14),
+                      SizedBox(height: 10),
+                      KShimmer(width: 80, height: 22, radius: 6),
+                      SizedBox(height: 6),
+                      KShimmer(width: 100, height: 12, radius: 4),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      KShimmer(width: 28, height: 28, radius: 14),
+                      SizedBox(height: 10),
+                      KShimmer(width: 80, height: 22, radius: 6),
+                      SizedBox(height: 6),
+                      KShimmer(width: 100, height: 12, radius: 4),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // "Monthly Budget Progress" title shimmer
+          const KShimmer(width: 200, height: 18, radius: 6),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFEEEEEE)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    KShimmer(width: 80, height: 14, radius: 4),
+                    KShimmer(width: 120, height: 14, radius: 4),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                const KShimmer(width: double.infinity, height: 10, radius: 5),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        KShimmer(width: 80, height: 10, radius: 4),
+                        SizedBox(height: 4),
+                        KShimmer(width: 70, height: 20, radius: 6),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: const [
+                        KShimmer(width: 70, height: 10, radius: 4),
+                        SizedBox(height: 4),
+                        KShimmer(width: 60, height: 20, radius: 6),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Divider(color: Color(0xFFEEEEEE)),
+          const SizedBox(height: 10),
+          // "Category Budget Breakdown" title shimmer
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              KShimmer(width: 180, height: 16, radius: 6),
+              KShimmer(width: 80, height: 14, radius: 4),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Center(
+            child: KShimmer(width: 200, height: 36, radius: 20),
+          ),
+          const SizedBox(height: 24),
+          // "Monthly Revenue Target Progress" title shimmer
+          const KShimmer(width: 240, height: 18, radius: 6),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFEEEEEE)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    KShimmer(width: 80, height: 14, radius: 4),
+                    KShimmer(width: 120, height: 14, radius: 4),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                const KShimmer(width: double.infinity, height: 10, radius: 5),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        KShimmer(width: 80, height: 10, radius: 4),
+                        SizedBox(height: 4),
+                        KShimmer(width: 70, height: 20, radius: 6),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: const [
+                        KShimmer(width: 70, height: 10, radius: 4),
+                        SizedBox(height: 4),
+                        KShimmer(width: 60, height: 20, radius: 6),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _deleteExpense(int id) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -1964,7 +2162,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
               ),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? _buildReportsShimmer()
                   : TabBarView(
                       children: [
                     _buildFinanceTab(

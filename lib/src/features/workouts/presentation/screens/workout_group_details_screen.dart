@@ -174,6 +174,27 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
     }
   }
 
+  Future<void> _saveReorderedDays() async {
+    if (widget.groupType != 'multi_day' || _masterPlanId == null) return;
+    try {
+      final dio = DioClient().dio;
+      for (int i = 0; i < _plans.length; i++) {
+        final plan = _plans[i];
+        final int? dayId = (plan['plan_day_id'] as int?) ?? (plan['id'] as int?);
+        if (dayId != null) {
+          await dio.put<dynamic>(
+            '${ApiUris.workoutPlans}$_masterPlanId/days/$dayId/',
+            data: {
+              'day_number': i + 1,
+              'title': plan['plan_name'] ?? plan['title'],
+            },
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+        }
+      }
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -294,102 +315,199 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                         ),
                       ),
                       Expanded(
-                        child:
-                            _isLoading
-                                ? _buildShimmerList()
-                                : _plans.isEmpty
+                        child: _isLoading
+                            ? _buildShimmerList()
+                            : _plans.isEmpty
                                 ? const Center(
-                                  child: Text('No workout plans found.'),
-                                )
-                                : ListView.separated(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    0,
-                                    16,
-                                    100,
-                                  ),
-                                  itemCount: _plans.length,
-                                  separatorBuilder:
-                                      (context, index) =>
-                                          const SizedBox(height: 16),
-                                  itemBuilder: (context, index) {
-                                    final plan = _plans[index];
-                                    final int planId = plan['id'] as int;
-                                    final String planName =
-                                        plan['plan_name'] as String? ?? 'Plan';
-                                    final int exerciseCount =
-                                        plan['exercise_count'] as int? ?? 0;
-                                    final String createdOn =
-                                        plan['created_at'] != null
-                                            ? DateFormat('dd MMM yyyy').format(
-                                              DateTime.parse(
-                                                plan['created_at'] as String,
-                                              ),
-                                            )
-                                            : 'N/A';
+                                    child: Text('No workout plans found.'),
+                                  )
+                                : widget.groupType == 'multi_day'
+                                    ? ReorderableListView.builder(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          16,
+                                          0,
+                                          16,
+                                          100,
+                                        ),
+                                        itemCount: _plans.length,
+                                        onReorder: (int oldIndex, int newIndex) {
+                                          setState(() {
+                                            if (oldIndex < newIndex) {
+                                              newIndex -= 1;
+                                            }
+                                            final item = _plans.removeAt(oldIndex);
+                                            _plans.insert(newIndex, item);
+                                            for (int i = 0; i < _plans.length; i++) {
+                                              _plans[i]['day_number'] = i + 1;
+                                            }
+                                          });
+                                          _saveReorderedDays();
+                                        },
+                                        itemBuilder: (context, index) {
+                                          final plan = _plans[index];
+                                          final int planId = plan['id'] as int;
+                                          final String planName =
+                                              plan['plan_name'] as String? ?? 'Plan';
+                                          final int exerciseCount =
+                                              plan['exercise_count'] as int? ?? 0;
+                                          final String createdOn =
+                                              plan['created_at'] != null
+                                                  ? DateFormat('dd MMM yyyy').format(
+                                                      DateTime.parse(
+                                                        plan['created_at'] as String,
+                                                      ),
+                                                    )
+                                                  : 'N/A';
 
-                                    final planSource = plan['source'] as String? ?? widget.source;
-                                    final isOrgPlan = planSource == 'organization' || planSource == 'gym' || plan['is_preset'] == true;
-                                    final user = context.read<AppCubit>().state.currentUser;
-                                    final isTrainer = user?.userRole == 35;
-                                    final canEditOrDelete = !isTrainer || !isOrgPlan;
+                                          final planSource =
+                                              plan['source'] as String? ?? widget.source;
+                                          final isOrgPlan =
+                                              planSource == 'organization' ||
+                                              planSource == 'gym' ||
+                                              plan['is_preset'] == true;
+                                          final user =
+                                              context.read<AppCubit>().state.currentUser;
+                                          final isTrainer = user?.userRole == 35;
+                                          final canEditOrDelete =
+                                              !isTrainer || !isOrgPlan;
 
-                                    final int? dayNum =
-                                        widget.groupType == 'multi_day'
-                                            ? ((plan['day_number'] as int?) ??
-                                                (index + 1))
-                                            : null;
+                                          final int? dayNum =
+                                              (plan['day_number'] as int?) ??
+                                              (index + 1);
 
-                                    return _PlanCard(
-                                      title: planName,
-                                      exerciseCount: exerciseCount,
-                                      createdOn: createdOn,
-                                      canEditOrDelete: canEditOrDelete,
-                                      dayNumber: dayNum,
-                                      onTap: () async {
-                                        final int targetPlanId =
-                                            widget.groupType == 'multi_day'
-                                                ? (_masterPlanId ?? planId)
-                                                : planId;
-                                        final int? targetPlanDayId =
-                                            widget.groupType == 'multi_day'
-                                                ? (plan['plan_day_id'] as int?)
-                                                : null;
+                                          return Padding(
+                                            key: ValueKey(
+                                              plan['plan_day_id'] ??
+                                                  plan['id'] ??
+                                                  'day_$index',
+                                            ),
+                                            padding: const EdgeInsets.only(bottom: 16),
+                                            child: _PlanCard(
+                                              title: planName,
+                                              exerciseCount: exerciseCount,
+                                              createdOn: createdOn,
+                                              canEditOrDelete: canEditOrDelete,
+                                              dayNumber: dayNum,
+                                              onTap: () async {
+                                                final int targetPlanId =
+                                                    _masterPlanId ?? planId;
+                                                final int? targetPlanDayId =
+                                                    plan['plan_day_id'] as int?;
 
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute<void>(
-                                            builder:
-                                                (context) =>
-                                                    WorkoutPlanDetailsScreen(
-                                                      planTitle: planName,
-                                                      planId: targetPlanId,
-                                                      planDayId: targetPlanDayId,
-                                                    ),
-                                          ),
-                                        );
-                                        if (mounted) {
-                                          _fetchPlans();
-                                        }
-                                      },
-                                      onAssignTap: () {
-                                        showModalBottomSheet<void>(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          builder:
-                                              (context) =>
-                                                  AssignToClientBottomSheet(
-                                                    planId: planId,
-                                                    planTitle: planName,
+                                                await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute<void>(
+                                                    builder:
+                                                        (context) =>
+                                                            WorkoutPlanDetailsScreen(
+                                                              planTitle: planName,
+                                                              planId: targetPlanId,
+                                                              planDayId:
+                                                                  targetPlanDayId,
+                                                            ),
                                                   ),
-                                        );
-                                      },
-                                      onRename: () => _renamePlan(planId, planName),
-                                      onDelete: () => _deletePlan(planId),
-                                    );
-                                  },
-                                ),
+                                                );
+                                                if (mounted) {
+                                                  _fetchPlans();
+                                                }
+                                              },
+                                              onAssignTap: () {},
+                                              onRename:
+                                                  () => _renamePlan(planId, planName),
+                                              onDelete: () => _deletePlan(planId),
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : ListView.separated(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          16,
+                                          0,
+                                          16,
+                                          100,
+                                        ),
+                                        itemCount: _plans.length,
+                                        separatorBuilder:
+                                            (context, index) =>
+                                                const SizedBox(height: 16),
+                                        itemBuilder: (context, index) {
+                                          final plan = _plans[index];
+                                          final int planId = plan['id'] as int;
+                                          final String planName =
+                                              plan['plan_name'] as String? ?? 'Plan';
+                                          final int exerciseCount =
+                                              plan['exercise_count'] as int? ?? 0;
+                                          final String createdOn =
+                                              plan['created_at'] != null
+                                                  ? DateFormat('dd MMM yyyy').format(
+                                                    DateTime.parse(
+                                                      plan['created_at'] as String,
+                                                    ),
+                                                  )
+                                                  : 'N/A';
+
+                                          final planSource = plan['source'] as String? ?? widget.source;
+                                          final isOrgPlan = planSource == 'organization' || planSource == 'gym' || plan['is_preset'] == true;
+                                          final user = context.read<AppCubit>().state.currentUser;
+                                          final isTrainer = user?.userRole == 35;
+                                          final canEditOrDelete = !isTrainer || !isOrgPlan;
+
+                                          final int? dayNum =
+                                              widget.groupType == 'multi_day'
+                                                  ? ((plan['day_number'] as int?) ??
+                                                      (index + 1))
+                                                  : null;
+
+                                          return _PlanCard(
+                                            title: planName,
+                                            exerciseCount: exerciseCount,
+                                            createdOn: createdOn,
+                                            canEditOrDelete: canEditOrDelete,
+                                            dayNumber: dayNum,
+                                            onTap: () async {
+                                              final int targetPlanId =
+                                                  widget.groupType == 'multi_day'
+                                                      ? (_masterPlanId ?? planId)
+                                                      : planId;
+                                              final int? targetPlanDayId =
+                                                  widget.groupType == 'multi_day'
+                                                      ? (plan['plan_day_id'] as int?)
+                                                      : null;
+
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute<void>(
+                                                  builder:
+                                                      (context) =>
+                                                          WorkoutPlanDetailsScreen(
+                                                            planTitle: planName,
+                                                            planId: targetPlanId,
+                                                            planDayId: targetPlanDayId,
+                                                          ),
+                                                ),
+                                              );
+                                              if (mounted) {
+                                                _fetchPlans();
+                                              }
+                                            },
+                                            onAssignTap: () {
+                                              showModalBottomSheet<void>(
+                                                context: context,
+                                                isScrollControlled: true,
+                                                backgroundColor: Colors.transparent,
+                                                builder:
+                                                    (context) =>
+                                                        AssignToClientBottomSheet(
+                                                          planId: planId,
+                                                          planTitle: planName,
+                                                        ),
+                                              );
+                                            },
+                                            onRename: () => _renamePlan(planId, planName),
+                                            onDelete: () => _deletePlan(planId),
+                                          );
+                                        },
+                                      ),
                       ),
                     ],
                   ),
@@ -526,6 +644,14 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
           nextDayNumber: nextDayNumber,
           masterPlanId: masterPlanId,
           firstDayIdToReplace: firstDayIdToReplace,
+          onBackToGroupSelect: () {
+            _showSelectWorkoutGroupSheet(
+              context,
+              nextDayNumber: nextDayNumber,
+              masterPlanId: masterPlanId,
+              firstDayIdToReplace: firstDayIdToReplace,
+            );
+          },
           onPlanAdded: () {
             _fetchPlans();
           },
@@ -1020,6 +1146,12 @@ class _PlanCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (dayNumber != null) ...[
+              const Icon(
+                Icons.drag_handle_rounded,
+                color: AppColors.textGrey,
+                size: 22,
+              ),
+              const SizedBox(width: 8),
               Container(
                 width: 56,
                 height: 56,
@@ -1247,9 +1379,22 @@ class __SelectGroupForWorkoutSheetState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Select the group of the workout',
-            style: AppStyles.text18Px.poppins.w600.copyWith(color: AppColors.textDark),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'Select the group of the workout',
+                  style: AppStyles.text18Px.poppins.w600.copyWith(color: AppColors.textDark),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close, color: AppColors.textDark),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           TextField(
@@ -1339,6 +1484,7 @@ class _SelectPlanForDaySheet extends StatefulWidget {
     required this.masterPlanId,
     required this.onPlanAdded,
     this.firstDayIdToReplace,
+    this.onBackToGroupSelect,
   });
 
   final int groupId;
@@ -1347,6 +1493,7 @@ class _SelectPlanForDaySheet extends StatefulWidget {
   final int masterPlanId;
   final int? firstDayIdToReplace;
   final VoidCallback onPlanAdded;
+  final VoidCallback? onBackToGroupSelect;
 
   @override
   State<_SelectPlanForDaySheet> createState() => __SelectPlanForDaySheetState();
@@ -1441,9 +1588,25 @@ class __SelectPlanForDaySheetState extends State<_SelectPlanForDaySheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Add Workout Plan for Day ${widget.nextDayNumber}',
-            style: AppStyles.text18Px.poppins.w600.copyWith(color: AppColors.textDark),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  widget.onBackToGroupSelect?.call();
+                },
+                icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Add Workout Plan for Day ${widget.nextDayNumber}',
+                  style: AppStyles.text18Px.poppins.w600.copyWith(color: AppColors.textDark),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           TextField(

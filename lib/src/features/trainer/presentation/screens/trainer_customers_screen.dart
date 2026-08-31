@@ -1840,9 +1840,8 @@ class _AssignPlanBottomSheetContentState
                                 : ListView.separated(
                                   padding: const EdgeInsets.only(bottom: 80),
                                   itemCount: _plans.length,
-                                  separatorBuilder:
-                                      (context, index) =>
-                                          const SizedBox(height: 12),
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 12),
                                   itemBuilder: (context, index) {
                                     final plan = _plans[index];
                                     final int planId = plan['id'] as int;
@@ -1853,90 +1852,103 @@ class _AssignPlanBottomSheetContentState
                                     final bool isSubmitting =
                                         _submittingMap[planId] ?? false;
 
-                                    return Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: AppColors.borderGrey,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  planName,
-                                                  style:
-                                                      AppStyles
-                                                          .text14Px
-                                                          .poppins
-                                                          .w600
-                                                          .dark,
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute<void>(
+                                            builder: (context) =>
+                                                WorkoutPlanDetailsScreen(
+                                                  planId: planId,
+                                                  planTitle: planName,
+                                                  assignToCustomerId:
+                                                      widget.customerId,
                                                 ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  'Exercises: $exerciseCount',
-                                                  style: AppStyles
-                                                      .text12Px
-                                                      .poppins
-                                                      .w400
-                                                      .copyWith(
-                                                        color:
-                                                            AppColors.textGrey,
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
                                           ),
-                                          const SizedBox(width: 8),
-                                          isSubmitting
-                                              ? const SizedBox(
-                                                width: 24,
-                                                height: 24,
-                                                child:
-                                                    CircularProgressIndicator(
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: AppColors.borderGrey,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    planName,
+                                                    style: AppStyles.text14Px
+                                                        .poppins.w600.dark,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    'Exercises: $exerciseCount',
+                                                    style: AppStyles.text12Px
+                                                        .poppins.w400
+                                                        .copyWith(
+                                                      color:
+                                                          AppColors.textGrey,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            isSubmitting
+                                                ? const SizedBox(
+                                                    width: 24,
+                                                    height: 24,
+                                                    child:
+                                                        CircularProgressIndicator(
                                                       strokeWidth: 2,
                                                     ),
-                                              )
-                                              : ElevatedButton(
-                                                onPressed:
-                                                    () => _assignPlan(
+                                                  )
+                                                : ElevatedButton(
+                                                    onPressed: () =>
+                                                        _assignPlan(
                                                       planId,
                                                       planName,
                                                     ),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: const Color(
-                                                    0xFF2E7D32,
-                                                  ),
-                                                  foregroundColor: Colors.white,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          20,
-                                                        ),
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          const Color(
+                                                        0xFF2E7D32,
+                                                      ),
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20),
+                                                      ),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
                                                         horizontal: 16,
                                                         vertical: 8,
                                                       ),
-                                                  elevation: 0,
-                                                ),
-                                                child: Text(
-                                                  'Assign',
-                                                  style:
-                                                      AppStyles
+                                                      elevation: 0,
+                                                    ),
+                                                    child: Text(
+                                                      'Assign',
+                                                      style: AppStyles
                                                           .text12Px
                                                           .poppins
                                                           .w600,
-                                                ),
-                                              ),
-                                        ],
+                                                    ),
+                                                  ),
+                                          ],
+                                        ),
                                       ),
                                     );
                                   },
