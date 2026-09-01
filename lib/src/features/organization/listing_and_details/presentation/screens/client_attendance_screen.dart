@@ -82,6 +82,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           widget.isTrainer
               ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=1'
               : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=1';
+      if (_statusFilter != 'all' &&
+          (_statusFilter == 'present' ||
+              _statusFilter == 'absent' ||
+              _statusFilter == 'unmarked')) {
+        url += '&status=$_statusFilter';
+      }
       if (_searchQuery.isNotEmpty) {
         url += '&search=${Uri.encodeComponent(_searchQuery)}';
       }
@@ -222,6 +228,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           widget.isTrainer
               ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=$nextPage'
               : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=$nextPage';
+      if (_statusFilter != 'all' &&
+          (_statusFilter == 'present' ||
+              _statusFilter == 'absent' ||
+              _statusFilter == 'unmarked')) {
+        url += '&status=$_statusFilter';
+      }
       if (_searchQuery.isNotEmpty) {
         url += '&search=${Uri.encodeComponent(_searchQuery)}';
       }
@@ -1523,7 +1535,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           Expanded(
             child:
                 _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? _buildAttendanceShimmer()
                     : _filteredClients.isEmpty
                     ? Center(
                       child: Column(
@@ -1548,8 +1560,10 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                           if (_statusFilter != 'all') ...[
                             const SizedBox(height: 8),
                             TextButton(
-                              onPressed:
-                                  () => setState(() => _statusFilter = 'all'),
+                              onPressed: () {
+                                setState(() => _statusFilter = 'all');
+                                _fetchAttendance();
+                              },
                               child: const Text('Clear Filter'),
                             ),
                           ],
@@ -1853,6 +1867,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                               setState(() {
                                 _statusFilter = isSelected ? 'all' : s.key;
                               });
+                              _fetchAttendance();
                             },
                             borderRadius: BorderRadius.circular(10),
                             child: Container(
@@ -1996,7 +2011,10 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                       ),
                       const SizedBox(width: 4),
                       GestureDetector(
-                        onTap: () => setState(() => _statusFilter = 'all'),
+                        onTap: () {
+                          setState(() => _statusFilter = 'all');
+                          _fetchAttendance();
+                        },
                         child: const Icon(
                           Icons.close,
                           size: 14,
@@ -2420,6 +2438,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         setState(() {
                           _statusFilter = opt.value;
                         });
+                        _fetchAttendance();
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -2736,6 +2755,42 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           ),
         ),
       ],
+    );
+  }
+  Widget _buildAttendanceShimmer() {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 6,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: context.colors.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: context.colors.border),
+          ),
+          child: Row(
+            children: [
+              const KShimmer(width: 48, height: 48, radius: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    KShimmer(width: 130, height: 14, radius: 4),
+                    SizedBox(height: 6),
+                    KShimmer(width: 90, height: 12, radius: 4),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              const KShimmer(width: 80, height: 32, radius: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 }

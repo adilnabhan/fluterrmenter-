@@ -3,7 +3,16 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
 
 class TrainerClientsTrainedScreen extends StatefulWidget {
-  const TrainerClientsTrainedScreen({super.key});
+  final String rangeType;
+  final String? date;
+  final String title;
+
+  const TrainerClientsTrainedScreen({
+    super.key,
+    this.rangeType = 'daily',
+    this.date,
+    this.title = 'Clients Trained Today',
+  });
 
   @override
   State<TrainerClientsTrainedScreen> createState() =>
@@ -34,8 +43,15 @@ class _TrainerClientsTrainedScreenState
     setState(() => _isLoading = true);
 
     try {
+      final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final Map<String, dynamic> queryParams = {
+        'range_type': widget.rangeType,
+        'date': widget.date ?? todayStr,
+      };
+
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.trainerClientsTrained,
+        queryParameters: queryParams,
         options: Options(headers: {'X-Platform': platformSource}).token,
       );
 
@@ -67,9 +83,32 @@ class _TrainerClientsTrainedScreenState
   }
 
   List<Map<String, dynamic>> get _filteredClients {
-    if (_searchQuery.trim().isEmpty) return _clients;
+    var list = _clients;
+
+    if (widget.rangeType == 'daily') {
+      final targetDate = widget.date ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final dateFiltered = list.where((c) {
+        final d = (c['date'] ??
+                c['last_verified_workout_date'] ??
+                c['workout_date'] ??
+                c['trained_date'])
+            ?.toString();
+        if (d != null && d.isNotEmpty && d.length >= 10) {
+          return d.startsWith(targetDate);
+        }
+        if (c['trained_today'] == true || c['is_trained_today'] == true) {
+          return true;
+        }
+        return true;
+      }).toList();
+      if (dateFiltered.isNotEmpty) {
+        list = dateFiltered;
+      }
+    }
+
+    if (_searchQuery.trim().isEmpty) return list;
     final q = _searchQuery.toLowerCase().trim();
-    return _clients.where((c) {
+    return list.where((c) {
       final name = (c['name'] ??
               '${c['first_name'] ?? ''} ${c['last_name'] ?? ''}')
           .toString()
@@ -95,7 +134,7 @@ class _TrainerClientsTrainedScreenState
         elevation: 0,
         leading: const PopButton().center,
         title: Text(
-          'Clients Trained',
+          widget.title,
           style: AppStyles.text18Px.poppins.w600.copyWith(
             color: context.colors.textPrimary,
           ),

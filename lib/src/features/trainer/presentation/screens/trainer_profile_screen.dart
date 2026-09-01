@@ -554,7 +554,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     if (widget.isViewOnly && _isLoading) {
       return Scaffold(
         backgroundColor: context.colors.background,
-        body: const Center(child: CircularProgressIndicator()),
+        body: _buildProfileShimmer(context),
       );
     }
 
@@ -1258,7 +1258,13 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         ),
         const SizedBox(height: 12),
         if (_isLoadingTransformations)
-          const Center(child: CircularProgressIndicator())
+          Row(
+            children: const [
+              Expanded(child: KShimmer(width: double.infinity, height: 160, radius: 16)),
+              SizedBox(width: 12),
+              Expanded(child: KShimmer(width: double.infinity, height: 160, radius: 16)),
+            ],
+          )
         else if (itemCount == 0)
           const SizedBox.shrink()
         else
@@ -1667,9 +1673,23 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     bool isLoading,
   ) {
     if (isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 20),
-        child: Center(child: CircularProgressIndicator()),
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.colors.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: context.colors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            KShimmer(width: 140, height: 16, radius: 4),
+            SizedBox(height: 12),
+            KShimmer(width: 80, height: 24, radius: 4),
+            SizedBox(height: 16),
+            KShimmer(width: double.infinity, height: 80, radius: 12),
+          ],
+        ),
       );
     }
     if (reviews.isEmpty) {
@@ -1948,6 +1968,137 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             const SizedBox(height: 12),
             _ReadMoreText(text: comment),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileShimmer(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 220,
+            child: Stack(
+              children: [
+                KShimmer(
+                  width: MediaQuery.of(context).size.width,
+                  height: 220,
+                  radius: 0,
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  left: 16,
+                  child: const KShimmer(width: 36, height: 36, radius: 18),
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  right: 16,
+                  child: const KShimmer(width: 36, height: 36, radius: 18),
+                ),
+              ],
+            ),
+          ),
+          Transform.translate(
+            offset: const Offset(0, -30),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: context.colors.card,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: context.colors.border),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            const KShimmer(width: 80, height: 80, radius: 40),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  KShimmer(width: 140, height: 18, radius: 4),
+                                  SizedBox(height: 8),
+                                  KShimmer(width: 90, height: 12, radius: 4),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: const [
+                            Column(
+                              children: [
+                                KShimmer(width: 30, height: 18, radius: 4),
+                                SizedBox(height: 4),
+                                KShimmer(width: 50, height: 10, radius: 4),
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                KShimmer(width: 30, height: 18, radius: 4),
+                                SizedBox(height: 4),
+                                KShimmer(width: 70, height: 10, radius: 4),
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                KShimmer(width: 30, height: 18, radius: 4),
+                                SizedBox(height: 4),
+                                KShimmer(width: 40, height: 10, radius: 4),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: context.colors.card,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: context.colors.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        KShimmer(width: 120, height: 14, radius: 4),
+                        SizedBox(height: 10),
+                        KShimmer(width: 200, height: 12, radius: 4),
+                        SizedBox(height: 6),
+                        KShimmer(width: 160, height: 12, radius: 4),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: const [
+                      Expanded(
+                        child: KShimmer(width: double.infinity, height: 160, radius: 16),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: KShimmer(width: double.infinity, height: 160, radius: 16),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const KShimmer(width: double.infinity, height: 54, radius: 16),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

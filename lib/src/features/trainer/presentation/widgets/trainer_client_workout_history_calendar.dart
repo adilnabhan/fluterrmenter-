@@ -324,8 +324,8 @@ class _TrainerClientWorkoutHistoryCalendarState
       focusedDay: _focusedDay,
       startingDayOfWeek: StartingDayOfWeek.monday,
       headerVisible: false,
-      rowHeight: 42,
-      daysOfWeekHeight: 26,
+      rowHeight: 38,
+      daysOfWeekHeight: 24,
       availableGestures: AvailableGestures.none,
       onPageChanged: (focusedDay) {
         setState(() {
@@ -414,7 +414,7 @@ class _TrainerClientWorkoutHistoryCalendarState
       return _dayState(
         day: day,
         bgColor: const Color(0xFF238644),
-        borderColor: isToday ? const Color(0xFFFF9800) : Colors.transparent,
+        borderColor: isToday ? Colors.black : Colors.transparent,
         textColor: const Color(0xFFD3EED8),
       );
     }
@@ -423,7 +423,7 @@ class _TrainerClientWorkoutHistoryCalendarState
       return _dayState(
         day: day,
         bgColor: const Color(0xFFD1AC19),
-        borderColor: isToday ? const Color(0xFFFF9800) : Colors.transparent,
+        borderColor: isToday ? Colors.black : Colors.transparent,
         textColor: const Color(0xFFF6F0D6),
       );
     }
@@ -432,7 +432,7 @@ class _TrainerClientWorkoutHistoryCalendarState
       return _dayState(
         day: day,
         bgColor: const Color(0xFFD32F2F),
-        borderColor: isToday ? const Color(0xFFFF9800) : Colors.transparent,
+        borderColor: isToday ? Colors.black : Colors.transparent,
         textColor: const Color(0xFFF9D8DA),
       );
     }
@@ -442,7 +442,7 @@ class _TrainerClientWorkoutHistoryCalendarState
       return _dayState(
         day: day,
         bgColor: const Color(0xFF3949AB),
-        borderColor: isToday ? const Color(0xFFFF9800) : Colors.transparent,
+        borderColor: isToday ? Colors.black : Colors.transparent,
         textColor: const Color(0xFFE2EAF8),
       );
     }
@@ -454,17 +454,20 @@ class _TrainerClientWorkoutHistoryCalendarState
     final bgColor = (isBeforeStart || isFuture) ? const Color(0xFFFAFAFA) : const Color(0xFFD32F2F);
     final dayTextColor = (isBeforeStart || isFuture) ? Colors.grey.shade400 : const Color(0xFFF9D8DA);
 
-    return Container(
-      margin: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(10),
-        border: isToday ? Border.all(color: const Color(0xFFFF9800), width: 1.5) : null,
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        '${day.day}',
-        style: AppStyles.text13Px.poppins.w600.copyWith(color: dayTextColor),
+    return Center(
+      child: Container(
+        height: 28,
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+          border: isToday ? Border.all(color: Colors.black, width: 1.5) : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          '${day.day}',
+          style: AppStyles.text13Px.poppins.w600.copyWith(color: dayTextColor),
+        ),
       ),
     );
   }
@@ -475,17 +478,20 @@ class _TrainerClientWorkoutHistoryCalendarState
     required Color borderColor,
     required Color textColor,
   }) {
-    return Container(
-      margin: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(10),
-        border: borderColor != Colors.transparent ? Border.all(color: borderColor, width: 1.5) : null,
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        '${day.day}',
-        style: AppStyles.text13Px.poppins.w600.copyWith(color: textColor),
+    return Center(
+      child: Container(
+        height: 28,
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+          border: borderColor != Colors.transparent ? Border.all(color: borderColor, width: 1.5) : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          '${day.day}',
+          style: AppStyles.text13Px.poppins.w600.copyWith(color: textColor),
+        ),
       ),
     );
   }

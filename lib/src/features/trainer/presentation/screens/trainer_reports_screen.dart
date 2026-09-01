@@ -154,12 +154,16 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                             icon: Icons.people_outline,
                             color: const Color(0xff486CC2),
                             onTap: () {
+                              final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder:
-                                      (context) =>
-                                          const TrainerClientsTrainedScreen(),
+                                      (context) => TrainerClientsTrainedScreen(
+                                        rangeType: 'daily',
+                                        date: todayStr,
+                                        title: 'Clients Trained Today',
+                                      ),
                                 ),
                               );
                             },

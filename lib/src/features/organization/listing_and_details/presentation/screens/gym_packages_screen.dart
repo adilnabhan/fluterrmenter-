@@ -467,76 +467,59 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                                                     .w600
                                                     .dark,
                                           ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              IconButton(
-                                                icon: const Icon(
-                                                  Icons.edit_outlined,
-                                                  size: 20,
-                                                ),
-                                                onPressed: () {
-                                                  if (widget.orgDetails.id ==
-                                                      null) {
-                                                    Dialogs.showSnack(
-                                                      msg:
-                                                          'Organization is not available',
-                                                    );
-                                                    return;
-                                                  }
-                                                  context.push(
-                                                    BlocProvider.value(
-                                                      value: _cubit,
-                                                      child:
-                                                          GymAddOrEditPackageScreen(
-                                                            membershipPackage:
-                                                                membership,
-                                                          ),
-                                                    ),
-                                                  );
-                                                },
-                                                style: IconButton.styleFrom(
-                                                  foregroundColor: const Color(
-                                                    0xff666666,
-                                                  ),
-                                                  backgroundColor: const Color(
-                                                    0xffF5F5F5,
-                                                  ),
-                                                  padding: const EdgeInsets.all(
-                                                    8,
-                                                  ),
-                                                ),
-                                              ),
-                                              IconButton(
-                                                icon: const Icon(
-                                                  Icons.delete_outline,
-                                                  size: 20,
-                                                ),
-                                                onPressed: () {
-                                                  if (widget.orgDetails.id ==
-                                                      null) {
-                                                    Dialogs.showSnack(
-                                                      msg:
-                                                          'Organization is not available',
-                                                    );
-                                                    return;
-                                                  }
-                                                  _onDeletePackage(
-                                                    id: data.results?[index].id,
-                                                  );
-                                                },
-                                                style: IconButton.styleFrom(
-                                                  foregroundColor: Colors.red,
-                                                  backgroundColor: const Color(
-                                                    0xffF5F5F5,
-                                                  ),
-                                                  padding: const EdgeInsets.all(
-                                                    8,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                           PopupMenuButton<String>(
+                                             icon: const Icon(
+                                               Icons.more_vert,
+                                               color: Color(0xff666666),
+                                             ),
+                                             shape: RoundedRectangleBorder(
+                                               borderRadius: BorderRadius.circular(12),
+                                             ),
+                                             onSelected: (value) {
+                                               if (widget.orgDetails.id == null) {
+                                                 Dialogs.showSnack(
+                                                   msg: 'Organization is not available',
+                                                 );
+                                                 return;
+                                               }
+                                               if (value == 'edit') {
+                                                 context.push(
+                                                   BlocProvider.value(
+                                                     value: _cubit,
+                                                     child: GymAddOrEditPackageScreen(
+                                                       membershipPackage: membership,
+                                                     ),
+                                                   ),
+                                                 );
+                                               } else if (value == 'delete') {
+                                                 _onDeletePackage(
+                                                   id: data.results?[index].id,
+                                                 );
+                                               }
+                                             },
+                                             itemBuilder: (BuildContext context) => [
+                                               const PopupMenuItem<String>(
+                                                 value: 'edit',
+                                                 child: Row(
+                                                   children: [
+                                                     Icon(Icons.edit_outlined, size: 18, color: AppColors.dark),
+                                                     SizedBox(width: 8),
+                                                     Text('Edit', style: TextStyle(color: AppColors.dark)),
+                                                   ],
+                                                 ),
+                                               ),
+                                               const PopupMenuItem<String>(
+                                                 value: 'delete',
+                                                 child: Row(
+                                                   children: [
+                                                     Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                                     SizedBox(width: 8),
+                                                     Text('Delete', style: TextStyle(color: Colors.red)),
+                                                   ],
+                                                 ),
+                                               ),
+                                             ],
+                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 20),

@@ -1779,50 +1779,6 @@ class _OrganizationListingAndDetailsScreenState
                                     }
                                   },
                                 ),
-
-                                (
-                                  title: 'Biometric\nDevices',
-
-                                  count: 'Coming\nsoon',
-
-                                  countColor: const Color(0xff27AE60),
-
-                                  labelColor: const Color(0xff333333),
-
-                                  gradient: null,
-
-                                  borderColor: const Color(0xffEEEEEE),
-
-                                  iconColor: AppColors.dark,
-
-                                  iconBgColor: null,
-
-                                  isChevron: true,
-
-                                  onTap: () {},
-                                ),
-
-                                (
-                                  title: 'Today\'s\nleads',
-
-                                  count: 'Coming\nsoon',
-
-                                  countColor: const Color(0xff333333),
-
-                                  labelColor: const Color(0xff333333),
-
-                                  gradient: null,
-
-                                  borderColor: const Color(0xffEEEEEE),
-
-                                  iconColor: AppColors.dark,
-
-                                  iconBgColor: null,
-
-                                  isChevron: true,
-
-                                  onTap: () {},
-                                ),
                               ];
 
                               return RefreshIndicator(
