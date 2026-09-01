@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/domain/models/banner_model.dart';
 
 @immutable
 final class OrganizationListAndDetailsRepository {
@@ -59,6 +60,54 @@ final class OrganizationListAndDetailsRepository {
     } on ApiException catch (e) {
       return left(e);
     } catch (_) {
+      return left(const ApiException.unknown());
+    }
+  }
+
+  Future<Either<ApiException, List<BannerModel>>> getGymBanners(int organizationId) async {
+    try {
+      return await Feggy.async(
+        call: _dio.get<dynamic>(
+          ApiUris.gymBanners(organizationId),
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
+        onSuccess: (res) {
+          if (res.statusCode == 200 && res.data != null && res.data is List) {
+            final List<BannerModel> banners = (res.data as List)
+                .map((e) => BannerModel.fromJson(e as Map<String, dynamic>))
+                .toList();
+            return right(banners);
+          }
+          return left(const ApiException.unknown());
+        },
+      );
+    } on ApiException catch (e) {
+      return left(e);
+    } catch (e) {
+      return left(const ApiException.unknown());
+    }
+  }
+
+  Future<Either<ApiException, List<BannerModel>>> getGlobalBanners() async {
+    try {
+      return await Feggy.async(
+        call: _dio.get<dynamic>(
+          ApiUris.globalBanners,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
+        onSuccess: (res) {
+          if (res.statusCode == 200 && res.data != null && res.data is List) {
+            final List<BannerModel> banners = (res.data as List)
+                .map((e) => BannerModel.fromJson(e as Map<String, dynamic>))
+                .toList();
+            return right(banners);
+          }
+          return left(const ApiException.unknown());
+        },
+      );
+    } on ApiException catch (e) {
+      return left(e);
+    } catch (e) {
       return left(const ApiException.unknown());
     }
   }

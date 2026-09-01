@@ -1,3 +1,4 @@
+import 'package:mentor_mobile_app/core/services/notification/notification_services.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 part 'app_cubit.freezed.dart';
@@ -35,11 +36,13 @@ class AppCubit extends HydratedCubit<AppState> {
       currentAccounts.add(user);
     }
     emit(state.copyWith(currentUser: user, accounts: currentAccounts));
+    NotificationServices.registerDeviceToken();
   }
 
   void switchAccount(LoginSuccessModel user) {
     LocalStorageService().saveUser(user);
     emit(state.copyWith(currentUser: user));
+    NotificationServices.registerDeviceToken();
   }
 
   void removeUser() {

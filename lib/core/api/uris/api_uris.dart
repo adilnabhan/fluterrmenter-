@@ -20,6 +20,7 @@ final class ApiUris {
   static final onboarding = '${_v1}user/onboarding/';
 
   static final logout = '${_v1}user/logout/';
+  static final registerDeviceToken = '${_v1}communication/device-token/register/';
 
   ///============================= Common =============================\\\
   static final categories = '${_v1}fitnesscenter/categories/';
@@ -36,6 +37,9 @@ final class ApiUris {
       '${_v1}fitnesscenter/organization/$orgId/';
   static String fetchHomeData(int orgId) =>
       '${_v1}fitnesscenter/home/?organization_id=$orgId';
+  static String gymBanners(int orgId) =>
+      '${_v1}fitnesscenter/gym-banners/?organization_id=$orgId';
+  static final globalBanners = '${_v1}fitnesscenter/global-banners/';
   static String updateOrg(int orgId) =>
       '${_v1}fitnesscenter/organization/$orgId/update/';
   static String deletePhoto(int orgId, int photoId) =>
@@ -104,13 +108,32 @@ final class ApiUris {
 
   // Customer workout history
   static String customerWorkoutHistory(int customerId) => '${_v1}trainer/customers/$customerId/workout-history/';
+  static String mentorClientCalendar(int customerId) => '${_v1}fitnesscenter/clients/$customerId/calendar/';
 
   ///============================= Verification =============================\\\
   static final pendingVerifications = '${_v1}mentor/verification/pending/';
   static String verifyWorkout(int sessionId) => '${_v1}mentor/verification/verify/$sessionId/';
   static final verificationHistory = '${_v1}mentor/verification/history/';
-  static String mentorClientCalendar(int customerId) => '${_v1}mentor/clients/$customerId/calendar/';
-  static String mentorClientHistory(int customerId) => '${_v1}mentor/clients/$customerId/history/';
   static final profileCompleteness = '${_v1}user/profile/completeness/';
   static final updateMentorProfile = '${_v1}mentor/profile/update/';
+
+  ///============================= Trainer Premium & Self Clients =============================\\\
+  static final trainerPremiumCreateOrder = '${_v1}trainer/premium/create-order/';
+  static final trainerPremiumVerify = '${_v1}trainer/premium/verify/';
+  static final trainerPremiumStatus = '${_v1}trainer/premium/status/';
+  static final trainerSelfClients = '${_v1}trainer/self-clients/';
+  static String trainerSelfClientDetail(int id) => '${_v1}trainer/self-clients/$id/';
+
+  ///============================= Diet & Nutrition =============================\\\
+  static final trainerDietPlans = '${_v1}trainer/diet-plans/';
+  static String trainerDietPlanDetail(int id) => '${_v1}trainer/diet-plans/$id/';
+  static String trainerDietPlanAssign(int id) => '${_v1}trainer/diet-plans/$id/assign/';
+  static String trainerAssignDietToCustomer(int customerId) => '${_v1}trainer/customers/$customerId/assign-diet/';
+  static String trainerCustomerNutritionReport(int customerId) => '${_v1}trainer/customers/$customerId/nutrition-report/';
+
+  ///============================= In-App Chat =============================\\\
+  static final chatConversations = '${_v1}chat/conversations/';
+  static final chatDirect = '${_v1}chat/direct/';
+  static String chatMessages(int conversationId) => '${_v1}chat/conversations/$conversationId/messages/';
 }
+

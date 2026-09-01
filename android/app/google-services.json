@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "181787488820",
+    "project_id": "discipl-64bfa",
+    "storage_bucket": "discipl-64bfa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:181787488820:android:19f7cabf2e5e39d08cd061",
+        "android_client_info": {
+          "package_name": "com.discipl.customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_iRb3mZdL8Bo3Ariy9qB-fhx3U8oxfRQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:181787488820:android:af6a6d329205ee288cd061",
+        "android_client_info": {
+          "package_name": "com.discipl.mentor_mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_iRb3mZdL8Bo3Ariy9qB-fhx3U8oxfRQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:181787488820:android:af6a6d329205ee288cd061",
+        "android_client_info": {
+          "package_name": "com.disicpl.mentor_mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_iRb3mZdL8Bo3Ariy9qB-fhx3U8oxfRQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

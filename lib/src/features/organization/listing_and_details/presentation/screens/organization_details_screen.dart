@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/banners_view.dart';
 
 class OrganizationDetailsScreen extends StatefulWidget {
   const OrganizationDetailsScreen({
@@ -110,6 +111,29 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        
+                        // Global Banners
+                        ...state.globalBanners.fold(
+                          () => [],
+                          (either) => either.fold(
+                            (_) => [],
+                            (banners) => banners.isNotEmpty
+                                ? [BannersView(banners: banners), const SizedBox(height: 16)]
+                                : [],
+                          ),
+                        ),
+                        
+                        // Gym Banners
+                        ...state.gymBanners.fold(
+                          () => [],
+                          (either) => either.fold(
+                            (_) => [],
+                            (banners) => banners.isNotEmpty
+                                ? [BannersView(banners: banners), const SizedBox(height: 16)]
+                                : [],
+                          ),
+                        ),
+                        
                         ...[
                           _buildProfileListItem('Gym Details', () {
                             context.push(

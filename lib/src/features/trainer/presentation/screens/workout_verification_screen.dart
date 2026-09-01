@@ -184,7 +184,7 @@ class _WorkoutVerificationScreenState extends State<WorkoutVerificationScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              session['title'] ?? 'Workout Details',
+              session['title'] as String? ?? 'Workout Details',
               style: AppStyles.text18Px.poppins.w700.dark,
               textAlign: TextAlign.center,
             ),
@@ -221,7 +221,7 @@ class _WorkoutVerificationScreenState extends State<WorkoutVerificationScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  ex['exercise_name'] ?? 'Exercise',
+                                  ex['exercise_name'] as String? ?? 'Exercise',
                                   style: AppStyles.text16Px.poppins.w600.dark,
                                 ),
                                 const SizedBox(height: 6),
@@ -260,7 +260,7 @@ class _WorkoutVerificationScreenState extends State<WorkoutVerificationScreen>
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  _verifyWorkout(session['session_id']);
+                  _verifyWorkout(session['session_id'] as int);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -348,12 +348,12 @@ class _WorkoutVerificationScreenState extends State<WorkoutVerificationScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item['customer_name'] ?? 'Client',
+                            item['customer_name'] as String? ?? 'Client',
                             style: AppStyles.text16Px.poppins.w600.dark,
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            item['title'] ?? 'Workout Session',
+                            item['title'] as String? ?? 'Workout Session',
                             style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
                           ),
                           const SizedBox(height: 4),
@@ -365,7 +365,7 @@ class _WorkoutVerificationScreenState extends State<WorkoutVerificationScreen>
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: () => _verifyWorkout(item['session_id']),
+                      onPressed: () => _verifyWorkout(item['session_id'] as int),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -428,7 +428,7 @@ class _WorkoutVerificationScreenState extends State<WorkoutVerificationScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item['customer_name'] ?? 'Client',
+                          item['customer_name'] as String? ?? 'Client',
                           style: AppStyles.text16Px.poppins.w600.dark,
                         ),
                         const SizedBox(height: 2),

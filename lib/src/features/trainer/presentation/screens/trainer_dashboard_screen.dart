@@ -4,6 +4,8 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/workout_verification_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/self_clients_screen.dart';
+import 'package:mentor_mobile_app/src/features/subscription/presentation/screens/trainer_go_premium_screen.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
   const TrainerDashboardScreen({super.key});
@@ -162,7 +164,125 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
+
+                    // Trainer Marketplace Go Premium Banner
+                    InkWell(
+                      onTap: () {
+                        context.push(const TrainerGoPremiumScreen());
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0D3B2E), Color(0xFF134E3F)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0D3B2E).withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFBBF24), size: 28),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        'Trainer Marketplace',
+                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF59E0B),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Text(
+                                          'PREMIUM',
+                                          style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 3),
+                                  const Text(
+                                    'Get direct client leads on WhatsApp across all gyms',
+                                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 14),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Self Clients Management Card
+                    InkWell(
+                      onTap: () {
+                        context.push(const SelfClientsScreen());
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEEF2FF),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.person_pin_rounded, color: Color(0xFF4F46E5), size: 24),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text(
+                                    'Self Clients',
+                                    style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w700, fontSize: 15),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Manage your independent freelance clients',
+                                    style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios, color: Color(0xFF94A3B8), size: 14),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
 
                     // Clients Section Navigation Card
                     InkWell(

@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
+import 'package:mentor_mobile_app/src/features/chat/presentation/screens/trainer_chat_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/add_or_edit_memeber_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
@@ -17,6 +18,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   String _searchQuery = '';
   String _statusFilter = 'all'; // 'active' or 'all'
   String _selectedGymFilter = 'All'; // Selected gym capsule filter
+  String _sourceFilter = 'all'; // 'all', 'gym_assigned', 'self'
 
   @override
   void initState() {
@@ -34,6 +36,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         ApiUris.trainerCustomers,
         queryParameters: {
           'status': _statusFilter,
+          if (_sourceFilter != 'all') 'client_source': _sourceFilter,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),
@@ -62,23 +65,36 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   }
 
   List<String> get _gymFilters {
-    final Set<String> gyms = {'All'};
+    final List<String> filters = ['All'];
+    final bool hasGym = _clients.any((c) => (c['organization_name'] != null && c['organization_name'] != 'Direct Client'));
+    final bool hasSelf = _clients.any((c) => (c['client_source'] == 'self' || c['organization_name'] == 'Direct Client'));
+
+    if (hasGym) filters.add('Gym Customers');
+    if (hasSelf) filters.add('Self Clients');
+
     for (var client in _clients) {
       final orgName = client['organization_name'] as String?;
-      if (orgName != null && orgName.isNotEmpty) {
-        gyms.add(orgName);
+      if (orgName != null && orgName.isNotEmpty && orgName != 'Direct Client' && !filters.contains(orgName)) {
+        filters.add(orgName);
       }
     }
-    return gyms.toList();
+    return filters;
   }
 
   List<Map<String, dynamic>> get _filteredClients {
     return _clients.where((client) {
       final orgName = client['organization_name'] ?? 'Direct Client';
-      if (_selectedGymFilter != 'All' && orgName != _selectedGymFilter) {
-        return false;
+      final clientSource = client['client_source'] as String? ?? (orgName == 'Direct Client' ? 'self' : 'gym_assigned');
+
+      if (_selectedGymFilter == 'All') {
+        return true;
+      } else if (_selectedGymFilter == 'Gym Customers') {
+        return clientSource == 'gym_assigned' || orgName != 'Direct Client';
+      } else if (_selectedGymFilter == 'Self Clients') {
+        return clientSource == 'self' || orgName == 'Direct Client';
+      } else {
+        return orgName == _selectedGymFilter;
       }
-      return true;
     }).toList();
   }
 
@@ -275,6 +291,26 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
             ),
           ),
 
+          // 3.5 Client Source Filter Tabs (All / Gym Assigned / Self Clients)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Container(
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.all(3),
+              child: Row(
+                children: [
+                  _buildSourceTab('all', 'All Clients'),
+                  _buildSourceTab('gym_assigned', 'Gym Assigned'),
+                  _buildSourceTab('self', 'Self Clients'),
+                ],
+              ),
+            ),
+          ),
+
           // 4. Member Count
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -378,18 +414,74 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                                   category,
                                                   style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
                                                 ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  orgName,
-                                                  style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
-                                                ),
+                                                const SizedBox(height: 4),
+                                                if (client['client_source'] == 'self' || orgName == 'Direct Client')
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFFEFF6FF),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                      border: Border.all(color: const Color(0xFFBFDBFE), width: 0.5),
+                                                    ),
+                                                    child: const Text(
+                                                      'Freelance Client',
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: Color(0xFF1D4ED8),
+                                                      ),
+                                                    ),
+                                                  )
+                                                else
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFFF1F5F9),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                      border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        const Icon(Icons.fitness_center_rounded, size: 10, color: Color(0xFF475569)),
+                                                        const SizedBox(width: 4),
+                                                        Flexible(
+                                                          child: Text(
+                                                            orgName,
+                                                            style: const TextStyle(
+                                                              fontSize: 10,
+                                                              fontWeight: FontWeight.w600,
+                                                              color: Color(0xFF334155),
+                                                            ),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
                                               ],
                                             ),
-                                            const SizedBox(height: 8),
+                                            const SizedBox(height: 6),
                                             Text(
                                               'Goal: $goal',
                                               style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textGrey),
                                             ),
+                                            if (client['today_workout_name'] != null) ...[
+                                              const SizedBox(height: 2),
+                                              Row(
+                                                children: [
+                                                  const Icon(Icons.play_circle_outline_rounded, size: 12, color: AppColors.primary),
+                                                  const SizedBox(width: 4),
+                                                  Flexible(
+                                                    child: Text(
+                                                      client['today_workout_name'] as String,
+                                                      style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.primary),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ],
                                         ),
                                       ),
@@ -399,39 +491,69 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
-                                          if (isAssignedToMe)
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xffE2F6EA),
-                                                borderRadius: BorderRadius.circular(16),
-                                              ),
-                                              child: Text(
-                                                'Active',
-                                                style: AppStyles.text12Px.poppins.w600.copyWith(
-                                                  color: const Color(0xff27AE60),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                  Navigator.push<void>(
+                                                    context,
+                                                    MaterialPageRoute<void>(
+                                                      builder: (context) => TrainerChatScreen(
+                                                        customerId: customerId,
+                                                        customerName: name,
+                                                        customerPhoto: imgUrl != null ? imgUrl as String : null,
+                                                        customerPhone: client['mobile']?.toString(),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(6),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFFFFECEB),
+                                                    shape: BoxShape.circle,
+                                                    border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                                                  ),
+                                                  child: const Icon(Icons.chat_bubble_outline_rounded, size: 14, color: AppColors.primary),
                                                 ),
                                               ),
-                                            )
-                                          else
-                                            OutlinedButton(
-                                              onPressed: () => _showAssignPlanBottomSheet(context, client),
-                                              style: OutlinedButton.styleFrom(
-                                                side: const BorderSide(color: Color(0xFF27AE60), width: 1),
-                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(16),
+                                              const SizedBox(width: 8),
+                                              if (isAssignedToMe)
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xffE2F6EA),
+                                                    borderRadius: BorderRadius.circular(16),
+                                                  ),
+                                                  child: Text(
+                                                    'Active',
+                                                    style: AppStyles.text12Px.poppins.w600.copyWith(
+                                                      color: const Color(0xff27AE60),
+                                                    ),
+                                                  ),
+                                                )
+                                              else
+                                                OutlinedButton(
+                                                  onPressed: () => _showAssignPlanBottomSheet(context, client),
+                                                  style: OutlinedButton.styleFrom(
+                                                    side: const BorderSide(color: Color(0xFF27AE60), width: 1),
+                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                    minimumSize: Size.zero,
+                                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(16),
+                                                    ),
+                                                  ),
+                                                  child: Text(
+                                                    'Assign',
+                                                    style: AppStyles.text10Px.poppins.w600.copyWith(
+                                                      color: const Color(0xFF27AE60),
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
-                                              child: Text(
-                                                'Assign Workout',
-                                                style: AppStyles.text10Px.poppins.w600.copyWith(
-                                                  color: const Color(0xFF27AE60),
-                                                ),
-                                              ),
-                                            ),
+                                            ],
+                                          ),
                                           // Last Active
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -483,6 +605,44 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildSourceTab(String key, String label) {
+    final bool isSelected = _sourceFilter == key;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _sourceFilter = key;
+          });
+          _fetchClients();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

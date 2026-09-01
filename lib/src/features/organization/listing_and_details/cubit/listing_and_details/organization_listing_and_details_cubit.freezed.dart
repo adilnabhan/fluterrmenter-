@@ -27,6 +27,10 @@ mixin _$OrganizationListingAndDetailsState {
       throw _privateConstructorUsedError;
   Option<Either<ApiException, OrganizationDetailsModel>>?
   get updateOrgDetails => throw _privateConstructorUsedError;
+  Option<Either<ApiException, List<BannerModel>>> get gymBanners =>
+      throw _privateConstructorUsedError;
+  Option<Either<ApiException, List<BannerModel>>> get globalBanners =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of OrganizationListingAndDetailsState
   /// with the given fields replaced by the non-null parameter values.
@@ -54,6 +58,8 @@ abstract class $OrganizationListingAndDetailsStateCopyWith<$Res> {
     Option<Either<ApiException, OrganizationDetailsModel>> details,
     Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
     Option<Either<ApiException, OrganizationDetailsModel>>? updateOrgDetails,
+    Option<Either<ApiException, List<BannerModel>>> gymBanners,
+    Option<Either<ApiException, List<BannerModel>>> globalBanners,
   });
 
   $SingleOrganizationModelCopyWith<$Res>? get selectedOrganization;
@@ -82,6 +88,8 @@ class _$OrganizationListingAndDetailsStateCopyWithImpl<
     Object? details = null,
     Object? homeData = null,
     Object? updateOrgDetails = freezed,
+    Object? gymBanners = null,
+    Object? globalBanners = null,
   }) {
     return _then(
       _value.copyWith(
@@ -116,6 +124,16 @@ class _$OrganizationListingAndDetailsStateCopyWithImpl<
                         as Option<
                           Either<ApiException, OrganizationDetailsModel>
                         >?,
+            gymBanners:
+                null == gymBanners
+                    ? _value.gymBanners
+                    : gymBanners // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, List<BannerModel>>>,
+            globalBanners:
+                null == globalBanners
+                    ? _value.globalBanners
+                    : globalBanners // ignore: cast_nullable_to_non_nullable
+                        as Option<Either<ApiException, List<BannerModel>>>,
           )
           as $Val,
     );
@@ -154,6 +172,8 @@ abstract class _$$OrganizationListingAndDetailsStateImplCopyWith<$Res>
     Option<Either<ApiException, OrganizationDetailsModel>> details,
     Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
     Option<Either<ApiException, OrganizationDetailsModel>>? updateOrgDetails,
+    Option<Either<ApiException, List<BannerModel>>> gymBanners,
+    Option<Either<ApiException, List<BannerModel>>> globalBanners,
   });
 
   @override
@@ -183,6 +203,8 @@ class __$$OrganizationListingAndDetailsStateImplCopyWithImpl<$Res>
     Object? details = null,
     Object? homeData = null,
     Object? updateOrgDetails = freezed,
+    Object? gymBanners = null,
+    Object? globalBanners = null,
   }) {
     return _then(
       _$OrganizationListingAndDetailsStateImpl(
@@ -211,6 +233,16 @@ class __$$OrganizationListingAndDetailsStateImplCopyWithImpl<$Res>
                 ? _value.updateOrgDetails
                 : updateOrgDetails // ignore: cast_nullable_to_non_nullable
                     as Option<Either<ApiException, OrganizationDetailsModel>>?,
+        gymBanners:
+            null == gymBanners
+                ? _value.gymBanners
+                : gymBanners // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, List<BannerModel>>>,
+        globalBanners:
+            null == globalBanners
+                ? _value.globalBanners
+                : globalBanners // ignore: cast_nullable_to_non_nullable
+                    as Option<Either<ApiException, List<BannerModel>>>,
       ),
     );
   }
@@ -226,6 +258,8 @@ class _$OrganizationListingAndDetailsStateImpl
     this.details = const None(),
     this.homeData = const None(),
     this.updateOrgDetails,
+    this.gymBanners = const None(),
+    this.globalBanners = const None(),
   });
 
   @override
@@ -242,10 +276,16 @@ class _$OrganizationListingAndDetailsStateImpl
   @override
   final Option<Either<ApiException, OrganizationDetailsModel>>?
   updateOrgDetails;
+  @override
+  @JsonKey()
+  final Option<Either<ApiException, List<BannerModel>>> gymBanners;
+  @override
+  @JsonKey()
+  final Option<Either<ApiException, List<BannerModel>>> globalBanners;
 
   @override
   String toString() {
-    return 'OrganizationListingAndDetailsState(selectedOrganization: $selectedOrganization, list: $list, details: $details, homeData: $homeData, updateOrgDetails: $updateOrgDetails)';
+    return 'OrganizationListingAndDetailsState(selectedOrganization: $selectedOrganization, list: $list, details: $details, homeData: $homeData, updateOrgDetails: $updateOrgDetails, gymBanners: $gymBanners, globalBanners: $globalBanners)';
   }
 
   @override
@@ -260,7 +300,11 @@ class _$OrganizationListingAndDetailsStateImpl
             (identical(other.homeData, homeData) ||
                 other.homeData == homeData) &&
             (identical(other.updateOrgDetails, updateOrgDetails) ||
-                other.updateOrgDetails == updateOrgDetails));
+                other.updateOrgDetails == updateOrgDetails) &&
+            (identical(other.gymBanners, gymBanners) ||
+                other.gymBanners == gymBanners) &&
+            (identical(other.globalBanners, globalBanners) ||
+                other.globalBanners == globalBanners));
   }
 
   @override
@@ -271,6 +315,8 @@ class _$OrganizationListingAndDetailsStateImpl
     details,
     homeData,
     updateOrgDetails,
+    gymBanners,
+    globalBanners,
   );
 
   /// Create a copy of OrganizationListingAndDetailsState
@@ -295,6 +341,8 @@ abstract class _OrganizationListingAndDetailsState
     final Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
     final Option<Either<ApiException, OrganizationDetailsModel>>?
     updateOrgDetails,
+    final Option<Either<ApiException, List<BannerModel>>> gymBanners,
+    final Option<Either<ApiException, List<BannerModel>>> globalBanners,
   }) = _$OrganizationListingAndDetailsStateImpl;
 
   @override
@@ -307,6 +355,10 @@ abstract class _OrganizationListingAndDetailsState
   Option<Either<ApiException, OrganizationHomeDataModel>> get homeData;
   @override
   Option<Either<ApiException, OrganizationDetailsModel>>? get updateOrgDetails;
+  @override
+  Option<Either<ApiException, List<BannerModel>>> get gymBanners;
+  @override
+  Option<Either<ApiException, List<BannerModel>>> get globalBanners;
 
   /// Create a copy of OrganizationListingAndDetailsState
   /// with the given fields replaced by the non-null parameter values.

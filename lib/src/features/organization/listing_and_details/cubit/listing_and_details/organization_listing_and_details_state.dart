@@ -11,5 +11,7 @@ class OrganizationListingAndDetailsState
     @Default(None())
     Option<Either<ApiException, OrganizationHomeDataModel>> homeData,
     Option<Either<ApiException, OrganizationDetailsModel>>? updateOrgDetails,
+    @Default(None()) Option<Either<ApiException, List<BannerModel>>> gymBanners,
+    @Default(None()) Option<Either<ApiException, List<BannerModel>>> globalBanners,
   }) = _OrganizationListingAndDetailsState;
 }

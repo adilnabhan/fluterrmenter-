@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/domain/models/banner_model.dart';
 
 part 'organization_listing_and_details_state.dart';
 part 'organization_listing_and_details_cubit.freezed.dart';
@@ -67,17 +68,24 @@ class OrganizationListingAndDetailsCubit
   }
 
   Future<void> fetchOrg({required int orgId}) async {
-    emit(state.copyWith(homeData: none(), details: none()));
+    emit(state.copyWith(homeData: none(), details: none(), gymBanners: none(), globalBanners: none()));
     final organizationListAndDetailsRepository =
         OrganizationListAndDetailsRepository();
     final responses = await Future.wait([
       organizationListAndDetailsRepository.fetchDetails(orgId: orgId),
       organizationListAndDetailsRepository.fetchHomeData(orgId: orgId),
+      organizationListAndDetailsRepository.getGymBanners(orgId),
+      organizationListAndDetailsRepository.getGlobalBanners(),
     ]);
     final detailsResponse =
         responses[0] as Either<ApiException, OrganizationDetailsModel>;
     final homeDataResponse =
         responses[1] as Either<ApiException, OrganizationHomeDataModel>;
+    final gymResponse = 
+        responses[2] as Either<ApiException, List<BannerModel>>;
+    final globalResponse = 
+        responses[3] as Either<ApiException, List<BannerModel>>;
+        
     detailsResponse.fold(
       (l) {
         emit(state.copyWith(details: some(left(l)), homeData: some(left(l))));
@@ -94,6 +102,8 @@ class OrganizationListingAndDetailsCubit
               state.copyWith(
                 homeData: some(right(homeData)),
                 details: some(right(details)),
+                gymBanners: some(gymResponse),
+                globalBanners: some(globalResponse),
               ),
             );
           },

@@ -1,4 +1,4 @@
-// import 'package:mentor_mobile_app/firebase_options.dart';
+import 'package:mentor_mobile_app/core/services/notification/notification_services.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 /// bootstraping
@@ -15,11 +15,8 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   //   return true;
   // };
 
-  //* firebase configuration
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
   //* notification management
-  // await NotificationServices.initialize();
+  await NotificationServices.initialize();
 
   //* 🧪 bloc observer for manageing bloc lyfecyles
   Bloc.observer = const AppBlocObserver();

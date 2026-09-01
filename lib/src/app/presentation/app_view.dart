@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/core/services/notification/notification_services.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 ///* First widget integrating
@@ -27,9 +28,12 @@ class _AppViewState extends State<AppView> {
     /// 🔥 IMPORTANT: wait until HydratedCubit restores state
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = _cubit.state.currentUser;
-      // if (user?.refresh?.isNotEmpty == true) {
-      _cubit.refreshToken();
-      // }
+      _cubit.refreshToken().then((_) {
+        NotificationServices.registerDeviceToken();
+      });
+      if (user?.access?.isNotEmpty == true) {
+        NotificationServices.registerDeviceToken();
+      }
     });
   }
 

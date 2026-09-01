@@ -11,6 +11,7 @@ class TrainerReportsScreen extends StatefulWidget {
 class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
   bool _isLoading = true;
   Map<String, dynamic> _reportsData = {};
+  String _sourceFilter = 'all'; // 'all', 'gym_assigned', 'self'
 
   @override
   void initState() {
@@ -26,6 +27,9 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
     try {
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.trainerReports,
+        queryParameters: {
+          if (_sourceFilter != 'all') 'client_source': _sourceFilter,
+        },
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -73,6 +77,24 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Client Source Segmented Filter
+                    Container(
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.all(3),
+                      child: Row(
+                        children: [
+                          _buildSourceTab('all', 'All Clients'),
+                          _buildSourceTab('gym_assigned', 'Gym Assigned'),
+                          _buildSourceTab('self', 'Self Clients'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
                     // Report Summary Cards
                     Text(
                       'Daily Report',
@@ -213,6 +235,35 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSourceTab(String key, String label) {
+    final bool isSelected = _sourceFilter == key;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _sourceFilter = key;
+          });
+          _fetchReports();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF0D3B2E) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? Colors.white : const Color(0xFF475569),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

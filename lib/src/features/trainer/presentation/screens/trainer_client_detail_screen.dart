@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
+import 'package:mentor_mobile_app/src/features/chat/presentation/screens/trainer_chat_screen.dart';
 import 'package:intl/intl.dart';
 
 class TrainerClientDetailScreen extends StatefulWidget {
@@ -15,10 +16,12 @@ class TrainerClientDetailScreen extends StatefulWidget {
 class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   Map<String, dynamic> _clientData = {};
   List<Map<String, dynamic>> _workoutHistory = [];
+  Map<String, dynamic>? _nutritionReport;
   bool _isLoading = true;
   bool _isLoadingHistory = false;
+  bool _isLoadingNutrition = false;
   bool _isSavingNotes = false;
-  int _selectedTab = 0; // 0: General Stats, 1: Workout Calendar, 2: Workout History
+  int _selectedTab = 0; // 0: General Stats, 1: Diet, 2: Workout Calendar, 3: Workout History
   late final TextEditingController _notesController;
 
   Map<int, Map<String, dynamic>> _calendarData = {};
@@ -55,10 +58,13 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
       if (response.statusCode == 200 && response.data is Map) {
         setState(() {
           _clientData = Map<String, dynamic>.from(response.data as Map);
-          final profile = _clientData['profile'] as Map<dynamic, dynamic>? ?? {};
+          final profile = _clientData['profile'] != null
+              ? Map<String, dynamic>.from(_clientData['profile'] as Map)
+              : <String, dynamic>{};
           _notesController.text = profile['trainer_notes'] as String? ?? '';
           _isLoading = false;
         });
+        _fetchNutritionReport();
       } else {
         setState(() {
           _isLoading = false;
@@ -70,6 +76,34 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         _isLoading = false;
       });
       Dialogs.showSnack(msg: 'Error loading client details: ${e.toString()}');
+    }
+  }
+
+  Future<void> _fetchNutritionReport() async {
+    setState(() {
+      _isLoadingNutrition = true;
+    });
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.trainerCustomerNutritionReport(widget.customerId),
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (response.statusCode == 200 && response.data is Map) {
+        setState(() {
+          _nutritionReport = Map<String, dynamic>.from(response.data as Map);
+          _isLoadingNutrition = false;
+        });
+      } else {
+        setState(() {
+          _isLoadingNutrition = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoadingNutrition = false;
+        });
+      }
     }
   }
 
@@ -763,7 +797,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: ExpansionTile(
                   title: Text(
-                    session['title'] ?? 'Workout',
+                    session['title'] as String? ?? 'Workout',
                     style: AppStyles.text16Px.poppins.w600.dark,
                   ),
                   subtitle: Row(
@@ -805,7 +839,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                           final exMap = Map<String, dynamic>.from(ex as Map);
                           final sets = exMap['sets'] as List? ?? [];
                           return ListTile(
-                            title: Text(exMap['exercise_name'] ?? 'Exercise'),
+                            title: Text(exMap['exercise_name'] as String? ?? 'Exercise'),
                             subtitle: Text(
                               sets.map((setObj) {
                                 final setMap = Map<String, dynamic>.from(setObj as Map);
@@ -987,8 +1021,12 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
       );
     }
 
-    final profile = _clientData['profile'] as Map<String, dynamic>? ?? {};
-    final membership = _clientData['membership'] as Map<String, dynamic>? ?? {};
+    final profile = _clientData['profile'] != null
+        ? Map<String, dynamic>.from(_clientData['profile'] as Map)
+        : <String, dynamic>{};
+    final membership = _clientData['membership'] != null
+        ? Map<String, dynamic>.from(_clientData['membership'] as Map)
+        : <String, dynamic>{};
     final assignedPlans = _clientData['assigned_plans'] as List<dynamic>? ?? [];
     final prRecords = _clientData['pr_records'] as List<dynamic>? ?? [];
 
@@ -1039,9 +1077,52 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        name,
-                        style: AppStyles.text16Px.poppins.w600.dark,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: AppStyles.text16Px.poppins.w600.dark,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              Navigator.push<void>(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (context) => TrainerChatScreen(
+                                    customerId: widget.customerId,
+                                    customerName: name,
+                                    customerPhoto: imgUrl as String?,
+                                    customerPhone: mobile,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFECEB),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.chat_bubble_outline_rounded, size: 14, color: AppColors.primary),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Chat',
+                                    style: AppStyles.text12Px.poppins.w600.copyWith(color: AppColors.primary),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -1061,8 +1142,9 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
           Row(
             children: [
               Expanded(child: _buildSegmentTab('General', 0)),
-              Expanded(child: _buildSegmentTab('Calendar', 1)),
-              Expanded(child: _buildSegmentTab('History', 2)),
+              Expanded(child: _buildSegmentTab('Diet', 1)),
+              Expanded(child: _buildSegmentTab('Calendar', 2)),
+              Expanded(child: _buildSegmentTab('History', 3)),
             ],
           ),
           Expanded(
@@ -1072,8 +1154,10 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               child: _selectedTab == 0
                   ? _buildGeneralStatsTab(profile, membership, assignedPlans, prRecords, isAssignedToMe, trainerName)
                   : _selectedTab == 1
-                      ? _buildWorkoutCalendarTab()
-                      : _buildWorkoutHistoryTab(),
+                      ? _buildDietTab()
+                      : _selectedTab == 2
+                          ? _buildWorkoutCalendarTab()
+                          : _buildWorkoutHistoryTab(),
             ),
           ),
         ],
@@ -1137,4 +1221,540 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
       ],
     );
   }
+
+  Widget _buildDietTab() {
+    if (_isLoadingNutrition) {
+      return const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator()));
+    }
+
+    final report = _nutritionReport ?? (_clientData['today_nutrition'] as Map<String, dynamic>?);
+    final summary = report?['summary'] as Map<String, dynamic>? ?? {};
+    final activeDiet = _nutritionReport?['active_diet_plan'] as Map<String, dynamic>? ?? (_clientData['active_diet_plan'] as Map<String, dynamic>?);
+    final loggedMeals = report?['logged_meals'];
+
+    final int targetCal = (summary['target_calories'] ?? activeDiet?['target_calories'] ?? 2000) as int;
+    final double consumedCal = double.tryParse((summary['consumed_calories'] ?? 0).toString()) ?? 0.0;
+    final double remainingCal = double.tryParse((summary['remaining_calories'] ?? targetCal - consumedCal).toString()) ?? 0.0;
+    final double targetProt = double.tryParse((summary['target_protein_g'] ?? activeDiet?['target_protein_g'] ?? 120).toString()) ?? 120.0;
+    final double consumedProt = double.tryParse((summary['consumed_protein_g'] ?? 0).toString()) ?? 0.0;
+    final double targetCarbs = double.tryParse((summary['target_carbs_g'] ?? activeDiet?['target_carbs_g'] ?? 220).toString()) ?? 220.0;
+    final double consumedCarbs = double.tryParse((summary['consumed_carbs_g'] ?? 0).toString()) ?? 0.0;
+    final double targetFat = double.tryParse((summary['target_fat_g'] ?? activeDiet?['target_fat_g'] ?? 60).toString()) ?? 60.0;
+    final double consumedFat = double.tryParse((summary['consumed_fat_g'] ?? 0).toString()) ?? 0.0;
+    final int waterMl = int.tryParse((summary['consumed_water_ml'] ?? 0).toString()) ?? 0;
+
+    final double calProgress = targetCal > 0 ? (consumedCal / targetCal).clamp(0.0, 1.0) : 0.0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Daily Nutrition Progress Card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Today\'s Calorie Adherence', style: AppStyles.text14Px.poppins.w600.dark),
+                  Text('${consumedCal.toInt()} / $targetCal kcal', style: AppStyles.text13Px.poppins.w600.copyWith(color: AppColors.primary)),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: calProgress,
+                  minHeight: 10,
+                  backgroundColor: const Color(0xFFEEEEEE),
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Remaining: ${remainingCal.toInt()} kcal', style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+                  Text('Water: $waterMl ml', style: AppStyles.text12Px.poppins.w500.copyWith(color: Colors.blue.shade700)),
+                ],
+              ),
+              const Divider(height: 24, thickness: 0.5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildMacroColumn('Protein', '${consumedProt.toInt()}g', '${targetProt.toInt()}g', Colors.green),
+                  _buildMacroColumn('Carbs', '${consumedCarbs.toInt()}g', '${targetCarbs.toInt()}g', Colors.orange),
+                  _buildMacroColumn('Fat', '${consumedFat.toInt()}g', '${targetFat.toInt()}g', Colors.purple),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Active Diet Plan Header & Card
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Assigned Diet Plan', style: AppStyles.text16Px.poppins.w600.dark),
+            TextButton.icon(
+              onPressed: _showAssignDietDialog,
+              icon: Icon(activeDiet != null ? Icons.edit_note : Icons.add, size: 16, color: const Color(0xFF2E7D32)),
+              label: Text(
+                activeDiet != null ? 'Change Plan' : 'Assign Plan',
+                style: AppStyles.text12Px.poppins.w600.copyWith(color: const Color(0xFF2E7D32)),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                backgroundColor: const Color(0xffE8F5E9),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+          ),
+          child: activeDiet == null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text(
+                      'No diet plan assigned yet. Tap "Assign Plan" to prescribe daily targets and meals.',
+                      textAlign: TextAlign.center,
+                      style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey),
+                    ),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.restaurant_menu_rounded, color: AppColors.primary, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            activeDiet['title'] as String? ?? 'Diet Plan',
+                            style: AppStyles.text15Px.poppins.w600.dark,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffE8F5E9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${activeDiet['target_calories']} KCAL',
+                            style: AppStyles.text10Px.poppins.w600.copyWith(color: const Color(0xFF43A047)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (activeDiet['meals'] is List && (activeDiet['meals'] as List).isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text('Prescribed Meals:', style: AppStyles.text13Px.poppins.w600.copyWith(color: AppColors.textGrey)),
+                      const SizedBox(height: 6),
+                      ...(activeDiet['meals'] as List).map((m) {
+                        final meal = Map<String, dynamic>.from(m as Map);
+                        final type = (meal['meal_type'] as String? ?? 'meal').toUpperCase();
+                        final name = meal['name'] as String? ?? '';
+                        final cals = meal['calories'] ?? 0;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '$type: ${name.isNotEmpty ? name : 'Recommended items'}',
+                                  style: AppStyles.text12Px.poppins.w500.dark,
+                                ),
+                              ),
+                              Text('$cals kcal', style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ],
+                ),
+        ),
+        const SizedBox(height: 20),
+
+        // What the Client Ate Today
+        Text('Today\'s Food Intake', style: AppStyles.text16Px.poppins.w600.dark),
+        const SizedBox(height: 10),
+        Container(
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+          ),
+          child: _buildLoggedMealsSection(loggedMeals),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMacroColumn(String label, String consumed, String target, Color color) {
+    return Column(
+      children: [
+        Text(label, style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textGrey)),
+        const SizedBox(height: 4),
+        Text(consumed, style: AppStyles.text14Px.poppins.w600.copyWith(color: color)),
+        Text('Goal: $target', style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+      ],
+    );
+  }
+
+  Widget _buildLoggedMealsSection(dynamic loggedMeals) {
+    if (loggedMeals == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Text('No meals logged by client today.', style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+        ),
+      );
+    }
+
+    final List<Widget> mealWidgets = [];
+
+    if (loggedMeals is Map) {
+      final map = Map<String, dynamic>.from(loggedMeals);
+      map.forEach((mealType, items) {
+        if (items is List && items.isNotEmpty) {
+          mealWidgets.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: Text(
+                mealType.replaceAll('_', ' ').toUpperCase(),
+                style: AppStyles.text12Px.poppins.w600.copyWith(color: AppColors.primary),
+              ),
+            ),
+          );
+          for (var item in items) {
+            final itemMap = Map<String, dynamic>.from(item as Map);
+            final name = itemMap['food_name'] ?? 'Food';
+            final cals = itemMap['calories'] ?? 0;
+            final servings = itemMap['servings'] ?? 1;
+            final unit = itemMap['serving_unit'] ?? 'portion';
+
+            mealWidgets.add(
+              Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9F9F9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(name as String, style: AppStyles.text13Px.poppins.w500.dark),
+                          Text('$servings $unit', style: AppStyles.text11Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+                        ],
+                      ),
+                    ),
+                    Text('$cals kcal', style: AppStyles.text13Px.poppins.w600.dark),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+      });
+    } else if (loggedMeals is List && loggedMeals.isNotEmpty) {
+      for (var item in loggedMeals) {
+        final itemMap = Map<String, dynamic>.from(item as Map);
+        final name = itemMap['food_name'] ?? 'Food';
+        final cals = itemMap['calories'] ?? 0;
+        final mealType = (itemMap['meal_type'] as String? ?? 'Meal').toUpperCase();
+
+        mealWidgets.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('$mealType: $name', style: AppStyles.text12Px.poppins.w500.dark),
+                Text('$cals kcal', style: AppStyles.text12Px.poppins.w600.dark),
+              ],
+            ),
+          ),
+        );
+      }
+    }
+
+    if (mealWidgets.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Text('No meals logged by client today.', style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: mealWidgets,
+    );
+  }
+
+  Future<void> _showAssignDietDialog() async {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        bool isLoadingPlans = true;
+        List<Map<String, dynamic>> plans = [];
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            void fetchPlans() async {
+              try {
+                final res = await DioClient().dio.get<dynamic>(
+                  ApiUris.trainerDietPlans,
+                  options: Options(headers: {'X-Platform': platformSource}),
+                );
+                if (res.statusCode == 200 && res.data is List) {
+                  final list = (res.data as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+                  setModalState(() {
+                    plans = list;
+                    isLoadingPlans = false;
+                  });
+                } else {
+                  setModalState(() => isLoadingPlans = false);
+                }
+              } catch (_) {
+                setModalState(() => isLoadingPlans = false);
+              }
+            }
+
+            if (isLoadingPlans && plans.isEmpty) {
+              fetchPlans();
+            }
+
+            Future<void> assignPlan(int planId, String planTitle) async {
+              Navigator.pop(context);
+              setState(() => _isLoadingNutrition = true);
+              try {
+                final response = await DioClient().dio.post<dynamic>(
+                  ApiUris.trainerAssignDietToCustomer(widget.customerId),
+                  data: {'diet_plan_id': planId},
+                  options: Options(headers: {'X-Platform': platformSource}),
+                );
+                if (response.statusCode == 201 || response.statusCode == 200) {
+                  Dialogs.showSnack(msg: 'Assigned "$planTitle" successfully!');
+                  _fetchNutritionReport();
+                } else {
+                  Dialogs.showSnack(msg: 'Failed to assign plan.');
+                  setState(() => _isLoadingNutrition = false);
+                }
+              } catch (_) {
+                Dialogs.showSnack(msg: 'Error assigning diet plan.');
+                setState(() => _isLoadingNutrition = false);
+              }
+            }
+
+            Future<void> createAndAssignTemplate(String title, int cals, double prot, double carbs, double fat, List<Map<String, dynamic>> meals) async {
+              Navigator.pop(context);
+              setState(() => _isLoadingNutrition = true);
+              try {
+                final createRes = await DioClient().dio.post<dynamic>(
+                  ApiUris.trainerDietPlans,
+                  data: {
+                    'title': title,
+                    'target_calories': cals,
+                    'target_protein_g': prot,
+                    'target_carbs_g': carbs,
+                    'target_fat_g': fat,
+                    'meals': meals,
+                  },
+                  options: Options(headers: {'X-Platform': platformSource}),
+                );
+                if (createRes.statusCode == 201 && createRes.data is Map) {
+                  final newPlan = Map<String, dynamic>.from(createRes.data as Map);
+                  final planId = newPlan['id'] as int;
+                  await assignPlan(planId, title);
+                } else {
+                  setState(() => _isLoadingNutrition = false);
+                  Dialogs.showSnack(msg: 'Failed to create plan.');
+                }
+              } catch (_) {
+                setState(() => _isLoadingNutrition = false);
+                Dialogs.showSnack(msg: 'Error creating template.');
+              }
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Assign Diet Plan', style: AppStyles.text18Px.poppins.w600.dark),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                      ],
+                    ),
+                    const Divider(),
+                    if (isLoadingPlans)
+                      const Center(child: Padding(padding: EdgeInsets.all(30), child: CircularProgressIndicator()))
+                    else if (plans.isNotEmpty)
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: plans.length,
+                          itemBuilder: (context, idx) {
+                            final p = plans[idx];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              child: ListTile(
+                                leading: const Icon(Icons.restaurant, color: AppColors.primary),
+                                title: Text(p['title'] as String? ?? 'Plan', style: AppStyles.text14Px.poppins.w600.dark),
+                                subtitle: Text('${p['target_calories']} kcal  •  ${p['target_protein_g']}g P', style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+                                trailing: ElevatedButton(
+                                  onPressed: () => assignPlan(p['id'] as int, p['title'] as String? ?? 'Plan'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  child: const Text('Assign', style: TextStyle(color: Colors.white, fontSize: 12)),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Quick Preset Diet Plans:', style: AppStyles.text14Px.poppins.w600.dark),
+                            const SizedBox(height: 10),
+                            _buildTemplateTile(
+                              'High Protein Fat Loss (1,800 kcal)',
+                              '150g Protein • 160g Carbs • 50g Fat',
+                              () => createAndAssignTemplate(
+                                'High Protein Fat Loss (1,800 kcal)', 1800, 150.0, 160.0, 50.0,
+                                [
+                                  {'meal_type': 'breakfast', 'name': 'Eggs & Oatmeal', 'calories': 450, 'protein_g': 35.0, 'carbs_g': 45.0, 'fat_g': 12.0},
+                                  {'meal_type': 'lunch', 'name': 'Grilled Chicken & Rice', 'calories': 600, 'protein_g': 55.0, 'carbs_g': 60.0, 'fat_g': 15.0},
+                                  {'meal_type': 'evening_snack', 'name': 'Greek Yogurt & Almonds', 'calories': 250, 'protein_g': 20.0, 'carbs_g': 15.0, 'fat_g': 10.0},
+                                  {'meal_type': 'dinner', 'name': 'Fish & Steamed Greens', 'calories': 500, 'protein_g': 40.0, 'carbs_g': 40.0, 'fat_g': 13.0},
+                                ]
+                              ),
+                            ),
+                            _buildTemplateTile(
+                              'Balanced Maintenance (2,000 kcal)',
+                              '130g Protein • 220g Carbs • 65g Fat',
+                              () => createAndAssignTemplate(
+                                'Balanced Maintenance (2,000 kcal)', 2000, 130.0, 220.0, 65.0,
+                                [
+                                  {'meal_type': 'breakfast', 'name': 'Oats, Milk & Peanut Butter', 'calories': 500, 'protein_g': 25.0, 'carbs_g': 60.0, 'fat_g': 18.0},
+                                  {'meal_type': 'lunch', 'name': 'Paneer/Chicken Curry & Rice', 'calories': 650, 'protein_g': 45.0, 'carbs_g': 75.0, 'fat_g': 20.0},
+                                  {'meal_type': 'evening_snack', 'name': 'Fruits & Boiled Egg', 'calories': 250, 'protein_g': 15.0, 'carbs_g': 30.0, 'fat_g': 7.0},
+                                  {'meal_type': 'dinner', 'name': 'Roti with Dal & Veggies', 'calories': 600, 'protein_g': 45.0, 'carbs_g': 55.0, 'fat_g': 20.0},
+                                ]
+                              ),
+                            ),
+                            _buildTemplateTile(
+                              'Muscle Bulking (2,500 kcal)',
+                              '165g Protein • 300g Carbs • 75g Fat',
+                              () => createAndAssignTemplate(
+                                'Muscle Bulking (2,500 kcal)', 2500, 165.0, 300.0, 75.0,
+                                [
+                                  {'meal_type': 'breakfast', 'name': 'Eggs, Toast & Protein Shake', 'calories': 650, 'protein_g': 50.0, 'carbs_g': 70.0, 'fat_g': 20.0},
+                                  {'meal_type': 'lunch', 'name': 'Chicken Biryani / Dal Rice', 'calories': 800, 'protein_g': 55.0, 'carbs_g': 95.0, 'fat_g': 25.0},
+                                  {'meal_type': 'evening_snack', 'name': 'Peanut Butter Sandwich & Banana', 'calories': 400, 'protein_g': 18.0, 'carbs_g': 55.0, 'fat_g': 14.0},
+                                  {'meal_type': 'dinner', 'name': 'Steak/Paneer with Sweet Potato', 'calories': 650, 'protein_g': 42.0, 'carbs_g': 80.0, 'fat_g': 16.0},
+                                ]
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTemplateTile(String title, String subtitle, VoidCallback onAssign) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9F9F9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.bolt, color: AppColors.primary, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppStyles.text13Px.poppins.w600.dark),
+                Text(subtitle, style: AppStyles.text11Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: onAssign,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF43A047),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Assign', style: TextStyle(color: Colors.white, fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

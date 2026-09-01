@@ -1,124 +1,151 @@
-// import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/core/api/uris/api_uris.dart';
 
-// ///*Manage app notifications
-// class NotificationServices {
-//   ///*
-//   static Future<void> initialize() async {
-//     await AwesomeNotifications().initialize(
-//       'resource://drawable/res_notification_app_icon',
-//       [
-//         NotificationChannel(
-//           channelKey: ChannelKeys.mainChannelKey,
-//           channelName: 'Main Notifications',
-//           channelDescription: 'This channel for managing main notifications',
-//           importance: NotificationImportance.High,
-//           channelShowBadge: true,
-//         ),
-//       ],
-//     );
-//     await _getToken;
-//     await iconBadging;
-//     FirebaseMessaging.onBackgroundMessage(NotificationServices.handleBackGroundMessage);
-//     _handleForeGroundMessage();
-//   }
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  try {
+    await Firebase.initializeApp();
+    if (message.notification == null) {
+      final title = message.data['title'] ?? 'Discipl';
+      final body = message.data['body'] ?? message.data['message'];
+      if (body != null && body.toString().isNotEmpty) {
+        final localNotifications = FlutterLocalNotificationsPlugin();
+        const initSettings = InitializationSettings(
+          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        );
+        await localNotifications.initialize(settings: initSettings);
+        await localNotifications.show(
+          id: message.hashCode,
+          title: title,
+          body: body.toString(),
+          notificationDetails: const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'high_importance_channel',
+              'High Importance Notifications',
+              channelDescription: 'This channel is used for important notifications.',
+              icon: '@mipmap/ic_launcher',
+              importance: Importance.max,
+              priority: Priority.high,
+              showWhen: true,
+              playSound: true,
+              enableVibration: true,
+            ),
+          ),
+        );
+      }
+    }
+  } catch (_) {}
+}
 
-//   //* Handle foreground messages from here
-//   static void _handleForeGroundMessage() {
-//     FirebaseMessaging.onMessage.listen((msg) async {
-//       if (msg.notification?.title != null && msg.notification?.body != null) {
-//         write('message form firebase [ForeGround] : ${msg.notification?.title}');
-//         await createNotification(title: msg.notification?.title ?? '', body: '[foreground] ${msg.notification?.body}');
-//       }
-//     });
-//   }
+class NotificationServices {
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
-//   //* Handle foreground messages from here
-//   static Future<void> get _getToken async {
-//     final token = await FirebaseMessaging.instance.getToken();
-//     write('FCM Token is : $token');
-//   }
+  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+    'high_importance_channel',
+    'High Importance Notifications',
+    description: 'This channel is used for important notifications.',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
 
-//   ///* Checking notification service .
-//   ///* If notificat is'nt .It will ask permission
-//   static Future<void> handlePermission() async {
-//     write('notification permission status : ');
-//     var isAllowed = await AwesomeNotifications().isNotificationAllowed();
-//     write('notification permission status : $isAllowed');
-//     if (!isAllowed) {
-//       isAllowed = await AwesomeNotifications().requestPermissionToSendNotifications();
-//       write('notification permission status : $isAllowed');
-//     }
-//     if (!isAllowed) {
-//       await openAppSettings();
-//     }
-//   }
+  static bool _isInitialized = false;
 
-//   ///*
-//   @pragma('vm:entry-point')
-//   static Future<void> createNotification({required String title, required String body, String? channelKey}) async {
-//     await AwesomeNotifications().createNotification(
-//       content: NotificationContent(
-//         id: DateTime.now().microsecondsSinceEpoch.remainder(100000),
-//         channelKey: channelKey ?? ChannelKeys.mainChannelKey,
-//         title: title,
-//         body: body,
-//         badge: 12,
-//       ),
-//     );
-//   }
+  static Future<void> initialize() async {
+    if (_isInitialized) return;
+    try {
+      await Firebase.initializeApp();
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-//   ///*
-//   @pragma('vm:entry-point')
-//   static Future<void> handleBackGroundMessage(RemoteMessage msg) async {
-//     write('message form firebase [BackGround] : ${msg.notification?.title}');
-//     await createNotification(title: msg.notification?.title ?? '', body: '[BackGround] ${msg.notification?.body}');
-//   }
+      final messaging = FirebaseMessaging.instance;
+      final settings = await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
 
-//   ///*
-//   static Future<void> get iconBadging async {
-//     // AwesomeNotifications().
-//     await AwesomeNotifications().setGlobalBadgeCounter(10);
-//   }
+      debugPrint('🔔 FCM permission status: ${settings.authorizationStatus}');
 
-//   // ///  *********************************************
-//   // ///     INITIALIZATION METHODS
-//   // ///  *********************************************
+      final androidPlugin = _localNotifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      await androidPlugin?.createNotificationChannel(_channel);
+      await androidPlugin?.requestNotificationsPermission();
 
-//   // static Future<void> initializeRemoteNotifications() async {
-//   //   await AwesomeNotificationsFcm().initialize(
-//   //     onFcmSilentDataHandle: mySilentDataHandle,
-//   //     onFcmTokenHandle: myFcmTokenHandle,
-//   //     onNativeTokenHandle: myNativeTokenHandle,
-//   //     debug: kDebugMode,
-//   //   );
-//   // }
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-//   // ///  *********************************************
-//   // ///     REMOTE NOTIFICATION EVENTS
-//   // ///  *********************************************
+      const initSettings = InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(),
+      );
+      await _localNotifications.initialize(settings: initSettings);
 
-//   // /// Use this method to execute on background when a silent data arrives
-//   // /// (even while terminated)
-//   // @pragma('vm:entry-point')
-//   // static Future<void> mySilentDataHandle(FcmSilentData silentData) async {
-//   //   write('"SilentData": $silentData');
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        debugPrint('📩 Foreground FCM received: ${message.messageId}');
+        final notification = message.notification;
+        final title = notification?.title ?? message.data['title'] ?? 'Discipl';
+        final body = notification?.body ?? message.data['body'] ?? message.data['message'];
 
-//   //   if (silentData.createdLifeCycle != NotificationLifeCycle.Foreground) {
-//   //     write('bg');
-//   //   } else {
-//   //     write('FOREGROUND');
-//   //   }
-//   // }
+        if (body != null && body.toString().isNotEmpty) {
+          _localNotifications.show(
+            id: message.hashCode,
+            title: title,
+            body: body.toString(),
+            notificationDetails: NotificationDetails(
+              android: AndroidNotificationDetails(
+                _channel.id,
+                _channel.name,
+                channelDescription: _channel.description,
+                icon: '@mipmap/ic_launcher',
+                importance: Importance.max,
+                priority: Priority.high,
+                showWhen: true,
+                playSound: true,
+                enableVibration: true,
+              ),
+            ),
+          );
+        }
+      });
 
-//   // /// Use this method to detect when a new fcm token is received
-//   // @pragma('vm:entry-point')
-//   // static Future<void> myFcmTokenHandle(String token) async {
-//   //   write('FCM Token:"$token"');
-//   // }
+      _isInitialized = true;
+      await registerDeviceToken();
 
-//   // /// Use this method to detect when a new native token is received
-//   // @pragma('vm:entry-point')
-//   // static Future<void> myNativeTokenHandle(String token) async {
-//   //   write('Native Token:"$token"');
-//   // }
-// }
+      FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+        registerDeviceToken();
+      });
+    } catch (e) {
+      debugPrint('❌ NotificationServices init error: $e');
+    }
+  }
+
+  static Future<void> registerDeviceToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      debugPrint('📱 FCM Device Token: $token');
+      if (token != null) {
+        await DioClient().dio.post(
+          ApiUris.registerDeviceToken,
+          data: {
+            'token': token,
+            'platform': Platform.isAndroid ? 'android' : 'ios',
+          },
+        );
+        debugPrint('✅ Device token registered successfully with backend');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Device token registration failed: $e');
+    }
+  }
+}
