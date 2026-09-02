@@ -27,6 +27,7 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
 
   Timer? _debounce;
   MembershipPackageModel? _selectedPlan;
+  bool _isPlanDropdownOpen = false;
   String _paymentMethod = 'Cash';
   DateTime _startDate = DateTime.now();
   MemberDetailsModel? _manualMemberDetails;
@@ -46,15 +47,36 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
     _membershipCubit = context.read<MembershipCubit>();
     _membershipCubit.fetchMembershipPackages();
     _cubit.clearSearchedCustomer();
+    _discountController.addListener(_updateAmountToPay);
   }
 
   @override
   void dispose() {
+    _discountController.removeListener(_updateAmountToPay);
     _searchController.dispose();
     _discountController.dispose();
     _amountReceivedController.dispose();
     _debounce?.cancel();
     super.dispose();
+  }
+
+  void _updateAmountToPay() {
+    if (_selectedPlan == null) return;
+    final rawPrice = double.tryParse(
+          _selectedPlan?.offerPrice ?? _selectedPlan?.actualPrice ?? '0',
+        ) ??
+        0;
+    final discount = double.tryParse(_discountController.text.trim()) ?? 0;
+    final finalAmount = (rawPrice - discount).clamp(0.0, double.infinity);
+
+    final formattedAmount =
+        finalAmount == finalAmount.toInt()
+            ? finalAmount.toInt().toString()
+            : finalAmount.toStringAsFixed(2);
+
+    if (_amountReceivedController.text != formattedAmount) {
+      _amountReceivedController.text = formattedAmount;
+    }
   }
 
   void _onSearchChanged(String value) {
@@ -199,18 +221,59 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
     );
   }
 
+  Widget _buildFieldCard({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  InputDecoration _fieldInputDecoration({
+    String? hintText,
+    Widget? prefixIcon,
+  }) {
+    return InputDecoration(
+      filled: true,
+      fillColor: Colors.white,
+      hintText: hintText,
+      hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+      prefixIcon: prefixIcon,
+      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xffD0D5DD)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xffD0D5DD)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.primary),
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: const PopButton().center,
-        title: const Text('Details'),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.settings_outlined, color: Colors.black87),
-          ),
-        ],
+        title: const Text('Add Client'),
       ),
       body: BlocListener<MembersAndLeadsCubit, MembersAndLeadsState>(
         listenWhen: (p, c) => p.createOrUpdateMember != c.createOrUpdateMember,
@@ -237,29 +300,40 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Fill details', style: AppStyles.text20Px.poppins.w600.dark),
+              Text(
+                'Fill details',
+                style: AppStyles.text20Px.poppins.w600.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
               const SizedBox(height: 24),
 
               if (_manualMemberDetails == null) ...[
                 Text(
                   'Search Client by number',
-                  style: AppStyles.text14Px.poppins.w500.dark,
+                  style: AppStyles.text14Px.poppins.w500.copyWith(
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    hintText: 'Search Client',
-                    hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.borderGrey),
+                _buildFieldCard(
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: _onSearchChanged,
+                    keyboardType: TextInputType.phone,
+                    style: AppStyles.text14Px.poppins.w500.copyWith(
+                      color: Colors.black87,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
+                    decoration: _fieldInputDecoration(
+                      hintText: 'Search Client',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.only(left: 14, right: 8),
+                        child: Icon(
+                          Icons.search,
+                          color: AppColors.textGrey,
+                          size: 20,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -404,14 +478,19 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
               ],
 
               const SizedBox(height: 24),
-              RichText(
-                text: TextSpan(
-                  text: 'Select a Plan',
-                  style: AppStyles.text14Px.poppins.w500.dark,
-                  children: const [
-                    TextSpan(text: '*', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
+              Row(
+                children: [
+                  Text(
+                    'Select Plan',
+                    style: AppStyles.text14Px.poppins.w500.copyWith(
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const Text(
+                    ' *',
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               BlocBuilder<MembershipCubit, MembershipState>(
@@ -425,40 +504,7 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                       (l) => const Text('Error loading plans'),
                       (data) {
                         final plans = data.results ?? [];
-                        return DropdownButtonFormField<MembershipPackageModel>(
-                          value: _selectedPlan,
-                          hint: const Text('Select Plan'),
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppColors.borderGrey,
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                          ),
-                          items:
-                              plans.map((plan) {
-                                return DropdownMenuItem(
-                                  value: plan,
-                                  child: Text(plan.name ?? ''),
-                                );
-                              }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedPlan = value;
-                              if (value != null) {
-                                _amountReceivedController.text =
-                                    value.offerPrice ??
-                                    value.actualPrice ??
-                                    '0';
-                              }
-                            });
-                          },
-                        );
+                        return _buildPlanSelector(plans);
                       },
                     ),
                   );
@@ -473,23 +519,30 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Discount Amount',
-                          style: AppStyles.text14Px.poppins.w500.dark,
+                          'Discount',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: Colors.black87,
+                          ),
                         ),
                         const SizedBox(height: 8),
-                        TextField(
-                          controller: _discountController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppColors.borderGrey,
-                              ),
+                        _buildFieldCard(
+                          child: TextField(
+                            controller: _discountController,
+                            keyboardType: TextInputType.number,
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: Colors.black87,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
+                            decoration: _fieldInputDecoration(
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 6,
+                                ),
+                                child: Text(
+                                  '₹',
+                                  style: AppStyles.text14Px.poppins.w500.textGrey,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -501,32 +554,31 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        RichText(
-                          text: TextSpan(
-                            text: 'Amount Received',
-                            style: AppStyles.text14Px.poppins.w500.dark,
-                            children: const [
-                              TextSpan(
-                                text: '*',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ],
+                        Text(
+                          'Amount to Pay',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        TextField(
-                          controller: _amountReceivedController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppColors.borderGrey,
-                              ),
+                        _buildFieldCard(
+                          child: TextField(
+                            controller: _amountReceivedController,
+                            keyboardType: TextInputType.number,
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: Colors.black87,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
+                            decoration: _fieldInputDecoration(
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 6,
+                                ),
+                                child: Text(
+                                  '₹',
+                                  style: AppStyles.text14Px.poppins.w500.textGrey,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -537,14 +589,19 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
               ),
 
               const SizedBox(height: 24),
-              RichText(
-                text: TextSpan(
-                  text: 'Payment Method',
-                  style: AppStyles.text14Px.poppins.w500.dark,
-                  children: const [
-                    TextSpan(text: '*', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
+              Row(
+                children: [
+                  Text(
+                    'Payment Method',
+                    style: AppStyles.text14Px.poppins.w500.copyWith(
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const Text(
+                    ' *',
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -552,83 +609,63 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                 runSpacing: 12,
                 children:
                     _paymentMethods.map((method) {
-                      return SizedBox(
-                        width: (MediaQuery.of(context).size.width - 55) / 2,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _paymentMethod = method;
-                            });
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                _paymentMethod == method
-                                    ? Icons.radio_button_checked
-                                    : Icons.radio_button_unchecked,
-                                color:
-                                    _paymentMethod == method
-                                        ? AppColors.primary
-                                        : AppColors.textGrey,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _getPaymentMethodColor(method),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Text(
-                                  method,
-                                  style: AppStyles.text12Px.poppins.w500.dark,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                      return _buildPaymentMethodPill(method);
                     }).toList(),
               ),
 
               const SizedBox(height: 24),
-              RichText(
-                text: TextSpan(
-                  text: 'Membership Start Date',
-                  style: AppStyles.text14Px.poppins.w500.dark,
-                  children: const [
-                    TextSpan(text: '*', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
+              Row(
+                children: [
+                  Text(
+                    'Start Date',
+                    style: AppStyles.text14Px.poppins.w500.copyWith(
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const Text(
+                    ' *',
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
-              InkWell(
-                onTap: _pickStartDate,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.borderGrey),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        DateFormat('dd MMM yyyy').format(_startDate),
-                        style: AppStyles.text14Px.poppins.w400.dark,
-                      ),
-                      const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: AppColors.textGrey,
-                      ),
-                    ],
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xffD0D5DD)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: InkWell(
+                  onTap: _pickStartDate,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          DateFormat('dd/MM/yyyy').format(_startDate),
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const Icon(
+                          Icons.calendar_today_outlined,
+                          color: Colors.black87,
+                          size: 18,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -655,20 +692,228 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
     );
   }
 
-  Color _getPaymentMethodColor(String method) {
+  Widget _buildPlanSelector(List<MembershipPackageModel> plans) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () {
+            setState(() {
+              _isPlanDropdownOpen = !_isPlanDropdownOpen;
+            });
+          },
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xffD0D5DD)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedPlan?.name ?? 'Select Plan',
+                    style: _selectedPlan != null
+                        ? AppStyles.text14Px.poppins.w500.copyWith(
+                            color: Colors.black87,
+                          )
+                        : AppStyles.text14Px.poppins.w400.textGrey,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Icon(
+                  _isPlanDropdownOpen
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  color: AppColors.textGrey,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isPlanDropdownOpen) ...[
+          const SizedBox(height: 6),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xffD0D5DD)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            constraints: const BoxConstraints(maxHeight: 220),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                shrinkWrap: true,
+                itemCount: plans.length,
+                separatorBuilder: (context, index) => const Divider(
+                  height: 1,
+                  color: Color(0xffEEEEEE),
+                ),
+                itemBuilder: (context, index) {
+                  final plan = plans[index];
+                  final isSelected = _selectedPlan?.id == plan.id;
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        _selectedPlan = plan;
+                        _isPlanDropdownOpen = false;
+                        _updateAmountToPay();
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            plan.name ?? '',
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : Colors.black87,
+                            ),
+                          ),
+                          if (isSelected)
+                            const Icon(
+                              Icons.check,
+                              color: AppColors.primary,
+                              size: 18,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildPaymentMethodPill(String method) {
+    final isSelected = _paymentMethod == method;
+    final style = _getPaymentMethodStyle(method, isSelected);
+
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _paymentMethod = method;
+        });
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: style.bgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: style.borderColor,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: style.iconColor,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              method,
+              style: AppStyles.text13Px.poppins.w500.copyWith(
+                color: style.textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ({Color bgColor, Color borderColor, Color iconColor, Color textColor})
+  _getPaymentMethodStyle(String method, bool isSelected) {
     switch (method) {
       case 'Cash':
-        return const Color(0xffB5FFC0);
+        return (
+          bgColor: const Color(0xFFE8F8EE),
+          borderColor:
+              isSelected ? const Color(0xFF27AE60) : const Color(0xFFD5F5E3),
+          iconColor:
+              isSelected ? const Color(0xFF27AE60) : Colors.grey.shade600,
+          textColor: const Color(0xFF1E8449),
+        );
       case 'UPI':
-        return const Color(0xffC6D2FF);
+        return (
+          bgColor: const Color(0xFFEBF5FB),
+          borderColor:
+              isSelected ? const Color(0xFF2980B9) : const Color(0xFFD4EFDF),
+          iconColor:
+              isSelected ? const Color(0xFF2980B9) : Colors.grey.shade600,
+          textColor: const Color(0xFF2471A3),
+        );
       case 'Debit Card':
-        return const Color(0xffFFE6B5);
+        return (
+          bgColor: const Color(0xFFFEF9E7),
+          borderColor:
+              isSelected ? const Color(0xFFF39C12) : const Color(0xFFFCF3CF),
+          iconColor:
+              isSelected ? const Color(0xFFF39C12) : Colors.grey.shade600,
+          textColor: const Color(0xFFB7950B),
+        );
       case 'Credit Card':
-        return const Color(0xffE6C6FF);
+        return (
+          bgColor: const Color(0xFFF5EEF8),
+          borderColor:
+              isSelected ? const Color(0xFF8E44AD) : const Color(0xFFE8DAEF),
+          iconColor:
+              isSelected ? const Color(0xFF8E44AD) : Colors.grey.shade600,
+          textColor: const Color(0xFF7D3C98),
+        );
       case 'Net Banking':
-        return const Color(0xffB5F0FF);
+        return (
+          bgColor: const Color(0xFFE8F8F5),
+          borderColor:
+              isSelected ? const Color(0xFF16A085) : const Color(0xFFA3E4D7),
+          iconColor:
+              isSelected ? const Color(0xFF16A085) : Colors.grey.shade600,
+          textColor: const Color(0xFF117A65),
+        );
       default:
-        return const Color(0xffF5F5F5);
+        return (
+          bgColor: const Color(0xFFF5F5F5),
+          borderColor:
+              isSelected ? AppColors.primary : const Color(0xFFEEEEEE),
+          iconColor: isSelected ? AppColors.primary : Colors.grey.shade600,
+          textColor: AppColors.dark,
+        );
     }
   }
 }

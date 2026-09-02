@@ -4,6 +4,7 @@ export 'expired_members_listing_screen.dart';
 export 'member_detials_screen.dart';
 export 'member_orboard_payment_successfull_screen.dart';
 export 'subscription_selection_screen.dart';
+export 'renew_membership_screen.dart';
 export 'upcoming_renewals_listing_screen.dart';
 export 'update_member_height_screen.dart';
 export 'update_member_weight_screen.dart';
