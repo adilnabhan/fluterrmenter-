@@ -85,6 +85,11 @@ final class ApiUris {
       '${_v1}fitnesscenter/membership-plans/$id/';
   static String deleteMembershipPackage(int id) =>
       '${_v1}fitnesscenter/membership-plans/$id/';
+  // New endpoints for editing and canceling a client membership
+  static String updateCustomerMembership(int id) =>
+      '${_v1}fitnesscenter/customer-memberships/$id/';
+  static String cancelCustomerMembership(int id) =>
+      '${_v1}fitnesscenter/customer-memberships/$id/cancel/';
   static final paymentHistory = '${_v1}fitnesscenter/customer-payments/';
   static final reports = '${_v1}fitnesscenter/reports/';
   static final reportsCustomers = '${_v1}fitnesscenter/reports/customers/';

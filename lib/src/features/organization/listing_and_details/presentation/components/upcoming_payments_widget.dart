@@ -152,10 +152,10 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
 
     return Container(
       margin: widget.margin,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xffEEEEEE)),
         boxShadow: [
           BoxShadow(
@@ -176,22 +176,22 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
                         color: const Color(0xff27AE60).withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.calendar_today_rounded,
                         color: Color(0xff27AE60),
-                        size: 18,
+                        size: 16,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Upcoming Payments',
-                        style: AppStyles.text15Px.poppins.w600.copyWith(
+                        style: AppStyles.text14Px.poppins.w600.copyWith(
                           color: context.colors.textPrimary,
                         ),
                         maxLines: 1,
@@ -223,7 +223,7 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
                     ),
                     const Icon(
                       Icons.chevron_right,
-                      size: 18,
+                      size: 16,
                       color: Color(0xff27AE60),
                     ),
                   ],
@@ -234,12 +234,12 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
 
           // Overdue Alert Banner
           if (overdueCount > 0) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
                 color: const Color(0xffE74C3C).withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: const Color(0xffE74C3C).withValues(alpha: 0.25),
                 ),
@@ -249,7 +249,7 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
                   const Icon(
                     Icons.warning_amber_rounded,
                     color: Color(0xffE74C3C),
-                    size: 20,
+                    size: 18,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -265,7 +265,7 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
             ),
           ],
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
 
           // Calendar Month Bar
           Row(
@@ -273,16 +273,16 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
             children: [
               Text(
                 DateFormat('MMMM yyyy').format(_focusedMonth),
-                style: AppStyles.text14Px.poppins.w600.copyWith(
+                style: AppStyles.text13Px.poppins.w600.copyWith(
                   color: context.colors.textPrimary,
                 ),
               ),
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left, size: 20),
+                    icon: const Icon(Icons.chevron_left, size: 18),
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                     onPressed: () {
                       setState(() {
                         _focusedMonth = DateTime(
@@ -293,9 +293,9 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.chevron_right, size: 20),
+                    icon: const Icon(Icons.chevron_right, size: 18),
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                     onPressed: () {
                       setState(() {
                         _focusedMonth = DateTime(
@@ -309,14 +309,14 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
 
           // Weekday Labels
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) {
               return SizedBox(
-                width: 32,
+                width: 28,
                 child: Text(
                   day,
                   textAlign: TextAlign.center,
@@ -327,17 +327,18 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
               );
             }).toList(),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
 
-          // Days Grid
+          // Days Grid (compact height with childAspectRatio: 1.3)
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: daysInMonth + firstDayOfWeek,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
+              childAspectRatio: 1.3,
+              mainAxisSpacing: 3,
+              crossAxisSpacing: 3,
             ),
             itemBuilder: (context, index) {
               if (index < firstDayOfWeek) {
@@ -382,11 +383,11 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
                     _selectedDate = currentDate;
                   });
                 },
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
                 child: Container(
                   decoration: BoxDecoration(
                     color: cellBg ?? Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     border: cellBorder,
                   ),
                   child: Column(
@@ -394,20 +395,20 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
                     children: [
                       Text(
                         '$day',
-                        style: AppStyles.text12Px.poppins.w700.copyWith(
+                        style: AppStyles.text12Px.poppins.w600.copyWith(
                           color: textColor,
                         ),
                       ),
                       if (dayPayments.isNotEmpty) ...[
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 1),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             if (hasOverdue)
                               Container(
-                                width: 6,
-                                height: 6,
-                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                                width: 4,
+                                height: 4,
+                                margin: const EdgeInsets.symmetric(horizontal: 1),
                                 decoration: BoxDecoration(
                                   color: isSelected ? Colors.white : const Color(0xffE74C3C),
                                   shape: BoxShape.circle,
@@ -415,9 +416,9 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
                               ),
                             if (hasPending)
                               Container(
-                                width: 6,
-                                height: 6,
-                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                                width: 4,
+                                height: 4,
+                                margin: const EdgeInsets.symmetric(horizontal: 1),
                                 decoration: BoxDecoration(
                                   color: isSelected ? Colors.white : const Color(0xffF39C12),
                                   shape: BoxShape.circle,
@@ -425,9 +426,9 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
                               ),
                             if (hasPaid && !hasOverdue && !hasPending)
                               Container(
-                                width: 6,
-                                height: 6,
-                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                                width: 4,
+                                height: 4,
+                                margin: const EdgeInsets.symmetric(horizontal: 1),
                                 decoration: BoxDecoration(
                                   color: isSelected ? Colors.white : const Color(0xff27AE60),
                                   shape: BoxShape.circle,

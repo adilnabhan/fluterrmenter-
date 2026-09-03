@@ -1632,72 +1632,6 @@ class _OrganizationListingAndDetailsScreenState
                                     }
                                   },
                                 ),
-
-                                (
-                                  title: 'Upcoming\nEMI',
-
-                                  count: orgHomeData.upcomingPaymentCount ?? 0,
-
-                                  countColor: const Color(0xff27AE60),
-
-                                  labelColor: const Color(0xff333333),
-
-                                  gradient: null,
-
-                                  borderColor: const Color(0xffEEEEEE),
-
-                                  iconColor: AppColors.dark,
-
-                                  iconBgColor: null,
-
-                                  isChevron: true,
-
-                                  onTap: () {
-                                    if (state.selectedOrganization?.id !=
-                                        null) {
-                                      context.push(
-                                        PaymentUpcomingViewScreen(
-                                          orgId:
-                                              state.selectedOrganization!.id!,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-
-                                (
-                                  title: 'EMI Dues',
-
-                                  count:
-                                      0, // Dummy data matching image style, replace logically if needed
-
-                                  countColor: const Color(0xffE74C3C),
-
-                                  labelColor: const Color(0xff333333),
-
-                                  gradient: null,
-
-                                  borderColor: const Color(0xffEEEEEE),
-
-                                  iconColor: AppColors.dark,
-
-                                  iconBgColor: null,
-
-                                  isChevron: true,
-
-                                  onTap: () {
-                                    if (state.selectedOrganization?.id !=
-                                        null) {
-                                      context.push(
-                                        PaymentUpcomingViewScreen(
-                                          orgId:
-                                              state.selectedOrganization!.id!,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-
                                 (
                                   title: 'Trainer\nAttendance',
 
@@ -1718,21 +1652,15 @@ class _OrganizationListingAndDetailsScreenState
                                   isChevron: true,
 
                                   onTap: () {
-                                    if (state.selectedOrganization?.id !=
-                                        null) {
+                                    if (state.selectedOrganization?.id != null) {
                                       Navigator.push(
                                         context,
-
-                                        MaterialPageRoute(
-                                          builder:
-                                              (
-                                                context,
-                                              ) => TrainerAttendanceScreen(
-                                                orgId:
-                                                    state
-                                                        .selectedOrganization!
-                                                        .id!,
-                                              ),
+                                        MaterialPageRoute<void>(
+                                          builder: (context) =>
+                                              TrainerAttendanceScreen(
+                                            orgId:
+                                                state.selectedOrganization!.id!,
+                                          ),
                                         ),
                                       );
                                     }
@@ -1759,21 +1687,15 @@ class _OrganizationListingAndDetailsScreenState
                                   isChevron: true,
 
                                   onTap: () {
-                                    if (state.selectedOrganization?.id !=
-                                        null) {
+                                    if (state.selectedOrganization?.id != null) {
                                       Navigator.push(
                                         context,
-
-                                        MaterialPageRoute(
-                                          builder:
-                                              (
-                                                context,
-                                              ) => ClientAttendanceScreen(
-                                                orgId:
-                                                    state
-                                                        .selectedOrganization!
-                                                        .id!,
-                                              ),
+                                        MaterialPageRoute<void>(
+                                          builder: (context) =>
+                                              ClientAttendanceScreen(
+                                            orgId:
+                                                state.selectedOrganization!.id!,
+                                          ),
                                         ),
                                       );
                                     }

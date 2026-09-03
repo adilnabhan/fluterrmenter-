@@ -664,8 +664,9 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
             itemCount: daysInMonth + firstDayOfWeek,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
+              childAspectRatio: 1.3,
+              mainAxisSpacing: 3,
+              crossAxisSpacing: 3,
             ),
             itemBuilder: (context, index) {
               if (index < firstDayOfWeek) {

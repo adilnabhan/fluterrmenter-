@@ -122,28 +122,12 @@ class _ActiveMembersListingScreenState
                         }
                         return Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '${memebersDataum.count ?? 0} members',
-                                  style: AppStyles.text14Px.poppins.w400.dark,
-                                ),
-                                FilterButton(
-                                  isSelected: _sort != null,
-                                  sortLabel: 'Sort by Joined Recently',
-                                  onTap: () {
-                                    if (_sort == ListingSort.recent) {
-                                      _sort = null;
-                                    } else {
-                                      _sort = ListingSort.recent;
-                                    }
-                                    _fetch();
-                                    if (!mounted) return;
-                                    setState(() {});
-                                  },
-                                ),
-                              ],
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '${memebersDataum.count ?? 0} members',
+                                style: AppStyles.text14Px.poppins.w400.dark,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Expanded(

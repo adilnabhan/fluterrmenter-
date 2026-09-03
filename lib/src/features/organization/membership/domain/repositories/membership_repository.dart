@@ -588,4 +588,117 @@ final class MembershipRepository {
       },
     );
   }
+
+  /// PATCH /api/v1/fitnesscenter/customer-memberships/{id}/
+  /// Updates a customer membership (plan, dates, amount, etc.)
+  Future<Either<ApiException, void>> updateCustomerMembership({
+    required int customerMembershipId,
+    required Map<String, dynamic> body,
+  }) async {
+    try {
+      final response = await _dio.patch<dynamic>(
+        ApiUris.updateCustomerMembership(customerMembershipId),
+        data: body,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      final statusCode = response.statusCode ?? 0;
+      if (statusCode == 200 || statusCode == 201) {
+        return right(null);
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: 'Unexpected response from server. Code: $statusCode',
+        ),
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        String message = 'Access denied: You do not have permission to modify this membership';
+        if (data is Map && data.isNotEmpty) {
+          message = data.values.first.toString();
+        }
+        return left(ApiException.unknown(msg: message));
+      }
+
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.isNotEmpty) {
+          // Extract first meaningful error message
+          final firstValue = data.values.first;
+          if (firstValue is List && firstValue.isNotEmpty) {
+            return left(ApiException.unknown(msg: firstValue.first.toString()));
+          }
+          return left(ApiException.unknown(msg: firstValue.toString()));
+        }
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: e.message ?? 'Something went wrong while updating membership.',
+        ),
+      );
+    } catch (e) {
+      return left(
+        ApiException.unknown(msg: 'Unexpected error: ${e.toString()}'),
+      );
+    }
+  }
+
+  /// POST /api/v1/fitnesscenter/customer-memberships/{id}/cancel/
+  /// Cancels a customer membership
+  Future<Either<ApiException, void>> cancelCustomerMembership({
+    required int customerMembershipId,
+    Map<String, dynamic>? body,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        ApiUris.cancelCustomerMembership(customerMembershipId),
+        data: body ?? {},
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      final statusCode = response.statusCode ?? 0;
+      if (statusCode == 200 || statusCode == 201) {
+        return right(null);
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: 'Unexpected response from server. Code: $statusCode',
+        ),
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        String message = 'Access denied: You do not have permission to cancel this membership';
+        if (data is Map && data.isNotEmpty) {
+          message = data.values.first.toString();
+        }
+        return left(ApiException.unknown(msg: message));
+      }
+
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.isNotEmpty) {
+          final firstValue = data.values.first;
+          if (firstValue is List && firstValue.isNotEmpty) {
+            return left(ApiException.unknown(msg: firstValue.first.toString()));
+          }
+          return left(ApiException.unknown(msg: firstValue.toString()));
+        }
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: e.message ?? 'Something went wrong while cancelling membership.',
+        ),
+      );
+    } catch (e) {
+      return left(
+        ApiException.unknown(msg: 'Unexpected error: ${e.toString()}'),
+      );
+    }
+  }
 }

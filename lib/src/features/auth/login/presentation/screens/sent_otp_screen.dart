@@ -26,6 +26,9 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
   @override
   void initState() {
     super.initState();
+    _phoneController.addListener(() {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _phoneFocusNode.requestFocus();
     });
@@ -63,26 +66,40 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
           ),
         );
       },
-      child: SafeArea(
-        top: false,
-        child: Scaffold(
-          body: Stack(
-            fit: StackFit.expand,
-            children: [
-              AppBar(
-                automaticallyImplyLeading: false,
-                leading: null,
-                toolbarHeight: context.height * .3,
-                title: SvgPicture.asset(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFECEE),
+              Colors.white,
+            ],
+            stops: [0.0, 0.45],
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: const PopButton().center,
+            ),
+            body: Padding(
+              padding: EdgeInsets.only(top: 100.h),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: SvgPicture.asset(
                   'assets/images/svg/vectors/logo.svg',
-                  height: 40,
-                  width: 40,
+                  height: 54,
+                  width: 54,
                 ),
               ),
-              Container(color: AppColors.dark.withAlpha(50)),
-            ],
+            ),
+            bottomSheet: _buildBottomSheet(),
           ),
-          bottomSheet: _buildBottomSheet(),
         ),
       ),
     );
@@ -98,6 +115,14 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
           topLeft: Radius.circular(16.r),
           topRight: Radius.circular(16.r),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            spreadRadius: 2,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -129,35 +154,56 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w),
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: const Color(0xFFE8E8E8),
-                          width: 1.w,
-                        ),
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(
+                        color: const Color(0xFFE5E7EB),
+                        width: 1.w,
                       ),
                     ),
                     child: Row(
                       children: [
-                        Text('+91', style: AppStyles.text14Px.poppins.w500),
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 2,
-                          height: 20,
-                          color: const Color(0xFFE8E8E8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'IN ',
+                              style: AppStyles.text14Px.poppins.w600.copyWith(
+                                color: const Color(0xFF111827),
+                              ),
+                            ),
+                            Text(
+                              '+91',
+                              style: AppStyles.text14Px.poppins.w600.copyWith(
+                                color: const Color(0xFF111827),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Flexible(
+                        SizedBox(width: 10.w),
+                        Container(
+                          width: 1.w,
+                          height: 22.h,
+                          color: const Color(0xFFE5E7EB),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
                           child: TextFormField(
                             controller: _phoneController,
                             focusNode: _phoneFocusNode,
+                            style: AppStyles.text16Px.poppins.w600.copyWith(
+                              color: const Color(0xFF111827),
+                              letterSpacing: 0.5,
+                            ),
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               hintText: 'Mobile Number',
                               hintStyle: AppStyles.text14Px.poppins.w400
-                                  .copyWith(color: const Color(0xFF999999)),
+                                  .copyWith(color: const Color(0xFF9CA3AF)),
                               filled: false,
+                              contentPadding: EdgeInsets.zero,
                             ),
                             keyboardType: TextInputType.phone,
                             inputFormatters: [
@@ -165,6 +211,27 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
                               LengthLimitingTextInputFormatter(10),
                             ],
                           ),
+                        ),
+                        ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _phoneController,
+                          builder: (context, value, child) {
+                            if (value.text.length == 10) {
+                              return Container(
+                                margin: EdgeInsets.only(left: 8.w),
+                                padding: EdgeInsets.all(3.r),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFECFDF5),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check_rounded,
+                                  color: Color(0xFF10B981),
+                                  size: 14,
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
                         ),
                       ],
                     ),
@@ -184,6 +251,13 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
             builder: (context, state) {
               return Button.filled(
                 title: 'Send OTP',
+                icon: const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                raduis: 16.r,
+                buttonColor: const Color(0xFF111827),
                 isLoading: state.sentOtp?.isNone() ?? false,
                 ontap: () {
                   context.read<SentOtpCubit>().sentOtp(

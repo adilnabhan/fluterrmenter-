@@ -117,32 +117,12 @@ class __ExpiredMembersListingScreenState
                         }
                         return Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '${memebersDataum.count ?? 0} members',
-                                  style: AppStyles.text14Px.poppins.w400.dark,
-                                ),
-                                OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    side: const BorderSide(
-                                      color: Color(0xffDDDDDD),
-                                    ),
-                                  ),
-                                  onPressed: () {},
-                                  child: Text(
-                                    'Sort by Joined Recently',
-                                    style: AppStyles.text12Px.poppins.copyWith(
-                                      color: const Color(0xff222222),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '${memebersDataum.count ?? 0} members',
+                                style: AppStyles.text14Px.poppins.w400.dark,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Expanded(

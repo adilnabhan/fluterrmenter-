@@ -426,12 +426,14 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
     final isTrialExpired =
         isTrial && (membership.trialEndAt?.isBefore(now) ?? false);
     final isMembershipExpired = membership.endDate?.isBefore(now) ?? false;
+    final isCancelled =
+        membership.status?.toLowerCase() == 'cancelled';
     final isExpired =
         membership.status?.toLowerCase() == 'expired' || isMembershipExpired;
 
     // Determine actual status based on dates
-    final actualIsActive = isActive && !isMembershipExpired && !isTrialExpired;
-    final actualIsTrial = isTrial && !isTrialExpired;
+    final actualIsActive = isActive && !isMembershipExpired && !isTrialExpired && !isCancelled;
+    final actualIsTrial = isTrial && !isTrialExpired && !isCancelled;
 
     return Container(
       decoration: BoxDecoration(
@@ -439,9 +441,11 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
-              actualIsActive
-                  ? Colors.green.withOpacity(0.3)
-                  : Colors.grey.withOpacity(0.2),
+              isCancelled
+                  ? Colors.red.withOpacity(0.3)
+                  : actualIsActive
+                      ? Colors.green.withOpacity(0.3)
+                      : Colors.grey.withOpacity(0.2),
           width: 1.5,
         ),
         boxShadow: [
@@ -461,11 +465,13 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors:
-                    actualIsActive
-                        ? [Colors.green.shade50, Colors.green.shade100]
-                        : isExpired
+                    isCancelled
                         ? [Colors.red.shade50, Colors.red.shade100]
-                        : [Colors.orange.shade50, Colors.orange.shade100],
+                        : actualIsActive
+                            ? [Colors.green.shade50, Colors.green.shade100]
+                            : isExpired
+                                ? [Colors.red.shade50, Colors.red.shade100]
+                                : [Colors.orange.shade50, Colors.orange.shade100],
               ),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
@@ -479,19 +485,23 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color:
-                        actualIsActive
-                            ? Colors.green
-                            : isExpired
-                            ? Colors.red
-                            : Colors.orange,
+                        isCancelled
+                            ? Colors.red.shade700
+                            : actualIsActive
+                                ? Colors.green
+                                : isExpired
+                                    ? Colors.red
+                                    : Colors.orange,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    actualIsActive
-                        ? Icons.fitness_center
-                        : isExpired
-                        ? Icons.cancel
-                        : Icons.pending,
+                    isCancelled
+                        ? Icons.block
+                        : actualIsActive
+                            ? Icons.fitness_center
+                            : isExpired
+                                ? Icons.cancel
+                                : Icons.pending,
                     color: Colors.white,
                     size: 20,
                   ),
@@ -509,33 +519,41 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                       Row(
                         children: [
                           Icon(
-                            actualIsActive
-                                ? Icons.check_circle
-                                : isExpired
-                                ? Icons.cancel
-                                : Icons.schedule,
+                            isCancelled
+                                ? Icons.block
+                                : actualIsActive
+                                    ? Icons.check_circle
+                                    : isExpired
+                                        ? Icons.cancel
+                                        : Icons.schedule,
                             size: 14,
                             color:
-                                actualIsActive
-                                    ? Colors.green
-                                    : isExpired
-                                    ? Colors.red
-                                    : Colors.orange,
+                                isCancelled
+                                    ? Colors.red.shade700
+                                    : actualIsActive
+                                        ? Colors.green
+                                        : isExpired
+                                            ? Colors.red
+                                            : Colors.orange,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            actualIsActive
-                                ? 'Active'
-                                : isExpired
-                                ? 'Expired'
-                                : membership.status?.toUpperCase() ?? 'Unknown',
+                            isCancelled
+                                ? 'CANCELLED'
+                                : actualIsActive
+                                    ? 'Active'
+                                    : isExpired
+                                        ? 'Expired'
+                                        : membership.status?.toUpperCase() ?? 'Unknown',
                             style: AppStyles.text12Px.poppins.w500.copyWith(
                               color:
-                                  actualIsActive
-                                      ? Colors.green
-                                      : isExpired
-                                      ? Colors.red
-                                      : Colors.orange,
+                                  isCancelled
+                                      ? Colors.red.shade700
+                                      : actualIsActive
+                                          ? Colors.green
+                                          : isExpired
+                                              ? Colors.red
+                                              : Colors.orange,
                             ),
                           ),
                         ],
@@ -571,6 +589,59 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                       ],
                     ),
                   ),
+                // 3-dot action menu
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: isCancelled
+                        ? Colors.red.shade700
+                        : actualIsActive
+                            ? Colors.green.shade700
+                            : Colors.grey.shade700,
+                    size: 22,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      _navigateToEditMembership(membership, data);
+                    } else if (value == 'cancel') {
+                      _showCancelMembershipDialog(membership);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem<String>(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit, size: 18, color: AppColors.primary),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Edit Plan',
+                            style: AppStyles.text14Px.poppins.w500.dark,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!isCancelled)
+                      PopupMenuItem<String>(
+                        value: 'cancel',
+                        child: Row(
+                          children: [
+                            Icon(Icons.cancel, size: 18, color: Colors.red.shade400),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Cancel Membership',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: Colors.red.shade400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -1713,6 +1784,210 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
           ),
         ).pOnly(bottom: 32),
       ],
+    );
+  }
+
+  void _navigateToEditMembership(
+    MembershipDataModel membership,
+    MemberDetailsModel data,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditCustomerMembershipScreen(
+          orgId: _cubit.orgId,
+          memberId: widget.memberId,
+          memberName:
+              '${data.firstName ?? ''} ${data.lastName ?? ''}'.trim(),
+          memberAvatar: data.profilePicture,
+          memberPhone: data.mobileNumber,
+          currentMembership: membership,
+          onUpdated: _fetch,
+        ),
+      ),
+    );
+  }
+
+  void _showCancelMembershipDialog(MembershipDataModel membership) {
+    final membershipId = membership.id;
+    if (membershipId == null) {
+      Dialogs.showSnack(msg: 'Membership ID not found');
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.cancel, color: Colors.red.shade700, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                'Cancel Membership',
+                style: AppStyles.text16Px.poppins.w600.dark,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to cancel this membership?',
+              style: AppStyles.text14Px.poppins.w500.dark,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              membership.membershipName ?? 'Unknown Plan',
+              style: AppStyles.text14Px.poppins.w600.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded,
+                      color: Colors.red.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'This action cannot be undone.',
+                      style: AppStyles.text12Px.poppins.w400.copyWith(
+                        color: Colors.red.shade700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.grey.shade300),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      'Keep Active',
+                      style: AppStyles.text14Px.poppins.w500.copyWith(
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+                      // Second confirmation
+                      showDialog(
+                        context: context,
+                        builder: (confirmContext) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: Text(
+                            'Confirm Cancellation',
+                            style: AppStyles.text16Px.poppins.w600.dark,
+                          ),
+                          content: Text(
+                            'This will permanently cancel "${membership.membershipName ?? 'this membership'}". Are you absolutely sure?',
+                            style: AppStyles.text14Px.poppins.w400.dark,
+                          ),
+                          actionsAlignment: MainAxisAlignment.spaceBetween,
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(confirmContext),
+                              child: Text(
+                                'No, Go Back',
+                                style: AppStyles.text14Px.poppins.w500.copyWith(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                Navigator.pop(confirmContext);
+                                final result = await MembershipRepository()
+                                    .cancelCustomerMembership(
+                                  customerMembershipId: membershipId,
+                                );
+                                result.fold(
+                                  (error) {
+                                    Dialogs.showSnack(
+                                      msg: error.msg ??
+                                          'Failed to cancel membership',
+                                    );
+                                  },
+                                  (_) {
+                                    Dialogs.showSnack(
+                                      msg: 'Membership cancelled successfully',
+                                    );
+                                    _fetch();
+                                  },
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'Yes, Cancel',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: AppStyles.text14Px.poppins.w500.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        // Remove default actions since buttons are now in content
+        actions: const [],
+      ),
     );
   }
 
