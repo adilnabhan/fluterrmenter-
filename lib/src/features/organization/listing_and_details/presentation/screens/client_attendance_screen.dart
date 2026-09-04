@@ -1148,9 +1148,41 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       (_dashboard['holiday_count'] ?? _dashboard['clients_holiday'] ?? _dashboard['clients_on_holiday']) as int? ??
       _clients.where((c) => _getClientStatus(c) == 'holiday').length;
 
-  int get _activeMembersCount => _clients.where(_isClientActive).length;
-  int get _expiredMembersCount => _clients.where(_isClientExpired).length;
-  int get _pendingFeeCount => _clients.where(_isClientPendingFee).length;
+  int get _activeMembersCount =>
+      (_dashboard['active_clients_count'] ??
+          _dashboard['total_active_clients']) as int? ??
+      _clients.where(_isClientActive).length;
+
+  int get _expiredMembersCount =>
+      _dashboard['expired_clients_count'] as int? ??
+      _clients.where(_isClientExpired).length;
+
+  int get _pendingFeeCount =>
+      _dashboard['pending_fee_count'] as int? ??
+      _clients.where(_isClientPendingFee).length;
+
+  int get _activePresentCount =>
+      (_dashboard['active_present_count'] ??
+          _dashboard['active_clients_present_today']) as int? ??
+      _clients
+          .where((c) => _isClientActive(c) && _getClientStatus(c) == 'present')
+          .length;
+
+  int get _expiredPresentCount =>
+      (_dashboard['expired_present_count'] ??
+          _dashboard['expired_clients_present_today']) as int? ??
+      _clients
+          .where((c) => _isClientExpired(c) && _getClientStatus(c) == 'present')
+          .length;
+
+  int get _pendingFeePresentCount =>
+      (_dashboard['pending_fee_present_count'] ??
+          _dashboard['pending_fee_clients_present_today']) as int? ??
+      _clients
+          .where(
+            (c) => _isClientPendingFee(c) && _getClientStatus(c) == 'present',
+          )
+          .length;
 
   List<Map<String, dynamic>> get _filteredClients {
     var list = _clients;
@@ -2333,7 +2365,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       (
         value: 'all',
         label: 'All Clients',
-        count: _clients.length,
+        count: (_dashboard['total_clients_count'] ?? _dashboard['count']) as int? ?? _clients.length,
         color: AppColors.primary,
         icon: Icons.people_outline,
       ),
@@ -2679,24 +2711,24 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                 const Divider(color: Color(0xffEEEEEE)),
                 const SizedBox(height: 12),
 
-                // Membership summary info
+                // Membership summary info for present clients
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildMiniMetric('Total Clients', '$total', AppColors.dark),
                     _buildMiniMetric(
                       'Active',
-                      '$_activeMembersCount',
+                      '$_activePresentCount',
                       const Color(0xff27AE60),
                     ),
                     _buildMiniMetric(
                       'Expired',
-                      '$_expiredMembersCount',
+                      '$_expiredPresentCount',
                       const Color(0xffE74C3C),
                     ),
                     _buildMiniMetric(
                       'Pending Fee',
-                      '$_pendingFeeCount',
+                      '$_pendingFeePresentCount',
                       const Color(0xffE67E22),
                     ),
                   ],

@@ -323,9 +323,54 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
             ],
           ).pOnly(bottom: 20),
 
-          // Individual Membership Cards
-          for (final membership in membershipsList)
-            _buildMembershipCard(membership, data).pOnly(bottom: 16),
+          // Only show the latest membership card
+          _buildMembershipCard(membershipsList.first, data).pOnly(
+            bottom: membershipsList.length > 1 ? 12 : 16,
+          ),
+
+          // View All button below card if multiple memberships exist
+          if (membershipsList.length > 1)
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => _navigateToAllMemberships(data),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.25),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.history,
+                      size: 18,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'View All Memberships (${membershipsList.length})',
+                      style: AppStyles.text13Px.poppins.w600.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 12,
+                      color: AppColors.primary,
+                    ),
+                  ],
+                ),
+              ),
+            ).pOnly(bottom: 16),
         ] else ...[
           Container(
             width: double.infinity,
@@ -1303,7 +1348,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
         ).pOnly(bottom: 20),
 
         // Individual membership cards shimmer
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 1; i++)
           Container(
             decoration: BoxDecoration(
               color: AppColors.light,
@@ -1787,13 +1832,29 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
     );
   }
 
+  void _navigateToAllMemberships(MemberDetailsModel data) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => MemberAllMembershipsScreen(
+          orgId: widget.orgId ?? _cubit.orgId,
+          memberId: widget.memberId,
+          memberName:
+              '${data.firstName ?? ''} ${data.lastName ?? ''}'.trim(),
+          memberDetails: data,
+          onUpdated: _fetch,
+        ),
+      ),
+    );
+  }
+
   void _navigateToEditMembership(
     MembershipDataModel membership,
     MemberDetailsModel data,
   ) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (context) => EditCustomerMembershipScreen(
           orgId: _cubit.orgId,
           memberId: widget.memberId,
@@ -1815,7 +1876,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
       return;
     }
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -1904,7 +1965,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     onPressed: () {
                       Navigator.pop(dialogContext);
                       // Second confirmation
-                      showDialog(
+                      showDialog<void>(
                         context: context,
                         builder: (confirmContext) => AlertDialog(
                           shape: RoundedRectangleBorder(
@@ -1937,12 +1998,13 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                                   customerMembershipId: membershipId,
                                 );
                                 result.fold(
-                                  (error) {
-                                    Dialogs.showSnack(
-                                      msg: error.msg ??
-                                          'Failed to cancel membership',
-                                    );
-                                  },
+                                    (error) {
+                                      Dialogs.showSnack(
+                                        msg: error.msg.isNotEmpty
+                                            ? error.msg
+                                            : 'Failed to cancel membership',
+                                      );
+                                    },
                                   (_) {
                                     Dialogs.showSnack(
                                       msg: 'Membership cancelled successfully',
@@ -1994,7 +2056,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
   void _showRenewMembershipBottomSheet(MemberDetailsModel memberDetails) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder:
             (context) => RenewMembershipScreen(
               orgId: _cubit.orgId,
