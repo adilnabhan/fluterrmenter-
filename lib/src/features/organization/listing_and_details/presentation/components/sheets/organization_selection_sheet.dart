@@ -62,6 +62,33 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                   ) => either.fold((error) => const Center(child: Text('Error')), (
                     orgsList,
                   ) {
+                    final appCubit = context.read<AppCubit>();
+                    final current = appCubit.state.currentUser;
+                    final isOwner = current != null && (current.userRole == 34 || current.userRole == 20 || current.userRole != 35);
+                    if (isOwner && orgsList.result != null) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        for (final org in orgsList.result!) {
+                          final exists = appCubit.state.accounts.any((a) =>
+                              (a.userRole == 34 || a.userRole == 20 || a.userRole != 35) &&
+                              (a.mentor?.org?.id == org.id || a.organizationId == org.id));
+                          if (!exists) {
+                            final orgAccount = current.copyWith(
+                              organizationId: org.id,
+                              organizationName: org.name,
+                              profilePicture: org.logo ?? current.profilePicture,
+                              mentor: current.mentor?.copyWith(
+                                org: current.mentor?.org?.copyWith(
+                                  id: org.id,
+                                  name: org.name,
+                                ) ?? Org(id: org.id, name: org.name),
+                              ) ?? Mentor(id: org.id, name: org.name, org: Org(id: org.id, name: org.name)),
+                            );
+                            appCubit.addUser(orgAccount);
+                          }
+                        }
+                      });
+                    }
+
                     return Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -84,6 +111,20 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                                   ),
                                   onTap: () {
                                     _cubit.selectOrganization(org);
+                                    if (isOwner) {
+                                      final updatedOrgUser = current.copyWith(
+                                        organizationId: org.id,
+                                        organizationName: org.name,
+                                        profilePicture: org.logo ?? current.profilePicture,
+                                        mentor: current.mentor?.copyWith(
+                                          org: current.mentor?.org?.copyWith(
+                                            id: org.id,
+                                            name: org.name,
+                                          ) ?? Org(id: org.id, name: org.name),
+                                        ) ?? Mentor(id: org.id, name: org.name, org: Org(id: org.id, name: org.name)),
+                                      );
+                                      appCubit.addUser(updatedOrgUser);
+                                    }
                                     context.pop();
                                   },
                                   child: Padding(
@@ -135,6 +176,12 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                                   account.userRole == 35
                                       ? 'Trainer'
                                       : 'Fitness Center Owner';
+                              final String profilePic = (account.profilePicture != null &&
+                                      account.profilePicture.toString().trim().isNotEmpty &&
+                                      account.profilePicture.toString().trim() != 'null')
+                                  ? account.profilePicture.toString().trim()
+                                  : '';
+
                               return Column(
                                 children: [
                                   InkWell(
@@ -163,10 +210,7 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                                               child: ProfileImage(
                                                 isEdit: false,
                                                 radius: 48,
-                                                url:
-                                                    account.profilePicture
-                                                        as String? ??
-                                                    '',
+                                                url: profilePic,
                                               ),
                                             ),
                                           ),

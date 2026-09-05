@@ -302,7 +302,10 @@ final class AuthRepository {
       return await Feggy.async(
         call: _dio.post<dynamic>(
           ApiUris.tokenRefresh,
-          data: {'refresh_token': refreshToken},
+          data: {
+            'refresh': refreshToken,
+            'refresh_token': refreshToken,
+          },
           options: Options(headers: {'X-Platform': platformSource}),
         ),
         onSuccess: (res) {

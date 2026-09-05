@@ -195,7 +195,8 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    if (customer.gender != null)
+                    if (customer.gender != null &&
+                        customer.gender!.trim().isNotEmpty)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -206,8 +207,8 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
-                          customer.gender![0].toUpperCase() +
-                              customer.gender!.substring(1),
+                          customer.gender!.trim()[0].toUpperCase() +
+                              customer.gender!.trim().substring(1),
                           style: AppStyles.text12Px.poppins.w500.textGrey,
                         ),
                       ),

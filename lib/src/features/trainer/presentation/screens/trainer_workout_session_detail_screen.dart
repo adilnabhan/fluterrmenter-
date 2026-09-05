@@ -56,27 +56,33 @@ class _TrainerWorkoutSessionDetailScreenState
   bool _isAssignedWorkout(Map<String, dynamic> item) {
     if (widget.isAssigned != null) return widget.isAssigned!;
 
-    final type = (item['workout_type'] ??
-            item['session_type'] ??
-            item['type'] ??
-            item['workout_category'] ??
-            item['category'] ??
-            '')
-        .toString()
-        .toLowerCase();
+    final type =
+        (item['workout_type'] ??
+                item['session_type'] ??
+                item['type'] ??
+                item['workout_category'] ??
+                item['category'] ??
+                '')
+            .toString()
+            .toLowerCase();
     if (type.contains('assigned')) return true;
-    if (type.contains('self') || type.contains('custom') || type.contains('own')) return false;
+    if (type.contains('self') ||
+        type.contains('custom') ||
+        type.contains('own'))
+      return false;
 
-    final isAssigned = item['is_assigned'] as bool? ??
-        item['is_assigned_workout'] as bool?;
+    final isAssigned =
+        item['is_assigned'] as bool? ?? item['is_assigned_workout'] as bool?;
     if (isAssigned != null) return isAssigned;
 
-    final isSelf = item['is_self_workout'] as bool? ??
+    final isSelf =
+        item['is_self_workout'] as bool? ??
         item['is_custom'] as bool? ??
         item['is_self'] as bool?;
     if (isSelf != null) return !isSelf;
 
-    final planId = item['customer_workout_plan_id'] ??
+    final planId =
+        item['customer_workout_plan_id'] ??
         item['plan_id'] ??
         item['workout_plan_id'] ??
         item['plan'] ??
@@ -91,12 +97,9 @@ class _TrainerWorkoutSessionDetailScreenState
   Widget _buildWorkoutTypeBadge(Map<String, dynamic> item) {
     final isAssigned = _isAssignedWorkout(item);
     final label = isAssigned ? 'Assigned' : 'Self Workout';
-    final bg = isAssigned
-        ? const Color(0xFFEBF3FF)
-        : const Color(0xFFF3E8FF);
-    final textColor = isAssigned
-        ? const Color(0xFF1E56A0)
-        : const Color(0xFF7E22CE);
+    final bg = isAssigned ? const Color(0xFFEBF3FF) : const Color(0xFFF3E8FF);
+    final textColor =
+        isAssigned ? const Color(0xFF1E56A0) : const Color(0xFF7E22CE);
     final icon = isAssigned ? Icons.assignment_outlined : Icons.person_outline;
 
     return Container(
@@ -121,7 +124,8 @@ class _TrainerWorkoutSessionDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final workoutTitle = _sessionData['workout_title'] as String? ?? 'Workout Session';
+    final workoutTitle =
+        _sessionData['workout_title'] as String? ?? 'Workout Session';
     final exercises = _sessionData['exercises'] as List<dynamic>? ?? [];
 
     return Scaffold(
@@ -146,7 +150,9 @@ class _TrainerWorkoutSessionDetailScreenState
                   if (exercises.isNotEmpty)
                     Text(
                       '${exercises.length} Exercises',
-                      style: AppStyles.text12Px.poppins.w500.copyWith(color: AppColors.textGrey),
+                      style: AppStyles.text12Px.poppins.w500.copyWith(
+                        color: AppColors.textGrey,
+                      ),
                     ),
                 ],
               ),
@@ -158,25 +164,29 @@ class _TrainerWorkoutSessionDetailScreenState
           ],
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : exercises.isEmpty
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : exercises.isEmpty
               ? _buildEmptyState()
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: exercises.length,
-                  itemBuilder: (context, index) {
-                    final exercise = exercises[index];
-                    return _buildExerciseCard(
-                      index: index + 1,
-                      exerciseData: exercise,
-                    );
-                  },
-                ),
+                padding: const EdgeInsets.all(16),
+                itemCount: exercises.length,
+                itemBuilder: (context, index) {
+                  final exercise = exercises[index];
+                  return _buildExerciseCard(
+                    index: index + 1,
+                    exerciseData: exercise,
+                  );
+                },
+              ),
     );
   }
 
-  Widget _buildExerciseCard({required int index, required dynamic exerciseData}) {
+  Widget _buildExerciseCard({
+    required int index,
+    required dynamic exerciseData,
+  }) {
     final name = exerciseData['exercise_name'] as String? ?? '';
     final category = exerciseData['category'] as String? ?? '';
     final sets = exerciseData['sets'] as List<dynamic>? ?? [];
@@ -243,7 +253,10 @@ class _TrainerWorkoutSessionDetailScreenState
             ),
             Expanded(
               flex: 3,
-              child: Text('Previous', style: AppStyles.text12Px.poppins.w600.dark),
+              child: Text(
+                'Previous',
+                style: AppStyles.text12Px.poppins.w600.dark,
+              ),
             ),
             Expanded(
               flex: 1,
@@ -263,7 +276,7 @@ class _TrainerWorkoutSessionDetailScreenState
         const SizedBox(height: 8),
         const Divider(height: 1, color: Color(0xffEEEEEE)),
         const SizedBox(height: 8),
-        
+
         // Table Rows
         ...sets.map((set) {
           final setNum = set['set_number']?.toString() ?? '-';
@@ -288,7 +301,10 @@ class _TrainerWorkoutSessionDetailScreenState
                   child: Text(
                     previous,
                     style: AppStyles.text14Px.poppins.w400.copyWith(
-                      color: previous == 'no data' ? Colors.grey.shade400 : AppColors.textDark,
+                      color:
+                          previous == 'no data'
+                              ? Colors.grey.shade400
+                              : AppColors.textDark,
                     ),
                   ),
                 ),
@@ -317,15 +333,30 @@ class _TrainerWorkoutSessionDetailScreenState
                       width: 24,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: isCompleted ? AppColors.primary : Colors.grey.shade100,
+                        color:
+                            isCompleted
+                                ? AppColors.primary
+                                : Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                          color: isCompleted ? AppColors.primary : Colors.grey.shade300,
+                          color:
+                              isCompleted
+                                  ? AppColors.primary
+                                  : Colors.grey.shade300,
                         ),
                       ),
-                      child: isCompleted
-                          ? const Icon(Icons.check, size: 16, color: Colors.white)
-                          : const Icon(Icons.check, size: 16, color: Colors.grey),
+                      child:
+                          isCompleted
+                              ? const Icon(
+                                Icons.check,
+                                size: 16,
+                                color: Colors.white,
+                              )
+                              : const Icon(
+                                Icons.check,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
                     ),
                   ),
                 ),
@@ -342,11 +373,7 @@ class _TrainerWorkoutSessionDetailScreenState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.fitness_center,
-            size: 64,
-            color: Colors.grey.shade300,
-          ),
+          Icon(Icons.fitness_center, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
             'No Exercises Found',

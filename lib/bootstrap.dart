@@ -30,7 +30,7 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
         kIsWeb
             ? HydratedStorageDirectory.web
             : HydratedStorageDirectory(
-              (await getApplicationCacheDirectory()).path,
+              (await getApplicationDocumentsDirectory()).path,
             ),
   );
 

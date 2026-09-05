@@ -1,8 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
-import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_main_screen.dart';
 
-class AccountSwitcherSheet extends StatelessWidget {
+class AccountSwitcherSheet extends StatefulWidget {
   const AccountSwitcherSheet({super.key});
 
   Future<void> show(BuildContext context) async {
@@ -18,15 +19,255 @@ class AccountSwitcherSheet extends StatelessWidget {
   }
 
   @override
+  State<AccountSwitcherSheet> createState() => _AccountSwitcherSheetState();
+}
+
+class _AccountSwitcherSheetState extends State<AccountSwitcherSheet> {
+  final Map<String, String> _ownerOrgNames = {};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshOwnerGymNames();
+    });
+  }
+
+  /// Refreshes the access token for a specific account using its refresh token.
+  /// Returns the new access token, or null if refresh failed.
+  Future<String?> _refreshAccessToken(LoginSuccessModel account) async {
+    final refreshToken = account.refresh;
+    if (refreshToken == null || refreshToken.isEmpty) {
+      print('❌ _refreshAccessToken: No refresh token for account id=${account.id}');
+      return null;
+    }
+
+    try {
+      print('🔄 _refreshAccessToken: Attempting token refresh for account id=${account.id}...');
+      final dio = Dio();
+      final res = await dio.post<dynamic>(
+        ApiUris.tokenRefresh,
+        data: {
+          'refresh': refreshToken,
+          'refresh_token': refreshToken,
+        },
+        options: Options(
+          validateStatus: (_) => true,
+          headers: {'X-Platform': platformSource},
+        ),
+      );
+      print('🔄 _refreshAccessToken: Response code=${res.statusCode}, data=${res.data}');
+
+      Map<String, dynamic>? dataMap;
+      if (res.data is Map) {
+        dataMap = Map<String, dynamic>.from(res.data as Map);
+      } else if (res.data is String) {
+        try {
+          dataMap = jsonDecode(res.data as String) as Map<String, dynamic>;
+        } catch (_) {}
+      }
+
+      if (dataMap != null) {
+        final nestedData = dataMap['data'] is Map ? dataMap['data'] as Map : null;
+        final newAccess = (dataMap['access'] ??
+                dataMap['accessToken'] ??
+                dataMap['access_token'] ??
+                dataMap['token'] ??
+                nestedData?['access'] ??
+                nestedData?['access_token'])
+            ?.toString();
+        final newRefresh = (dataMap['refresh'] ??
+                dataMap['refreshToken'] ??
+                dataMap['refresh_token'] ??
+                nestedData?['refresh'] ??
+                nestedData?['refresh_token'])
+            ?.toString();
+
+        if (newAccess != null && newAccess.isNotEmpty) {
+          print('✅ _refreshAccessToken: New access token received for account id=${account.id}');
+          if (mounted) {
+            final appCubit = context.read<AppCubit>();
+            final updatedUser = account.copyWith(
+              access: newAccess,
+              refresh: newRefresh ?? refreshToken,
+            );
+            appCubit.updateAccount(updatedUser);
+          }
+          return newAccess;
+        }
+      }
+    } catch (e) {
+      print('❌ Failed to refresh token for account ${account.id}: $e');
+    }
+    return null;
+  }
+
+  Future<void> _refreshOwnerGymNames() async {
+    if (!mounted) return;
+    final appCubit = context.read<AppCubit>();
+    final accounts = List<LoginSuccessModel>.from(appCubit.state.accounts);
+    print('🏢 _refreshOwnerGymNames: Checking ${accounts.length} accounts...');
+
+    bool hasChanges = false;
+    for (final account in accounts) {
+      print('🏢 Account: id=${account.id}, role=${account.userRole}, name="${account.firstName} ${account.lastName}", orgName="${account.organizationName}", mentorOrg="${account.mentor?.org?.name}"');
+      final isOwner = account.userRole == 34 || account.userRole == 20 || account.userRole != 35;
+      if (isOwner) {
+        try {
+          var token = account.access;
+          if (token == null || token.isEmpty) {
+            print('⚠️ Owner account has no access token, trying refresh token...');
+            token = await _refreshAccessToken(account);
+            if (token == null || token.isEmpty) {
+              print('❌ Token refresh returned null for owner account ${account.id}');
+              continue;
+            }
+          }
+
+          final dio = Dio();
+
+          // Try fetching org list with current token
+          print('🏢 Fetching org list for owner ${account.id} with token: ${token.substring(0, min(15, token.length))}...');
+          var res = await dio.get<dynamic>(
+            ApiUris.listOrganizations,
+            options: Options(
+              validateStatus: (_) => true, // don't throw on 401
+              headers: {
+                'Authorization': 'JWT $token',
+                'X-Platform': platformSource,
+              },
+            ),
+          );
+          print('🏢 Org list response status=${res.statusCode}, data=${res.data}');
+
+          // If 401 (expired token), refresh and retry
+          if (res.statusCode == 401) {
+            print('🔄 Token expired (401) for owner account ${account.id}, refreshing...');
+            final newToken = await _refreshAccessToken(account);
+            if (newToken != null) {
+              token = newToken;
+              res = await dio.get<dynamic>(
+                ApiUris.listOrganizations,
+                options: Options(
+                  validateStatus: (_) => true,
+                  headers: {
+                    'Authorization': 'JWT $token',
+                    'X-Platform': platformSource,
+                  },
+                ),
+              );
+              print('🏢 Retry org list response status=${res.statusCode}, data=${res.data}');
+            } else {
+              print('❌ Token refresh failed for account ${account.id}');
+              continue;
+            }
+          }
+
+          if (res.statusCode == 200 && res.data != null) {
+            var data = res.data;
+            if (data is String) {
+              try {
+                data = jsonDecode(data);
+              } catch (_) {}
+            }
+
+            final List result = (data is Map && data['result'] is List)
+                ? (data['result'] as List)
+                : (data is List
+                    ? data
+                    : (data is Map && data['data'] is List ? data['data'] as List : []));
+
+            if (result.isNotEmpty) {
+              // Find matching org or default to first
+              Map? matchedOrg;
+              for (final org in result) {
+                if (org is Map) {
+                  final oId = org['id'] as int?;
+                  if (oId != null &&
+                      (account.organizationId == oId ||
+                          account.mentor?.org?.id == oId)) {
+                    matchedOrg = org;
+                    break;
+                  }
+                }
+              }
+              matchedOrg ??= result.first as Map;
+
+              final orgId = matchedOrg['id'] as int?;
+              final orgName = matchedOrg['name']?.toString() ?? matchedOrg['organization_name']?.toString();
+              final orgLogo = matchedOrg['logo']?.toString() ?? matchedOrg['organization_logo']?.toString();
+
+              print('🏢 Found organization: id=$orgId, name="$orgName", logo="$orgLogo"');
+
+              if (orgName != null && orgName.isNotEmpty) {
+                _ownerOrgNames['${account.mobileNumber}_${account.userRole}'] = orgName;
+                _ownerOrgNames['${account.id}_${account.userRole}'] = orgName;
+                _ownerOrgNames['${account.id}'] = orgName;
+                if (account.mobileNumber != null) {
+                  _ownerOrgNames[account.mobileNumber!] = orgName;
+                }
+                hasChanges = true;
+
+                // Re-read the latest account state
+                if (mounted) {
+                  final latestAccounts = appCubit.state.accounts;
+                  final latestAccount = latestAccounts.firstWhere(
+                    (a) => a.id == account.id && a.userRole == account.userRole,
+                    orElse: () => account,
+                  );
+
+                  final updatedUser = latestAccount.copyWith(
+                    organizationId: orgId ?? latestAccount.organizationId,
+                    organizationName: orgName,
+                    profilePicture: (orgLogo != null && orgLogo.isNotEmpty)
+                        ? orgLogo
+                        : latestAccount.profilePicture,
+                    mentor: latestAccount.mentor?.copyWith(
+                      org: Org(
+                        id: orgId ?? latestAccount.mentor?.org?.id,
+                        name: orgName,
+                      ),
+                    ) ?? Mentor(
+                      id: orgId,
+                      name: orgName,
+                      org: Org(id: orgId, name: orgName),
+                    ),
+                  );
+                  appCubit.updateAccount(updatedUser);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          print('❌ Failed to auto-fetch org details for account: $e');
+        }
+      }
+    }
+
+    if (hasChanges && mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appCubit = context.watch<AppCubit>();
     final currentUser = appCubit.state.currentUser;
     final rawAccounts = appCubit.state.accounts;
     final accounts = rawAccounts.fold<List<LoginSuccessModel>>([], (prev, acc) {
-      if (!prev.any((a) => 
-          a.mobileNumber == acc.mobileNumber && 
-          a.userRole == acc.userRole &&
-          a.mentor?.org?.id == acc.mentor?.org?.id)) {
+      final isOwner = acc.userRole == 34 || acc.userRole == 20 || acc.userRole != 35;
+      final orgKey = isOwner
+          ? (acc.mentor?.org?.id?.toString() ?? acc.organizationId?.toString() ?? acc.mentor?.org?.name ?? '')
+          : '';
+      if (!prev.any((a) {
+        final aIsOwner = a.userRole == 34 || a.userRole == 20 || a.userRole != 35;
+        final aOrgKey = aIsOwner
+            ? (a.mentor?.org?.id?.toString() ?? a.organizationId?.toString() ?? a.mentor?.org?.name ?? '')
+            : '';
+        return a.mobileNumber == acc.mobileNumber &&
+            a.userRole == acc.userRole &&
+            (!isOwner || aOrgKey == orgKey);
+      })) {
         prev.add(acc);
       }
       return prev;
@@ -81,18 +322,51 @@ class AccountSwitcherSheet extends StatelessWidget {
                   ...accounts.asMap().entries.map((entry) {
                     final index = entry.key;
                     final account = entry.value;
+                    final isOwner = account.userRole == 34 || account.userRole == 20 || account.userRole != 35;
                     final isActive = currentUser != null &&
                         account.id == currentUser.id &&
                         account.userRole == currentUser.userRole &&
-                        account.mentor?.org?.id == currentUser.mentor?.org?.id;
+                        (!isOwner ||
+                            (account.mentor?.org?.id ?? account.organizationId) ==
+                                (currentUser.mentor?.org?.id ?? currentUser.organizationId));
 
-                    final String name = account.userRole == 34 && account.mentor?.org?.name?.isNotEmpty == true
-                        ? account.mentor!.org!.name!
+                    final key = '${account.mobileNumber}_${account.userRole}';
+                    final idKey = '${account.id}_${account.userRole}';
+                    final cachedOrgName = _ownerOrgNames[key] ??
+                        _ownerOrgNames[idKey] ??
+                        _ownerOrgNames['${account.id}'] ??
+                        _ownerOrgNames[account.mobileNumber ?? ''];
+
+                    final String name = isOwner
+                        ? ((cachedOrgName != null && cachedOrgName.isNotEmpty)
+                            ? cachedOrgName
+                            : ((account.organizationName != null &&
+                                    account.organizationName!.isNotEmpty &&
+                                    account.organizationName != 'null')
+                                ? account.organizationName!
+                                : ((account.mentor?.org?.name != null &&
+                                        account.mentor!.org!.name!.isNotEmpty &&
+                                        account.mentor!.org!.name != 'null')
+                                    ? account.mentor!.org!.name!
+                                    : '${account.firstName ?? ""} ${account.lastName ?? ""}'.trim())))
                         : '${account.firstName ?? ""} ${account.lastName ?? ""}'.trim();
                     final displayName = name.isNotEmpty ? name : (account.mobileNumber ?? 'User');
                     final roleLabel = account.userRole == 35
                         ? 'Trainer'
                         : 'Fitness Center Owner';
+
+                    final activeUserPic = (isActive && currentUser?.profilePicture != null)
+                        ? currentUser!.profilePicture.toString()
+                        : null;
+                    final accountPic = account.profilePicture?.toString();
+
+                    final String profilePicUrl = [
+                      activeUserPic,
+                      accountPic,
+                    ].firstWhere(
+                      (url) => url != null && url.trim().isNotEmpty && url.trim() != 'null',
+                      orElse: () => '',
+                    )!;
 
                     return Column(
                       children: [
@@ -117,7 +391,7 @@ class AccountSwitcherSheet extends StatelessWidget {
                                     child: ProfileImage(
                                       isEdit: false,
                                       radius: 48,
-                                      url: account.profilePicture as String? ?? '',
+                                      url: profilePicUrl,
                                     ),
                                   ),
                                 ),

@@ -64,7 +64,9 @@ class _ProfileImageState extends State<ProfileImage> {
                   width: radius,
                 ),
               )
-            else if ((widget.url?.isNotEmpty ?? true) && widget.url != '')
+            else if (widget.url != null &&
+                widget.url!.trim().isNotEmpty &&
+                widget.url!.trim() != 'null')
               ClipRRect(
                 borderRadius: BorderRadius.circular(10000),
                 child: ImageNetwork(

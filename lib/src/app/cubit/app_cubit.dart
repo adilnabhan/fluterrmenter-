@@ -4,7 +4,23 @@ part 'app_cubit.freezed.dart';
 part 'app_state.dart';
 
 class AppCubit extends HydratedCubit<AppState> {
-  AppCubit() : super(const AppState());
+  AppCubit() : super(const AppState()) {
+    _initFallback();
+  }
+
+  void _initFallback() {
+    if (state.currentUser == null) {
+      final localUser = LocalStorageService().getUser();
+      if (localUser != null) {
+        print('✅ AppCubit constructor: Restored user from Hive fallback (id=${localUser.id}, access=${localUser.access != null ? 'YES' : 'NULL'}).');
+        final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
+        if (!currentAccounts.any((a) => a.id == localUser.id && a.userRole == localUser.userRole)) {
+          currentAccounts.add(localUser);
+        }
+        emit(state.copyWith(currentUser: localUser, accounts: currentAccounts));
+      }
+    }
+  }
 
   bool _isRefreshing = false;
 
@@ -23,11 +39,34 @@ class AppCubit extends HydratedCubit<AppState> {
     emit(state.copyWith(locale: locale));
   }
 
+  bool _isSameAccount(LoginSuccessModel a, LoginSuccessModel b) {
+    if (a.userRole != b.userRole) return false;
+    
+    // For fitness center owners (role 20 or 34), distinguish by organization
+    final aIsOwner = a.userRole == 34 || a.userRole == 20 || a.userRole != 35;
+    final bIsOwner = b.userRole == 34 || b.userRole == 20 || b.userRole != 35;
+    if (aIsOwner || bIsOwner) {
+      final aOrgId = a.mentor?.org?.id ?? a.organizationId;
+      final bOrgId = b.mentor?.org?.id ?? b.organizationId;
+      if (aOrgId != null && bOrgId != null) {
+        return aOrgId == bOrgId && a.mobileNumber == b.mobileNumber;
+      }
+      final aOrgName = a.mentor?.org?.name ?? a.organizationName;
+      final bOrgName = b.mentor?.org?.name ?? b.organizationName;
+      if (aOrgName != null && bOrgName != null && aOrgName.isNotEmpty && bOrgName.isNotEmpty) {
+        return aOrgName.toLowerCase() == bOrgName.toLowerCase() && a.mobileNumber == b.mobileNumber;
+      }
+    }
+    
+    // For trainers (role 35) or general users
+    return (a.id == b.id || a.mobileNumber == b.mobileNumber);
+  }
+
   void addUser(LoginSuccessModel user) {
     LocalStorageService().saveUser(user);
     final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
     final existingIndex = currentAccounts.indexWhere(
-      (a) => (a.id == user.id || a.mobileNumber == user.mobileNumber) && a.userRole == user.userRole,
+      (a) => _isSameAccount(a, user),
     );
     if (existingIndex != -1) {
       currentAccounts[existingIndex] = user;
@@ -35,6 +74,27 @@ class AppCubit extends HydratedCubit<AppState> {
       currentAccounts.add(user);
     }
     emit(state.copyWith(currentUser: user, accounts: currentAccounts));
+  }
+
+  void updateAccount(LoginSuccessModel user) {
+    final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
+    final existingIndex = currentAccounts.indexWhere(
+      (a) => _isSameAccount(a, user),
+    );
+    if (existingIndex != -1) {
+      currentAccounts[existingIndex] = user;
+    } else {
+      currentAccounts.add(user);
+    }
+
+    final isCurrentActive =
+        state.currentUser != null && _isSameAccount(state.currentUser!, user);
+    if (isCurrentActive) {
+      LocalStorageService().saveUser(user);
+      emit(state.copyWith(currentUser: user, accounts: currentAccounts));
+    } else {
+      emit(state.copyWith(accounts: currentAccounts));
+    }
   }
 
   void switchAccount(LoginSuccessModel user) {
@@ -47,7 +107,7 @@ class AppCubit extends HydratedCubit<AppState> {
     final user = state.currentUser;
     if (user != null) {
       currentAccounts.removeWhere(
-        (a) => (a.id == user.id || a.mobileNumber == user.mobileNumber) && a.userRole == user.userRole,
+        (a) => _isSameAccount(a, user),
       );
     }
 
@@ -64,13 +124,23 @@ class AppCubit extends HydratedCubit<AppState> {
   void removeSpecificAccount(LoginSuccessModel account) {
     final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
     currentAccounts.removeWhere(
-      (a) => (a.id == account.id || a.mobileNumber == account.mobileNumber) && a.userRole == account.userRole,
+      (a) => _isSameAccount(a, account),
     );
     emit(state.copyWith(accounts: currentAccounts));
   }
 
   @override
   AppState? fromJson(Map<String, dynamic> json) {
+    print('🔍 AppCubit.fromJson called');
+    print('🔍 json keys: ${json.keys.toList()}');
+    print('🔍 currentUser in json: ${json['currentUser'] != null ? 'EXISTS' : 'NULL'}');
+    print('🔍 accounts in json: ${json['accounts'] != null ? '${(json['accounts'] as List).length} accounts' : 'NULL'}');
+    if (json['currentUser'] != null) {
+      final u = json['currentUser'] as Map<String, dynamic>;
+      print('🔍 stored access: ${u['access'] != null ? 'EXISTS (${u['access'].toString().substring(0, 10)}...)' : 'NULL'}');
+      print('🔍 stored refresh: ${u['refresh'] != null ? 'EXISTS' : 'NULL'}');
+    }
+
     var currentUser =
         json['currentUser'] != null
             ? LoginSuccessModel.fromJson(
@@ -88,12 +158,16 @@ class AppCubit extends HydratedCubit<AppState> {
       accounts = [currentUser];
     }
 
-    // 🛡️ Deduplicate accounts to fix duplicate entries in UI
+    // 🛡️ Deduplicate accounts to fix duplicate entries while preserving distinct fitness centers
     final uniqueAccounts = <LoginSuccessModel>[];
     final seen = <String>{};
     for (final acc in accounts.reversed) {
       // Reverse to keep the latest added/updated account
-      final key = '${acc.mobileNumber}_${acc.userRole}';
+      final isOwner = acc.userRole == 34 || acc.userRole == 20 || acc.userRole != 35;
+      final orgKey = isOwner
+          ? (acc.mentor?.org?.id?.toString() ?? acc.organizationId?.toString() ?? acc.mentor?.org?.name ?? '')
+          : '';
+      final key = '${acc.mobileNumber}_${acc.userRole}_$orgKey';
       if (!seen.contains(key)) {
         seen.add(key);
         uniqueAccounts.add(acc);
@@ -103,7 +177,9 @@ class AppCubit extends HydratedCubit<AppState> {
 
     // 🛡️ Fallback: Check Hive if HydratedBloc lost the user (e.g. cache cleared)
     if (currentUser == null) {
+      print('⚠️ AppCubit: currentUser is NULL from HydratedCubit. Trying Hive fallback...');
       final localUser = LocalStorageService().getUser();
+      print('⚠️ AppCubit: Hive user: ${localUser != null ? 'EXISTS (id=${localUser.id}, access=${localUser.access != null ? 'YES' : 'NULL'})' : 'NULL'}');
       if (localUser != null) {
         print('✅ AppCubit: Restored user from Hive storage.');
         currentUser = localUser;
@@ -112,6 +188,26 @@ class AppCubit extends HydratedCubit<AppState> {
         }
       }
     }
+
+    // 🛡️ Fallback: If user exists but tokens are null, try recovering from Hive
+    if (currentUser != null && (currentUser.access == null || currentUser.access!.isEmpty)) {
+      final localUser = LocalStorageService().getUser();
+      if (localUser != null && localUser.access != null && localUser.access!.isNotEmpty) {
+        print('✅ AppCubit: Recovered tokens from Hive for user ${currentUser.id}.');
+        currentUser = currentUser.copyWith(
+          access: localUser.access,
+          refresh: localUser.refresh ?? currentUser.refresh,
+        );
+        // Also update the account in the list
+        final idx = accounts.indexWhere(
+          (a) => a.id == currentUser!.id && a.userRole == currentUser!.userRole,
+        );
+        if (idx != -1) {
+          accounts[idx] = currentUser!;
+        }
+      }
+    }
+
     return AppState(
       themeMode: switch (json['theme_mode']) {
         'dark' => ThemeMode.dark,
@@ -338,7 +434,21 @@ class AppCubit extends HydratedCubit<AppState> {
           // 💾 Save to Hive
           LocalStorageService().saveUser(updatedUser);
 
-          emit(state.copyWith(currentUser: updatedUser));
+          // 🔄 Update accounts list to keep switcher tokens in sync
+          final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
+          final existingIndex = currentAccounts.indexWhere(
+            (a) => _isSameAccount(a, updatedUser),
+          );
+          if (existingIndex != -1) {
+            currentAccounts[existingIndex] = updatedUser;
+          }
+
+          emit(
+            state.copyWith(
+              currentUser: updatedUser,
+              accounts: currentAccounts,
+            ),
+          );
         },
       );
     } catch (e) {

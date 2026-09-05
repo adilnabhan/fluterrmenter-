@@ -54,6 +54,22 @@ class LoginSuccessModel with _$LoginSuccessModel {
         modJson['access'] = tokens['access'] ?? tokens['access_token'];
       }
     }
+    if (modJson['organization_name'] == null) {
+      modJson['organization_name'] =
+          modJson['mentor']?['organization']?['name'] ??
+          modJson['organization']?['name'];
+    }
+    if (modJson['organization_id'] == null) {
+      modJson['organization_id'] =
+          modJson['mentor']?['organization']?['id'] ??
+          modJson['organization']?['id'];
+    }
+    if (modJson['profile_picture'] == null) {
+      modJson['profile_picture'] =
+          modJson['mentor']?['organization']?['logo'] ??
+          modJson['organization']?['logo'] ??
+          modJson['profile_pic'];
+    }
     return _$LoginSuccessModelFromJson(modJson);
   }
 }

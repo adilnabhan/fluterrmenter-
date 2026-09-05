@@ -39,6 +39,40 @@ class OrganizationListingScreen extends StatelessWidget {
 
           BlocListener<
             OrganizationListingAndDetailsCubit,
+            OrganizationListingAndDetailsState
+          >(
+            listenWhen: (p, c) => p.selectedOrganization != c.selectedOrganization,
+            listener: (context, state) {
+              final selectedOrg = state.selectedOrganization;
+              if (selectedOrg != null) {
+                final appCubit = context.read<AppCubit>();
+                final current = appCubit.state.currentUser;
+                final isOwner = current != null && (current.userRole == 34 || current.userRole == 20 || current.userRole != 35);
+                if (isOwner) {
+                  final updatedUser = current.copyWith(
+                    organizationId: selectedOrg.id,
+                    organizationName: selectedOrg.name,
+                    profilePicture: (selectedOrg.logo != null && selectedOrg.logo!.isNotEmpty)
+                        ? selectedOrg.logo
+                        : current.profilePicture,
+                    mentor: current.mentor?.copyWith(
+                      org: current.mentor?.org?.copyWith(
+                        id: selectedOrg.id,
+                        name: selectedOrg.name,
+                      ) ?? Org(id: selectedOrg.id, name: selectedOrg.name),
+                    ) ?? Mentor(
+                      id: selectedOrg.id,
+                      name: selectedOrg.name,
+                      org: Org(id: selectedOrg.id, name: selectedOrg.name),
+                    ),
+                  );
+                  appCubit.addUser(updatedUser);
+                }
+              }
+            },
+          ),
+          BlocListener<
+            OrganizationListingAndDetailsCubit,
 
             OrganizationListingAndDetailsState
           >(
@@ -64,6 +98,32 @@ class OrganizationListingScreen extends StatelessWidget {
                       context.pushAndRemoveUntil(
                         const CreateOrganizationBasicDetailsScreen(),
                       );
+                    } else {
+                      final appCubit = context.read<AppCubit>();
+                      final current = appCubit.state.currentUser;
+                      final isOwner = current != null && (current.userRole == 34 || current.userRole == 20 || current.userRole != 35);
+                      if (isOwner) {
+                        for (final org in r.result!) {
+                          final orgAccount = current.copyWith(
+                            organizationId: org.id,
+                            organizationName: org.name,
+                            profilePicture: (org.logo != null && org.logo!.isNotEmpty)
+                                ? org.logo
+                                : current.profilePicture,
+                            mentor: current.mentor?.copyWith(
+                              org: current.mentor?.org?.copyWith(
+                                id: org.id,
+                                name: org.name,
+                              ) ?? Org(id: org.id, name: org.name),
+                            ) ?? Mentor(
+                              id: org.id,
+                              name: org.name,
+                              org: Org(id: org.id, name: org.name),
+                            ),
+                          );
+                          appCubit.addUser(orgAccount);
+                        }
+                      }
                     }
                   },
                 );

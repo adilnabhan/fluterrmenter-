@@ -82,11 +82,16 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           widget.isTrainer
               ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=1'
               : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=1';
-      if (_statusFilter != 'all' &&
-          (_statusFilter == 'present' ||
-              _statusFilter == 'absent' ||
-              _statusFilter == 'unmarked')) {
-        url += '&status=$_statusFilter';
+      if (_statusFilter != 'all') {
+        if (_statusFilter == 'present' ||
+            _statusFilter == 'absent' ||
+            _statusFilter == 'unmarked') {
+          url += '&status=$_statusFilter';
+        } else if (_statusFilter == 'active' || _statusFilter == 'expired') {
+          url += '&membership_status=$_statusFilter';
+        } else if (_statusFilter == 'pending_fee') {
+          url += '&pending_fee=true';
+        }
       }
       if (_searchQuery.isNotEmpty) {
         url += '&search=${Uri.encodeComponent(_searchQuery)}';
@@ -228,11 +233,16 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           widget.isTrainer
               ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=$nextPage'
               : '${ApiUris.clientAttendance}?date=$dateStr&include_expired=true&page=$nextPage';
-      if (_statusFilter != 'all' &&
-          (_statusFilter == 'present' ||
-              _statusFilter == 'absent' ||
-              _statusFilter == 'unmarked')) {
-        url += '&status=$_statusFilter';
+      if (_statusFilter != 'all') {
+        if (_statusFilter == 'present' ||
+            _statusFilter == 'absent' ||
+            _statusFilter == 'unmarked') {
+          url += '&status=$_statusFilter';
+        } else if (_statusFilter == 'active' || _statusFilter == 'expired') {
+          url += '&membership_status=$_statusFilter';
+        } else if (_statusFilter == 'pending_fee') {
+          url += '&pending_fee=true';
+        }
       }
       if (_searchQuery.isNotEmpty) {
         url += '&search=${Uri.encodeComponent(_searchQuery)}';
@@ -966,17 +976,6 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   }
 
   // --- Dashboard data helpers ---
-  bool get _isFutureDate {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final selectedDay = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-    );
-    return selectedDay.isAfter(today);
-  }
-
   bool get _isHoliday {
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
     if (_monthHolidays.containsKey(dateStr)) return true;
@@ -2097,7 +2096,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     if (widget.isTrainer) {
       Navigator.push(
         context,
-        MaterialPageRoute(
+        MaterialPageRoute<void>(
           builder:
               (context) => TrainerClientDetailScreen(customerId: customerId),
         ),
@@ -2105,7 +2104,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(
+        MaterialPageRoute<void>(
           builder:
               (context) => MemberDetialsScreen(
                 memberId: customerId,
@@ -2180,7 +2179,25 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (isExpired) ...[
+                      if (_statusFilter == 'pending_fee') ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffFEF5E7),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Pending Fee',
+                            style: AppStyles.text10Px.poppins.w600.copyWith(
+                              color: const Color(0xffE67E22),
+                            ),
+                          ),
+                        ),
+                      ] else if (isExpired) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(

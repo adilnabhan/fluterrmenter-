@@ -109,20 +109,30 @@ class ImageNetwork extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrl == null || imageUrl!.isEmpty) {
+    if (imageUrl == null || imageUrl!.isEmpty || imageUrl == 'null') {
       return errorWidget ?? empty;
+    }
+
+    String finalUrl = imageUrl!.trim();
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      final baseUrl = ApiUris.baseUrl;
+      if (finalUrl.startsWith('/')) {
+        finalUrl = '$baseUrl$finalUrl';
+      } else {
+        finalUrl = '$baseUrl/$finalUrl';
+      }
     }
 
     String? cacheKey;
     try {
-      final uri = Uri.parse(imageUrl!);
+      final uri = Uri.parse(finalUrl);
       cacheKey = uri.replace(queryParameters: {}).toString();
     } catch (_) {
-      cacheKey = imageUrl;
+      cacheKey = finalUrl;
     }
 
     return CachedNetworkImage(
-      imageUrl: imageUrl!,
+      imageUrl: finalUrl,
       cacheKey: cacheKey,
       width: width,
       height: height,

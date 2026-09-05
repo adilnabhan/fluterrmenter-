@@ -10,6 +10,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/client_attendance_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reviews_screen.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
   const TrainerDashboardScreen({super.key});
@@ -57,10 +58,14 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
       );
       debugPrint("Trainer Dashboard: Initial orgId resolved to: $orgId");
 
-      if (orgId == null) {
+      final needProfileFetch = orgId == null ||
+          currentUser?.profilePicture == null ||
+          currentUser?.profilePicture.toString().isEmpty == true;
+
+      if (needProfileFetch) {
         try {
           debugPrint(
-            "Trainer Dashboard: orgId is null, calling editTrainerBasicDetails...",
+            "Trainer Dashboard: fetching trainer basic details...",
           );
           final profileRes = await DioClient().dio.get<dynamic>(
             ApiUris.editTrainerBasicDetails,
@@ -85,30 +90,38 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                 data['trainer']?['organization_name']?.toString() ??
                 data['mentor_profile']?['organization']?['name']?.toString() ??
                 data['organization']?['name']?.toString();
+            final profilePic =
+                data['profile_picture']?.toString() ??
+                data['profile_pic']?.toString() ??
+                data['image']?.toString() ??
+                data['avatar']?.toString();
 
             debugPrint(
-              "Trainer Dashboard: resolved profileOrgId: $profileOrgId, profileOrgName: $profileOrgName",
+              "Trainer Dashboard: resolved profileOrgId: $profileOrgId, profileOrgName: $profileOrgName, profilePic: $profilePic",
             );
-            if (profileOrgId != null && currentUser != null) {
-              orgId = profileOrgId;
+            if (currentUser != null) {
+              if (profileOrgId != null) orgId = profileOrgId;
               final updatedUser = currentUser.copyWith(
-                organizationId: profileOrgId,
-                organizationName: profileOrgName,
+                organizationId: profileOrgId ?? currentUser.organizationId,
+                organizationName: profileOrgName ?? currentUser.organizationName,
+                profilePicture: (profilePic != null && profilePic.isNotEmpty && profilePic != 'null')
+                    ? profilePic
+                    : currentUser.profilePicture,
                 trainer: currentUser.trainer?.copyWith(
-                  organizationId: profileOrgId,
-                  organizationName: profileOrgName,
+                  organizationId: profileOrgId ?? currentUser.trainer?.organizationId,
+                  organizationName: profileOrgName ?? currentUser.trainer?.organizationName,
                 ),
               );
               if (mounted) {
                 context.read<AppCubit>().addUser(updatedUser);
                 debugPrint(
-                  "Trainer Dashboard: Saved updated user profile to AppCubit with orgId: $profileOrgId",
+                  "Trainer Dashboard: Saved updated user profile to AppCubit with profilePicture: ${updatedUser.profilePicture}",
                 );
               }
             }
           }
         } catch (e) {
-          debugPrint("Failed to resolve orgId via trainer basic details: $e");
+          debugPrint("Failed to resolve trainer basic details: $e");
         }
       }
 
@@ -390,6 +403,17 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                 value: '$averageRating',
                                 valueColor: const Color(0xFF16A34A),
                                 titleColor: context.colors.textPrimary,
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute<void>(
+                                      builder:
+                                          (context) =>
+                                              const TrainerReviewsScreen(),
+                                    ),
+                                  );
+                                  _fetchDashboardData(isSilent: true);
+                                },
                               ),
                               _buildStatCard(
                                 title: 'Client\nAttendance',

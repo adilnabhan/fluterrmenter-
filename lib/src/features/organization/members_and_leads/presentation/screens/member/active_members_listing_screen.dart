@@ -353,28 +353,37 @@ class _ActiveMembersListingScreenState
                                                     ),
                                                   ],
                                                 ),
-                                                // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      memberData
-                                                              ?.activePlan
-                                                              ?.planName ??
-                                                          '',
-                                                      style:
-                                                          AppStyles
-                                                              .text14Px
+                                                if ((memberData?.activePlan?.planName ?? '').isNotEmpty) ...[
+                                                  const Divider(
+                                                    height: 8,
+                                                    thickness: 1,
+                                                    color: Color(0xffEEEEEE),
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          memberData
+                                                                  ?.activePlan
+                                                                  ?.planName ??
+                                                              '',
+                                                          style: AppStyles
+                                                              .text12Px
                                                               .poppins
-                                                              .w500
+                                                              .w400
                                                               .dark,
-                                                    ),
-                                                    // const SizedBox(height: 4),
-                                                    // Text('05:30 AM', style: AppStyles.text12Px.poppins.w500.dark),
-                                                  ],
-                                                ),
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
                                               ],
                                             ),
                                           ),

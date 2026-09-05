@@ -85,6 +85,8 @@ class _AppViewState extends State<AppView> {
 
   Widget getScreen(AppState state) {
     print('newly stored token is---${state.currentUser?.access}');
+    print('refresh token is---${state.currentUser?.refresh}');
+    print('user id is---${state.currentUser?.id}');
     final user = state.currentUser;
     if (user == null) {
       return const SignupScreen();

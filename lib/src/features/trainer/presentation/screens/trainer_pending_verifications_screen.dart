@@ -31,38 +31,48 @@ class _TrainerPendingVerificationsScreenState
   DateTime? _selectedDate;
   String _pendingTypeFilter = 'assigned'; // 'assigned', 'self'
 
-  final TextEditingController _historySearchController = TextEditingController();
+  final TextEditingController _historySearchController =
+      TextEditingController();
   String _historySearchQuery = '';
   DateTime? _historySelectedDate;
   String _historyTypeFilter = 'assigned'; // 'assigned', 'self'
 
   bool _isAssignedWorkout(Map<String, dynamic> item) {
-    final type = (item['workout_type'] ??
-            item['session_type'] ??
-            item['type'] ??
-            item['plan_type'] ??
-            item['category'] ??
-            '')
-        .toString()
-        .toLowerCase();
+    final type =
+        (item['workout_type'] ??
+                item['session_type'] ??
+                item['type'] ??
+                item['plan_type'] ??
+                item['category'] ??
+                '')
+            .toString()
+            .toLowerCase();
     if (type.contains('assigned')) return true;
-    if (type.contains('self') || type.contains('custom') || type.contains('own')) return false;
+    if (type.contains('self') ||
+        type.contains('custom') ||
+        type.contains('own'))
+      return false;
 
-    final isAssigned = item['is_assigned'] as bool? ??
+    final isAssigned =
+        item['is_assigned'] as bool? ??
         item['is_assigned_workout'] as bool? ??
         item['is_assigned_to_me'] as bool?;
     if (isAssigned != null) return isAssigned;
 
-    final isSelf = item['is_self_workout'] as bool? ??
+    final isSelf =
+        item['is_self_workout'] as bool? ??
         item['is_custom'] as bool? ??
         item['is_self'] as bool?;
     if (isSelf != null) return !isSelf;
 
-    if (item['assigned_by'] != null || item['assigned_by_id'] != null || item['trainer_id'] != null) {
+    if (item['assigned_by'] != null ||
+        item['assigned_by_id'] != null ||
+        item['trainer_id'] != null) {
       return true;
     }
 
-    final planId = item['customer_workout_plan_id'] ??
+    final planId =
+        item['customer_workout_plan_id'] ??
         item['plan_id'] ??
         item['workout_plan_id'] ??
         item['plan'] ??
@@ -77,12 +87,9 @@ class _TrainerPendingVerificationsScreenState
   Widget _buildWorkoutTypeBadge(Map<String, dynamic> item) {
     final isAssigned = _isAssignedWorkout(item);
     final label = isAssigned ? 'Assigned' : 'Self Workout';
-    final bg = isAssigned
-        ? const Color(0xFFEBF3FF)
-        : const Color(0xFFF3E8FF);
-    final textColor = isAssigned
-        ? const Color(0xFF1E56A0)
-        : const Color(0xFF7E22CE);
+    final bg = isAssigned ? const Color(0xFFEBF3FF) : const Color(0xFFF3E8FF);
+    final textColor =
+        isAssigned ? const Color(0xFF1E56A0) : const Color(0xFF7E22CE);
     final icon = isAssigned ? Icons.assignment_outlined : Icons.person_outline;
 
     return Container(
@@ -204,9 +211,10 @@ class _TrainerPendingVerificationsScreenState
         final data = response.data as Map;
         final pendingList =
             data['pending_verifications'] as List<dynamic>? ?? [];
-        final parsedPending = pendingList
-            .map((e) => Map<String, dynamic>.from(e as Map))
-            .toList();
+        final parsedPending =
+            pendingList
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList();
         for (final item in parsedPending) {
           final sId = item['session_id'] as int? ?? item['id'] as int?;
           if (sId != null && sId > 0) {
@@ -318,7 +326,9 @@ class _TrainerPendingVerificationsScreenState
 
         for (final item in parsedHistory) {
           final sId = item['session_id'] as int? ?? item['id'] as int?;
-          if (sId != null && sId > 0 && _sessionAssignmentMap.containsKey(sId)) {
+          if (sId != null &&
+              sId > 0 &&
+              _sessionAssignmentMap.containsKey(sId)) {
             item['is_assigned'] = _sessionAssignmentMap[sId];
           }
         }
@@ -485,14 +495,19 @@ class _TrainerPendingVerificationsScreenState
 
   Widget _buildPendingTab() {
     final rawPendingList = _pendingVerifications;
-    final pendingList = rawPendingList.where((item) {
-      if (_pendingTypeFilter == 'assigned' && !_isAssignedWorkout(item)) return false;
-      if (_pendingTypeFilter == 'self' && _isAssignedWorkout(item)) return false;
-      return true;
-    }).toList();
+    final pendingList =
+        rawPendingList.where((item) {
+          if (_pendingTypeFilter == 'assigned' && !_isAssignedWorkout(item))
+            return false;
+          if (_pendingTypeFilter == 'self' && _isAssignedWorkout(item))
+            return false;
+          return true;
+        }).toList();
 
     final hasActiveFilter =
-        _searchQuery.trim().isNotEmpty || _selectedDate != null || _pendingTypeFilter != 'all';
+        _searchQuery.trim().isNotEmpty ||
+        _selectedDate != null ||
+        _pendingTypeFilter != 'all';
 
     String? dateFilterLabel;
     if (_selectedDate != null) {
@@ -622,16 +637,26 @@ class _TrainerPendingVerificationsScreenState
                       selected: _pendingTypeFilter == 'assigned',
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: _pendingTypeFilter == 'assigned' ? Colors.white : context.colors.textPrimary,
+                        color:
+                            _pendingTypeFilter == 'assigned'
+                                ? Colors.white
+                                : context.colors.textPrimary,
                         fontSize: 12,
-                        fontWeight: _pendingTypeFilter == 'assigned' ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            _pendingTypeFilter == 'assigned'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                       ),
                       backgroundColor: context.colors.card,
                       side: BorderSide(
-                        color: _pendingTypeFilter == 'assigned' ? AppColors.primary : context.colors.border,
+                        color:
+                            _pendingTypeFilter == 'assigned'
+                                ? AppColors.primary
+                                : context.colors.border,
                       ),
                       onSelected: (val) {
-                        if (val) setState(() => _pendingTypeFilter = 'assigned');
+                        if (val)
+                          setState(() => _pendingTypeFilter = 'assigned');
                       },
                     ),
                   ),
@@ -642,13 +667,22 @@ class _TrainerPendingVerificationsScreenState
                       selected: _pendingTypeFilter == 'self',
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: _pendingTypeFilter == 'self' ? Colors.white : context.colors.textPrimary,
+                        color:
+                            _pendingTypeFilter == 'self'
+                                ? Colors.white
+                                : context.colors.textPrimary,
                         fontSize: 12,
-                        fontWeight: _pendingTypeFilter == 'self' ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            _pendingTypeFilter == 'self'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                       ),
                       backgroundColor: context.colors.card,
                       side: BorderSide(
-                        color: _pendingTypeFilter == 'self' ? AppColors.primary : context.colors.border,
+                        color:
+                            _pendingTypeFilter == 'self'
+                                ? AppColors.primary
+                                : context.colors.border,
                       ),
                       onSelected: (val) {
                         if (val) setState(() => _pendingTypeFilter = 'self');
@@ -741,8 +775,7 @@ class _TrainerPendingVerificationsScreenState
                           item['customer_image'] as String? ??
                           item['image_url'] as String? ??
                           (item['customer'] is Map
-                              ? (item['customer']
-                                      as Map)['profile_picture']
+                              ? (item['customer'] as Map)['profile_picture']
                                   as String?
                               : null) ??
                           _clientProfilesById[customerId] ??
@@ -828,11 +861,12 @@ class _TrainerPendingVerificationsScreenState
                                             Expanded(
                                               child: Text(
                                                 customerName,
-                                                style: AppStyles
-                                                    .text16Px
-                                                    .poppins
-                                                    .w600
-                                                    .dark,
+                                                style:
+                                                    AppStyles
+                                                        .text16Px
+                                                        .poppins
+                                                        .w600
+                                                        .dark,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
@@ -844,10 +878,7 @@ class _TrainerPendingVerificationsScreenState
                                         const SizedBox(height: 4),
                                         Text(
                                           workoutTitle,
-                                          style: AppStyles
-                                              .text15Px
-                                              .poppins
-                                              .w600
+                                          style: AppStyles.text15Px.poppins.w600
                                               .copyWith(
                                                 color: AppColors.textDark,
                                               ),
@@ -868,10 +899,7 @@ class _TrainerPendingVerificationsScreenState
                                         const SizedBox(height: 4),
                                         Text(
                                           completedAt,
-                                          style: AppStyles
-                                              .text10Px
-                                              .poppins
-                                              .w500
+                                          style: AppStyles.text10Px.poppins.w500
                                               .copyWith(
                                                 color: AppColors.textGrey,
                                               ),
@@ -901,8 +929,9 @@ class _TrainerPendingVerificationsScreenState
                                             color: Colors.red,
                                           ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                         ),
                                         child: const Text('Reject'),
@@ -925,16 +954,14 @@ class _TrainerPendingVerificationsScreenState
                                           padding: EdgeInsets.zero,
                                           backgroundColor: Colors.green,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                         ),
                                         child: Text(
                                           'Verify',
-                                          style: AppStyles
-                                              .text14Px
-                                              .poppins
-                                              .w600
+                                          style: AppStyles.text14Px.poppins.w600
                                               .copyWith(color: Colors.white),
                                         ),
                                       ),
@@ -955,14 +982,19 @@ class _TrainerPendingVerificationsScreenState
 
   Widget _buildHistoryTab() {
     final rawHistoryList = _verificationHistory;
-    final historyList = rawHistoryList.where((item) {
-      if (_historyTypeFilter == 'assigned' && !_isAssignedWorkout(item)) return false;
-      if (_historyTypeFilter == 'self' && _isAssignedWorkout(item)) return false;
-      return true;
-    }).toList();
+    final historyList =
+        rawHistoryList.where((item) {
+          if (_historyTypeFilter == 'assigned' && !_isAssignedWorkout(item))
+            return false;
+          if (_historyTypeFilter == 'self' && _isAssignedWorkout(item))
+            return false;
+          return true;
+        }).toList();
 
     final hasActiveFilter =
-        _historySearchQuery.trim().isNotEmpty || _historySelectedDate != null || _historyTypeFilter != 'all';
+        _historySearchQuery.trim().isNotEmpty ||
+        _historySelectedDate != null ||
+        _historyTypeFilter != 'all';
 
     String? dateFilterLabel;
     if (_historySelectedDate != null) {
@@ -1092,16 +1124,26 @@ class _TrainerPendingVerificationsScreenState
                       selected: _historyTypeFilter == 'assigned',
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: _historyTypeFilter == 'assigned' ? Colors.white : context.colors.textPrimary,
+                        color:
+                            _historyTypeFilter == 'assigned'
+                                ? Colors.white
+                                : context.colors.textPrimary,
                         fontSize: 12,
-                        fontWeight: _historyTypeFilter == 'assigned' ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            _historyTypeFilter == 'assigned'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                       ),
                       backgroundColor: context.colors.card,
                       side: BorderSide(
-                        color: _historyTypeFilter == 'assigned' ? AppColors.primary : context.colors.border,
+                        color:
+                            _historyTypeFilter == 'assigned'
+                                ? AppColors.primary
+                                : context.colors.border,
                       ),
                       onSelected: (val) {
-                        if (val) setState(() => _historyTypeFilter = 'assigned');
+                        if (val)
+                          setState(() => _historyTypeFilter = 'assigned');
                       },
                     ),
                   ),
@@ -1112,13 +1154,22 @@ class _TrainerPendingVerificationsScreenState
                       selected: _historyTypeFilter == 'self',
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: _historyTypeFilter == 'self' ? Colors.white : context.colors.textPrimary,
+                        color:
+                            _historyTypeFilter == 'self'
+                                ? Colors.white
+                                : context.colors.textPrimary,
                         fontSize: 12,
-                        fontWeight: _historyTypeFilter == 'self' ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            _historyTypeFilter == 'self'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                       ),
                       backgroundColor: context.colors.card,
                       side: BorderSide(
-                        color: _historyTypeFilter == 'self' ? AppColors.primary : context.colors.border,
+                        color:
+                            _historyTypeFilter == 'self'
+                                ? AppColors.primary
+                                : context.colors.border,
                       ),
                       onSelected: (val) {
                         if (val) setState(() => _historyTypeFilter = 'self');
@@ -1188,177 +1239,196 @@ class _TrainerPendingVerificationsScreenState
                   ? const Center(child: CircularProgressIndicator())
                   : historyList.isEmpty
                   ? _buildEmptyState(
-                      hasActiveFilter
-                          ? 'No Matching Verifications'
-                          : 'No History',
-                      hasActiveFilter
-                          ? 'Try adjusting your search or date filter.'
-                          : 'You have not verified any workouts yet.',
-                      Icons.history,
-                    )
+                    hasActiveFilter
+                        ? 'No Matching Verifications'
+                        : 'No History',
+                    hasActiveFilter
+                        ? 'Try adjusting your search or date filter.'
+                        : 'You have not verified any workouts yet.',
+                    Icons.history,
+                  )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: historyList.length,
-                      itemBuilder: (context, index) {
-                        final item = historyList[index];
-                        final customerName = item['customer_name'] as String? ?? 'Client';
-                        final customerId = item['customer_id'] as int? ?? 0;
-                        final profilePic =
-                            item['customer_profile_picture'] as String? ??
-                            item['profile_picture'] as String? ??
-                            item['customer_image'] as String? ??
-                            item['image_url'] as String? ??
-                            (item['customer'] is Map
-                                ? (item['customer'] as Map)['profile_picture'] as String?
-                                : null) ??
-                            _clientProfilesById[customerId] ??
-                            _clientProfilesByName[customerName];
-                        final workoutTitle = item['workout_title'] as String? ?? 'Workout';
-                        final verifiedAtRaw = item['verified_at'] as String? ?? '';
-                        final sessionId = item['session_id'] as int? ?? 0;
-                        String verifiedAt = verifiedAtRaw;
-                        if (verifiedAtRaw.isNotEmpty) {
-                          final parsed = DateTime.tryParse(verifiedAtRaw);
-                          if (parsed != null) {
-                            final local = parsed.toLocal();
-                            final hour =
-                                local.hour == 0
-                                    ? 12
-                                    : (local.hour > 12 ? local.hour - 12 : local.hour);
-                            final amPm = local.hour >= 12 ? 'PM' : 'AM';
-                            verifiedAt =
-                                '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} $hour:${local.minute.toString().padLeft(2, '0')} $amPm';
-                          }
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: historyList.length,
+                    itemBuilder: (context, index) {
+                      final item = historyList[index];
+                      final customerName =
+                          item['customer_name'] as String? ?? 'Client';
+                      final customerId = item['customer_id'] as int? ?? 0;
+                      final profilePic =
+                          item['customer_profile_picture'] as String? ??
+                          item['profile_picture'] as String? ??
+                          item['customer_image'] as String? ??
+                          item['image_url'] as String? ??
+                          (item['customer'] is Map
+                              ? (item['customer'] as Map)['profile_picture']
+                                  as String?
+                              : null) ??
+                          _clientProfilesById[customerId] ??
+                          _clientProfilesByName[customerName];
+                      final workoutTitle =
+                          item['workout_title'] as String? ?? 'Workout';
+                      final verifiedAtRaw =
+                          item['verified_at'] as String? ?? '';
+                      final sessionId = item['session_id'] as int? ?? 0;
+                      String verifiedAt = verifiedAtRaw;
+                      if (verifiedAtRaw.isNotEmpty) {
+                        final parsed = DateTime.tryParse(verifiedAtRaw);
+                        if (parsed != null) {
+                          final local = parsed.toLocal();
+                          final hour =
+                              local.hour == 0
+                                  ? 12
+                                  : (local.hour > 12
+                                      ? local.hour - 12
+                                      : local.hour);
+                          final amPm = local.hour >= 12 ? 'PM' : 'AM';
+                          verifiedAt =
+                              '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} $hour:${local.minute.toString().padLeft(2, '0')} $amPm';
                         }
-                        final status = item['verification_status'] as String? ?? '';
-                        final remarks = item['remarks'] as String? ?? '';
-                        final isVerified = status == 'verified';
+                      }
+                      final status =
+                          item['verification_status'] as String? ?? '';
+                      final remarks = item['remarks'] as String? ?? '';
+                      final isVerified = status == 'verified';
 
-                        return GestureDetector(
-                          onTap: () {
-                            if (sessionId > 0) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder:
-                                      (context) => TrainerWorkoutSessionDetailScreen(
-                                        sessionId: sessionId,
-                                        isAssigned: _isAssignedWorkout(item),
-                                      ),
-                                ),
-                              );
-                            }
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.grey.shade200),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        workoutTitle,
-                                        style: AppStyles.text16Px.poppins.w600.dark,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            isVerified
-                                                ? Colors.green.withOpacity(0.1)
-                                                : Colors.red.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        isVerified ? 'Verified' : 'Rejected',
-                                        style: AppStyles.text12Px.poppins.w600.copyWith(
-                                          color: isVerified ? Colors.green : Colors.red,
+                      return GestureDetector(
+                        onTap: () {
+                          if (sessionId > 0) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder:
+                                    (context) =>
+                                        TrainerWorkoutSessionDetailScreen(
+                                          sessionId: sessionId,
+                                          isAssigned: _isAssignedWorkout(item),
                                         ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    if (profilePic != null && profilePic.isNotEmpty)
-                                      ProfileImage(isEdit: false, url: profilePic, radius: 20)
-                                    else
-                                      const Icon(
-                                        Icons.person,
-                                        size: 24,
-                                        color: AppColors.primary,
-                                      ),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        customerName,
-                                        style: AppStyles.text14Px.poppins.w500.copyWith(
-                                          color: AppColors.textDark,
-                                        ),
-                                      ),
-                                    ),
-                                    _buildWorkoutTypeBadge(item),
-                                  ],
-                                ),
-                                if (verifiedAt.isNotEmpty) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Date: $verifiedAt',
-                                    style: AppStyles.text12Px.poppins.w400.copyWith(
-                                      color: AppColors.textGrey,
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      workoutTitle,
+                                      style:
+                                          AppStyles.text16Px.poppins.w600.dark,
                                     ),
                                   ),
-                                ],
-                                if (remarks.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
+                                  const SizedBox(width: 6),
                                   Container(
-                                    padding: const EdgeInsets.all(8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey.shade50,
+                                      color:
+                                          isVerified
+                                              ? Colors.green.withOpacity(0.1)
+                                              : Colors.red.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const Icon(
-                                          Icons.format_quote,
-                                          size: 16,
-                                          color: AppColors.textGrey,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            remarks,
-                                            style: AppStyles.text12Px.poppins.w400.copyWith(
-                                              fontStyle: FontStyle.italic,
-                                              color: AppColors.textDark,
-                                            ),
+                                    child: Text(
+                                      isVerified ? 'Verified' : 'Rejected',
+                                      style: AppStyles.text12Px.poppins.w600
+                                          .copyWith(
+                                            color:
+                                                isVerified
+                                                    ? Colors.green
+                                                    : Colors.red,
                                           ),
-                                        ),
-                                      ],
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  if (profilePic != null &&
+                                      profilePic.isNotEmpty)
+                                    ProfileImage(
+                                      isEdit: false,
+                                      url: profilePic,
+                                      radius: 20,
+                                    )
+                                  else
+                                    const Icon(
+                                      Icons.person,
+                                      size: 24,
+                                      color: AppColors.primary,
+                                    ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      customerName,
+                                      style: AppStyles.text14Px.poppins.w500
+                                          .copyWith(color: AppColors.textDark),
+                                    ),
+                                  ),
+                                  _buildWorkoutTypeBadge(item),
+                                ],
+                              ),
+                              if (verifiedAt.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Date: $verifiedAt',
+                                  style: AppStyles.text12Px.poppins.w400
+                                      .copyWith(color: AppColors.textGrey),
+                                ),
                               ],
-                            ),
+                              if (remarks.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(
+                                        Icons.format_quote,
+                                        size: 16,
+                                        color: AppColors.textGrey,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          remarks,
+                                          style: AppStyles.text12Px.poppins.w400
+                                              .copyWith(
+                                                fontStyle: FontStyle.italic,
+                                                color: AppColors.textDark,
+                                              ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
+                  ),
         ),
       ],
     );

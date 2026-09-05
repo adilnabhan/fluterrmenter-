@@ -12,13 +12,16 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    final token = _appCubit.state.currentUser?.access;
-
-    if (token != null) {
-      options.headers['Authorization'] = 'JWT $token';
+    if (!options.headers.containsKey('Authorization') ||
+        options.headers['Authorization'] == null ||
+        (options.headers['Authorization'] as String).isEmpty) {
+      final token = _appCubit.state.currentUser?.access;
+      if (token != null && token.isNotEmpty) {
+        options.headers['Authorization'] = 'JWT $token';
+      }
     }
 
-    options.headers['X-Platform'] = platformSource;
+    options.headers['X-Platform'] ??= platformSource;
 
     handler.next(options);
   }

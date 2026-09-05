@@ -228,25 +228,37 @@ class __ExpiredMembersListingScreenState
                                                     ),
                                                   ],
                                                 ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      memberData
-                                                              ?.activePlan
-                                                              ?.planName ??
-                                                          '',
-                                                      style:
-                                                          AppStyles
+                                                if ((memberData?.activePlan?.planName ?? '').isNotEmpty) ...[
+                                                  const Divider(
+                                                    height: 8,
+                                                    thickness: 1,
+                                                    color: Color(0xffEEEEEE),
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          memberData
+                                                                  ?.activePlan
+                                                                  ?.planName ??
+                                                              '',
+                                                          style: AppStyles
                                                               .text12Px
                                                               .poppins
-                                                              .w500
+                                                              .w400
                                                               .dark,
-                                                    ),
-                                                  ],
-                                                ),
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
                                               ],
                                             ),
                                           ),
