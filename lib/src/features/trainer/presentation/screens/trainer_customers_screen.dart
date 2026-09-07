@@ -502,7 +502,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                                       builder: (context) => TrainerChatScreen(
                                                         customerId: customerId,
                                                         customerName: name,
-                                                        customerPhoto: imgUrl != null ? imgUrl as String : null,
+                                                        customerPhoto: pic,
                                                         customerPhone: client['mobile']?.toString(),
                                                       ),
                                                     ),

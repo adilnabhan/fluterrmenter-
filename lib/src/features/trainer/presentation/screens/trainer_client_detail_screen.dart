@@ -1478,7 +1478,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(name as String, style: AppStyles.text13Px.poppins.w500.dark),
-                          Text('$servings $unit', style: AppStyles.text11Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+                          Text('$servings $unit', style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
                         ],
                       ),
                     ),
@@ -1737,7 +1737,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: AppStyles.text13Px.poppins.w600.dark),
-                Text(subtitle, style: AppStyles.text11Px.poppins.w400.copyWith(color: AppColors.textGrey)),
+                Text(subtitle, style: AppStyles.text12Px.poppins.w400.copyWith(color: AppColors.textGrey)),
               ],
             ),
           ),
