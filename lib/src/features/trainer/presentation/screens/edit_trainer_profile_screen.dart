@@ -14,6 +14,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
   late final TextEditingController _firstNameController;
   late final TextEditingController _lastNameController;
   late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
   late final TextEditingController _qualificationController;
   late final TextEditingController _experienceController;
   late final TextEditingController _bioController;
@@ -28,6 +29,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     _firstNameController = TextEditingController(text: user?.firstName ?? '');
     _lastNameController = TextEditingController(text: user?.lastName ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
+    _phoneController = TextEditingController(text: user?.mobileNumber ?? '');
     
     // We can prefill defaults or fetch actual details from profile
     _qualificationController = TextEditingController();
@@ -41,6 +43,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _qualificationController.dispose();
     _experienceController.dispose();
     _bioController.dispose();
@@ -67,10 +70,12 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
 
     try {
       final dio = DioClient().dio;
+      final phone = _phoneController.text.trim();
       final formData = FormData.fromMap({
         'first_name': _firstNameController.text.trim(),
         'last_name': _lastNameController.text.trim(),
         'email': _emailController.text.trim(),
+        if (phone.isNotEmpty) 'mobile_number': phone,
         'qualification': _qualificationController.text.trim(),
         'experience': _experienceController.text.trim(),
         'bio': _bioController.text.trim(),
@@ -94,6 +99,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
             firstName: _firstNameController.text.trim(),
             lastName: _lastNameController.text.trim(),
             email: _emailController.text.trim(),
+            mobileNumber: phone.isNotEmpty ? phone : userState.mobileNumber,
           );
           context.read<AppCubit>().addUser(updatedUser);
         }
@@ -182,6 +188,16 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _phoneController,
+                    decoration: const InputDecoration(
+                      labelText: 'Mobile Number',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 16),
 
