@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -16,7 +17,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       if (body != null && body.toString().isNotEmpty) {
         final localNotifications = FlutterLocalNotificationsPlugin();
         const initSettings = InitializationSettings(
-          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          android: AndroidInitializationSettings('@drawable/ic_notification'),
         );
         await localNotifications.initialize(settings: initSettings);
         await localNotifications.show(
@@ -28,7 +29,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
               'high_importance_channel',
               'High Importance Notifications',
               channelDescription: 'This channel is used for important notifications.',
-              icon: '@mipmap/ic_launcher',
+              icon: '@drawable/ic_notification',
+              largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+              color: Color(0xFFC82228),
               importance: Importance.max,
               priority: Priority.high,
               showWhen: true,
@@ -86,7 +89,7 @@ class NotificationServices {
       );
 
       const initSettings = InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('@drawable/ic_notification'),
         iOS: DarwinInitializationSettings(),
       );
       await _localNotifications.initialize(settings: initSettings);
@@ -107,7 +110,9 @@ class NotificationServices {
                 _channel.id,
                 _channel.name,
                 channelDescription: _channel.description,
-                icon: '@mipmap/ic_launcher',
+                icon: '@drawable/ic_notification',
+                largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+                color: const Color(0xFFC82228),
                 importance: Importance.max,
                 priority: Priority.high,
                 showWhen: true,
