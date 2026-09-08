@@ -232,6 +232,16 @@ class _OrganizationWorkoutLibraryScreenState
                                   ex['exercise_type']?.toString() ??
                                   'N/A';
 
+                              final videoUrl = (ex['video_url'] ??
+                                      ex['youtube_link'] ??
+                                      ex['video'] ??
+                                      ex['youtube_url'])
+                                  ?.toString()
+                                  .trim() ??
+                              '';
+                              final hasVideo =
+                                  videoUrl.isNotEmpty && videoUrl != 'null';
+
                               return Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
@@ -254,11 +264,65 @@ class _OrganizationWorkoutLibraryScreenState
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            ex['name']?.toString() ??
-                                                'Unnamed Exercise',
-                                            style:
-                                                AppStyles.text14Px.poppins.w600,
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  ex['name']?.toString() ??
+                                                      'Unnamed Exercise',
+                                                  style: AppStyles
+                                                      .text14Px
+                                                      .poppins
+                                                      .w600,
+                                                ),
+                                              ),
+                                              if (hasVideo) ...[
+                                                const SizedBox(width: 8),
+                                                GestureDetector(
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  onTap: () async {
+                                                    try {
+                                                      final uri =
+                                                          Uri.parse(videoUrl);
+                                                      if (await canLaunchUrl(
+                                                        uri,
+                                                      )) {
+                                                        await launchUrl(
+                                                          uri,
+                                                          mode:
+                                                              LaunchMode
+                                                                  .externalApplication,
+                                                        );
+                                                      } else {
+                                                        Dialogs.showSnack(
+                                                          msg:
+                                                              'Cannot open video URL',
+                                                        );
+                                                      }
+                                                    } catch (_) {
+                                                      Dialogs.showSnack(
+                                                        msg:
+                                                            'Invalid video URL',
+                                                      );
+                                                    }
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 2,
+                                                          vertical: 2,
+                                                        ),
+                                                    child: SvgPicture.asset(
+                                                      'assets/images/svg/icons/youtube.svg',
+                                                      width: 20,
+                                                      height: 20,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
@@ -504,14 +568,19 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
     }
   }
 
-  void _showCreateExerciseSheet() {
-    Navigator.pop(context); // Close the current sheet
-    showModalBottomSheet(
+  Future<void> _showCreateExerciseSheet() async {
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const _CreateNewExerciseSheet(),
+      builder: (context) => _CreateNewExerciseSheet(orgId: widget.orgId),
     );
+    if (result == true) {
+      widget.onExerciseAdded();
+      if (mounted) {
+        _fetchGlobalExercises();
+      }
+    }
   }
 
   @override
@@ -752,6 +821,16 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
                             ex['exercise_type']?.toString() ??
                             'N/A';
 
+                        final videoUrl = (ex['video_url'] ??
+                                ex['youtube_link'] ??
+                                ex['video'] ??
+                                ex['youtube_url'])
+                            ?.toString()
+                            .trim() ??
+                        '';
+                        final hasVideo =
+                            videoUrl.isNotEmpty && videoUrl != 'null';
+
                         return Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -766,9 +845,52 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      ex['name']?.toString() ?? 'Unnamed',
-                                      style: AppStyles.text14Px.poppins.w600,
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            ex['name']?.toString() ?? 'Unnamed',
+                                            style: AppStyles.text14Px.poppins.w600,
+                                          ),
+                                        ),
+                                        if (hasVideo) ...[
+                                          const SizedBox(width: 8),
+                                          GestureDetector(
+                                            behavior: HitTestBehavior.opaque,
+                                            onTap: () async {
+                                              try {
+                                                final uri = Uri.parse(videoUrl);
+                                                if (await canLaunchUrl(uri)) {
+                                                  await launchUrl(
+                                                    uri,
+                                                    mode: LaunchMode.externalApplication,
+                                                  );
+                                                } else {
+                                                  Dialogs.showSnack(
+                                                    msg: 'Cannot open video URL',
+                                                  );
+                                                }
+                                              } catch (_) {
+                                                Dialogs.showSnack(
+                                                  msg: 'Invalid video URL',
+                                                );
+                                              }
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 2,
+                                                vertical: 2,
+                                              ),
+                                              child: SvgPicture.asset(
+                                                'assets/images/svg/icons/youtube.svg',
+                                                width: 20,
+                                                height: 20,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -860,8 +982,9 @@ class _SelectExerciseSheetState extends State<_SelectExerciseSheet> {
 
 class _CreateNewExerciseSheet extends StatefulWidget {
   final Map<String, dynamic>? editExercise;
+  final int? orgId;
 
-  const _CreateNewExerciseSheet({this.editExercise});
+  const _CreateNewExerciseSheet({this.editExercise, this.orgId});
 
   @override
   State<_CreateNewExerciseSheet> createState() =>
@@ -971,8 +1094,34 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
           );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        // Auto-link newly created custom exercise to organization's workout library
+        if (!isEditing && widget.orgId != null && response.data != null) {
+          try {
+            int? createdId;
+            if (response.data is Map) {
+              final resMap = response.data as Map;
+              if (resMap['id'] is int) {
+                createdId = resMap['id'] as int;
+              } else if (resMap['data'] is Map && resMap['data']['id'] is int) {
+                createdId = resMap['data']['id'] as int;
+              }
+            }
+            if (createdId != null) {
+              await DioClient().dio.post<dynamic>(
+                ApiUris.gymWorkoutLibrary,
+                data: {
+                  'organization_id': widget.orgId,
+                  'workout_id': createdId,
+                  'is_visible': true,
+                },
+              );
+            }
+          } catch (_) {}
+        }
         Dialogs.showSnack(msg: isEditing ? 'Exercise updated successfully' : 'Exercise created successfully');
-        Navigator.pop(context, true); // Return true to signal success
+        if (mounted) {
+          Navigator.pop(context, true); // Return true to signal success
+        }
       } else {
         if (!mounted) return;
         setState(() {
@@ -1388,3 +1537,4 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
     );
   }
 }
+

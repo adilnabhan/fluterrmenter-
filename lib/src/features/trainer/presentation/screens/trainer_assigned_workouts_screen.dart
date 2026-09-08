@@ -4,6 +4,13 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:intl/intl.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 
+class _WorkoutsResult {
+  final List<Map<String, dynamic>> workouts;
+  final bool hasMore;
+
+  const _WorkoutsResult({required this.workouts, required this.hasMore});
+}
+
 class TrainerAssignedWorkoutsScreen extends StatefulWidget {
   final int? customerId;
   final String? customerName;
@@ -36,7 +43,7 @@ class _TrainerAssignedWorkoutsScreenState
   String _searchQuery = '';
 
   // Filter & Sort State
-  DateTime _selectedDate = DateTime.now();
+  DateTime? _selectedDate;
   bool _sortNewestFirst = true; // true = newest first, false = oldest first
 
   @override
@@ -62,7 +69,7 @@ class _TrainerAssignedWorkoutsScreenState
     }
   }
 
-  void _selectDate(DateTime date) {
+  void _selectDate(DateTime? date) {
     if (!mounted) return;
     setState(() {
       _selectedDate = date;
@@ -83,7 +90,8 @@ class _TrainerAssignedWorkoutsScreenState
   }) async {
     if (!mounted) return;
 
-    final selectedDateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    final String? selectedDateStr =
+        _selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : null;
 
     if (resetPage) {
       setState(() {
@@ -96,25 +104,39 @@ class _TrainerAssignedWorkoutsScreenState
     }
 
     if (widget.customerId != null) {
-      final workouts = await _fetchAssignedWorkoutsForClient(
+      final result = await _fetchAssignedWorkoutsForClient(
         widget.customerId!,
         widget.customerName ?? 'Client',
         dateStr: selectedDateStr,
+        page: _currentPage,
+        pageSize: _pageSize,
       );
       if (mounted) {
         setState(() {
-          _assignedWorkouts = workouts;
+          if (resetPage) {
+            _assignedWorkouts = result.workouts;
+          } else {
+            final existingIds = _assignedWorkouts
+                .map((e) => e['id'] ?? e['customer_workout_plan_id'])
+                .toSet();
+            for (final w in result.workouts) {
+              final id = w['id'] ?? w['customer_workout_plan_id'];
+              if (id == null || !existingIds.contains(id)) {
+                _assignedWorkouts.add(w);
+              }
+            }
+          }
+          _hasMore = result.hasMore;
           _isLoading = false;
           _isLoadingMore = false;
-          _hasMore = false;
-          _hasFetchedAll = true;
+          _hasFetchedAll = !_hasMore;
         });
       }
       return;
     }
 
     final Map<String, dynamic> queryParams = {
-      'date': selectedDateStr,
+      if (selectedDateStr != null) 'date': selectedDateStr,
       'status': 'all',
       'page': _currentPage,
       'page_size': _pageSize,
@@ -129,15 +151,29 @@ class _TrainerAssignedWorkoutsScreenState
       );
 
       if (response.statusCode == 200) {
-        final workouts = _parseWorkoutsResponse(response.data, 'Client', 0);
+        final parsed = _parseWorkoutsResponseData(
+          response.data,
+          'Client',
+          0,
+          _currentPage,
+          _pageSize,
+        );
         if (mounted) {
           setState(() {
             if (resetPage) {
-              _assignedWorkouts = workouts;
+              _assignedWorkouts = parsed.workouts;
             } else {
-              _assignedWorkouts.addAll(workouts);
+              final existingIds = _assignedWorkouts
+                  .map((e) => e['id'] ?? e['customer_workout_plan_id'])
+                  .toSet();
+              for (final w in parsed.workouts) {
+                final id = w['id'] ?? w['customer_workout_plan_id'];
+                if (id == null || !existingIds.contains(id)) {
+                  _assignedWorkouts.add(w);
+                }
+              }
             }
-            _hasMore = workouts.length >= _pageSize;
+            _hasMore = parsed.hasMore;
             _isLoading = false;
             _isLoadingMore = false;
           });
@@ -166,7 +202,7 @@ class _TrainerAssignedWorkoutsScreenState
           final clients =
               dataList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
-          final List<Future<List<Map<String, dynamic>>>> futures = [];
+          final List<Future<_WorkoutsResult>> futures = [];
           for (final client in clients) {
             final profile = client['profile'] as Map? ?? client;
             final cid = client['id'] as int? ?? client['customer_id'] as int?;
@@ -182,7 +218,7 @@ class _TrainerAssignedWorkoutsScreenState
           final results = await Future.wait(futures);
           final List<Map<String, dynamic>> combinedWorkouts = [];
           for (final res in results) {
-            combinedWorkouts.addAll(res);
+            combinedWorkouts.addAll(res.workouts);
           }
 
           if (mounted) {
@@ -282,31 +318,72 @@ class _TrainerAssignedWorkoutsScreenState
     return list;
   }
 
-  Future<List<Map<String, dynamic>>> _fetchAssignedWorkoutsForClient(
+  _WorkoutsResult _parseWorkoutsResponseData(
+    dynamic data,
+    String clientName,
+    int customerId,
+    int requestedPage,
+    int pageSize,
+  ) {
+    bool hasMore = false;
+    final list = _parseWorkoutsResponse(data, clientName, customerId);
+
+    if (data is Map) {
+      if (data['results'] is List) {
+        if (data['next'] != null &&
+            data['next'].toString().isNotEmpty &&
+            data['next'].toString() != 'null') {
+          hasMore = true;
+        } else if (data['total_pages'] is int) {
+          final totalPages = data['total_pages'] as int;
+          final currentPage = data['current_page'] as int? ?? requestedPage;
+          hasMore = currentPage < totalPages;
+        } else {
+          hasMore = list.length >= pageSize;
+        }
+      }
+    }
+
+    return _WorkoutsResult(workouts: list, hasMore: hasMore);
+  }
+
+  Future<_WorkoutsResult> _fetchAssignedWorkoutsForClient(
     int customerId,
     String clientName, {
     String? dateStr,
+    int page = 1,
+    int pageSize = _pageSize,
   }) async {
-    List<Map<String, dynamic>> workoutsList = [];
+    _WorkoutsResult result = const _WorkoutsResult(workouts: [], hasMore: false);
     bool fetched = false;
 
-    // 1. Primary Endpoint with server-side date filtering
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'page_size': pageSize,
+      'status': 'all',
+      if (dateStr != null && dateStr.isNotEmpty) 'date': dateStr,
+    };
+
+    // 1. Primary Endpoint with pagination & date filtering
     try {
-      String url = ApiUris.trainerClientAssignedWorkouts(customerId);
-      if (dateStr != null && dateStr.isNotEmpty) {
-        url += '?date=$dateStr';
-      }
       final response = await DioClient().dio.get<dynamic>(
-        url,
+        ApiUris.trainerClientAssignedWorkouts(customerId),
+        queryParameters: queryParams,
         options: Options(headers: {'X-Platform': platformSource}),
       );
       if (response.statusCode == 200) {
-        workoutsList = _parseWorkoutsResponse(
+        result = _parseWorkoutsResponseData(
           response.data,
           clientName,
           customerId,
+          page,
+          pageSize,
         );
-        if (workoutsList.isNotEmpty) fetched = true;
+        if (result.workouts.isNotEmpty ||
+            (response.data is Map &&
+                (response.data['results'] as List? ?? []).isEmpty)) {
+          fetched = true;
+        }
       }
     } catch (_) {}
 
@@ -315,15 +392,22 @@ class _TrainerAssignedWorkoutsScreenState
       try {
         final response = await DioClient().dio.get<dynamic>(
           ApiUris.customerAssignedWorkouts(customerId),
+          queryParameters: queryParams,
           options: Options(headers: {'X-Platform': platformSource}),
         );
         if (response.statusCode == 200) {
-          workoutsList = _parseWorkoutsResponse(
+          result = _parseWorkoutsResponseData(
             response.data,
             clientName,
             customerId,
+            page,
+            pageSize,
           );
-          if (workoutsList.isNotEmpty) fetched = true;
+          if (result.workouts.isNotEmpty ||
+              (response.data is Map &&
+                  (response.data['results'] as List? ?? []).isEmpty)) {
+            fetched = true;
+          }
         }
       } catch (_) {}
     }
@@ -333,20 +417,22 @@ class _TrainerAssignedWorkoutsScreenState
       try {
         final response = await DioClient().dio.get<dynamic>(
           ApiUris.customerAssignedWorkoutsAll(customerId),
+          queryParameters: queryParams,
           options: Options(headers: {'X-Platform': platformSource}),
         );
         if (response.statusCode == 200) {
-          workoutsList = _parseWorkoutsResponse(
+          result = _parseWorkoutsResponseData(
             response.data,
             clientName,
             customerId,
+            page,
+            pageSize,
           );
-          if (workoutsList.isNotEmpty) fetched = true;
         }
       } catch (_) {}
     }
 
-    return workoutsList;
+    return result;
   }
 
   String _extractDateString(Map<String, dynamic> item) {
@@ -455,100 +541,18 @@ class _TrainerAssignedWorkoutsScreenState
     }
   }
 
-  Widget _buildDateHeader() {
-    final today = DateTime.now();
-    final isToday =
-        _selectedDate.year == today.year &&
-        _selectedDate.month == today.month &&
-        _selectedDate.day == today.day;
-
-    final dateDisplay =
-        isToday
-            ? 'Today (${DateFormat('dd MMM, yyyy').format(_selectedDate)})'
-            : DateFormat('EEEE, dd MMM yyyy').format(_selectedDate);
-
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xffF8F9FA),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xffE2E8F0)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () {
-                _selectDate(_selectedDate.subtract(const Duration(days: 1)));
-              },
-              icon: const Icon(
-                Icons.chevron_left,
-                color: AppColors.dark,
-                size: 26,
-              ),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-            InkWell(
-              onTap: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate,
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2030),
-                );
-                if (picked != null) {
-                  _selectDate(picked);
-                }
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.calendar_month_outlined,
-                    size: 20,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    dateDisplay,
-                    style: AppStyles.text14Px.poppins.w600.copyWith(
-                      color: AppColors.dark,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              onPressed: () {
-                _selectDate(_selectedDate.add(const Duration(days: 1)));
-              },
-              icon: const Icon(
-                Icons.chevron_right,
-                color: AppColors.dark,
-                size: 26,
-              ),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final selectedStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    final String? selectedStr =
+        _selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : null;
 
     // 1. Apply Date Filter & Search Query
     final filteredWorkouts =
         _assignedWorkouts.where((item) {
-          final itemDate = _extractDateString(item);
-          if (itemDate.isNotEmpty && itemDate != selectedStr) return false;
+          if (selectedStr != null) {
+            final itemDate = _extractDateString(item);
+            if (itemDate.isNotEmpty && itemDate != selectedStr) return false;
+          }
 
           // Search Query Filtering (by Workout Title or Client Name)
           if (_searchQuery.trim().isNotEmpty) {
@@ -598,38 +602,126 @@ class _TrainerAssignedWorkoutsScreenState
       ),
       body: Column(
         children: [
-          // Date Header with Center Selected Date & Arrows
-          _buildDateHeader(),
-
-          // Search Bar
+          // Search Bar with Calendar Filter Icon
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Container(
-              height: 46,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xffE2E8F0)),
-              ),
-              child: TextField(
-                onChanged: (val) => setState(() => _searchQuery = val),
-                style: AppStyles.text14Px.poppins.w500.dark,
-                decoration: InputDecoration(
-                  hintText: 'Search by workout name or client...',
-                  hintStyle: AppStyles.text13Px.poppins.w400.copyWith(
-                    color: const Color(0xffA0AEC0),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xffE2E8F0)),
+                    ),
+                    child: TextField(
+                      onChanged: (val) => setState(() => _searchQuery = val),
+                      style: AppStyles.text14Px.poppins.w500.dark,
+                      decoration: InputDecoration(
+                        hintText: 'Search by workout name or client...',
+                        hintStyle: AppStyles.text13Px.poppins.w400.copyWith(
+                          color: const Color(0xffA0AEC0),
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          size: 20,
+                          color: Color(0xff718096),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                      ),
+                    ),
                   ),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    size: 20,
-                    color: Color(0xff718096),
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 11),
                 ),
-              ),
+                const SizedBox(width: 10),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate ?? DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2030),
+                    );
+                    if (picked != null) {
+                      _selectDate(picked);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    height: 46,
+                    width: 46,
+                    decoration: BoxDecoration(
+                      color: _selectedDate != null ? const Color(0xFFFFEAEA) : Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: _selectedDate != null
+                            ? AppColors.primary
+                            : const Color(0xffE2E8F0),
+                        width: _selectedDate != null ? 1.5 : 1.0,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.calendar_month_outlined,
+                      size: 22,
+                      color: _selectedDate != null
+                          ? AppColors.primary
+                          : const Color(0xff718096),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+
+          // Active Date Filter Chip (if filtered by date)
+          if (_selectedDate != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFEAEA),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 13,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          DateFormat('dd MMM, yyyy').format(_selectedDate!),
+                          style: AppStyles.text12Px.poppins.w500.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: () => _selectDate(null),
+                          child: const Icon(
+                            Icons.close,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // Main Workouts List
           Expanded(
@@ -648,7 +740,9 @@ class _TrainerAssignedWorkoutsScreenState
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            "No assigned workouts for ${DateFormat('dd MMM, yyyy').format(_selectedDate)}",
+                            _selectedDate != null
+                                ? "No assigned workouts for ${DateFormat('dd MMM, yyyy').format(_selectedDate!)}"
+                                : "No assigned workouts found",
                             style: AppStyles.text14Px.poppins.w500.copyWith(
                               color: AppColors.textGrey,
                             ),

@@ -2363,11 +2363,57 @@ class _ExerciseCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            exercise.name,
-                            style: AppStyles.text16Px.poppins.w600.copyWith(
-                              color: AppColors.textDark,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  exercise.name,
+                                  style: AppStyles.text16Px.poppins.w600.copyWith(
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                              ),
+                              if (exercise.videoLink.trim().isNotEmpty &&
+                                  exercise.videoLink.trim() != 'null') ...[
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () async {
+                                    try {
+                                      final uri = Uri.parse(
+                                        exercise.videoLink.trim(),
+                                      );
+                                      if (await canLaunchUrl(uri)) {
+                                        await launchUrl(
+                                          uri,
+                                          mode: LaunchMode.externalApplication,
+                                        );
+                                      } else {
+                                        Dialogs.showSnack(
+                                          msg: 'Cannot open video URL',
+                                        );
+                                      }
+                                    } catch (_) {
+                                      Dialogs.showSnack(
+                                        msg: 'Invalid video URL',
+                                      );
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                      vertical: 2,
+                                    ),
+                                    child: SvgPicture.asset(
+                                      'assets/images/svg/icons/youtube.svg',
+                                      width: 20,
+                                      height: 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                         InkWell(
@@ -2539,11 +2585,57 @@ class _SelectExerciseItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  exercise.name,
-                  style: AppStyles.text16Px.poppins.w600.copyWith(
-                    color: AppColors.textDark,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        exercise.name,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ),
+                    if (exercise.videoLink.trim().isNotEmpty &&
+                        exercise.videoLink.trim() != 'null') ...[
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () async {
+                          try {
+                            final uri = Uri.parse(
+                              exercise.videoLink.trim(),
+                            );
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(
+                                uri,
+                                mode: LaunchMode.externalApplication,
+                              );
+                            } else {
+                              Dialogs.showSnack(
+                                msg: 'Cannot open video URL',
+                              );
+                            }
+                          } catch (_) {
+                            Dialogs.showSnack(
+                              msg: 'Invalid video URL',
+                            );
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 2,
+                            vertical: 2,
+                          ),
+                          child: SvgPicture.asset(
+                            'assets/images/svg/icons/youtube.svg',
+                            width: 20,
+                            height: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(

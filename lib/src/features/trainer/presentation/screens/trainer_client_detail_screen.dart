@@ -376,7 +376,8 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   String _formatDate(String? isoString) {
     if (isoString == null || isoString.isEmpty) return 'N/A';
     try {
-      final date = DateTime.parse(isoString);
+      final dateOnly = isoString.split('T').first.trim();
+      final date = DateTime.tryParse(dateOnly) ?? DateTime.parse(isoString);
       return DateFormat('dd MMM yyyy').format(date);
     } catch (_) {
       return isoString.split('T').first;
@@ -756,8 +757,10 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     final endDateStr = membership['end_date'] as String?;
     if (startDateStr != null && endDateStr != null) {
       try {
-        final start = DateFormat('yyyy-MM-dd').parse(startDateStr);
-        final end = DateFormat('yyyy-MM-dd').parse(endDateStr);
+        final start = DateTime.tryParse(startDateStr.split('T').first) ??
+            DateFormat('yyyy-MM-dd').parse(startDateStr);
+        final end = DateTime.tryParse(endDateStr.split('T').first) ??
+            DateFormat('yyyy-MM-dd').parse(endDateStr);
         final now = DateTime.now();
         final totalDays = end.difference(start).inDays;
         final elapsedDays = now.difference(start).inDays;
@@ -1705,11 +1708,14 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: context.colors.card,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: context.colors.border),
                     ),
-                    child: ListTile(
+                    child: Material(
+                      color: context.colors.card,
+                      borderRadius: BorderRadius.circular(16),
+                      clipBehavior: Clip.antiAlias,
+                      child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 4,
@@ -1808,21 +1814,22 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                       onTap:
                           planId > 0
                               ? () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder:
-                                        (context) => WorkoutPlanDetailsScreen(
-                                          planId: planId,
-                                          planTitle: title,
-                                        ),
-                                  ),
-                                );
-                              }
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute<void>(
+                                      builder:
+                                          (context) => WorkoutPlanDetailsScreen(
+                                            planId: planId,
+                                            planTitle: title,
+                                          ),
+                                    ),
+                                  );
+                                }
                               : null,
                     ),
-                  );
-                }),
+                  ),
+                );
+              }),
               ],
               const SizedBox(height: 24),
             ],
@@ -1833,7 +1840,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                 customerId: widget.customerId,
                 startDate:
                     membership['start_date'] != null
-                        ? DateTime.tryParse(membership['start_date'].toString())
+                        ? DateTime.tryParse(membership['start_date'].toString().split('T').first)
                         : null,
                 workoutHistory: _workoutHistory,
               ),

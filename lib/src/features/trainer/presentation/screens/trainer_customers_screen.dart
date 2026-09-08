@@ -177,8 +177,208 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
       if (_selectedGymFilter != 'All' && orgName != _selectedGymFilter) {
         return false;
       }
+      if (_statusFilter == 'active') {
+        final statusInfo = _evaluateClientStatus(client);
+        if (statusInfo['isExpired'] == true) return false;
+      } else if (_statusFilter == 'expired') {
+        final statusInfo = _evaluateClientStatus(client);
+        if (statusInfo['isExpired'] != true) return false;
+      }
       return true;
     }).toList();
+  }
+
+  DateTime? _parseAnyDate(dynamic val) {
+    if (val == null) return null;
+    if (val is DateTime) return val;
+    final str = val.toString().trim();
+    if (str.isEmpty || str == 'null' || str == 'N/A') return null;
+
+    final iso = DateTime.tryParse(str);
+    if (iso != null) return iso;
+
+    final formats = [
+      'yyyy-MM-dd',
+      'dd MMM yyyy',
+      'dd-MM-yyyy',
+      'dd/MM/yyyy',
+      'yyyy/MM/dd',
+      'dd MMMM yyyy',
+      'MMM dd, yyyy',
+      'MM/dd/yyyy',
+    ];
+    for (final fmt in formats) {
+      try {
+        return DateFormat(fmt).parse(str);
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  Map<String, dynamic> _evaluateClientStatus(Map<String, dynamic> client) {
+    final List<Map<String, dynamic>> allMemberships = [];
+
+    if (client['membership'] is Map) {
+      allMemberships.add(Map<String, dynamic>.from(client['membership'] as Map));
+    } else if (client['membership'] is List) {
+      for (var m in client['membership'] as List) {
+        if (m is Map) allMemberships.add(Map<String, dynamic>.from(m as Map));
+      }
+    }
+
+    if (client['memberships'] is List) {
+      for (var m in client['memberships'] as List) {
+        if (m is Map) allMemberships.add(Map<String, dynamic>.from(m as Map));
+      }
+    }
+
+    if (client['membership_details'] is Map) {
+      allMemberships.add(
+        Map<String, dynamic>.from(client['membership_details'] as Map),
+      );
+    }
+
+    if (client['active_membership'] is Map) {
+      allMemberships.add(
+        Map<String, dynamic>.from(client['active_membership'] as Map),
+      );
+    }
+
+    if (client['customer_membership'] is Map) {
+      allMemberships.add(
+        Map<String, dynamic>.from(client['customer_membership'] as Map),
+      );
+    }
+
+    // Direct Boolean Flags
+    final bool? isActiveMember =
+        client['is_active_member'] as bool? ??
+        client['is_membership_active'] as bool?;
+    final bool? isUserActive = client['is_active'] as bool?;
+
+    DateTime? latestEndDate;
+    String? latestStatus;
+
+    // Check root client fields
+    final rootEndStr = (client['membership_end_date'] ??
+            client['end_date'] ??
+            client['expiry_date'] ??
+            client['expire_date'] ??
+            client['valid_to'])
+        ?.toString();
+    final parsedRootEnd = _parseAnyDate(rootEndStr);
+    if (parsedRootEnd != null) {
+      latestEndDate = parsedRootEnd;
+    }
+
+    final rootStatus = (client['membership_status'] ?? client['status'])
+        ?.toString()
+        .toLowerCase();
+    if (rootStatus != null && rootStatus.isNotEmpty && rootStatus != 'null') {
+      latestStatus = rootStatus;
+    }
+
+    for (var mem in allMemberships) {
+      final endStr = (mem['end_date'] ??
+              mem['membership_end_date'] ??
+              mem['expiry_date'] ??
+              mem['expire_date'] ??
+              mem['valid_to'])
+          ?.toString();
+      final parsedEnd = _parseAnyDate(endStr);
+      if (parsedEnd != null) {
+        if (latestEndDate == null || parsedEnd.isAfter(latestEndDate)) {
+          latestEndDate = parsedEnd;
+        }
+      }
+      final status = (mem['status'] ?? mem['membership_status'])
+          ?.toString()
+          .toLowerCase();
+      if (status != null && status.isNotEmpty && status != 'null') {
+        latestStatus = status;
+      }
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // 1. If explicit status says expired / inactive / completed
+    if (latestStatus == 'expired' ||
+        latestStatus == 'inactive' ||
+        latestStatus == 'completed' ||
+        isActiveMember == false) {
+      if (latestEndDate != null) {
+        final endDay = DateTime(
+          latestEndDate.year,
+          latestEndDate.month,
+          latestEndDate.day,
+        );
+        final diff = endDay.difference(today).inDays;
+        if (diff < 0 && diff >= -30) {
+          return {
+            'text': 'Expired ${-diff} days ago',
+            'color': Colors.red,
+            'bgColor': Colors.red.shade50,
+            'isExpired': true,
+          };
+        }
+      }
+      return {
+        'text': 'Expired',
+        'color': Colors.red,
+        'bgColor': Colors.red.shade50,
+        'isExpired': true,
+      };
+    }
+
+    // 2. If we have a membership end date, check diff
+    if (latestEndDate != null) {
+      final endDay = DateTime(
+        latestEndDate.year,
+        latestEndDate.month,
+        latestEndDate.day,
+      );
+      final diff = endDay.difference(today).inDays;
+
+      if (diff < 0) {
+        return {
+          'text': diff >= -30 ? 'Expired ${-diff} days ago' : 'Expired',
+          'color': Colors.red,
+          'bgColor': Colors.red.shade50,
+          'isExpired': true,
+        };
+      } else if (diff == 0) {
+        return {
+          'text': 'Expires today',
+          'color': Colors.orange.shade800,
+          'bgColor': Colors.orange.shade50,
+          'isExpired': false,
+        };
+      } else if (diff <= 10) {
+        return {
+          'text': 'Expire in $diff days',
+          'color': Colors.orange.shade800,
+          'bgColor': Colors.orange.shade50,
+          'isExpired': false,
+        };
+      }
+    }
+
+    if (isUserActive == false) {
+      return {
+        'text': 'Expired',
+        'color': Colors.red,
+        'bgColor': Colors.red.shade50,
+        'isExpired': true,
+      };
+    }
+
+    return {
+      'text': 'Active',
+      'color': const Color(0xff27AE60),
+      'bgColor': const Color(0xffE2F6EA),
+      'isExpired': false,
+    };
   }
 
   @override
@@ -509,114 +709,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                               client['target_goal'] as String? ??
                               'General Fitness';
 
-                          String statusText = 'Active';
-                          Color statusColor = const Color(0xff27AE60);
-                          Color statusBgColor = const Color(0xffE2F6EA);
-
-                          Map<String, dynamic>? membershipMap;
-                          if (client['membership'] is Map) {
-                            membershipMap = Map<String, dynamic>.from(
-                              client['membership'] as Map,
-                            );
-                          } else if (client['membership'] is List &&
-                              (client['membership'] as List).isNotEmpty) {
-                            final first = (client['membership'] as List).first;
-                            if (first is Map) {
-                              membershipMap = Map<String, dynamic>.from(
-                                first as Map,
-                              );
-                            }
-                          } else if (client['memberships'] is List &&
-                              (client['memberships'] as List).isNotEmpty) {
-                            final first = (client['memberships'] as List).first;
-                            if (first is Map) {
-                              membershipMap = Map<String, dynamic>.from(
-                                first as Map,
-                              );
-                            }
-                          }
-
-                          final String? memStatus = (membershipMap?['status'] ??
-                                  membershipMap?['membership_status'] ??
-                                  client['membership_status'] ??
-                                  client['status'])
-                              ?.toString()
-                              .toLowerCase();
-
-                          final String? rootEndDate = (client['membership_end_date'] ??
-                                  client['end_date'] ??
-                                  client['valid_to'])
-                              ?.toString();
-                          final String? mapEndDate = (membershipMap?['end_date'] ??
-                                  membershipMap?['membership_end_date'] ??
-                                  membershipMap?['expiry_date'] ??
-                                  membershipMap?['expire_date'] ??
-                                  membershipMap?['valid_to'])
-                              ?.toString();
-                          final String? membershipEndDateStr =
-                              (rootEndDate != null &&
-                                      rootEndDate.trim().isNotEmpty)
-                                  ? rootEndDate.trim()
-                                  : (mapEndDate != null &&
-                                          mapEndDate.trim().isNotEmpty)
-                                  ? mapEndDate.trim()
-                                  : null;
-
-                          if (memStatus == 'expired' ||
-                              memStatus == 'inactive' ||
-                              memStatus == 'completed') {
-                            statusText = 'Expired';
-                            statusColor = Colors.red;
-                            statusBgColor = Colors.red.shade50;
-                          }
-
-                          if (membershipEndDateStr != null &&
-                              membershipEndDateStr.isNotEmpty) {
-                            final endDate = DateTime.tryParse(
-                              membershipEndDateStr,
-                            );
-                            if (endDate != null) {
-                              final now = DateTime.now();
-                              final today = DateTime(
-                                now.year,
-                                now.month,
-                                now.day,
-                              );
-                              final end = DateTime(
-                                endDate.year,
-                                endDate.month,
-                                endDate.day,
-                              );
-                              final diff = end.difference(today).inDays;
-
-                              if (diff < 0) {
-                                if (diff >= -30) {
-                                  statusText = 'Expired ${-diff} days ago';
-                                } else {
-                                  statusText = 'Expired';
-                                }
-                                statusColor = Colors.red;
-                                statusBgColor = Colors.red.shade50;
-                              } else if (diff <= 10 && memStatus != 'expired') {
-                                statusText =
-                                    diff == 0
-                                        ? 'Expires today'
-                                        : 'Expire in $diff days';
-                                statusColor = Colors.orange.shade800;
-                                statusBgColor = Colors.orange.shade50;
-                              }
-                            }
-                          }
-
-                          // Check API-level is_active_member flag as final authority
-                          final bool? isActiveMember =
-                              client['is_active_member'] as bool?;
-                          if (isActiveMember == false &&
-                              statusText == 'Active') {
-                            statusText = 'Expired';
-                            statusColor = Colors.red;
-                            statusBgColor = Colors.red.shade50;
-                          }
+                          final statusInfo = _evaluateClientStatus(client);
+                          final String statusText = statusInfo['text'] as String;
+                          final Color statusColor = statusInfo['color'] as Color;
+                          final Color statusBgColor = statusInfo['bgColor'] as Color;
 
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
