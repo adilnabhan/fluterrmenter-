@@ -121,8 +121,13 @@ final class ApiUris {
   static final trainerPremiumCreateOrder = '${_v1}trainer/premium/create-order/';
   static final trainerPremiumVerify = '${_v1}trainer/premium/verify/';
   static final trainerPremiumStatus = '${_v1}trainer/premium/status/';
+  static final trainerPremiumList = '${_v1}trainer/premium-list/';
   static final trainerSelfClients = '${_v1}trainer/self-clients/';
   static String trainerSelfClientDetail(int id) => '${_v1}trainer/self-clients/$id/';
+
+  ///============================= Steps & Health Tracker =============================\\\
+  static final customerSteps = '${_v1}customer/steps/';
+  static String customerUserSteps(int userId) => '${_v1}customer/steps/$userId/';
 
   ///============================= Diet & Nutrition =============================\\\
   static final trainerDietPlans = '${_v1}trainer/diet-plans/';
