@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "113964156128",
+    "project_id": "push-notification-2f69f",
+    "storage_bucket": "push-notification-2f69f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:113964156128:android:65bec2ba4b1e9a9d3afc85",
+        "android_client_info": {
+          "package_name": "com.discipl.mentor_mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjKl1dPxUfKtp3KEIC9WOdNltzr0k74a0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

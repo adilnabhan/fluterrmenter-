@@ -74,6 +74,7 @@ class AppCubit extends HydratedCubit<AppState> {
       currentAccounts.add(user);
     }
     emit(state.copyWith(currentUser: user, accounts: currentAccounts));
+    NotificationServices.registerDeviceToken();
   }
 
   void updateAccount(LoginSuccessModel user) {
@@ -100,6 +101,7 @@ class AppCubit extends HydratedCubit<AppState> {
   void switchAccount(LoginSuccessModel user) {
     LocalStorageService().saveUser(user);
     emit(state.copyWith(currentUser: user));
+    NotificationServices.registerDeviceToken();
   }
 
   void removeUser() {

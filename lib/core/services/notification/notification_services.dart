@@ -1,124 +1,174 @@
-// import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:mentor_mobile_app/core/api/uris/api_uris.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/firebase_options.dart';
 
-// ///*Manage app notifications
-// class NotificationServices {
-//   ///*
-//   static Future<void> initialize() async {
-//     await AwesomeNotifications().initialize(
-//       'resource://drawable/res_notification_app_icon',
-//       [
-//         NotificationChannel(
-//           channelKey: ChannelKeys.mainChannelKey,
-//           channelName: 'Main Notifications',
-//           channelDescription: 'This channel for managing main notifications',
-//           importance: NotificationImportance.High,
-//           channelShowBadge: true,
-//         ),
-//       ],
-//     );
-//     await _getToken;
-//     await iconBadging;
-//     FirebaseMessaging.onBackgroundMessage(NotificationServices.handleBackGroundMessage);
-//     _handleForeGroundMessage();
-//   }
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    if (Firebase.apps.isEmpty) {
+      try {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      } catch (_) {
+        await Firebase.initializeApp();
+      }
+    }
+  } catch (_) {}
+  // Background notifications with `notification` payload are automatically 
+  // rendered by the OS in the phone notification centre.
+}
 
-//   //* Handle foreground messages from here
-//   static void _handleForeGroundMessage() {
-//     FirebaseMessaging.onMessage.listen((msg) async {
-//       if (msg.notification?.title != null && msg.notification?.body != null) {
-//         write('message form firebase [ForeGround] : ${msg.notification?.title}');
-//         await createNotification(title: msg.notification?.title ?? '', body: '[foreground] ${msg.notification?.body}');
-//       }
-//     });
-//   }
+class NotificationServices {
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
-//   //* Handle foreground messages from here
-//   static Future<void> get _getToken async {
-//     final token = await FirebaseMessaging.instance.getToken();
-//     write('FCM Token is : $token');
-//   }
+  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+    'high_importance_channel', // Matches channel_id in apps/communication/notifications.py
+    'High Importance Notifications',
+    description: 'This channel is used for important notifications.',
+    importance: Importance.max,
+  );
 
-//   ///* Checking notification service .
-//   ///* If notificat is'nt .It will ask permission
-//   static Future<void> handlePermission() async {
-//     write('notification permission status : ');
-//     var isAllowed = await AwesomeNotifications().isNotificationAllowed();
-//     write('notification permission status : $isAllowed');
-//     if (!isAllowed) {
-//       isAllowed = await AwesomeNotifications().requestPermissionToSendNotifications();
-//       write('notification permission status : $isAllowed');
-//     }
-//     if (!isAllowed) {
-//       await openAppSettings();
-//     }
-//   }
+  static Future<void> initialize() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    try {
+      if (Firebase.apps.isEmpty) {
+        try {
+          await Firebase.initializeApp(
+            options: DefaultFirebaseOptions.currentPlatform,
+          );
+        } catch (_) {
+          await Firebase.initializeApp();
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ Firebase initialization failed (needs full app rebuild): $e');
+      }
+      return;
+    }
 
-//   ///*
-//   @pragma('vm:entry-point')
-//   static Future<void> createNotification({required String title, required String body, String? channelKey}) async {
-//     await AwesomeNotifications().createNotification(
-//       content: NotificationContent(
-//         id: DateTime.now().microsecondsSinceEpoch.remainder(100000),
-//         channelKey: channelKey ?? ChannelKeys.mainChannelKey,
-//         title: title,
-//         body: body,
-//         badge: 12,
-//       ),
-//     );
-//   }
+    // 1. Background message handler
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-//   ///*
-//   @pragma('vm:entry-point')
-//   static Future<void> handleBackGroundMessage(RemoteMessage msg) async {
-//     write('message form firebase [BackGround] : ${msg.notification?.title}');
-//     await createNotification(title: msg.notification?.title ?? '', body: '[BackGround] ${msg.notification?.body}');
-//   }
+    // 2. Request OS permissions (Shows the iOS/Android 13 permission popup)
+    final messaging = FirebaseMessaging.instance;
+    final settings = await messaging.requestPermission();
 
-//   ///*
-//   static Future<void> get iconBadging async {
-//     // AwesomeNotifications().
-//     await AwesomeNotifications().setGlobalBadgeCounter(10);
-//   }
+    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional) {
+      // 3. Create Android Notification Channel
+      await _localNotifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(_channel);
 
-//   // ///  *********************************************
-//   // ///     INITIALIZATION METHODS
-//   // ///  *********************************************
+      // 4. Configure iOS foreground heads-up presentation
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-//   // static Future<void> initializeRemoteNotifications() async {
-//   //   await AwesomeNotificationsFcm().initialize(
-//   //     onFcmSilentDataHandle: mySilentDataHandle,
-//   //     onFcmTokenHandle: myFcmTokenHandle,
-//   //     onNativeTokenHandle: myNativeTokenHandle,
-//   //     debug: kDebugMode,
-//   //   );
-//   // }
+      // 5. Initialize local notifications for foreground popups
+      const initSettings = InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
+      );
 
-//   // ///  *********************************************
-//   // ///     REMOTE NOTIFICATION EVENTS
-//   // ///  *********************************************
+      await _localNotifications.initialize(
+        settings: initSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse details) {
+          if (kDebugMode) {
+            print('🔔 Notification clicked: ${details.payload}');
+          }
+        },
+      );
 
-//   // /// Use this method to execute on background when a silent data arrives
-//   // /// (even while terminated)
-//   // @pragma('vm:entry-point')
-//   // static Future<void> mySilentDataHandle(FcmSilentData silentData) async {
-//   //   write('"SilentData": $silentData');
+      // 6. Handle foreground notifications (App is open)
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        final notification = message.notification;
+        final android = message.notification?.android;
+        if (notification != null) {
+          _localNotifications.show(
+            id: notification.hashCode,
+            title: notification.title,
+            body: notification.body,
+            notificationDetails: NotificationDetails(
+              android: AndroidNotificationDetails(
+                _channel.id,
+                _channel.name,
+                channelDescription: _channel.description,
+                icon: android?.smallIcon ?? '@mipmap/ic_launcher',
+                importance: Importance.max,
+                priority: Priority.high,
+              ),
+              iOS: const DarwinNotificationDetails(
+                presentAlert: true,
+                presentBadge: true,
+                presentSound: true,
+              ),
+            ),
+            payload: message.data.toString(),
+          );
+        }
+      });
 
-//   //   if (silentData.createdLifeCycle != NotificationLifeCycle.Foreground) {
-//   //     write('bg');
-//   //   } else {
-//   //     write('FOREGROUND');
-//   //   }
-//   // }
+      // Handle notification open when app is in background/terminated
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        if (kDebugMode) {
+          print('🔔 App opened from notification: ${message.data}');
+        }
+      });
 
-//   // /// Use this method to detect when a new fcm token is received
-//   // @pragma('vm:entry-point')
-//   // static Future<void> myFcmTokenHandle(String token) async {
-//   //   write('FCM Token:"$token"');
-//   // }
+      // Listen for token refresh
+      FirebaseMessaging.instance.onTokenRefresh.listen((_) {
+        registerDeviceToken();
+      });
 
-//   // /// Use this method to detect when a new native token is received
-//   // @pragma('vm:entry-point')
-//   // static Future<void> myNativeTokenHandle(String token) async {
-//   //   write('Native Token:"$token"');
-//   // }
-// }
+      // 7. Get token and send to backend
+      await registerDeviceToken();
+    }
+  }
+
+  /// Sends the device token to your Django endpoint
+  static Future<void> registerDeviceToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        if (kDebugMode) {
+          print('🔑 FCM Device Token: $token');
+        }
+        await DioClient().dio.post<dynamic>(
+          ApiUris.registerDeviceToken,
+          data: {
+            'token': token,
+            'platform': Platform.isAndroid ? 'android' : 'ios',
+          },
+        );
+        if (kDebugMode) {
+          print('✅ Device token registered with backend successfully');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ Failed to register device token: $e');
+      }
+    }
+  }
+}
+
+/// Alias so both NotificationService and NotificationServices work
+typedef NotificationService = NotificationServices;

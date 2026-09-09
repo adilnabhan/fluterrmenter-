@@ -46,8 +46,8 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
     _fetchUpcomingPayments();
   }
 
-  Future<void> _fetchUpcomingPayments() async {
-    if (mounted) {
+  Future<void> _fetchUpcomingPayments({bool showLoading = true}) async {
+    if (showLoading && mounted && _paymentsList.isEmpty) {
       setState(() {
         _isLoading = true;
       });
@@ -57,12 +57,6 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
       final queryParams = <String, String>{
         'organization_id': widget.orgId.toString(),
       };
-      if (_selectedStatusFilter != 'all') {
-        queryParams['status'] = _selectedStatusFilter;
-      }
-      if (_selectedCategoryFilter != 'All') {
-        queryParams['category'] = _selectedCategoryFilter;
-      }
 
       final uri = Uri.parse(ApiUris.upcomingPayments)
           .replace(queryParameters: queryParams)
@@ -76,7 +70,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data;
         if (data is Map) {
-          final results = data['results'] ?? data['data'] ?? [];
+          final results = data['results'] ?? data['data'] ?? <dynamic>[];
           final summary = data['summary'] ?? data;
 
           if (mounted) {
@@ -334,10 +328,10 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
           style: AppStyles.text14Px.poppins.w600.copyWith(color: Colors.white),
         ),
       ),
-      body: _isLoading
+      body: _isLoading && _paymentsList.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: _fetchUpcomingPayments,
+              onRefresh: () => _fetchUpcomingPayments(showLoading: false),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),
@@ -373,12 +367,30 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
   }
 
   Widget _buildSummaryMetricsHeader() {
-    final overdueCount = _summaryMetrics['overdue_count'] ?? 0;
-    final overdueAmount = double.tryParse((_summaryMetrics['total_overdue'] ?? 0).toString()) ?? 0.0;
-    final upcomingCount = _summaryMetrics['upcoming_count'] ?? 0;
-    final upcomingAmount = double.tryParse((_summaryMetrics['total_upcoming'] ?? 0).toString()) ?? 0.0;
-    final paidCount = _summaryMetrics['paid_count'] ?? 0;
-    final paidAmount = double.tryParse((_summaryMetrics['total_paid'] ?? 0).toString()) ?? 0.0;
+    int overdueCount = int.tryParse((_summaryMetrics['overdue_count'] ?? 0).toString()) ?? 0;
+    double overdueAmount = double.tryParse((_summaryMetrics['total_overdue'] ?? 0).toString()) ?? 0.0;
+    int upcomingCount = int.tryParse((_summaryMetrics['upcoming_count'] ?? 0).toString()) ?? 0;
+    double upcomingAmount = double.tryParse((_summaryMetrics['total_upcoming'] ?? 0).toString()) ?? 0.0;
+    int paidCount = int.tryParse((_summaryMetrics['paid_count'] ?? 0).toString()) ?? 0;
+    double paidAmount = double.tryParse((_summaryMetrics['total_paid'] ?? 0).toString()) ?? 0.0;
+
+    // Fallback: calculate directly from list if summary map is not pre-populated by backend
+    if (overdueCount == 0 && upcomingCount == 0 && paidCount == 0 && _paymentsList.isNotEmpty) {
+      overdueCount = _paymentsList.where((p) => p['status']?.toString().toLowerCase() == 'overdue').length;
+      overdueAmount = _paymentsList
+          .where((p) => p['status']?.toString().toLowerCase() == 'overdue')
+          .fold(0.0, (sum, p) => sum + (double.tryParse(p['amount']?.toString() ?? '0') ?? 0.0));
+
+      upcomingCount = _paymentsList.where((p) => p['status']?.toString().toLowerCase() == 'pending').length;
+      upcomingAmount = _paymentsList
+          .where((p) => p['status']?.toString().toLowerCase() == 'pending')
+          .fold(0.0, (sum, p) => sum + (double.tryParse(p['amount']?.toString() ?? '0') ?? 0.0));
+
+      paidCount = _paymentsList.where((p) => p['status']?.toString().toLowerCase() == 'paid').length;
+      paidAmount = _paymentsList
+          .where((p) => p['status']?.toString().toLowerCase() == 'paid')
+          .fold(0.0, (sum, p) => sum + (double.tryParse(p['amount']?.toString() ?? '0') ?? 0.0));
+    }
 
     return Row(
       children: [
@@ -502,7 +514,6 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                 setState(() {
                   _selectedStatusFilter = t['key']!;
                 });
-                _fetchUpcomingPayments();
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -564,7 +575,6 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                   setState(() {
                     _selectedCategoryFilter = cat;
                   });
-                  _fetchUpcomingPayments();
                 }
               },
             ),
@@ -794,6 +804,19 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
         final parsed = DateTime.tryParse(dueDateStr);
         return parsed != null && DateUtils.isSameDay(parsed, dateFilter);
       }).toList();
+    } else {
+      if (_selectedStatusFilter != 'all') {
+        filtered = filtered.where((item) {
+          final status = item['status']?.toString().toLowerCase();
+          return status == _selectedStatusFilter.toLowerCase();
+        }).toList();
+      }
+      if (_selectedCategoryFilter != 'All') {
+        filtered = filtered.where((item) {
+          final cat = item['category']?.toString().toLowerCase();
+          return cat == _selectedCategoryFilter.toLowerCase();
+        }).toList();
+      }
     }
 
     if (filtered.isEmpty) {

@@ -15,11 +15,8 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   //   return true;
   // };
 
-  //* firebase configuration
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
   //* notification management
-  // await NotificationServices.initialize();
+  await NotificationServices.initialize();
 
   //* 🧪 bloc observer for manageing bloc lyfecyles
   Bloc.observer = const AppBlocObserver();

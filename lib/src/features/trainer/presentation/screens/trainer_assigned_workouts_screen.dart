@@ -1,475 +1,82 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
-import 'package:mentor_mobile_app/core/network/dio_client.dart';
-import 'package:intl/intl.dart';
+import 'package:mentor_mobile_app/src/features/trainer/cubit/assigned_workouts/assigned_workouts_cubit.dart';
+import 'package:mentor_mobile_app/src/features/trainer/cubit/assigned_workouts/assigned_workouts_state.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 
-class _WorkoutsResult {
-  final List<Map<String, dynamic>> workouts;
-  final bool hasMore;
-
-  const _WorkoutsResult({required this.workouts, required this.hasMore});
-}
-
-class TrainerAssignedWorkoutsScreen extends StatefulWidget {
-  final int? customerId;
-  final String? customerName;
-
+class TrainerAssignedWorkoutsScreen extends StatelessWidget {
   const TrainerAssignedWorkoutsScreen({
     this.customerId,
     this.customerName,
     super.key,
   });
 
+  final int? customerId;
+  final String? customerName;
+
   static void clearCache() {}
 
   @override
-  State<TrainerAssignedWorkoutsScreen> createState() =>
-      _TrainerAssignedWorkoutsScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => AssignedWorkoutsCubit(
+        customerId: customerId,
+        customerName: customerName,
+      )..loadAssignedWorkouts(reset: true),
+      child: _TrainerAssignedWorkoutsView(
+        customerId: customerId,
+        customerName: customerName,
+      ),
+    );
+  }
 }
 
-class _TrainerAssignedWorkoutsScreenState
-    extends State<TrainerAssignedWorkoutsScreen> {
-  bool _isLoading = true;
-  bool _isLoadingMore = false;
-  bool _hasMore = true;
-  bool _hasFetchedAll = false;
-  int _currentPage = 1;
-  static const int _pageSize = 20;
+class _TrainerAssignedWorkoutsView extends StatefulWidget {
+  final int? customerId;
+  final String? customerName;
 
+  const _TrainerAssignedWorkoutsView({
+    this.customerId,
+    this.customerName,
+  });
+
+  @override
+  State<_TrainerAssignedWorkoutsView> createState() =>
+      _TrainerAssignedWorkoutsViewState();
+}
+
+class _TrainerAssignedWorkoutsViewState
+    extends State<_TrainerAssignedWorkoutsView> {
   late final ScrollController _scrollController;
-
-  List<Map<String, dynamic>> _assignedWorkouts = [];
-  String _searchQuery = '';
-
-  // Filter & Sort State
-  DateTime? _selectedDate;
-  bool _sortNewestFirst = true; // true = newest first, false = oldest first
+  late final TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
-    _loadAssignedWorkouts(resetPage: true, forceRefresh: true);
+    _searchController = TextEditingController();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200 &&
-        !_isLoading &&
-        !_isLoadingMore &&
-        _hasMore) {
-      _loadMoreAssignedWorkouts();
-    }
-  }
-
-  void _selectDate(DateTime? date) {
-    if (!mounted) return;
-    setState(() {
-      _selectedDate = date;
-    });
-    _loadAssignedWorkouts(resetPage: true, forceRefresh: true);
-  }
-
-  Future<void> _loadMoreAssignedWorkouts() async {
-    if (!mounted || _isLoadingMore || !_hasMore) return;
-    setState(() => _isLoadingMore = true);
-    _currentPage++;
-    await _loadAssignedWorkouts(resetPage: false);
-  }
-
-  Future<void> _loadAssignedWorkouts({
-    bool resetPage = true,
-    bool forceRefresh = false,
-  }) async {
-    if (!mounted) return;
-
-    final String? selectedDateStr =
-        _selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : null;
-
-    if (resetPage) {
-      setState(() {
-        _isLoading = true;
-        _currentPage = 1;
-        _hasMore = true;
-        _assignedWorkouts = [];
-        _hasFetchedAll = false;
-      });
-    }
-
-    if (widget.customerId != null) {
-      final result = await _fetchAssignedWorkoutsForClient(
-        widget.customerId!,
-        widget.customerName ?? 'Client',
-        dateStr: selectedDateStr,
-        page: _currentPage,
-        pageSize: _pageSize,
-      );
-      if (mounted) {
-        setState(() {
-          if (resetPage) {
-            _assignedWorkouts = result.workouts;
-          } else {
-            final existingIds = _assignedWorkouts
-                .map((e) => e['id'] ?? e['customer_workout_plan_id'])
-                .toSet();
-            for (final w in result.workouts) {
-              final id = w['id'] ?? w['customer_workout_plan_id'];
-              if (id == null || !existingIds.contains(id)) {
-                _assignedWorkouts.add(w);
-              }
-            }
-          }
-          _hasMore = result.hasMore;
-          _isLoading = false;
-          _isLoadingMore = false;
-          _hasFetchedAll = !_hasMore;
-        });
-      }
-      return;
-    }
-
-    final Map<String, dynamic> queryParams = {
-      if (selectedDateStr != null) 'date': selectedDateStr,
-      'status': 'all',
-      'page': _currentPage,
-      'page_size': _pageSize,
-    };
-
-    // Fetch for all clients of the trainer using single endpoint
-    try {
-      final response = await DioClient().dio.get<dynamic>(
-        ApiUris.trainerAssignedWorkouts,
-        queryParameters: queryParams,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-
-      if (response.statusCode == 200) {
-        final parsed = _parseWorkoutsResponseData(
-          response.data,
-          'Client',
-          0,
-          _currentPage,
-          _pageSize,
-        );
-        if (mounted) {
-          setState(() {
-            if (resetPage) {
-              _assignedWorkouts = parsed.workouts;
-            } else {
-              final existingIds = _assignedWorkouts
-                  .map((e) => e['id'] ?? e['customer_workout_plan_id'])
-                  .toSet();
-              for (final w in parsed.workouts) {
-                final id = w['id'] ?? w['customer_workout_plan_id'];
-                if (id == null || !existingIds.contains(id)) {
-                  _assignedWorkouts.add(w);
-                }
-              }
-            }
-            _hasMore = parsed.hasMore;
-            _isLoading = false;
-            _isLoadingMore = false;
-          });
-        }
-        return;
-      }
-    } catch (_) {}
-
-    // Fallback: Fetch per client if single endpoint is unavailable
-    if (resetPage) {
-      try {
-        final clientsRes = await DioClient().dio.get<dynamic>(
-          ApiUris.trainerCustomers,
-          options: Options(headers: {'X-Platform': platformSource}),
-        );
-
-        if (clientsRes.statusCode == 200) {
-          List<dynamic> dataList = [];
-          if (clientsRes.data is List) {
-            dataList = clientsRes.data as List;
-          } else if (clientsRes.data is Map &&
-              clientsRes.data['results'] is List) {
-            dataList = clientsRes.data['results'] as List;
-          }
-
-          final clients =
-              dataList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-
-          final List<Future<_WorkoutsResult>> futures = [];
-          for (final client in clients) {
-            final profile = client['profile'] as Map? ?? client;
-            final cid = client['id'] as int? ?? client['customer_id'] as int?;
-            final cname =
-                profile['name']?.toString() ??
-                profile['first_name']?.toString() ??
-                'Client';
-            if (cid != null) {
-              futures.add(_fetchAssignedWorkoutsForClient(cid, cname, dateStr: selectedDateStr));
-            }
-          }
-
-          final results = await Future.wait(futures);
-          final List<Map<String, dynamic>> combinedWorkouts = [];
-          for (final res in results) {
-            combinedWorkouts.addAll(res.workouts);
-          }
-
-          if (mounted) {
-            setState(() {
-              _assignedWorkouts = combinedWorkouts;
-              _isLoading = false;
-              _isLoadingMore = false;
-              _hasMore = false;
-              _hasFetchedAll = true;
-            });
-          }
-        } else {
-          if (mounted) {
-            setState(() {
-              _isLoading = false;
-              _isLoadingMore = false;
-              _hasMore = false;
-            });
-          }
-        }
-      } catch (_) {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-            _isLoadingMore = false;
-            _hasMore = false;
-          });
-        }
-      }
-    } else {
-      if (mounted) {
-        setState(() {
-          _isLoadingMore = false;
-          _hasMore = false;
-        });
+        _scrollController.position.maxScrollExtent - 200) {
+      final cubit = context.read<AssignedWorkoutsCubit>();
+      if (!cubit.state.isLoadingMore && cubit.state.hasMore) {
+        cubit.loadAssignedWorkouts(reset: false);
       }
     }
   }
 
-  List<Map<String, dynamic>> _parseWorkoutsResponse(
-    dynamic data,
-    String clientName,
-    int customerId,
-  ) {
-    List<Map<String, dynamic>> list = [];
-    if (data is List) {
-      list = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-    } else if (data is Map) {
-      if (data['results'] is List && (data['results'] as List).isNotEmpty) {
-        list = (data['results'] as List)
-            .map((e) => Map<String, dynamic>.from(e as Map))
-            .toList();
-      } else {
-        final plans = data['assigned_plans'] is List
-            ? (data['assigned_plans'] as List)
-            : [];
-        final sessions = data['assigned_sessions'] is List
-            ? (data['assigned_sessions'] as List)
-            : [];
-        final workouts = data['assigned_workouts'] is List
-            ? (data['assigned_workouts'] as List)
-            : [];
-        final genericPlans =
-            data['plans'] is List ? (data['plans'] as List) : [];
-        final dataItems =
-            data['data'] is List ? (data['data'] as List) : [];
-
-        final combined = [
-          ...plans,
-          ...sessions,
-          ...workouts,
-          ...genericPlans,
-          ...dataItems,
-        ];
-        if (combined.isNotEmpty) {
-          list = combined
-              .map((e) => Map<String, dynamic>.from(e as Map))
-              .toList();
-        }
-      }
-    }
-
-    for (final item in list) {
-      item['client_name'] =
-          item['client_name'] ??
-          item['customer_name'] ??
-          item['customer']?['name'] ??
-          item['client']?['name'] ??
-          (clientName != 'Client' ? clientName : null) ??
-          'Client';
-      item['customer_id'] =
-          item['customer_id'] ??
-          item['client_id'] ??
-          (customerId > 0 ? customerId : null);
-    }
-
-    return list;
-  }
-
-  _WorkoutsResult _parseWorkoutsResponseData(
-    dynamic data,
-    String clientName,
-    int customerId,
-    int requestedPage,
-    int pageSize,
-  ) {
-    bool hasMore = false;
-    final list = _parseWorkoutsResponse(data, clientName, customerId);
-
-    if (data is Map) {
-      if (data['results'] is List) {
-        if (data['next'] != null &&
-            data['next'].toString().isNotEmpty &&
-            data['next'].toString() != 'null') {
-          hasMore = true;
-        } else if (data['total_pages'] is int) {
-          final totalPages = data['total_pages'] as int;
-          final currentPage = data['current_page'] as int? ?? requestedPage;
-          hasMore = currentPage < totalPages;
-        } else {
-          hasMore = list.length >= pageSize;
-        }
-      }
-    }
-
-    return _WorkoutsResult(workouts: list, hasMore: hasMore);
-  }
-
-  Future<_WorkoutsResult> _fetchAssignedWorkoutsForClient(
-    int customerId,
-    String clientName, {
-    String? dateStr,
-    int page = 1,
-    int pageSize = _pageSize,
-  }) async {
-    _WorkoutsResult result = const _WorkoutsResult(workouts: [], hasMore: false);
-    bool fetched = false;
-
-    final queryParams = <String, dynamic>{
-      'page': page,
-      'page_size': pageSize,
-      'status': 'all',
-      if (dateStr != null && dateStr.isNotEmpty) 'date': dateStr,
-    };
-
-    // 1. Primary Endpoint with pagination & date filtering
-    try {
-      final response = await DioClient().dio.get<dynamic>(
-        ApiUris.trainerClientAssignedWorkouts(customerId),
-        queryParameters: queryParams,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-      if (response.statusCode == 200) {
-        result = _parseWorkoutsResponseData(
-          response.data,
-          clientName,
-          customerId,
-          page,
-          pageSize,
-        );
-        if (result.workouts.isNotEmpty ||
-            (response.data is Map &&
-                (response.data['results'] as List? ?? []).isEmpty)) {
-          fetched = true;
-        }
-      }
-    } catch (_) {}
-
-    // 2. Fallback Endpoint
-    if (!fetched) {
-      try {
-        final response = await DioClient().dio.get<dynamic>(
-          ApiUris.customerAssignedWorkouts(customerId),
-          queryParameters: queryParams,
-          options: Options(headers: {'X-Platform': platformSource}),
-        );
-        if (response.statusCode == 200) {
-          result = _parseWorkoutsResponseData(
-            response.data,
-            clientName,
-            customerId,
-            page,
-            pageSize,
-          );
-          if (result.workouts.isNotEmpty ||
-              (response.data is Map &&
-                  (response.data['results'] as List? ?? []).isEmpty)) {
-            fetched = true;
-          }
-        }
-      } catch (_) {}
-    }
-
-    // 3. Fallback Endpoint All
-    if (!fetched) {
-      try {
-        final response = await DioClient().dio.get<dynamic>(
-          ApiUris.customerAssignedWorkoutsAll(customerId),
-          queryParameters: queryParams,
-          options: Options(headers: {'X-Platform': platformSource}),
-        );
-        if (response.statusCode == 200) {
-          result = _parseWorkoutsResponseData(
-            response.data,
-            clientName,
-            customerId,
-            page,
-            pageSize,
-          );
-        }
-      } catch (_) {}
-    }
-
-    return result;
-  }
-
-  String _extractDateString(Map<String, dynamic> item) {
-    final raw =
-        (item['start_date'] ??
-                item['scheduled_date'] ??
-                item['session_date'] ??
-                item['assigned_date'] ??
-                item['date'] ??
-                item['created_at'] ??
-                '')
-            .toString();
-    if (raw.length >= 10) {
-      return raw.substring(0, 10);
-    }
-    return raw;
-  }
-
-  Future<void> _deleteAssignedWorkout(Map<String, dynamic> workout) async {
-    final assignmentId = (workout['customer_workout_plan_id'] is int)
-        ? workout['customer_workout_plan_id'] as int
-        : (workout['customer_workout_plan'] is int)
-            ? workout['customer_workout_plan'] as int
-            : (workout['customer_workout_plan'] is Map &&
-                    workout['customer_workout_plan']['id'] is int)
-                ? workout['customer_workout_plan']['id'] as int
-                : (workout['assignment_id'] is int)
-                    ? workout['assignment_id'] as int
-                    : (workout['id'] is int)
-                        ? workout['id'] as int
-                        : 0;
-
-    if (assignmentId <= 0) {
-      Dialogs.showSnack(msg: 'Unable to identify assigned workout ID.');
-      return;
-    }
-
+  Future<void> _confirmDeleteWorkout(
+    BuildContext context,
+    Map<String, dynamic> workout,
+  ) async {
     final title = (workout['plan_name'] ??
             workout['title'] ??
             workout['name'] ??
@@ -509,573 +116,728 @@ class _TrainerAssignedWorkoutsScreenState
       ),
     );
 
-    if (confirm != true) return;
-
-    try {
-      final response = await DioClient().dio.delete<dynamic>(
-        ApiUris.trainerDeleteAssignedWorkout(assignmentId),
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        String successMsg = 'Assigned workout deleted successfully.';
-        if (response.data is Map && response.data['message'] != null) {
-          successMsg = response.data['message'].toString();
-        }
-        Dialogs.showSnack(msg: successMsg);
-        _loadAssignedWorkouts(resetPage: true, forceRefresh: true);
-      } else {
-        Dialogs.showSnack(msg: 'Failed to delete assigned workout.');
-      }
-    } on DioException catch (e) {
-      String errorMsg = 'Error deleting assigned workout.';
-      if (e.response?.data is Map) {
-        final data = e.response!.data as Map;
-        errorMsg = data['detail']?.toString() ??
-            data['message']?.toString() ??
-            errorMsg;
-      }
-      Dialogs.showSnack(msg: errorMsg);
-    } catch (e) {
-      Dialogs.showSnack(msg: 'Error: ${e.toString()}');
+    if (confirm == true && context.mounted) {
+      context.read<AssignedWorkoutsCubit>().deleteWorkout(workout);
     }
+  }
+
+  String _extractDateString(Map<String, dynamic> item) {
+    final raw = (item['start_date'] ??
+            item['scheduled_date'] ??
+            item['session_date'] ??
+            item['assigned_date'] ??
+            item['date'] ??
+            item['created_at'] ??
+            '')
+        .toString();
+    if (raw.length >= 10) {
+      final datePart = raw.substring(0, 10);
+      try {
+        final parsed = DateTime.tryParse(datePart);
+        if (parsed != null) {
+          return DateFormat('dd MMM, yyyy').format(parsed);
+        }
+      } catch (_) {}
+      return datePart;
+    }
+    return raw;
   }
 
   @override
   Widget build(BuildContext context) {
-    final String? selectedStr =
-        _selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : null;
+    return BlocConsumer<AssignedWorkoutsCubit, AssignedWorkoutsState>(
+      listener: (context, state) {
+        if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
+          Dialogs.showSnack(msg: state.errorMessage!);
+        } else if (state.actionMessage != null &&
+            state.actionMessage!.isNotEmpty) {
+          Dialogs.showSnack(msg: state.actionMessage!);
+        }
+      },
+      builder: (context, state) {
+        final filteredWorkouts = state.filteredWorkouts;
+        final selectedDate = state.selectedDate;
 
-    // 1. Apply Date Filter & Search Query
-    final filteredWorkouts =
-        _assignedWorkouts.where((item) {
-          if (selectedStr != null) {
-            final itemDate = _extractDateString(item);
-            if (itemDate.isNotEmpty && itemDate != selectedStr) return false;
-          }
-
-          // Search Query Filtering (by Workout Title or Client Name)
-          if (_searchQuery.trim().isNotEmpty) {
-            final q = _searchQuery.toLowerCase();
-            final title =
-                (item['plan_name'] ??
-                        item['title'] ??
-                        item['name'] ??
-                        item['workout_plan_name'] ??
-                        '')
-                    .toString()
-                    .toLowerCase();
-            final clientName =
-                (item['client_name'] ?? '').toString().toLowerCase();
-            return title.contains(q) || clientName.contains(q);
-          }
-
-          return true;
-        }).toList();
-
-    // 2. Apply Date Sorting
-    filteredWorkouts.sort((a, b) {
-      final dateA = _extractDateString(a);
-      final dateB = _extractDateString(b);
-      return _sortNewestFirst ? dateB.compareTo(dateA) : dateA.compareTo(dateB);
-    });
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF7F9FC),
-        elevation: 0,
-        leading: const PopButton().center,
-        title: Text(
-          widget.customerName != null
-              ? 'Assigned Workouts (${widget.customerName})'
-              : 'Assigned Workouts',
-          style: AppStyles.text16Px.poppins.w600.dark,
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.dark),
-            onPressed: () => _loadAssignedWorkouts(resetPage: true),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search Bar with Calendar Filter Icon
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xffE2E8F0)),
-                    ),
-                    child: TextField(
-                      onChanged: (val) => setState(() => _searchQuery = val),
-                      style: AppStyles.text14Px.poppins.w500.dark,
-                      decoration: InputDecoration(
-                        hintText: 'Search by workout name or client...',
-                        hintStyle: AppStyles.text13Px.poppins.w400.copyWith(
-                          color: const Color(0xffA0AEC0),
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          size: 20,
-                          color: Color(0xff718096),
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 11),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                InkWell(
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDate ?? DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2030),
-                    );
-                    if (picked != null) {
-                      _selectDate(picked);
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    height: 46,
-                    width: 46,
-                    decoration: BoxDecoration(
-                      color: _selectedDate != null ? const Color(0xFFFFEAEA) : Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: _selectedDate != null
-                            ? AppColors.primary
-                            : const Color(0xffE2E8F0),
-                        width: _selectedDate != null ? 1.5 : 1.0,
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.calendar_month_outlined,
-                      size: 22,
-                      color: _selectedDate != null
-                          ? AppColors.primary
-                          : const Color(0xff718096),
-                    ),
-                  ),
-                ),
-              ],
+        return Scaffold(
+          backgroundColor: const Color(0xFFF7F9FC),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFFF7F9FC),
+            elevation: 0,
+            leading: const PopButton().center,
+            title: Text(
+              'Assigned Workouts',
+              style: AppStyles.text16Px.poppins.w600.dark,
             ),
-          ),
-
-          // Active Date Filter Chip (if filtered by date)
-          if (_selectedDate != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFEAEA),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 13,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          DateFormat('dd MMM, yyyy').format(_selectedDate!),
-                          style: AppStyles.text12Px.poppins.w500.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        GestureDetector(
-                          onTap: () => _selectDate(null),
-                          child: const Icon(
-                            Icons.close,
-                            size: 16,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh, color: AppColors.dark),
+                onPressed: () => context
+                    .read<AssignedWorkoutsCubit>()
+                    .loadAssignedWorkouts(reset: true),
               ),
-            ),
-
-          // Main Workouts List
-          Expanded(
-            child:
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : filteredWorkouts.isEmpty
-                    ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.fitness_center_outlined,
-                            size: 48,
-                            color: Colors.grey.shade400,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _selectedDate != null
-                                ? "No assigned workouts for ${DateFormat('dd MMM, yyyy').format(_selectedDate!)}"
-                                : "No assigned workouts found",
-                            style: AppStyles.text14Px.poppins.w500.copyWith(
-                              color: AppColors.textGrey,
+            ],
+          ),
+          body: Column(
+            children: [
+              // Search Bar with Calendar Filter Icon
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xffE2E8F0)),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (val) => context
+                              .read<AssignedWorkoutsCubit>()
+                              .setSearchQuery(val),
+                          style: AppStyles.text14Px.poppins.w500.dark,
+                          decoration: InputDecoration(
+                            hintText: 'Search by workout name or client...',
+                            hintStyle: AppStyles.text13Px.poppins.w400.copyWith(
+                              color: const Color(0xffA0AEC0),
                             ),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              size: 20,
+                              color: Color(0xff718096),
+                            ),
+                            border: InputBorder.none,
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 11),
                           ),
-                        ],
+                        ),
                       ),
-                    )
-                    : ListView.separated(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16),
-                      itemCount:
-                          filteredWorkouts.length + (_isLoadingMore ? 1 : 0),
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        if (index == filteredWorkouts.length) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Center(
-                              child: CircularProgressIndicator.adaptive(),
-                            ),
-                          );
+                    ),
+                    const SizedBox(width: 10),
+                    InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate ?? DateTime.now(),
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2030),
+                        );
+                        if (picked != null && context.mounted) {
+                          context
+                              .read<AssignedWorkoutsCubit>()
+                              .selectDate(picked);
                         }
-                        final workout = filteredWorkouts[index];
-                        final planId =
-                            workout['plan_id'] as int? ??
-                            workout['customer_workout_plan_id'] as int? ??
-                            workout['workout_plan_id'] as int? ??
-                            workout['id'] as int? ??
-                            0;
-                        final title =
-                            (workout['plan_name'] ??
-                                    workout['title'] ??
-                                    workout['name'] ??
-                                    workout['workout_plan_name'] ??
-                                    'Workout Plan')
-                                .toString();
-                        final clientName =
-                            (workout['client_name'] ?? 'Client').toString();
-                        final status =
-                            (workout['status'] ??
-                                    workout['assignment_status'] ??
-                                    'Active')
-                                .toString();
-                        final rawStatus = status.toLowerCase();
-                        final bool isCompleted =
-                            workout['is_completed'] == true ||
-                            workout['completed'] == true ||
-                            rawStatus == 'completed' ||
-                            rawStatus == 'done' ||
-                            rawStatus == 'verified';
-                        final assignedDate = _extractDateString(workout);
-                        final routinesCount =
-                            workout['total_days'] as int? ??
-                            workout['days_count'] as int? ??
-                            (workout['days'] as List?)?.length ??
-                            (workout['routines'] as List?)?.length ??
-                            (workout['workout_days'] as List?)?.length ??
-                            0;
-                        final isActive = rawStatus == 'active';
+                      },
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        height: 46,
+                        width: 46,
+                        decoration: BoxDecoration(
+                          color: selectedDate != null
+                              ? const Color(0xFFFFEAEA)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: selectedDate != null
+                                ? AppColors.primary
+                                : const Color(0xffE2E8F0),
+                            width: selectedDate != null ? 1.5 : 1.0,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.calendar_month_outlined,
+                          size: 22,
+                          color: selectedDate != null
+                              ? AppColors.primary
+                              : const Color(0xff718096),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-                        return InkWell(
-                          onTap:
-                              planId > 0
-                                  ? () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) =>
-                                                WorkoutPlanDetailsScreen(
-                                                  planId: planId,
-                                                  planTitle: title,
-                                                ),
-                                      ),
-                                    );
-                                  }
-                                  : null,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xffE2E8F0),
+              // Active Date Filter Chip
+              if (selectedDate != null)
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEAEA),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 13,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              DateFormat('dd MMM, yyyy').format(selectedDate),
+                              style: AppStyles.text12Px.poppins.w500.copyWith(
+                                color: AppColors.primary,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.02),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () => context
+                                  .read<AssignedWorkoutsCubit>()
+                                  .selectDate(null),
+                              child: const Icon(
+                                Icons.close,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Main Workouts List
+              Expanded(
+                child: state.status == AssignedWorkoutsStatus.loading
+                    ? _buildShimmerList()
+                    : state.status == AssignedWorkoutsStatus.failure &&
+                            filteredWorkouts.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  size: 48,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  state.errorMessage ??
+                                      'Failed to load assigned workouts',
+                                  style:
+                                      AppStyles.text14Px.poppins.w500.copyWith(
+                                    color: AppColors.textGrey,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                ElevatedButton(
+                                  onPressed: () => context
+                                      .read<AssignedWorkoutsCubit>()
+                                      .loadAssignedWorkouts(reset: true),
+                                  child: const Text('Retry'),
                                 ),
                               ],
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border:
-                                      isActive
-                                          ? const Border(
-                                            left: BorderSide(
-                                              color: Color(0xff27AE60),
-                                              width: 4,
-                                            ),
-                                          )
-                                          : null,
-                                ),
-                                padding: const EdgeInsets.all(14),
+                          )
+                        : filteredWorkouts.isEmpty
+                            ? Center(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    // Top Row: Icon Avatar + Title & Client + Status Badge
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: 44,
-                                          height: 44,
-                                          decoration: BoxDecoration(
-                                            color:
-                                                isActive
-                                                    ? const Color(0xffFFDCDA)
-                                                    : const Color(0xffE2E8F0),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            Icons.fitness_center_rounded,
-                                            color:
-                                                isActive
-                                                    ? const Color(0xffC53030)
-                                                    : const Color(0xff4A5568),
-                                            size: 20,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                title,
-                                                style:
-                                                    AppStyles
-                                                        .text15Px
-                                                        .poppins
-                                                        .w600
-                                                        .dark,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              const SizedBox(height: 2),
-                                              Row(
-                                                children: [
-                                                  const Icon(
-                                                    Icons.person_outline,
-                                                    size: 13,
-                                                    color: Color(0xff718096),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Expanded(
-                                                    child: Text(
-                                                      clientName,
-                                                      style: AppStyles
-                                                          .text12Px
-                                                          .poppins
-                                                          .w400
-                                                          .copyWith(
-                                                            color: const Color(
-                                                              0xff4A5568,
-                                                            ),
-                                                          ),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    isActive
-                                                        ? const Color(0xffC6F6D5)
-                                                        : const Color(0xffE2E8F0),
-                                                borderRadius: BorderRadius.circular(
-                                                  8,
-                                                ),
-                                              ),
-                                              child: Text(
-                                                status.toUpperCase(),
-                                                style: AppStyles
-                                                    .text10Px
-                                                    .poppins
-                                                    .w700
-                                                    .copyWith(
-                                                      color:
-                                                          isActive
-                                                              ? const Color(
-                                                                0xff22543D,
-                                                              )
-                                                              : const Color(
-                                                                0xff4A5568,
-                                                              ),
-                                                    ),
-                                              ),
-                                            ),
-                                            if (!isCompleted)
-                                              PopupMenuButton<String>(
-                                                icon: const Icon(
-                                                  Icons.more_vert_rounded,
-                                                  size: 20,
-                                                  color: Color(0xff718096),
-                                                ),
-                                                padding: EdgeInsets.zero,
-                                                constraints:
-                                                    const BoxConstraints(),
-                                                onSelected: (val) {
-                                                  if (val == 'delete') {
-                                                    _deleteAssignedWorkout(workout);
-                                                  }
-                                                },
-                                                itemBuilder:
-                                                    (context) => [
-                                                      PopupMenuItem<String>(
-                                                        value: 'delete',
-                                                        child: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: const [
-                                                            Icon(
-                                                              Icons.delete_outline_rounded,
-                                                              color: Color(
-                                                                0xffE53E3E,
-                                                              ),
-                                                              size: 18,
-                                                            ),
-                                                            SizedBox(width: 8),
-                                                            Text(
-                                                              'Delete Assignment',
-                                                              style: TextStyle(
-                                                                color: Color(
-                                                                  0xffE53E3E,
-                                                                ),
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                              ),
-                                          ],
-                                        ),
-                                      ],
+                                    Icon(
+                                      Icons.fitness_center_outlined,
+                                      size: 48,
+                                      color: Colors.grey.shade400,
                                     ),
-
-                                    const SizedBox(height: 10),
-                                    const Divider(
-                                      height: 1,
-                                      color: Color(0xffEDF2F7),
-                                    ),
-                                    const SizedBox(height: 10),
-
-                                    // Bottom Row: Routines/Days + Date + Chevron
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              routinesCount > 0
-                                                  ? '$routinesCount Workout Routines / Days'
-                                                  : 'Workout Plan Details',
-                                              style: AppStyles
-                                                  .text12Px
-                                                  .poppins
-                                                  .w500
-                                                  .copyWith(
-                                                    color: const Color(
-                                                      0xff4A5568,
-                                                    ),
-                                                  ),
-                                            ),
-                                            if (assignedDate.isNotEmpty) ...[
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                'Assigned: $assignedDate',
-                                                style: AppStyles
-                                                    .text10Px
-                                                    .poppins
-                                                    .w500
-                                                    .copyWith(
-                                                      color: const Color(
-                                                        0xff718096,
-                                                      ),
-                                                    ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                        const Icon(
-                                          Icons.chevron_right_rounded,
-                                          color: Color(0xff718096),
-                                          size: 20,
-                                        ),
-                                      ],
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      selectedDate != null
+                                          ? "No assigned workouts for ${DateFormat('dd MMM, yyyy').format(selectedDate)}"
+                                          : "No assigned workouts found",
+                                      style: AppStyles.text14Px.poppins.w500
+                                          .copyWith(
+                                        color: AppColors.textGrey,
+                                      ),
                                     ),
                                   ],
                                 ),
+                              )
+                            : RefreshIndicator(
+                                onRefresh: () => context
+                                    .read<AssignedWorkoutsCubit>()
+                                    .loadAssignedWorkouts(reset: true),
+                                child: ListView.separated(
+                                  controller: _scrollController,
+                                  padding: const EdgeInsets.all(16),
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  itemCount: filteredWorkouts.length +
+                                      (state.isLoadingMore ? 1 : 0),
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    if (index == filteredWorkouts.length) {
+                                      return const Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 16),
+                                        child: Center(
+                                          child: CircularProgressIndicator
+                                              .adaptive(),
+                                        ),
+                                      );
+                                    }
+                                    final workout = filteredWorkouts[index];
+                                    final planId = workout['plan_id']
+                                            as int? ??
+                                        workout['customer_workout_plan_id']
+                                            as int? ??
+                                        workout['workout_plan_id'] as int? ??
+                                        workout['id'] as int? ??
+                                        0;
+                                    final title = (workout['plan_name'] ??
+                                            workout['title'] ??
+                                            workout['name'] ??
+                                            workout['workout_plan_name'] ??
+                                            'Workout Plan')
+                                        .toString();
+                                    final clientName =
+                                        (workout['client_name'] ?? 'Client')
+                                            .toString();
+                                    final status = (workout['status'] ??
+                                            workout['assignment_status'] ??
+                                            'Active')
+                                        .toString();
+                                    final rawStatus = status.toLowerCase();
+                                    final bool isCompleted =
+                                        workout['is_completed'] == true ||
+                                            workout['completed'] == true ||
+                                            rawStatus == 'completed' ||
+                                            rawStatus == 'done' ||
+                                            rawStatus == 'verified';
+                                    final assignedDate =
+                                        _extractDateString(workout);
+                                    final routinesCount = workout[
+                                                'total_days'] as int? ??
+                                        workout['days_count'] as int? ??
+                                        (workout['days'] as List?)?.length ??
+                                        (workout['routines'] as List?)
+                                            ?.length ??
+                                        (workout['workout_days'] as List?)
+                                            ?.length ??
+                                        0;
+                                    // Status-specific color configurations
+                                    Color statusBgColor;
+                                    Color statusTextColor;
+                                    Color iconBgColor;
+                                    Color iconColor;
+                                    Color? cardBorderColor;
+
+                                    switch (rawStatus) {
+                                      case 'completed':
+                                      case 'done':
+                                      case 'verified':
+                                        statusBgColor = const Color(0xffC6F6D5); // Soft Green
+                                        statusTextColor = const Color(0xff22543D); // Dark Green
+                                        iconBgColor = const Color(0xffE6FFFA);
+                                        iconColor = const Color(0xff234E52);
+                                        cardBorderColor = const Color(0xff38A169);
+                                        break;
+                                      case 'pending':
+                                        statusBgColor = const Color(0xffFEEBC8); // Soft Amber/Orange
+                                        statusTextColor = const Color(0xff7B341E); // Dark Amber
+                                        iconBgColor = const Color(0xffFFFAF0);
+                                        iconColor = const Color(0xffDD6B20);
+                                        cardBorderColor = const Color(0xffED8936);
+                                        break;
+                                      case 'scheduled':
+                                        statusBgColor = const Color(0xffEBF8FF); // Soft Blue
+                                        statusTextColor = const Color(0xff2B6CB0); // Dark Blue
+                                        iconBgColor = const Color(0xffF7FAFC);
+                                        iconColor = const Color(0xff3182CE);
+                                        cardBorderColor = const Color(0xff4299E1);
+                                        break;
+                                      case 'skipped':
+                                        statusBgColor = const Color(0xffFED7D7); // Soft Red
+                                        statusTextColor = const Color(0xff9B2C2C); // Dark Red
+                                        iconBgColor = const Color(0xffFFF5F5);
+                                        iconColor = const Color(0xffE53E3E);
+                                        cardBorderColor = const Color(0xffE53E3E);
+                                        break;
+                                      case 'rest_day':
+                                      case 'rest':
+                                        statusBgColor = const Color(0xffE9D8FD); // Soft Purple
+                                        statusTextColor = const Color(0xff553C9A); // Dark Purple
+                                        iconBgColor = const Color(0xffFAF5FF);
+                                        iconColor = const Color(0xff805AD5);
+                                        cardBorderColor = const Color(0xff9F7AEA);
+                                        break;
+                                      default:
+                                        // Active / Default
+                                        statusBgColor = const Color(0xffE2E8F0);
+                                        statusTextColor = const Color(0xff4A5568);
+                                        iconBgColor = const Color(0xffEDF2F7);
+                                        iconColor = const Color(0xff4A5568);
+                                        cardBorderColor = null;
+                                    }
+
+                                    return InkWell(
+                                      onTap: planId > 0
+                                          ? () {
+                                              Navigator.push<void>(
+                                                context,
+                                                MaterialPageRoute<void>(
+                                                  builder: (context) =>
+                                                      WorkoutPlanDetailsScreen(
+                                                    planId: planId,
+                                                    planTitle: title,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          : null,
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          border: Border.all(
+                                            color: const Color(0xffE2E8F0),
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.02),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              border: cardBorderColor != null
+                                                  ? Border(
+                                                      left: BorderSide(
+                                                        color: cardBorderColor,
+                                                        width: 4,
+                                                      ),
+                                                    )
+                                                  : null,
+                                            ),
+                                            padding: const EdgeInsets.all(14),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                // Top Row: Icon + Title & Client + Status + Delete Menu
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      width: 44,
+                                                      height: 44,
+                                                      decoration: BoxDecoration(
+                                                        color: iconBgColor,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: Icon(
+                                                        rawStatus == 'rest_day' || rawStatus == 'rest'
+                                                            ? Icons.hotel_rounded
+                                                            : Icons.fitness_center_rounded,
+                                                        color: iconColor,
+                                                        size: 20,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            title,
+                                                            style: AppStyles
+                                                                .text15Px
+                                                                .poppins
+                                                                .w600
+                                                                .dark,
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 2),
+                                                          Row(
+                                                            children: [
+                                                              const Icon(
+                                                                Icons
+                                                                    .person_outline,
+                                                                size: 13,
+                                                                color: Color(
+                                                                    0xff718096),
+                                                              ),
+                                                              const SizedBox(
+                                                                  width: 4),
+                                                              Expanded(
+                                                                child: Text(
+                                                                  clientName,
+                                                                  style:
+                                                                      AppStyles
+                                                                          .text12Px
+                                                                          .poppins
+                                                                          .w400
+                                                                          .copyWith(
+                                                                    color: const Color(
+                                                                        0xff4A5568),
+                                                                  ),
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 4,
+                                                          ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: statusBgColor,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8),
+                                                          ),
+                                                          child: Text(
+                                                            status
+                                                                .toUpperCase(),
+                                                            style: AppStyles
+                                                                .text10Px
+                                                                .poppins
+                                                                .w700
+                                                                .copyWith(
+                                                              color: statusTextColor,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        if (!isCompleted)
+                                                          PopupMenuButton<
+                                                              String>(
+                                                            icon: const Icon(
+                                                              Icons
+                                                                  .more_vert_rounded,
+                                                              size: 20,
+                                                              color: Color(
+                                                                  0xff718096),
+                                                            ),
+                                                            padding:
+                                                                EdgeInsets.zero,
+                                                            constraints:
+                                                                const BoxConstraints(),
+                                                            onSelected: (val) {
+                                                              if (val ==
+                                                                  'delete') {
+                                                                _confirmDeleteWorkout(
+                                                                  context,
+                                                                  workout,
+                                                                );
+                                                              }
+                                                            },
+                                                            itemBuilder:
+                                                                (context) => [
+                                                              const PopupMenuItem<
+                                                                  String>(
+                                                                value: 'delete',
+                                                                child: Row(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .min,
+                                                                  children: [
+                                                                    Icon(
+                                                                      Icons
+                                                                          .delete_outline_rounded,
+                                                                      color: Color(
+                                                                          0xffE53E3E),
+                                                                      size: 18,
+                                                                    ),
+                                                                    SizedBox(
+                                                                        width:
+                                                                            8),
+                                                                    Text(
+                                                                      'Delete Assignment',
+                                                                      style: TextStyle(
+                                                                        color: Color(
+                                                                            0xffE53E3E),
+                                                                        fontSize:
+                                                                            13,
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w500,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+
+                                                const SizedBox(height: 10),
+                                                const Divider(
+                                                  height: 1,
+                                                  color: Color(0xffEDF2F7),
+                                                ),
+                                                const SizedBox(height: 10),
+
+                                                // Bottom Row: Routines/Days + Date + Chevron
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          routinesCount > 0
+                                                              ? '$routinesCount Workout Routines / Days'
+                                                              : 'Workout Plan Details',
+                                                          style: AppStyles
+                                                              .text12Px
+                                                              .poppins
+                                                              .w500
+                                                              .copyWith(
+                                                            color: const Color(
+                                                                0xff4A5568),
+                                                          ),
+                                                        ),
+                                                        if (assignedDate
+                                                            .isNotEmpty) ...[
+                                                          const SizedBox(
+                                                              height: 2),
+                                                          Text(
+                                                            'Assigned: $assignedDate',
+                                                            style: AppStyles
+                                                                .text10Px
+                                                                .poppins
+                                                                .w500
+                                                                .copyWith(
+                                                              color:
+                                                                  const Color(
+                                                                      0xff718096),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ],
+                                                    ),
+                                                    const Icon(
+                                                      Icons
+                                                          .chevron_right_rounded,
+                                                      color: Color(0xff718096),
+                                                      size: 20,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShimmerList() {
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 6,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xffE2E8F0),
+            ),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  KShimmer(width: 44, height: 44, radius: 22),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        KShimmer(width: 160, height: 15, radius: 4),
+                        SizedBox(height: 6),
+                        KShimmer(width: 80, height: 11, radius: 4),
+                      ],
+                    ),
+                  ),
+                  KShimmer(width: 70, height: 22, radius: 8),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 1, color: Color(0xffEDF2F7)),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      KShimmer(width: 140, height: 12, radius: 4),
+                      SizedBox(height: 4),
+                      KShimmer(width: 90, height: 10, radius: 4),
+                    ],
+                  ),
+                  KShimmer(width: 16, height: 16, radius: 4),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

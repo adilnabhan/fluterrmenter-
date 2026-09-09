@@ -236,4 +236,7 @@ final class ApiUris {
       '${_v1}fitnesscenter/upcoming-payments/$id/mark-paid/';
   static String upcomingPaymentDetail(int id) =>
       '${_v1}fitnesscenter/upcoming-payments/$id/';
-}
+
+  ///============================= Communication & Notifications =============================\\\
+  static final registerDeviceToken = '${_v1}communication/device-token/register/';
+}
