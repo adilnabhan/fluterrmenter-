@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -157,10 +158,13 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
               return PortfolioImageModel.fromJson(e);
             }
             return const PortfolioImageModel();
-          }).toList();
+          }).where((p) => (p.image ?? '').isNotEmpty).toList();
           if (mounted) {
             setState(() {
               _portfolioImages = mapped;
+              if (_currentIndex >= _portfolioImages.length) {
+                _currentIndex = math.max(0, _portfolioImages.length - 1);
+              }
               // Update appCubit state for TrainerMainProfileScreen background to pick it up later if needed
               if (!widget.isViewOnly) {
                 final appCubit = context.read<AppCubit>();
@@ -183,16 +187,57 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var portfolioImagesToDisplay = _portfolioImages;
-    final hasNoRealImages = portfolioImagesToDisplay.isEmpty;
-
-    // Use hero images as a fallback to preview the UI if there are no real images
-    if (hasNoRealImages && widget.heroImages != null) {
-      portfolioImagesToDisplay = widget.heroImages!.map((img) => PortfolioImageModel(image: img)).toList();
+    if (_portfolioImages.isEmpty) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFE5E7EB),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // Top Bar with Back Button
+              Positioned(
+                top: 8,
+                left: 16,
+                child: _buildGlassCircle(
+                  icon: Icons.arrow_back_ios_new,
+                  iconColor: AppColors.textDark,
+                  backgroundColor: Colors.white,
+                  onTap: () => Navigator.pop(context),
+                ),
+              ),
+              // Center Empty State with + icon
+              Center(
+                child: GestureDetector(
+                  onTap: !widget.isViewOnly ? _uploadPortfolioImage : null,
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      size: 22,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
-    final currentImage = portfolioImagesToDisplay.isNotEmpty && _currentIndex < portfolioImagesToDisplay.length 
-        ? portfolioImagesToDisplay[_currentIndex].image ?? '' 
+    final currentImage = _currentIndex < _portfolioImages.length 
+        ? _portfolioImages[_currentIndex].image ?? '' 
         : '';
 
     return Scaffold(
@@ -229,17 +274,13 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                         icon: Icons.arrow_back_ios_new,
                         onTap: () => Navigator.pop(context),
                       ),
-                      if (portfolioImagesToDisplay.isNotEmpty && !widget.isViewOnly)
+                      if (_portfolioImages.isNotEmpty && !widget.isViewOnly)
                         _buildGlassCircle(
                           icon: Icons.delete_outline,
                           iconColor: Colors.redAccent,
                           onTap: () {
-                            if (hasNoRealImages) {
-                              Fluttertoast.showToast(msg: 'Cannot delete preview images');
-                              return;
-                            }
-                            if (_currentIndex < portfolioImagesToDisplay.length) {
-                              _deletePortfolioImage(portfolioImagesToDisplay[_currentIndex].id!);
+                            if (_currentIndex < _portfolioImages.length && _portfolioImages[_currentIndex].id != null) {
+                              _deletePortfolioImage(_portfolioImages[_currentIndex].id!);
                             }
                           },
                         ),
@@ -247,83 +288,81 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                   ),
                 ),
                 
-                // PageView or Empty State
+                // PageView
                 Expanded(
                   child: _isLoading 
                     ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                    : hasNoRealImages && (widget.heroImages == null || widget.heroImages!.isEmpty)
-                        ? _buildImmersiveEmptyState()
-                        : Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              PageView.builder(
-                          controller: _pageController,
-                          itemCount: portfolioImagesToDisplay.length,
-                          onPageChanged: (index) {
-                            setState(() {
-                              _currentIndex = index;
-                            });
-                          },
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                              child: Center(
-                                child: AspectRatio(
-                                  aspectRatio: 1,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(24),
-                                    child: Image.network(
-                                      portfolioImagesToDisplay[index].image ?? '',
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
-                                        color: Colors.grey.shade800,
-                                        child: const Center(
-                                          child: Icon(Icons.broken_image, color: Colors.grey, size: 48),
+                    : Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          PageView.builder(
+                            controller: _pageController,
+                            itemCount: _portfolioImages.length,
+                            onPageChanged: (index) {
+                              setState(() {
+                                _currentIndex = index;
+                              });
+                            },
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                child: Center(
+                                  child: AspectRatio(
+                                    aspectRatio: 1,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(24),
+                                      child: Image.network(
+                                        _portfolioImages[index].image ?? '',
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          color: Colors.grey.shade800,
+                                          child: const Center(
+                                            child: Icon(Icons.broken_image, color: Colors.grey, size: 48),
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
+                              );
+                            },
+                          ),
+                          // Left Arrow
+                          if (_currentIndex > 0)
+                            Positioned(
+                              left: 8,
+                              child: _buildGlassCircle(
+                                icon: Icons.arrow_back_ios_new,
+                                size: 40,
+                                onTap: () {
+                                  _pageController.previousPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
-                        // Left Arrow
-                        if (_currentIndex > 0)
-                          Positioned(
-                            left: 8,
-                            child: _buildGlassCircle(
-                              icon: Icons.arrow_back_ios_new,
-                              size: 40,
-                              onTap: () {
-                                _pageController.previousPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
                             ),
-                          ),
-                        // Right Arrow
-                        if (_currentIndex < portfolioImagesToDisplay.length - 1)
-                          Positioned(
-                            right: 8,
-                            child: _buildGlassCircle(
-                              icon: Icons.arrow_forward_ios,
-                              size: 40,
-                              onTap: () {
-                                _pageController.nextPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
+                          // Right Arrow
+                          if (_currentIndex < _portfolioImages.length - 1)
+                            Positioned(
+                              right: 8,
+                              child: _buildGlassCircle(
+                                icon: Icons.arrow_forward_ios,
+                                size: 40,
+                                onTap: () {
+                                  _pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-                      ],
-                    ),
+                        ],
+                      ),
                 ),
                 
                 // Thumbnails
-                if (portfolioImagesToDisplay.isNotEmpty && !_isLoading)
+                if (_portfolioImages.isNotEmpty && !_isLoading)
                   Container(
                     height: 80,
                     margin: const EdgeInsets.only(bottom: 24, top: 16),
@@ -334,7 +373,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                         Expanded(
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
-                            itemCount: portfolioImagesToDisplay.length,
+                            itemCount: _portfolioImages.length,
                             separatorBuilder: (_, __) => const SizedBox(width: 8),
                             itemBuilder: (context, index) {
                               final isSelected = _currentIndex == index;
@@ -359,7 +398,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: Image.network(
-                                      portfolioImagesToDisplay[index].image ?? '',
+                                      _portfolioImages[index].image ?? '',
                                       fit: BoxFit.cover,
                                       errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade800),
                                     ),
@@ -395,6 +434,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
     required IconData icon,
     required VoidCallback onTap,
     Color iconColor = Colors.white,
+    Color? backgroundColor,
     double size = 48,
   }) {
     return ClipRRect(
@@ -402,7 +442,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Material(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: backgroundColor ?? Colors.white.withValues(alpha: 0.2),
           child: InkWell(
             onTap: onTap,
             child: Container(
@@ -416,32 +456,5 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
       ),
     );
   }
-
-  Widget _buildImmersiveEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.collections_outlined,
-            size: 64,
-            color: Colors.white.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No Portfolio Images',
-            style: AppStyles.text16Px.poppins.w600.copyWith(color: Colors.white),
-          ),
-          const SizedBox(height: 8),
-          if (!widget.isViewOnly)
-            Text(
-              'Tap the button below to upload a portfolio image.',
-              style: AppStyles.text14Px.poppins.w400.copyWith(
-                color: Colors.white70,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 }
+

@@ -1,3 +1,4 @@
+import 'package:mentor_mobile_app/core/network/token_refresh_result.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 part 'app_cubit.freezed.dart';
@@ -12,7 +13,9 @@ class AppCubit extends HydratedCubit<AppState> {
     if (state.currentUser == null) {
       final localUser = LocalStorageService().getUser();
       if (localUser != null) {
-        print('✅ AppCubit constructor: Restored user from Hive fallback (id=${localUser.id}, access=${localUser.access != null ? 'YES' : 'NULL'}).');
+        if (kDebugMode) {
+          print('✅ AppCubit constructor: Restored user from Hive fallback (id=${localUser.id}, access=${localUser.access != null ? 'YES' : 'NULL'}).');
+        }
         final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
         if (!currentAccounts.any((a) => a.id == localUser.id && a.userRole == localUser.userRole)) {
           currentAccounts.add(localUser);
@@ -22,7 +25,6 @@ class AppCubit extends HydratedCubit<AppState> {
     }
   }
 
-  bool _isRefreshing = false;
 
   //*
   Future<void> changeThemeMode(ThemeMode theme) async {
@@ -74,7 +76,7 @@ class AppCubit extends HydratedCubit<AppState> {
       currentAccounts.add(user);
     }
     emit(state.copyWith(currentUser: user, accounts: currentAccounts));
-    NotificationServices.registerDeviceToken();
+    NotificationServices.requestPermissionAndRegisterToken();
   }
 
   void updateAccount(LoginSuccessModel user) {
@@ -101,7 +103,7 @@ class AppCubit extends HydratedCubit<AppState> {
   void switchAccount(LoginSuccessModel user) {
     LocalStorageService().saveUser(user);
     emit(state.copyWith(currentUser: user));
-    NotificationServices.registerDeviceToken();
+    NotificationServices.requestPermissionAndRegisterToken();
   }
 
   void removeUser() {
@@ -133,14 +135,16 @@ class AppCubit extends HydratedCubit<AppState> {
 
   @override
   AppState? fromJson(Map<String, dynamic> json) {
-    print('🔍 AppCubit.fromJson called');
-    print('🔍 json keys: ${json.keys.toList()}');
-    print('🔍 currentUser in json: ${json['currentUser'] != null ? 'EXISTS' : 'NULL'}');
-    print('🔍 accounts in json: ${json['accounts'] != null ? '${(json['accounts'] as List).length} accounts' : 'NULL'}');
-    if (json['currentUser'] != null) {
-      final u = json['currentUser'] as Map<String, dynamic>;
-      print('🔍 stored access: ${u['access'] != null ? 'EXISTS (${u['access'].toString().substring(0, 10)}...)' : 'NULL'}');
-      print('🔍 stored refresh: ${u['refresh'] != null ? 'EXISTS' : 'NULL'}');
+    if (kDebugMode) {
+      print('🔍 AppCubit.fromJson called');
+      print('🔍 json keys: ${json.keys.toList()}');
+      print('🔍 currentUser in json: ${json['currentUser'] != null ? 'EXISTS' : 'NULL'}');
+      print('🔍 accounts in json: ${json['accounts'] != null ? '${(json['accounts'] as List).length} accounts' : 'NULL'}');
+      if (json['currentUser'] != null) {
+        final u = json['currentUser'] as Map<String, dynamic>;
+        print('🔍 stored access: ${u['access'] != null ? 'EXISTS' : 'NULL'}');
+        print('🔍 stored refresh: ${u['refresh'] != null ? 'EXISTS' : 'NULL'}');
+      }
     }
 
     var currentUser =
@@ -179,11 +183,17 @@ class AppCubit extends HydratedCubit<AppState> {
 
     // 🛡️ Fallback: Check Hive if HydratedBloc lost the user (e.g. cache cleared)
     if (currentUser == null) {
-      print('⚠️ AppCubit: currentUser is NULL from HydratedCubit. Trying Hive fallback...');
+      if (kDebugMode) {
+        print('⚠️ AppCubit: currentUser is NULL from HydratedCubit. Trying Hive fallback...');
+      }
       final localUser = LocalStorageService().getUser();
-      print('⚠️ AppCubit: Hive user: ${localUser != null ? 'EXISTS (id=${localUser.id}, access=${localUser.access != null ? 'YES' : 'NULL'})' : 'NULL'}');
+      if (kDebugMode) {
+        print('⚠️ AppCubit: Hive user: ${localUser != null ? 'EXISTS (id=${localUser.id})' : 'NULL'}');
+      }
       if (localUser != null) {
-        print('✅ AppCubit: Restored user from Hive storage.');
+        if (kDebugMode) {
+          print('✅ AppCubit: Restored user from Hive storage.');
+        }
         currentUser = localUser;
         if (!accounts.any((a) => a.id == localUser.id && a.userRole == localUser.userRole)) {
           accounts.add(localUser);
@@ -195,7 +205,9 @@ class AppCubit extends HydratedCubit<AppState> {
     if (currentUser != null && (currentUser.access == null || currentUser.access!.isEmpty)) {
       final localUser = LocalStorageService().getUser();
       if (localUser != null && localUser.access != null && localUser.access!.isNotEmpty) {
-        print('✅ AppCubit: Recovered tokens from Hive for user ${currentUser.id}.');
+        if (kDebugMode) {
+          print('✅ AppCubit: Recovered tokens from Hive for user ${currentUser.id}.');
+        }
         currentUser = currentUser.copyWith(
           access: localUser.access,
           refresh: localUser.refresh ?? currentUser.refresh,
@@ -264,179 +276,99 @@ class AppCubit extends HydratedCubit<AppState> {
 
   // ---------------- REFRESH TOKEN ----------------
 
-  // Future<void> refreshToken() async {
-  //   if (_isRefreshing) return;
-  //   _isRefreshing = true;
-  //   print('refresh token calling ---');
-  //   final refreshToken = state.currentUser?.refresh;
-  //
-  //   if (refreshToken == null || refreshToken.isEmpty) {
-  //     emit(state.copyWith(currentUser: null));
-  //     _isRefreshing = false;
-  //     return;
-  //   }
-  //
-  //   final result = await AuthRepository().refreshToken(refreshToken);
-  //
-  //   result.fold(
-  //         (error) {
-  //       /// ❌ refresh failed → logout
-  //       emit(state.copyWith(currentUser: null));
-  //     },
-  //         (data) {
-  //       print('newly generated token is---${data['access']}');
-  //       print('newly generated refresh is---${data['refresh']}');
-  //
-  //       final access = data['access']?.toString();
-  //       final refresh = data['refresh']?.toString();
-  //
-  //       if (access != null && refresh != null) {
-  //         emit(
-  //           state.copyWith(
-  //             currentUser: state.currentUser?.copyWith(
-  //               access: access,
-  //               refresh: refresh,
-  //             ),
-  //           ),
-  //         );
-  //       } else {
-  //         emit(state.copyWith(currentUser: null));
-  //       }
-  //     },
-  //   );
-  //
-  //   _isRefreshing = false;
-  // }
+  /// The single in-flight refresh future.
+  /// All concurrent callers (AuthInterceptor, app_view startup, etc.)
+  /// await the same future so only one HTTP refresh call is made.
+  Future<TokenRefreshResult>? _activeRefreshFuture;
 
-  /*
-  Future<void> refreshToken() async {
-    if (_isRefreshing) return;
-    _isRefreshing = true;
+  /// Refreshes the access token.
+  ///
+  /// Returns a [TokenRefreshResult] so the caller (especially
+  /// `AuthInterceptor`) knows whether to retry, reject, or logout.
+  ///
+  /// Concurrent calls are coalesced: the first call creates the future,
+  /// subsequent calls await the same future.
+  Future<TokenRefreshResult> refreshToken() async {
+    // If a refresh is already in flight, piggy-back on it.
+    if (_activeRefreshFuture != null) {
+      if (kDebugMode) {
+        print('🔄 AppCubit: Refresh already in progress — waiting for existing operation.');
+      }
+      return _activeRefreshFuture!;
+    }
 
+    _activeRefreshFuture = _performRefresh();
     try {
-      final user = state.currentUser;
-      final refreshToken = user?.refresh;
-
-      // 🚪 No refresh token → logout
-      if (refreshToken == null || refreshToken.isEmpty) {
-        if (state.currentUser != null) {
-          emit(state.copyWith(currentUser: null));
-        }
-        return;
-      }
-
-      final result = await AuthRepository().refreshToken(refreshToken);
-
-      result.fold(
-        (error) {
-          // ❌ Refresh failed → logout
-          if (state.currentUser != null) {
-            emit(state.copyWith(currentUser: null));
-            Feggy.pushAndRemoveUntil(const SentOtpScreen());
-          }
-        },
-        (data) {
-          print('newly generated token is---${data['access']}');
-          print('newly generated refresh is---${data['refresh']}');
-
-          final access = data['access']?.toString();
-          final refresh = data['refresh']?.toString();
-
-          // ❌ Invalid response → logout
-          if (access == null || refresh == null) {
-            emit(state.copyWith(currentUser: null));
-            return;
-          }
-
-          // ✅ Update tokens
-          emit(
-            state.copyWith(
-              currentUser: user!.copyWith(access: access, refresh: refresh),
-            ),
-          );
-        },
-      );
-    } catch (e) {
-      // ❌ Network / unexpected crash → logout safely
-      if (state.currentUser != null) {
-        emit(state.copyWith(currentUser: null));
-      }
+      return await _activeRefreshFuture!;
     } finally {
-      _isRefreshing = false;
+      _activeRefreshFuture = null;
     }
   }
-  */
 
-  Future<void> refreshToken() async {
-    if (_isRefreshing) return;
-    _isRefreshing = true;
-    print('🔄 AppCubit: Starting token refresh process...');
+  /// Internal implementation — never call directly; use [refreshToken].
+  Future<TokenRefreshResult> _performRefresh() async {
+    if (kDebugMode) {
+      print('🔄 AppCubit: Starting token refresh process...');
+    }
 
     try {
       final user = state.currentUser;
       if (user == null) {
-        return;
-      }
-      final refreshToken = user.refresh;
-
-      // 🚪 No refresh token → don't aggressively log out unless authentication failure occurs
-      if (refreshToken == null || refreshToken.isEmpty) {
-        print('⚠️ AppCubit: No refresh token found for current user.');
-        return;
+        if (kDebugMode) {
+          print('⚠️ AppCubit: No current user. Skipping refresh.');
+        }
+        return TokenRefreshResult.noUser;
       }
 
-      final result = await AuthRepository().refreshToken(refreshToken);
+      final refreshTokenStr = user.refresh;
+      if (refreshTokenStr == null || refreshTokenStr.isEmpty) {
+        if (kDebugMode) {
+          print('⚠️ AppCubit: No refresh token found for current user.');
+        }
+        return TokenRefreshResult.noRefreshToken;
+      }
 
-      result.fold(
-        (error) {
-          print('❌ AppCubit: Token refresh API failed. Error: $error');
+      if (kDebugMode) {
+        print('🔄 AppCubit: Current user exists: true, Refresh token exists: true');
+      }
 
-          error.maybeWhen(
-            network: (msg) {
-              print(
-                '🌐 AppCubit: Network issue detected ($msg). Keeping current session for offline access.',
-              );
-              // 🚪 Do NOT logout if it's just a network issue.
-              // This allows the user to see cached data while offline.
-            },
-            orElse: () {
-              print(
-                '🚫 AppCubit: Token refresh failed (Invalid token). Logging out.',
-              );
-              if (state.currentUser != null) {
-                emit(state.copyWith(currentUser: null));
-                Feggy.pushAndRemoveUntil(const SentOtpScreen());
-              }
-            },
-          );
-        },
-        (data) {
-          print('✅ AppCubit: Token refresh API success.');
-          print('🔑 New Access Token: ${data['access']}');
-          print('🔄 New Refresh Token: ${data['refresh']}');
+      // outTokens map receives the new access/refresh from the repository.
+      final outTokens = <String, dynamic>{};
 
-          final access = data['access']?.toString();
-          final refresh = data['refresh']?.toString();
+      final result = await AuthRepository().refreshToken(
+        refreshTokenStr,
+        outTokens: outTokens,
+      );
 
-          // ❌ Invalid response → logout
-          if (access == null) {
-            print('❌ AppCubit: New access token is null. Logging out.');
-            emit(state.copyWith(currentUser: null));
-            return;
+      switch (result) {
+        case TokenRefreshResult.success:
+          if (kDebugMode) {
+            print('✅ AppCubit: Token refresh succeeded.');
+            print('✅ AppCubit: Access token received: ${outTokens['access'] != null}');
+            print('✅ AppCubit: Refresh token received: ${outTokens['refresh'] != null}');
           }
 
-          // ✅ Update tokens
-          print('✅ AppCubit: Updating user with new tokens.');
+          final access = outTokens['access']?.toString();
+          final refresh = outTokens['refresh']?.toString();
+
+          if (access == null || access.isEmpty) {
+            // Shouldn't happen (repo already validated), but safeguard.
+            if (kDebugMode) {
+              print('⚠️ AppCubit: Access token missing after success — treating as temporary failure.');
+            }
+            return TokenRefreshResult.temporaryFailure;
+          }
 
           final updatedUser = user.copyWith(
             access: access,
             refresh: refresh ?? user.refresh,
           );
 
-          // 💾 Save to Hive
-          LocalStorageService().saveUser(updatedUser);
+          // 💾 Persist to Hive — AWAIT so tokens are safely on disk
+          // before any retried request reads them.
+          await LocalStorageService().saveUser(updatedUser);
 
-          // 🔄 Update accounts list to keep switcher tokens in sync
+          // 🔄 Update the matching account in the accounts list
           final currentAccounts = List<LoginSuccessModel>.from(state.accounts);
           final existingIndex = currentAccounts.indexWhere(
             (a) => _isSameAccount(a, updatedUser),
@@ -451,17 +383,40 @@ class AppCubit extends HydratedCubit<AppState> {
               accounts: currentAccounts,
             ),
           );
-        },
-      );
+
+          if (kDebugMode) {
+            print('✅ AppCubit: User state and storage updated with new tokens.');
+          }
+          return TokenRefreshResult.success;
+
+        case TokenRefreshResult.invalidToken:
+          if (kDebugMode) {
+            print('🚫 AppCubit: Refresh token is invalid/expired. Logging out.');
+          }
+          if (state.currentUser != null) {
+            emit(state.copyWith(currentUser: null));
+            unawaited(Feggy.pushAndRemoveUntil(const SentOtpScreen()));
+          }
+          return TokenRefreshResult.invalidToken;
+
+        case TokenRefreshResult.temporaryFailure:
+          if (kDebugMode) {
+            print('⚠️ AppCubit: Temporary failure during refresh. Keeping current session.');
+          }
+          // Session is preserved — user stays logged in.
+          return TokenRefreshResult.temporaryFailure;
+
+        case TokenRefreshResult.noRefreshToken:
+        case TokenRefreshResult.noUser:
+          // Already handled above, but enum must be exhaustive.
+          return result;
+      }
     } catch (e) {
-      print('❌ AppCubit: Exception during token refresh: $e');
-      // 🚪 On unexpected error, we keep the session to avoid aggressive logouts
-      // especially during transient network issues or offline startup.
-      print(
-        '⚠️ AppCubit: Failed to pre-emptively refresh token. Keeping current session.',
-      );
-    } finally {
-      _isRefreshing = false;
+      if (kDebugMode) {
+        print('❌ AppCubit: Unexpected exception during token refresh: $e');
+        print('⚠️ AppCubit: Keeping current session (not logging out).');
+      }
+      return TokenRefreshResult.temporaryFailure;
     }
   }
 }

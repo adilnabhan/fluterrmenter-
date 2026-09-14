@@ -56,7 +56,7 @@ class _AccountSwitcherSheetState extends State<AccountSwitcherSheet> {
           headers: {'X-Platform': platformSource},
         ),
       );
-      print('🔄 _refreshAccessToken: Response code=${res.statusCode}, data=${res.data}');
+      print('🔄 _refreshAccessToken: Response code=${res.statusCode}');
 
       Map<String, dynamic>? dataMap;
       if (res.data is Map) {
@@ -127,7 +127,7 @@ class _AccountSwitcherSheetState extends State<AccountSwitcherSheet> {
           final dio = Dio();
 
           // Try fetching org list with current token
-          print('🏢 Fetching org list for owner ${account.id} with token: ${token.substring(0, min(15, token.length))}...');
+          print('🏢 Fetching org list for owner ${account.id}...');
           var res = await dio.get<dynamic>(
             ApiUris.listOrganizations,
             options: Options(
@@ -138,7 +138,7 @@ class _AccountSwitcherSheetState extends State<AccountSwitcherSheet> {
               },
             ),
           );
-          print('🏢 Org list response status=${res.statusCode}, data=${res.data}');
+          print('🏢 Org list response status=${res.statusCode}');
 
           // If 401 (expired token), refresh and retry
           if (res.statusCode == 401) {
@@ -156,7 +156,7 @@ class _AccountSwitcherSheetState extends State<AccountSwitcherSheet> {
                   },
                 ),
               );
-              print('🏢 Retry org list response status=${res.statusCode}, data=${res.data}');
+              print('🏢 Retry org list response status=${res.statusCode}');
             } else {
               print('❌ Token refresh failed for account ${account.id}');
               continue;

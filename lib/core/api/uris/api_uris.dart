@@ -193,7 +193,27 @@ final class ApiUris {
   static String planDayExercisesReorder(int dayId) =>
       '${_v1}trainer/plan-days/$dayId/exercises/reorder/';
 
-  // Multi-Day Workout endpoints
+  // Dedicated Single-Day Workout endpoints
+  static final singleDayWorkouts = '${_v1}trainer/single-day-workouts/';
+  static String singleDayWorkoutDetail(int id) =>
+      '${_v1}trainer/single-day-workouts/$id/';
+  static String assignSingleDayWorkout(int id) =>
+      '${_v1}trainer/single-day-workouts/$id/assign/';
+
+  // Dedicated Multi-Day Programs endpoints
+  static final multiDayWorkouts = '${_v1}trainer/multi-day-workouts/';
+  static String multiDayWorkoutDetail(int id) =>
+      '${_v1}trainer/multi-day-workouts/$id/';
+  static String multiDayWorkoutDays(int id) =>
+      '${_v1}trainer/multi-day-workouts/$id/days/';
+  static String multiDayWorkoutReorder(int id) =>
+      '${_v1}trainer/multi-day-workouts/$id/reorder/';
+  static String multiDayWorkoutPreview(int id) =>
+      '${_v1}trainer/multi-day-workouts/$id/preview/';
+  static String assignMultiDayWorkout(int id) =>
+      '${_v1}trainer/multi-day-workouts/$id/assign/';
+
+  // Legacy Multi-Day Workout endpoints (maintained for backward compatibility)
   static final multiDayAssign = '${_v1}trainer/multi-day-assign/';
   static String multiDayAssignPreview({
     required int customerId,

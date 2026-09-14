@@ -21,18 +21,17 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
   final TextEditingController _discountController = TextEditingController(
     text: '0',
   );
-  final TextEditingController _amountReceivedController = TextEditingController(
-    text: '0',
-  );
 
   Timer? _debounce;
   MembershipPackageModel? _selectedPlan;
   bool _isPlanDropdownOpen = false;
-  String _paymentMethod = 'Cash';
   DateTime _startDate = DateTime.now();
   MemberDetailsModel? _manualMemberDetails;
 
-  final List<String> _paymentMethods = [
+  /// Split payment entries
+  final List<_PaymentSplit> _paymentSplits = [];
+
+  final List<String> _allPaymentMethods = [
     'Cash',
     'UPI',
     'Debit Card',
@@ -47,36 +46,66 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
     _membershipCubit = context.read<MembershipCubit>();
     _membershipCubit.fetchMembershipPackages();
     _cubit.clearSearchedCustomer();
-    _discountController.addListener(_updateAmountToPay);
+    _discountController.addListener(_onDiscountChanged);
   }
 
   @override
   void dispose() {
-    _discountController.removeListener(_updateAmountToPay);
+    _discountController.removeListener(_onDiscountChanged);
     _searchController.dispose();
     _discountController.dispose();
-    _amountReceivedController.dispose();
+    for (final split in _paymentSplits) {
+      split.amountController.dispose();
+      split.referenceController.dispose();
+    }
     _debounce?.cancel();
     super.dispose();
   }
 
-  void _updateAmountToPay() {
-    if (_selectedPlan == null) return;
-    final rawPrice = double.tryParse(
+  void _onDiscountChanged() {
+    setState(() {}); // Trigger rebuild to update computed values
+  }
+
+  double get _planAmount {
+    if (_selectedPlan == null) return 0;
+    return double.tryParse(
           _selectedPlan?.offerPrice ?? _selectedPlan?.actualPrice ?? '0',
         ) ??
         0;
-    final discount = double.tryParse(_discountController.text.trim()) ?? 0;
-    final finalAmount = (rawPrice - discount).clamp(0.0, double.infinity);
+  }
 
-    final formattedAmount =
-        finalAmount == finalAmount.toInt()
-            ? finalAmount.toInt().toString()
-            : finalAmount.toStringAsFixed(2);
+  double get _discount =>
+      double.tryParse(_discountController.text.trim()) ?? 0;
 
-    if (_amountReceivedController.text != formattedAmount) {
-      _amountReceivedController.text = formattedAmount;
+  double get _totalPayable => (_planAmount - _discount).clamp(0.0, double.infinity);
+
+  double get _totalPaid {
+    double sum = 0;
+    for (final split in _paymentSplits) {
+      sum += double.tryParse(split.amountController.text.trim()) ?? 0;
     }
+    return sum;
+  }
+
+  double get _pendingDue => (_totalPayable - _totalPaid).clamp(0.0, double.infinity);
+
+  List<String> get _availableMethods {
+    final usedMethods = _paymentSplits.map((s) => s.method).toSet();
+    return _allPaymentMethods.where((m) => !usedMethods.contains(m)).toList();
+  }
+
+  void _addPaymentSplit(String method) {
+    setState(() {
+      _paymentSplits.add(_PaymentSplit(method: method));
+    });
+  }
+
+  void _removePaymentSplit(int index) {
+    setState(() {
+      _paymentSplits[index].amountController.dispose();
+      _paymentSplits[index].referenceController.dispose();
+      _paymentSplits.removeAt(index);
+    });
   }
 
   void _onSearchChanged(String value) {
@@ -122,19 +151,25 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
     }
 
     double? discount = double.tryParse(_discountController.text);
-    double? amountReceived = double.tryParse(_amountReceivedController.text);
 
-    if (amountReceived == null) {
-      Dialogs.showSnack(msg: 'Please enter a valid amount received.');
-      return;
-    }
+    // Build payments list from splits
+    final payments = _paymentSplits.map((s) {
+      final map = <String, dynamic>{
+        'payment_method': s.method,
+        'amount': double.tryParse(s.amountController.text.trim()) ?? 0,
+      };
+      final ref = s.referenceController.text.trim();
+      if (ref.isNotEmpty) {
+        map['reference'] = ref;
+      }
+      return map;
+    }).toList();
 
     _cubit.cerateOrUpdateMemberDetails(
       memeberDetails: customerToAdd!,
       membershipPackageModel: _selectedPlan!,
       discountAmount: discount,
-      amountReceived: amountReceived,
-      paymentMethod: _paymentMethod,
+      payments: payments,
       membershipStartDate: DateFormat('yyyy-MM-dd').format(_startDate),
       memberId: customerToAdd!.id, // Will be null if it's a new manual user
     );
@@ -513,8 +548,54 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
               ),
 
               const SizedBox(height: 24),
+              // Plan Amount & Discount Row
               Row(
                 children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Plan Amount',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F5F5),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xffD0D5DD)),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                '₹',
+                                style: AppStyles.text14Px.poppins.w500.textGrey,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _planAmount > 0
+                                    ? (_planAmount == _planAmount.toInt()
+                                        ? _planAmount.toInt().toString()
+                                        : _planAmount.toStringAsFixed(2))
+                                    : '0',
+                                style: AppStyles.text14Px.poppins.w500.copyWith(
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -550,69 +631,379 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Amount to Pay',
-                          style: AppStyles.text14Px.poppins.w500.copyWith(
-                            color: Colors.black87,
-                          ),
+                ],
+              ),
+
+              // Total Payable
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF81C784)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Payable',
+                      style: AppStyles.text14Px.poppins.w600.copyWith(
+                        color: const Color(0xFF2E7D32),
+                      ),
+                    ),
+                    Text(
+                      '₹ ${_totalPayable == _totalPayable.toInt() ? _totalPayable.toInt().toString() : _totalPayable.toStringAsFixed(2)}',
+                      style: AppStyles.text16Px.poppins.w600.copyWith(
+                        color: const Color(0xFF2E7D32),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Payment Breakdown Header
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Payment Breakdown',
+                        style: AppStyles.text14Px.poppins.w600.copyWith(
+                          color: Colors.black87,
                         ),
-                        const SizedBox(height: 8),
-                        _buildFieldCard(
-                          child: TextField(
-                            controller: _amountReceivedController,
-                            keyboardType: TextInputType.number,
-                            style: AppStyles.text14Px.poppins.w500.copyWith(
-                              color: Colors.black87,
-                            ),
-                            decoration: _fieldInputDecoration(
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 16,
-                                  right: 6,
-                                ),
-                                child: Text(
-                                  '₹',
-                                  style: AppStyles.text14Px.poppins.w500.textGrey,
-                                ),
-                              ),
+                      ),
+                      if (_paymentSplits.length > 1) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE3F2FD),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Split',
+                            style: AppStyles.text10Px.poppins.w600.copyWith(
+                              color: const Color(0xFF1565C0),
                             ),
                           ),
                         ),
                       ],
+                    ],
+                  ),
+                  if (_availableMethods.isNotEmpty)
+                    InkWell(
+                      onTap: () {
+                        _addPaymentSplit(_availableMethods.first);
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.add,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Add Method',
+                              style: AppStyles.text12Px.poppins.w600.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Text(
-                    'Payment Method',
-                    style: AppStyles.text14Px.poppins.w500.copyWith(
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const Text(
-                    ' *',
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                  ),
                 ],
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children:
-                    _paymentMethods.map((method) {
-                      return _buildPaymentMethodPill(method);
-                    }).toList(),
-              ),
+
+              // Payment Split Cards
+              if (_paymentSplits.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAFAFA),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFFE0E0E0),
+                      style: BorderStyle.solid,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.payment_outlined,
+                        size: 32,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No payment added',
+                        style: AppStyles.text13Px.poppins.w500.copyWith(
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Submitting without payment creates an unpaid membership',
+                        textAlign: TextAlign.center,
+                        style: AppStyles.text10Px.poppins.w400.copyWith(
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ...List.generate(_paymentSplits.length, (index) {
+                  final split = _paymentSplits[index];
+                  final style = _getPaymentMethodStyle(split.method, true);
+                  final needsRef = split.method == 'UPI' ||
+                      split.method == 'Net Banking' ||
+                      split.method == 'Debit Card' ||
+                      split.method == 'Credit Card';
+                  return Container(
+                    margin: EdgeInsets.only(
+                      bottom: index < _paymentSplits.length - 1 ? 12 : 0,
+                    ),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: style.borderColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header: Method pill + Split label + Delete
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: style.bgColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                split.method,
+                                style:
+                                    AppStyles.text12Px.poppins.w600.copyWith(
+                                      color: style.textColor,
+                                    ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Split ${index + 1}',
+                              style:
+                                  AppStyles.text12Px.poppins.w400.copyWith(
+                                    color: Colors.grey.shade500,
+                                  ),
+                            ),
+                            const Spacer(),
+                            InkWell(
+                              onTap: () => _removePaymentSplit(index),
+                              borderRadius: BorderRadius.circular(6),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 18,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        // Amount field
+                        TextField(
+                          controller: split.amountController,
+                          keyboardType: TextInputType.number,
+                          onChanged: (_) => setState(() {}),
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: Colors.black87,
+                          ),
+                          decoration: _fieldInputDecoration(
+                            hintText: 'Amount',
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 16,
+                                right: 6,
+                              ),
+                              child: Text(
+                                '₹',
+                                style:
+                                    AppStyles.text14Px.poppins.w500.textGrey,
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Reference field (conditional)
+                        if (needsRef) ...[
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: split.referenceController,
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: Colors.black87,
+                            ),
+                            decoration: _fieldInputDecoration(
+                              hintText: '${split.method} Reference (optional)',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.only(
+                                  left: 14,
+                                  right: 8,
+                                ),
+                                child: Icon(
+                                  Icons.receipt_long_outlined,
+                                  color: AppColors.textGrey,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }),
+
+              // Available method chips to add
+              if (_paymentSplits.isNotEmpty && _availableMethods.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _availableMethods.map((method) {
+                    final style = _getPaymentMethodStyle(method, false);
+                    return InkWell(
+                      onTap: () => _addPaymentSplit(method),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: style.bgColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: style.borderColor),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.add_circle_outline,
+                              size: 16,
+                              color: style.textColor,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              method,
+                              style:
+                                  AppStyles.text12Px.poppins.w500.copyWith(
+                                    color: style.textColor,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+
+              // Summary Banner
+              if (_paymentSplits.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total Paid',
+                            style: AppStyles.text13Px.poppins.w500.copyWith(
+                              color: Colors.black54,
+                            ),
+                          ),
+                          Text(
+                            '₹ ${_totalPaid == _totalPaid.toInt() ? _totalPaid.toInt().toString() : _totalPaid.toStringAsFixed(2)}',
+                            style: AppStyles.text14Px.poppins.w600.copyWith(
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Pending Due',
+                            style: AppStyles.text13Px.poppins.w500.copyWith(
+                              color: _pendingDue > 0
+                                  ? const Color(0xFFE53935)
+                                  : const Color(0xFF43A047),
+                            ),
+                          ),
+                          Text(
+                            '₹ ${_pendingDue == _pendingDue.toInt() ? _pendingDue.toInt().toString() : _pendingDue.toStringAsFixed(2)}',
+                            style: AppStyles.text14Px.poppins.w600.copyWith(
+                              color: _pendingDue > 0
+                                  ? const Color(0xFFE53935)
+                                  : const Color(0xFF43A047),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 24),
               Row(
@@ -777,7 +1168,6 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                       setState(() {
                         _selectedPlan = plan;
                         _isPlanDropdownOpen = false;
-                        _updateAmountToPay();
                       });
                     },
                     child: Padding(
@@ -812,50 +1202,6 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
           ),
         ],
       ],
-    );
-  }
-
-  Widget _buildPaymentMethodPill(String method) {
-    final isSelected = _paymentMethod == method;
-    final style = _getPaymentMethodStyle(method, isSelected);
-
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _paymentMethod = method;
-        });
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: style.bgColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: style.borderColor,
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked,
-              color: style.iconColor,
-              size: 18,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              method,
-              style: AppStyles.text13Px.poppins.w500.copyWith(
-                color: style.textColor,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -917,4 +1263,13 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
         );
     }
   }
+}
+
+/// Helper class to hold state for each payment split entry.
+class _PaymentSplit {
+  _PaymentSplit({required this.method});
+
+  final String method;
+  final TextEditingController amountController = TextEditingController();
+  final TextEditingController referenceController = TextEditingController();
 }

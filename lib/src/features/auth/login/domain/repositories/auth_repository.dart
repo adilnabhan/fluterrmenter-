@@ -2,6 +2,7 @@ import 'dart:developer' as log;
 
 import 'package:dio/dio.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/core/network/token_refresh_result.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 @immutable
@@ -265,66 +266,107 @@ final class AuthRepository {
     );
   }
 
-  /*
-  Future<Either<ApiException, Map<String, dynamic>>> refreshToken(
-    String refreshToken,
-  ) async {
-    try {
-      print('refesh tojken is--$refreshToken');
-      return await Feggy.async(
-        call: _dio.post<dynamic>(
-          ApiUris.tokenRefresh,
-          data: {"refresh_token": refreshToken},
-          options: Options(headers: {'X-Platform': platformSource}),
-        ),
-        onSuccess: (res) {
-          if (res.statusCode == 200 && res.data is Map) {
-            return right(res.data as Map<String, dynamic>);
-          }
-          return left(const ApiException.unknown());
-        },
-      );
-    } on ApiException catch (e) {
-      return left(e);
-    } catch (_) {
-      return left(const ApiException.unknown());
-    }
-  }
-  */
-
-  Future<Either<ApiException, Map<String, dynamic>>> refreshToken(
-    String refreshToken,
-  ) async {
-    try {
+  /// Refreshes the access token using the given [refreshToken].
+  ///
+  /// Uses a **clean Dio instance** (no `AuthInterceptor`) so a 401 on the
+  /// refresh endpoint is NOT intercepted recursively.
+  ///
+  /// Returns a [TokenRefreshResult] with explicit error classification:
+  /// - 401 / 403 → [TokenRefreshResult.invalidToken]
+  /// - 5xx       → [TokenRefreshResult.temporaryFailure]
+  /// - network / timeout → [TokenRefreshResult.temporaryFailure]
+  /// - 200 with valid access → [TokenRefreshResult.success]
+  /// - 200 with bad body     → [TokenRefreshResult.temporaryFailure]
+  Future<TokenRefreshResult> refreshToken(
+    String refreshToken, {
+    Map<String, dynamic>? outTokens,
+    Dio? dio,
+  }) async {
+    if (kDebugMode) {
       print('🌐 AuthRepository: Calling refresh token API...');
-      print('📤 Sending Refresh Token: $refreshToken');
-      // print('refesh tojken is--$refreshToken');
-      return await Feggy.async(
-        call: _dio.post<dynamic>(
-          ApiUris.tokenRefresh,
-          data: {
-            'refresh': refreshToken,
-            'refresh_token': refreshToken,
-          },
-          options: Options(headers: {'X-Platform': platformSource}),
-        ),
-        onSuccess: (res) {
-          if (res.statusCode == 200 && res.data is Map) {
-            print('✅ AuthRepository: Refresh token API success.');
-            return right(res.data as Map<String, dynamic>);
-          }
-          print(
-            '❌ AuthRepository: Refresh token API failed with status ${res.statusCode}',
-          );
-          return left(const ApiException.unknown());
+      print('🌐 AuthRepository: Refresh token present: ${refreshToken.isNotEmpty}');
+    }
+
+    // Use a clean Dio (or injected instance) — NOT the DioClient singleton which has AuthInterceptor.
+    final cleanDio = dio ?? Dio();
+
+    try {
+      final response = await cleanDio.post<dynamic>(
+        ApiUris.tokenRefresh,
+        data: {
+          'refresh': refreshToken,
+          'refresh_token': refreshToken,
         },
+        options: Options(
+          extra: <String, dynamic>{'skipAuth': true},
+          headers: {'X-Platform': platformSource},
+          // Accept any status so we can classify it ourselves.
+          validateStatus: (_) => true,
+        ),
       );
-    } on ApiException catch (e) {
-      print('❌ AuthRepository: ApiException: $e');
-      return left(e);
-    } catch (_) {
-      print('❌ AuthRepository: Unknown Exception');
-      return left(const ApiException.unknown());
+
+      final statusCode = response.statusCode ?? 0;
+
+      if (kDebugMode) {
+        print('🌐 AuthRepository: Refresh response status=$statusCode');
+      }
+
+      // --- Confirmed invalid token ---
+      if (statusCode == 401 || statusCode == 403) {
+        if (kDebugMode) {
+          print('🚫 AuthRepository: Refresh failed — unauthorized ($statusCode).');
+        }
+        return TokenRefreshResult.invalidToken;
+      }
+
+      // --- Server error (transient) ---
+      if (statusCode >= 500) {
+        if (kDebugMode) {
+          print('⚠️ AuthRepository: Refresh failed — server error ($statusCode). Keeping session.');
+        }
+        return TokenRefreshResult.temporaryFailure;
+      }
+
+      // --- Success path ---
+      if (statusCode == 200 && response.data is Map) {
+        final data = response.data as Map<String, dynamic>;
+        final access = (data['access'] ?? data['access_token'])?.toString();
+        final refresh = (data['refresh'] ?? data['refresh_token'])?.toString();
+
+        if (access != null && access.isNotEmpty) {
+          if (kDebugMode) {
+            print('✅ AuthRepository: Access token received: true');
+            print('✅ AuthRepository: Refresh token received: ${refresh != null && refresh.isNotEmpty}');
+          }
+          // Write tokens into the caller-provided map.
+          outTokens?['access'] = access;
+          outTokens?['refresh'] = refresh;
+          return TokenRefreshResult.success;
+        }
+
+        // 200 but no access token — malformed response, NOT invalid auth.
+        if (kDebugMode) {
+          print('⚠️ AuthRepository: 200 response but access token missing. Treating as temporary failure.');
+        }
+        return TokenRefreshResult.temporaryFailure;
+      }
+
+      // --- Any other status (e.g. 400 / 404 / 429) — treat as temporary. ---
+      if (kDebugMode) {
+        print('⚠️ AuthRepository: Unexpected status $statusCode. Treating as temporary failure.');
+      }
+      return TokenRefreshResult.temporaryFailure;
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('⚠️ AuthRepository: DioException during refresh: type=${e.type}, message=${e.message}');
+      }
+      // All Dio-level exceptions are transient — network, timeout, etc.
+      return TokenRefreshResult.temporaryFailure;
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ AuthRepository: Unexpected exception during refresh: $e');
+      }
+      return TokenRefreshResult.temporaryFailure;
     }
   }
 }

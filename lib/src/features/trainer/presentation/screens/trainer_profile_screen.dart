@@ -5,6 +5,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/edit_trainer_profile_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_certificates_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_portfolio_screen.dart';
+import 'package:mentor_mobile_app/core/widgets/dialogs/image_picker_dialog.dart';
 
 import 'package:mentor_mobile_app/src/features/auth/login/domain/models/login_with_otp_model.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
@@ -520,13 +521,47 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
     }
   }
 
-  static const List<String> _heroImages = [
-    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=1470&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=1470&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1470&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?q=80&w=1470&auto=format&fit=crop',
-  ];
+  Future<void> _uploadPortfolioImage() async {
+    await ImagePickerDialog(
+      needRemove: false,
+      onPickedImage: (file) async {
+        if (file != null) {
+          await _submitPortfolioImage(File(file.path));
+        }
+      },
+    ).show(context);
+  }
+
+  Future<void> _submitPortfolioImage(File file) async {
+    setState(() => _isLoading = true);
+    try {
+      final formData = FormData.fromMap({
+        'image_file': await MultipartFile.fromFile(file.path),
+        'type': 'result',
+      });
+
+      final response = await DioClient().dio.post<dynamic>(
+        ApiUris.portfolioImages,
+        data: formData,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Fluttertoast.showToast(msg: 'Portfolio image uploaded');
+        _fetchPortfolioImages();
+      } else {
+        Fluttertoast.showToast(msg: 'Failed to upload image');
+      }
+    } on DioException catch (e) {
+      Fluttertoast.showToast(
+        msg: e.response?.data?.toString() ?? 'Error uploading image',
+      );
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'An error occurred');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   void _openFullScreen(
     BuildContext context,
@@ -539,14 +574,15 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
       MaterialPageRoute<void>(
         builder:
             (_) => TrainerPortfolioScreen(
-              heroImages: _heroImages,
               initialIndex: initialIndex,
               isViewOnly: widget.isViewOnly,
               initialPortfolioImages: portfolioImages,
               trainerId: widget.trainerId,
             ),
       ),
-    );
+    ).then((_) {
+      if (mounted) _fetchPortfolioImages();
+    });
   }
 
   @override
@@ -570,13 +606,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
 
     final portfolioImages = user?.trainer?.portfolioImages ?? [];
     final List<String> heroCarousel =
-        portfolioImages.isNotEmpty
-            ? portfolioImages
-                .map((e) => e.image ?? '')
-                .where((img) => img.isNotEmpty)
-                .toList()
-            : _heroImages;
-    if (heroCarousel.isEmpty) heroCarousel.addAll(_heroImages);
+        portfolioImages
+            .map((e) => e.image ?? '')
+            .where((img) => img.isNotEmpty)
+            .toList();
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -601,49 +634,141 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Hero image carousel
+                  // Hero image carousel or empty state
                   SizedBox(
                     height: 320,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        PageView.builder(
-                          controller: _heroPagerController,
-                          itemCount: heroCarousel.length,
-                          onPageChanged:
-                              (i) => setState(() => _heroCurrentIndex = i),
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap:
-                                  () => _openFullScreen(context, index, user),
-                              child: ImageNetwork(
-                                heroCarousel[index],
-                                fit: BoxFit.cover,
-                              ),
-                            );
-                          },
-                        ),
-                        // Subtle gradient at the very bottom edge
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  const Color(
-                                    0xffF7F7F7,
-                                  ).withValues(alpha: 0.7),
-                                ],
+                        if (heroCarousel.isNotEmpty) ...[
+                          PageView.builder(
+                            controller: _heroPagerController,
+                            itemCount: heroCarousel.length,
+                            onPageChanged:
+                                (i) => setState(() => _heroCurrentIndex = i),
+                            itemBuilder: (context, index) {
+                              return GestureDetector(
+                                onTap:
+                                    () => _openFullScreen(context, index, user),
+                                child: ImageNetwork(
+                                  heroCarousel[index],
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                            },
+                          ),
+                          // Subtle gradient at the very bottom edge
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    const Color(
+                                      0xffF7F7F7,
+                                    ).withValues(alpha: 0.7),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                          // Dot indicators with pill background
+                          if (heroCarousel.length > 1)
+                            Positioned(
+                              bottom: 8,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(
+                                      heroCarousel.length,
+                                      (i) {
+                                        final isActive =
+                                            i == _heroCurrentIndex;
+                                        return AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 250,
+                                          ),
+                                          curve: Curves.easeInOut,
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 3,
+                                          ),
+                                          width: isActive ? 16 : 6,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color:
+                                                isActive
+                                                    ? Colors.white
+                                                    : Colors.grey.withOpacity(
+                                                      0.5,
+                                                    ),
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ] else ...[
+                          // Grey color background with a + icon
+                          GestureDetector(
+                            onTap: () {
+                              if (!widget.isViewOnly) {
+                                _uploadPortfolioImage();
+                              }
+                            },
+                            child: Container(
+                              color: const Color(0xFFE5E7EB),
+                              padding: const EdgeInsets.only(top: 50, bottom: 90),
+                              child: Center(
+                                child: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.08),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.add,
+                                    size: 20,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                         // Top bar (Account switcher + Settings)
                         if (!widget.isViewOnly)
                           Positioned(
@@ -663,7 +788,9 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: OutlinedButton.icon(
                                           style: OutlinedButton.styleFrom(
-                                            backgroundColor: context.colors.card
+                                            backgroundColor: context
+                                                .colors
+                                                .card
                                                 .withOpacity(0.9),
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 12,
@@ -751,52 +878,6 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                               ),
                             ),
                           ),
-                        // Dot indicators with pill background
-                        Positioned(
-                          bottom: 8,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.2),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(heroCarousel.length, (
-                                  i,
-                                ) {
-                                  final isActive = i == _heroCurrentIndex;
-                                  return AnimatedContainer(
-                                    duration: const Duration(milliseconds: 250),
-                                    curve: Curves.easeInOut,
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 3,
-                                    ),
-                                    width: isActive ? 16 : 6,
-                                    height: 6,
-                                    decoration: BoxDecoration(
-                                      color:
-                                          isActive
-                                              ? Colors.white
-                                              : Colors.grey.withOpacity(0.5),
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                  );
-                                }),
-                              ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),

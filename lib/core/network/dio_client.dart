@@ -45,7 +45,10 @@ class CurlLoggerInterceptor extends Interceptor {
     final url = options.uri.toString();
 
     final headers = options.headers.entries
-        .map((e) => '-H "${e.key}: ${e.value}"')
+        .map((e) {
+          final value = '${e.value}';
+          return '-H "${e.key}: $value"';
+        })
         .join(' \\\n  ');
 
     var data = '';

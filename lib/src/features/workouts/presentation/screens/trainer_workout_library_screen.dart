@@ -23,6 +23,7 @@ class TrainerWorkoutLibraryScreen extends StatelessWidget {
       body: const SelectExerciseSheetContent(
         title: 'Workout Library',
         isPage: true,
+        showAddButton: false,
       ),
     );
   }

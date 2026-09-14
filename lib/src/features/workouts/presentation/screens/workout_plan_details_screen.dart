@@ -627,6 +627,9 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       Dialogs.showSnack(msg: 'Cannot add exercise: no plan day found.');
       return;
     }
+    final user = context.read<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -634,6 +637,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       builder:
           (sheetContext) => SelectExerciseSheetContent(
             existingExercises: _exercises,
+            hideYouCreated: !isTrainer,
             onAddExercise: (WorkoutExercise newEx) {
               if (!mounted) return;
               setState(() {
@@ -866,6 +870,8 @@ class SelectExerciseSheetContent extends StatefulWidget {
   final Function(String)? onRemoveExercise;
   final String title;
   final bool isPage;
+  final bool? showAddButton;
+  final bool? hideYouCreated;
 
   const SelectExerciseSheetContent({
     super.key,
@@ -874,11 +880,19 @@ class SelectExerciseSheetContent extends StatefulWidget {
     this.onRemoveExercise,
     this.title = 'Select Workout',
     this.isPage = false,
+    this.showAddButton,
+    this.hideYouCreated,
   });
 
   @override
   State<SelectExerciseSheetContent> createState() =>
       _SelectExerciseSheetContentState();
+}
+
+class _WorkoutTab {
+  final String label;
+  final String source;
+  const _WorkoutTab(this.label, this.source);
 }
 
 class _TabCache {
@@ -895,10 +909,43 @@ class _TabCache {
 
 class _SelectExerciseSheetContentState
     extends State<SelectExerciseSheetContent> {
-  int _selectedTab = 0; // 0 for Gym Created, 1 for You Created, 2 for Library
+  int _selectedTabIndex = 0;
   List<Map<String, dynamic>> _allExercises = [];
   bool _isLoading = true;
   String _searchQuery = '';
+
+  bool get _shouldShowAddButton =>
+      widget.showAddButton ??
+      (!widget.isPage && widget.onAddExercise != null);
+
+  bool get _shouldHideYouCreated {
+    if (widget.hideYouCreated != null) return widget.hideYouCreated!;
+    final user = context.read<AppCubit>().state.currentUser;
+    final isTrainer = user?.userRole == 35;
+    return !isTrainer;
+  }
+
+  List<_WorkoutTab> get _availableTabs {
+    if (_shouldHideYouCreated) {
+      return const [
+        _WorkoutTab('Gym created', 'gym'),
+        _WorkoutTab('Library', 'library'),
+      ];
+    }
+    return const [
+      _WorkoutTab('Gym created', 'gym'),
+      _WorkoutTab('You created', 'you_created'),
+      _WorkoutTab('Library', 'library'),
+    ];
+  }
+
+  String get _currentTabSource {
+    final tabs = _availableTabs;
+    if (_selectedTabIndex >= tabs.length) {
+      return tabs.first.source;
+    }
+    return tabs[_selectedTabIndex].source;
+  }
 
   // Major & Sub Muscle Classification Filter State
   String _selectedMajorMuscle = 'All';
@@ -919,8 +966,8 @@ class _SelectExerciseSheetContentState
   ];
   Map<String, List<Map<String, dynamic>>> _subMusclesMap = {};
 
-  // Cache for each tab: 0 -> Gym Created, 1 -> You Created, 2 -> Library
-  final Map<int, _TabCache> _tabCaches = {};
+  // Cache for each tab source: 'gym', 'you_created', 'library'
+  final Map<String, _TabCache> _tabCaches = {};
 
   final ScrollController _scrollController = ScrollController();
   int _currentPage = 1;
@@ -1005,12 +1052,14 @@ class _SelectExerciseSheetContentState
       });
     }
 
+    final currentSource = _currentTabSource;
+
     if (isRefresh &&
         _searchQuery.trim().isEmpty &&
         _selectedMajorMuscle == 'All' &&
         _selectedSubMuscle == 'All' &&
-        _tabCaches.containsKey(_selectedTab)) {
-      final cache = _tabCaches[_selectedTab]!;
+        _tabCaches.containsKey(currentSource)) {
+      final cache = _tabCaches[currentSource]!;
       setState(() {
         _allExercises = List<Map<String, dynamic>>.from(cache.exercises);
         _currentPage = cache.currentPage;
@@ -1021,8 +1070,7 @@ class _SelectExerciseSheetContentState
     }
 
     try {
-      final String sourceValue =
-          _selectedTab == 0 ? 'gym' : (_selectedTab == 1 ? 'you_created' : 'library');
+      final String sourceValue = currentSource;
 
       final Map<String, dynamic> queryParams = {
         'source': sourceValue,
@@ -1051,7 +1099,7 @@ class _SelectExerciseSheetContentState
           (data is Map && (data['results'] as List? ?? []).isEmpty) ||
           (data is List && data.isEmpty);
 
-      if (_selectedTab == 0 && isGymTabEmpty) {
+      if (currentSource == 'gym' && isGymTabEmpty) {
         try {
           final gymRes = await DioClient().dio.get<dynamic>(
             ApiUris.gymExercises,
@@ -1104,7 +1152,7 @@ class _SelectExerciseSheetContentState
           if (_searchQuery.trim().isEmpty &&
               _selectedMajorMuscle == 'All' &&
               _selectedSubMuscle == 'All') {
-            _tabCaches[_selectedTab] = _TabCache(
+            _tabCaches[currentSource] = _TabCache(
               exercises: List<Map<String, dynamic>>.from(_allExercises),
               currentPage: _currentPage,
               hasMore: _hasMore,
@@ -1185,7 +1233,7 @@ class _SelectExerciseSheetContentState
       builder:
           (sheetContext) => _CreateExerciseBottomSheet(
             editExercise: exercise,
-            isGymExercise: _selectedTab == 0,
+            isGymExercise: _shouldHideYouCreated || _currentTabSource == 'gym',
             onCreated: () {
               _tabCaches.clear();
               _fetchExercises();
@@ -1259,13 +1307,45 @@ class _SelectExerciseSheetContentState
                 ),
                 const SizedBox(height: 16),
                 Row(
-                  children: [
-                    Expanded(
+                  children: List.generate(_availableTabs.length, (index) {
+                    final tab = _availableTabs[index];
+                    final isSelected = _selectedTabIndex == index;
+                    final isFirst = index == 0;
+                    final isLast = index == _availableTabs.length - 1;
+
+                    BorderRadius borderRadius = BorderRadius.zero;
+                    if (isFirst) {
+                      borderRadius = const BorderRadius.horizontal(
+                        left: Radius.circular(20),
+                      );
+                    } else if (isLast) {
+                      borderRadius = const BorderRadius.horizontal(
+                        right: Radius.circular(20),
+                      );
+                    }
+
+                    Border border;
+                    if (isFirst) {
+                      border = Border.all(color: AppColors.borderGrey);
+                    } else if (isLast) {
+                      border = const Border(
+                        top: BorderSide(color: AppColors.borderGrey),
+                        bottom: BorderSide(color: AppColors.borderGrey),
+                        right: BorderSide(color: AppColors.borderGrey),
+                      );
+                    } else {
+                      border = const Border(
+                        top: BorderSide(color: AppColors.borderGrey),
+                        bottom: BorderSide(color: AppColors.borderGrey),
+                      );
+                    }
+
+                    return Expanded(
                       child: GestureDetector(
                         onTap: () {
                           if (!mounted) return;
-                          if (_selectedTab != 0) {
-                            setState(() => _selectedTab = 0);
+                          if (_selectedTabIndex != index) {
+                            setState(() => _selectedTabIndex = index);
                             _fetchExercises();
                           }
                         },
@@ -1273,17 +1353,15 @@ class _SelectExerciseSheetContentState
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
                             color:
-                                _selectedTab == 0
+                                isSelected
                                     ? const Color(0xFFF1F1F1)
                                     : Colors.white,
-                            borderRadius: const BorderRadius.horizontal(
-                              left: Radius.circular(20),
-                            ),
-                            border: Border.all(color: AppColors.borderGrey),
+                            borderRadius: borderRadius,
+                            border: border,
                           ),
                           child: Center(
                             child: Text(
-                              'Gym created',
+                              tab.label,
                               style: AppStyles.text14Px.poppins.w500.copyWith(
                                 color: AppColors.textDark,
                               ),
@@ -1291,72 +1369,8 @@ class _SelectExerciseSheetContentState
                           ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          if (!mounted) return;
-                          if (_selectedTab != 1) {
-                            setState(() => _selectedTab = 1);
-                            _fetchExercises();
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color:
-                                _selectedTab == 1
-                                    ? const Color(0xFFF1F1F1)
-                                    : Colors.white,
-                            border: const Border(
-                              top: BorderSide(color: AppColors.borderGrey),
-                              bottom: BorderSide(color: AppColors.borderGrey),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'You created',
-                              style: AppStyles.text14Px.poppins.w500.copyWith(
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          if (!mounted) return;
-                          if (_selectedTab != 2) {
-                            setState(() => _selectedTab = 2);
-                            _fetchExercises();
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color:
-                                _selectedTab == 2
-                                    ? const Color(0xFFF1F1F1)
-                                    : Colors.white,
-                            borderRadius: const BorderRadius.horizontal(
-                              right: Radius.circular(20),
-                            ),
-                            border: Border.all(color: AppColors.borderGrey),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Library',
-                              style: AppStyles.text14Px.poppins.w500.copyWith(
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    );
+                  }),
                 ),
               ],
             ),
@@ -1441,7 +1455,7 @@ class _SelectExerciseSheetContentState
                         final subItem = subPills[index];
                         final subName = subItem['name']?.toString() ?? '';
                         final count = subItem['count'] as int?;
-                        final bool showCount = _selectedTab == 2;
+                        final bool showCount = _currentTabSource == 'library';
                         final String displayName =
                             showCount && count != null && count > 0
                                 ? '$subName ($count)'
@@ -1538,41 +1552,44 @@ class _SelectExerciseSheetContentState
                         final isAdded = widget.existingExercises.any(
                           (e) => e.workoutId == idStr,
                         );
+                        final showAdd = _shouldShowAddButton;
 
                         return InkWell(
-                          onTap: () {
-                            final exName = item['name'] as String? ?? 'Exercise';
-                            if (isAdded) {
-                              if (widget.onRemoveExercise != null) {
-                                widget.onRemoveExercise!(idStr);
-                              } else {
-                                widget.existingExercises.removeWhere((e) => e.workoutId == idStr);
-                              }
-                              Dialogs.showSnack(
-                                msg: '$exName removed from plan',
-                              );
-                            } else {
-                              final WorkoutExercise newEx = WorkoutExercise(
-                                id: 'temp_${DateTime.now().millisecondsSinceEpoch}_$index',
-                                workoutId: idStr,
-                                name: exName,
-                                muscle: item['primary_muscle_group_name'] as String? ?? 'General',
-                                equipment: item['equipment_name'] as String? ?? 'None',
-                                type: item['type'] as String? ?? 'Other',
-                                videoLink: item['video_url'] as String? ?? '',
-                                trackBy: item['track_by']?.toString().toLowerCase() ?? 'reps',
-                                sets: const [
-                                  {'set_number': 1},
-                                ],
-                              );
-                              widget.onAddExercise?.call(newEx);
-                              Dialogs.showSnack(
-                                msg: '$exName added to plan list',
-                              );
-                            }
-                            if (!mounted) return;
-                            setState(() {});
-                          },
+                          onTap: !showAdd
+                              ? null
+                              : () {
+                                  final exName = item['name'] as String? ?? 'Exercise';
+                                  if (isAdded) {
+                                    if (widget.onRemoveExercise != null) {
+                                      widget.onRemoveExercise!(idStr);
+                                    } else {
+                                      widget.existingExercises.removeWhere((e) => e.workoutId == idStr);
+                                    }
+                                    Dialogs.showSnack(
+                                      msg: '$exName removed from plan',
+                                    );
+                                  } else {
+                                    final WorkoutExercise newEx = WorkoutExercise(
+                                      id: 'temp_${DateTime.now().millisecondsSinceEpoch}_$index',
+                                      workoutId: idStr,
+                                      name: exName,
+                                      muscle: item['primary_muscle_group_name'] as String? ?? 'General',
+                                      equipment: item['equipment_name'] as String? ?? 'None',
+                                      type: item['type'] as String? ?? 'Other',
+                                      videoLink: item['video_url'] as String? ?? '',
+                                      trackBy: item['track_by']?.toString().toLowerCase() ?? 'reps',
+                                      sets: const [
+                                        {'set_number': 1},
+                                      ],
+                                    );
+                                    widget.onAddExercise?.call(newEx);
+                                    Dialogs.showSnack(
+                                      msg: '$exName added to plan list',
+                                    );
+                                  }
+                                  if (!mounted) return;
+                                  setState(() {});
+                                },
                           child: _SelectExerciseItem(
                             exercise: WorkoutExercise(
                               id: '',
@@ -1592,6 +1609,7 @@ class _SelectExerciseSheetContentState
                               sets: const [],
                             ),
                             isAdded: isAdded,
+                            showAddButton: showAdd,
                             onEdit: null,
                             onDelete: null,
                           ),
@@ -2559,12 +2577,14 @@ class _SelectExerciseItem extends StatelessWidget {
   const _SelectExerciseItem({
     required this.exercise,
     required this.isAdded,
+    this.showAddButton = true,
     this.onEdit,
     this.onDelete,
   });
 
   final WorkoutExercise exercise;
   final bool isAdded;
+  final bool showAddButton;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
@@ -2576,7 +2596,7 @@ class _SelectExerciseItem extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isAdded ? const Color(0xFFFF3434) : AppColors.borderGrey,
+          color: (showAddButton && isAdded) ? const Color(0xFFFF3434) : AppColors.borderGrey,
         ),
       ),
       child: Row(
@@ -2647,36 +2667,38 @@ class _SelectExerciseItem extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 16),
-          if (isAdded)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFEAEA),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFFF3434)),
-              ),
-              child: Text(
-                'Added',
-                style: AppStyles.text12Px.poppins.w600.copyWith(
-                  color: const Color(0xFFFF3434),
+          if (showAddButton) ...[
+            const SizedBox(width: 16),
+            if (isAdded)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFEAEA),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFFF3434)),
+                ),
+                child: Text(
+                  'Added',
+                  style: AppStyles.text12Px.poppins.w600.copyWith(
+                    color: const Color(0xFFFF3434),
+                  ),
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD30000),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Add',
+                  style: AppStyles.text12Px.poppins.w600.copyWith(
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFD30000),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'Add',
-                style: AppStyles.text12Px.poppins.w600.copyWith(
-                  color: Colors.white,
-                ),
-              ),
-            ),
+          ],
           if (onEdit != null || onDelete != null) ...[
             const SizedBox(width: 8),
             PopupMenuButton<String>(

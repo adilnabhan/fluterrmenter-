@@ -269,6 +269,8 @@ class SettingsScreen extends StatelessWidget {
                       backgroundColor: Colors.transparent,
                       builder: (context) => const SelectExerciseSheetContent(
                         title: 'Select Workout',
+                        hideYouCreated: true,
+                        showAddButton: false,
                       ),
                     );
                   }

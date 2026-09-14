@@ -11,11 +11,13 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 class TrainerCustomersScreen extends StatefulWidget {
   final bool isPushed;
   final String initialStatusFilter;
+  final bool hideStatusFilter;
 
   const TrainerCustomersScreen({
     super.key,
     this.isPushed = false,
     this.initialStatusFilter = 'all',
+    this.hideStatusFilter = false,
   });
 
   @override
@@ -171,18 +173,24 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     return gyms.toList();
   }
 
+  bool get _shouldHideFilter =>
+      widget.hideStatusFilter || widget.initialStatusFilter == 'active';
+
   List<Map<String, dynamic>> get _filteredClients {
     return _clients.where((client) {
       final orgName = client['organization_name'] ?? 'Direct Client';
       if (_selectedGymFilter != 'All' && orgName != _selectedGymFilter) {
         return false;
       }
-      if (_statusFilter == 'active') {
-        final statusInfo = _evaluateClientStatus(client);
-        if (statusInfo['isExpired'] == true) return false;
-      } else if (_statusFilter == 'expired') {
-        final statusInfo = _evaluateClientStatus(client);
-        if (statusInfo['isExpired'] != true) return false;
+      // If we are showing only active clients from the API, trust the backend status directly
+      if (!_shouldHideFilter) {
+        if (_statusFilter == 'active') {
+          final statusInfo = _evaluateClientStatus(client);
+          if (statusInfo['isExpired'] == true) return false;
+        } else if (_statusFilter == 'expired') {
+          final statusInfo = _evaluateClientStatus(client);
+          if (statusInfo['isExpired'] != true) return false;
+        }
       }
       return true;
     }).toList();
@@ -508,9 +516,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
             ),
 
           // 3. Sub-filter Chips (Filter and Active Clients)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
+          if (!_shouldHideFilter)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
               children: [
                 PopupMenuButton<String>(
                   onSelected: (String value) {

@@ -99,8 +99,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     required MemberDetailsModel memeberDetails,
     required MembershipPackageModel membershipPackageModel,
     double? discountAmount,
-    double? amountReceived,
-    String? paymentMethod,
+    List<Map<String, dynamic>>? payments,
     String? membershipStartDate,
     int? memberId,
   }) async {
@@ -113,7 +112,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       ),
     );
 
-    final map = {
+    final map = <String, dynamic>{
       'first_name': memeberDetails.firstName ?? memeberDetails.fullName ?? '',
       if (memeberDetails.lastName != null) 'last_name': memeberDetails.lastName,
       'mobile_number': (memeberDetails.mobileNumber?.startsWith('+') ?? false)
@@ -137,17 +136,8 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       'profession': memeberDetails.profession,
       'membership_plan_id': membershipPackageModel.id,
       if (discountAmount != null) 'discount_amount': discountAmount,
-      if (amountReceived != null) 'amount_received': amountReceived,
-      if (paymentMethod != null) 'payment_method': paymentMethod,
+      'payments': payments ?? [],
       if (membershipStartDate != null) 'membership_start_date': membershipStartDate,
-      'profile_picture':
-          (memeberDetails.profilePicture?.isNotEmpty ?? false) &&
-          !memeberDetails.profilePicture!.startsWith('http')
-              ? await MultipartFile.fromFile(
-                memeberDetails.profilePicture!,
-                filename: 'profile.jpg',
-              )
-              : null,
     }..removeWhere(
       (key, value) =>
           value == null || (value is String && value.trim().isEmpty),
@@ -155,7 +145,7 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
     print(' ths map is--$map');
     final res = await MembersRepository().createOrUpdateMember(
       memberId: memberId,
-      body: FormData.fromMap(map),
+      body: map,
     );
     if (isClosed) return;
     emit(state.copyWith(createOrUpdateMember: some(res)));

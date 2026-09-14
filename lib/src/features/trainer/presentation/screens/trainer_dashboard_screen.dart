@@ -351,6 +351,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                     const TrainerCustomersScreen(
                                       isPushed: true,
                                       initialStatusFilter: 'active',
+                                      hideStatusFilter: true,
                                     ),
                                   );
                                 },

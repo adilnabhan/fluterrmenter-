@@ -25,10 +25,13 @@ class _AppViewState extends State<AppView> {
     DioClient().registerAuthInterceptor(_cubit);
 
     /// 🔥 IMPORTANT: wait until HydratedCubit restores state
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final user = _cubit.state.currentUser;
       if (user?.refresh?.isNotEmpty == true) {
-        _cubit.refreshToken();
+        await _cubit.refreshToken();
+      }
+      if (user != null) {
+        unawaited(NotificationServices.requestPermissionAndRegisterToken());
       }
     });
   }
@@ -84,9 +87,11 @@ class _AppViewState extends State<AppView> {
   }
 
   Widget getScreen(AppState state) {
-    print('newly stored token is---${state.currentUser?.access}');
-    print('refresh token is---${state.currentUser?.refresh}');
-    print('user id is---${state.currentUser?.id}');
+    if (kDebugMode) {
+      print('🔒 AppView: Access token: ${state.currentUser?.access}');
+      print('🔒 AppView: Refresh token: ${state.currentUser?.refresh}');
+      print('🔒 AppView: User id: ${state.currentUser?.id}');
+    }
     final user = state.currentUser;
     if (user == null) {
       return const SignupScreen();

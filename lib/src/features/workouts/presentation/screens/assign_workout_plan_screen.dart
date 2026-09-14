@@ -38,13 +38,24 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
     });
 
     try {
-      final response = await DioClient().dio.get<dynamic>(
-        ApiUris.assignWorkoutPlan(widget.planId),
-        queryParameters: {
-          if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
-        },
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+      dynamic response;
+      try {
+        response = await DioClient().dio.get<dynamic>(
+          ApiUris.assignSingleDayWorkout(widget.planId),
+          queryParameters: {
+            if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
+          },
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      } catch (_) {
+        response = await DioClient().dio.get<dynamic>(
+          ApiUris.assignWorkoutPlan(widget.planId),
+          queryParameters: {
+            if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
+          },
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      }
 
       if (response.statusCode == 200 && response.data is List) {
         final List<dynamic> data = response.data as List<dynamic>;
@@ -279,19 +290,30 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
         return;
       }
 
-      final response = await dio.post<dynamic>(
-        ApiUris.assignWorkoutPlan(widget.planId),
-        data: {
-          'customer_id': customerId,
-          'title': finalTitle,
-          if (notesController.text.trim().isNotEmpty)
-            'notes': notesController.text.trim(),
-          if (selectedDate != null)
-            'start_date':
-                "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}",
-        },
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+      dynamic response;
+      final payload = {
+        'customer_id': customerId,
+        'title': finalTitle,
+        if (notesController.text.trim().isNotEmpty)
+          'notes': notesController.text.trim(),
+        if (selectedDate != null)
+          'start_date':
+              "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}",
+      };
+
+      try {
+        response = await dio.post<dynamic>(
+          ApiUris.assignSingleDayWorkout(widget.planId),
+          data: payload,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      } catch (_) {
+        response = await dio.post<dynamic>(
+          ApiUris.assignWorkoutPlan(widget.planId),
+          data: payload,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      }
 
       if (!mounted) return;
       setState(() {

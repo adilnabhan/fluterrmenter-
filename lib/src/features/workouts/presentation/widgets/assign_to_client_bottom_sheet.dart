@@ -453,50 +453,90 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
       final DateTime startDate = selectedDate ?? DateTime.now();
       List<Map<String, dynamic>> assignDays = [];
       DateTime calculatedEndDate = startDate.add(const Duration(days: 6));
+      int? foundMasterPlanId;
 
       if (widget.isMultiDayGroup) {
         try {
-          final groupPlansRes = await dio.get<dynamic>(
-            ApiUris.workoutPlans,
-            queryParameters: {'group': widget.planId},
-            options: Options(headers: {'X-Platform': platformSource}),
-          );
-          if (groupPlansRes.statusCode == 200 && groupPlansRes.data is List) {
-            final plansList = groupPlansRes.data as List;
-            if (plansList.isNotEmpty) {
-              final masterPlanId = plansList[0]['id'] as int;
-              final planDetailRes = await dio.get<dynamic>(
+          dynamic groupPlansRes;
+          try {
+            groupPlansRes = await dio.get<dynamic>(
+              ApiUris.multiDayWorkouts,
+              queryParameters: {'group': widget.planId},
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+          } catch (_) {
+            groupPlansRes = await dio.get<dynamic>(
+              ApiUris.workoutPlans,
+              queryParameters: {'group': widget.planId},
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+          }
+
+          List<dynamic> plansList = [];
+          if (groupPlansRes.statusCode == 200) {
+            if (groupPlansRes.data is List) {
+              plansList = groupPlansRes.data as List;
+            } else if (groupPlansRes.data is Map && groupPlansRes.data['results'] is List) {
+              plansList = groupPlansRes.data['results'] as List;
+            }
+          }
+
+          if (plansList.isNotEmpty) {
+            final masterPlanId = plansList[0]['id'] as int;
+            foundMasterPlanId = masterPlanId;
+
+            dynamic planDetailRes;
+            try {
+              planDetailRes = await dio.get<dynamic>(
+                ApiUris.multiDayWorkoutDetail(masterPlanId),
+                options: Options(headers: {'X-Platform': platformSource}),
+              );
+            } catch (_) {
+              planDetailRes = await dio.get<dynamic>(
                 ApiUris.workoutPlanDetail(masterPlanId),
                 options: Options(headers: {'X-Platform': platformSource}),
               );
-              if (planDetailRes.statusCode == 200 && planDetailRes.data is Map) {
-                final rawDays = planDetailRes.data['days'] as List? ?? [];
-                if (rawDays.isNotEmpty) {
-                  assignDays = [];
-                  for (int i = 0; i < rawDays.length; i++) {
-                    final dayMap = Map<String, dynamic>.from(rawDays[i] as Map);
-                    final dayDate = startDate.add(Duration(days: i));
-                    final String dayDateStr =
-                        "${dayDate.year}-${dayDate.month.toString().padLeft(2, '0')}-${dayDate.day.toString().padLeft(2, '0')}";
-                    final int pId = (dayMap['plan'] as int?) ??
-                        (dayMap['plan_id'] as int?) ??
-                        (dayMap['id'] as int);
+            }
 
-                    final String dayTitle =
-                        (dayMap['plan_name'] as String?) ??
-                        (dayMap['name'] as String?) ??
-                        (dayMap['title'] as String?) ??
-                        'Day ${i + 1}';
+            if (planDetailRes.statusCode == 200 && planDetailRes.data is Map) {
+              final rawDays = planDetailRes.data['days'] as List? ?? [];
+              if (rawDays.isNotEmpty) {
+                assignDays = [];
+                for (int i = 0; i < rawDays.length; i++) {
+                  final dayMap = Map<String, dynamic>.from(rawDays[i] as Map);
+                  final dayDate = startDate.add(Duration(days: i));
+                  final String dayDateStr =
+                      "${dayDate.year}-${dayDate.month.toString().padLeft(2, '0')}-${dayDate.day.toString().padLeft(2, '0')}";
+                  final int pId = (dayMap['child_plan_id'] as int?) ??
+                      ((dayMap['child_plan'] is Map)
+                          ? (dayMap['child_plan']['id'] as int?)
+                          : null) ??
+                      (dayMap['plan'] as int?) ??
+                      (dayMap['plan_id'] as int?) ??
+                      (dayMap['id'] as int);
 
-                    assignDays.add({
-                      'date': dayDateStr,
-                      'title': dayTitle,
-                      'plan_name': dayTitle,
-                      'plan_id': pId,
-                      'is_rest_day': dayMap['is_rest_day'] ?? false,
-                    });
-                    calculatedEndDate = dayDate;
-                  }
+                  final String dayTitle =
+                      (dayMap['effective_title'] as String?) ??
+                      (dayMap['child_plan_title'] as String?) ??
+                      ((dayMap['child_plan'] is Map)
+                          ? ((dayMap['child_plan']['name'] ??
+                                  dayMap['child_plan']['title'] ??
+                                  dayMap['child_plan']['plan_name'])
+                              as String?)
+                          : null) ??
+                      (dayMap['plan_name'] as String?) ??
+                      (dayMap['name'] as String?) ??
+                      (dayMap['title'] as String?) ??
+                      'Day ${i + 1}';
+
+                  assignDays.add({
+                    'date': dayDateStr,
+                    'title': dayTitle,
+                    'plan_name': dayTitle,
+                    'plan_id': pId,
+                    'is_rest_day': dayMap['is_rest_day'] ?? false,
+                  });
+                  calculatedEndDate = dayDate;
                 }
               }
             }
@@ -509,33 +549,86 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
       final String endDateStr =
           "${calculatedEndDate.year}-${calculatedEndDate.month.toString().padLeft(2, '0')}-${calculatedEndDate.day.toString().padLeft(2, '0')}";
 
-      final response = await dio.post<dynamic>(
-        widget.isMultiDayGroup
-            ? ApiUris.multiDayAssign
-            : ApiUris.assignWorkoutPlan(widget.planId),
-        data:
-            widget.isMultiDayGroup
-                ? {
-                  'customer_id': customerId,
-                  'group_id': widget.planId,
-                  'plan_name': finalTitle,
-                  'plan_type': 'custom_range',
-                  'start_date': startDateStr,
-                  'end_date': endDateStr,
-                  if (notesController.text.trim().isNotEmpty)
-                    'notes': notesController.text.trim(),
-                  'conflict_resolution': 'replace',
-                  if (assignDays.isNotEmpty) 'days': assignDays,
-                }
-                : {
-                  'customer_id': customerId,
-                  'title': finalTitle,
-                  if (notesController.text.trim().isNotEmpty)
-                    'notes': notesController.text.trim(),
-                  if (selectedDate != null) 'start_date': startDateStr,
-                },
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+      dynamic response;
+      if (widget.isMultiDayGroup) {
+        if (foundMasterPlanId != null) {
+          try {
+            response = await dio.post<dynamic>(
+              ApiUris.assignMultiDayWorkout(foundMasterPlanId),
+              data: {
+                'customer_id': customerId,
+                'title': finalTitle,
+                'start_date': startDateStr,
+                'end_date': endDateStr,
+                if (notesController.text.trim().isNotEmpty)
+                  'notes': notesController.text.trim(),
+                if (assignDays.isNotEmpty) 'days': assignDays,
+              },
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+          } catch (_) {
+            response = await dio.post<dynamic>(
+              ApiUris.multiDayAssign,
+              data: {
+                'customer_id': customerId,
+                'group_id': widget.planId,
+                'plan_name': finalTitle,
+                'plan_type': 'custom_range',
+                'start_date': startDateStr,
+                'end_date': endDateStr,
+                if (notesController.text.trim().isNotEmpty)
+                  'notes': notesController.text.trim(),
+                'conflict_resolution': 'replace',
+                if (assignDays.isNotEmpty) 'days': assignDays,
+              },
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+          }
+        } else {
+          response = await dio.post<dynamic>(
+            ApiUris.multiDayAssign,
+            data: {
+              'customer_id': customerId,
+              'group_id': widget.planId,
+              'plan_name': finalTitle,
+              'plan_type': 'custom_range',
+              'start_date': startDateStr,
+              'end_date': endDateStr,
+              if (notesController.text.trim().isNotEmpty)
+                'notes': notesController.text.trim(),
+              'conflict_resolution': 'replace',
+              if (assignDays.isNotEmpty) 'days': assignDays,
+            },
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+        }
+      } else {
+        try {
+          response = await dio.post<dynamic>(
+            ApiUris.assignSingleDayWorkout(widget.planId),
+            data: {
+              'customer_id': customerId,
+              'title': finalTitle,
+              if (notesController.text.trim().isNotEmpty)
+                'notes': notesController.text.trim(),
+              if (selectedDate != null) 'start_date': startDateStr,
+            },
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+        } catch (_) {
+          response = await dio.post<dynamic>(
+            ApiUris.assignWorkoutPlan(widget.planId),
+            data: {
+              'customer_id': customerId,
+              'title': finalTitle,
+              if (notesController.text.trim().isNotEmpty)
+                'notes': notesController.text.trim(),
+              if (selectedDate != null) 'start_date': startDateStr,
+            },
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+        }
+      }
 
       if (!mounted) return;
       setState(() {
