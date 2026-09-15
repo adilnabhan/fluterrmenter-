@@ -159,8 +159,36 @@ class _OrganizationListingAndDetailsScreenState
     _fetch(isRefresh: true);
   }
 
+  int? _pausedCustomersCount;
+
+  Future<void> _fetchPausedCount(int orgId) async {
+    try {
+      final res = await MembersRepository().membersListing(
+        queryParameters: {
+          'status': 'paused',
+          'organization_id': orgId,
+          'page_size': 1,
+        },
+      );
+      res.fold(
+        (_) {},
+        (model) {
+          if (mounted) {
+            setState(() {
+              _pausedCustomersCount = model.count ?? 0;
+            });
+          }
+        },
+      );
+    } catch (_) {}
+  }
+
   void _fetch({bool isRefresh = false}) {
     _cubit.fetchList(isRefresh: isRefresh);
+    final orgId = _cubit.state.selectedOrganization?.id;
+    if (orgId != null) {
+      _fetchPausedCount(orgId);
+    }
   }
 
   int _currentBannerIndex = 0;
@@ -252,6 +280,7 @@ class _OrganizationListingAndDetailsScreenState
       listener: (context, state) {
         if (state.selectedOrganization?.id != null) {
           _cubit.fetchOrg(orgId: state.selectedOrganization!.id!);
+          _fetchPausedCount(state.selectedOrganization!.id!);
         }
       },
 
@@ -410,7 +439,7 @@ class _OrganizationListingAndDetailsScreenState
                           (
                             title: 'Active Memberships',
 
-                            color: const Color(0xff486CC2),
+                            color: const Color(0xff15803D),
 
                             count: orgHomeData.activeCustomersCount ?? 0,
 
@@ -470,6 +499,28 @@ class _OrganizationListingAndDetailsScreenState
                                     status: 'expired',
 
                                     title: 'Expired Memberships',
+                                  ),
+                                );
+                              } else {
+                                Dialogs.showSnack(
+                                  msg: 'Organization not found',
+                                );
+                              }
+                            },
+                          ),
+
+                          (
+                            title: 'Freezed Clients',
+
+                            color: const Color(0xff0284C7),
+
+                            count: _pausedCustomersCount ?? 0,
+
+                            onTap: () {
+                              if (state.selectedOrganization?.id != null) {
+                                context.push(
+                                  FreezedMembersListingScreen(
+                                    orgId: state.selectedOrganization!.id!,
                                   ),
                                 );
                               } else {
@@ -1544,9 +1595,9 @@ class _OrganizationListingAndDetailsScreenState
 
                                   count: orgHomeData.activeCustomersCount ?? 0,
 
-                                  countColor: const Color(0xff3B5998),
+                                  countColor: const Color(0xff15803D),
 
-                                  labelColor: const Color(0xff3B5998),
+                                  labelColor: const Color(0xff15803D),
 
                                   gradient: const LinearGradient(
                                     begin: Alignment.topLeft,
@@ -1554,9 +1605,9 @@ class _OrganizationListingAndDetailsScreenState
                                     end: Alignment.bottomRight,
 
                                     colors: [
-                                      Color(0xffD6E4FF),
+                                      Color(0xffDCFCE7),
 
-                                      Color(0xffADC8FF),
+                                      Color(0xffBBF7D0),
                                     ],
                                   ),
 
@@ -1564,7 +1615,7 @@ class _OrganizationListingAndDetailsScreenState
 
                                   iconColor: Colors.white,
 
-                                  iconBgColor: const Color(0xff3B5998),
+                                  iconBgColor: const Color(0xff15803D),
 
                                   isChevron: false,
 
@@ -1615,6 +1666,48 @@ class _OrganizationListingAndDetailsScreenState
                                         null) {
                                       context.push(
                                         ExpiredMembersListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+
+                                (
+                                  title: 'Freezed\nClients',
+
+                                  count: _pausedCustomersCount ?? 0,
+
+                                  countColor: const Color(0xff0284C7),
+
+                                  labelColor: const Color(0xff0284C7),
+
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+
+                                    end: Alignment.bottomRight,
+
+                                    colors: [
+                                      Color(0xffE0F2FE),
+
+                                      Color(0xffBAE6FD),
+                                    ],
+                                  ),
+
+                                  borderColor: Colors.transparent,
+
+                                  iconColor: Colors.white,
+
+                                  iconBgColor: const Color(0xff0284C7),
+
+                                  isChevron: false,
+
+                                  onTap: () {
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        FreezedMembersListingScreen(
                                           orgId:
                                               state.selectedOrganization!.id!,
                                         ),
@@ -2280,7 +2373,7 @@ class _OrganizationListingAndDetailsScreenState
 
                             title: 'Active Memberships',
 
-                            color: const Color(0xff486CC2),
+                            color: const Color(0xff15803D),
 
                             count: orgHomeData.activeCustomersCount ?? 0,
 
@@ -2369,6 +2462,42 @@ class _OrganizationListingAndDetailsScreenState
                                 context.push(
 
                                   ExpiredMembersListingScreen(
+
+                                    orgId: state.selectedOrganization!.id!,
+
+                                  ),
+
+                                );
+
+                              } else {
+
+                                Dialogs.showSnack(
+
+                                  msg: 'Organization not found',
+
+                                );
+
+                              }
+
+                            },
+
+                          ),
+
+                          (
+
+                            title: 'Freezed Clients',
+
+                            color: const Color(0xff0284C7),
+
+                            count: _pausedCustomersCount ?? 0,
+
+                            onTap: () {
+
+                              if (state.selectedOrganization?.id != null) {
+
+                                context.push(
+
+                                  FreezedMembersListingScreen(
 
                                     orgId: state.selectedOrganization!.id!,
 

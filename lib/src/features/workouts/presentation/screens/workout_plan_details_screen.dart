@@ -3,6 +3,22 @@ import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/cre
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_reorder_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 
+class PlanDayItem {
+  final int? id;
+  final int dayNumber;
+  final String title;
+  List<WorkoutExercise> exercises;
+  List<WorkoutExercise> originalExercises;
+
+  PlanDayItem({
+    required this.id,
+    required this.dayNumber,
+    required this.title,
+    required this.exercises,
+    required this.originalExercises,
+  });
+}
+
 class WorkoutPlanDetailsScreen extends StatefulWidget {
   const WorkoutPlanDetailsScreen({
     super.key,
@@ -25,11 +41,12 @@ class WorkoutPlanDetailsScreen extends StatefulWidget {
 }
 
 class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
-  List<WorkoutExercise> _exercises = [];
-  List<WorkoutExercise> _originalExercises = [];
+  List<PlanDayItem> _planDays = [];
   bool _isLoading = true;
   bool _isSaving = false;
-  int? _dayId;
+
+  int get _totalExercisesCount =>
+      _planDays.fold(0, (sum, day) => sum + day.exercises.length);
 
   @override
   void initState() {
@@ -55,69 +72,181 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
         );
         final List<dynamic> days = data['days'] as List<dynamic>? ?? [];
         if (days.isNotEmpty) {
-          Map<String, dynamic> targetDay =
-              Map<String, dynamic>.from(days[0] as Map);
+          List<dynamic> targetDays = days;
           if (widget.planDayId != null) {
-            final found = days.firstWhere(
+            final found = days.where(
               (d) => (d as Map)['id'] == widget.planDayId,
-              orElse: () => days[0],
-            );
-            targetDay = Map<String, dynamic>.from(found as Map);
+            ).toList();
+            if (found.isNotEmpty) {
+              targetDays = found;
+            }
           }
-          _dayId = targetDay['id'] as int?;
-          final List<dynamic> exerciseList =
-              targetDay['exercises'] as List<dynamic>? ?? [];
 
-          final parsedExercises =
-              exerciseList.map((e) {
-                final Map<String, dynamic> item = Map<String, dynamic>.from(
-                  e as Map,
-                );
-                final workout = Map<String, dynamic>.from(
-                  item['workout_detail'] as Map? ?? {},
-                );
-                final List<dynamic> rawSets =
-                    item['sets'] as List<dynamic>? ?? [];
-                final setsList =
-                    rawSets
-                        .map((s) => Map<String, dynamic>.from(s as Map))
-                        .toList();
-                final int orderIdx =
-                    (item['order_index'] as int?) ??
-                    (item['order'] as int?) ??
-                    0;
-                return WorkoutExercise(
-                  id: item['id'].toString(),
-                  workoutId: item['workout'].toString(),
-                  name: workout['name'] as String? ?? 'Exercise',
-                  muscle:
-                      workout['primary_muscle_group_name'] as String? ??
-                      'General',
-                  equipment: workout['equipment_name'] as String? ?? 'None',
-                  type: workout['type'] as String? ?? 'Other',
-                  videoLink:
-                      item['video_url'] as String? ??
-                      workout['video_url'] as String? ??
-                      '',
-                  trackBy: workout['track_by'] as String? ?? 'reps',
-                  sets: setsList,
-                  orderIndex: orderIdx,
-                );
-              }).toList();
+          final List<PlanDayItem> parsedPlanDays = [];
+          for (int index = 0; index < targetDays.length; index++) {
+            final Map<String, dynamic> dayMap =
+                Map<String, dynamic>.from(targetDays[index] as Map);
+            final int? dayId = int.tryParse(dayMap['id']?.toString() ?? '');
 
-          parsedExercises.sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
+            int dayNum = index + 1;
+            if (dayMap['day_number'] != null) {
+              dayNum =
+                  int.tryParse(dayMap['day_number'].toString()) ?? (index + 1);
+            } else if (dayMap['day'] != null) {
+              dayNum = int.tryParse(dayMap['day'].toString()) ?? (index + 1);
+            } else if (dayMap['order'] != null) {
+              dayNum = int.tryParse(dayMap['order'].toString()) ?? (index + 1);
+            }
+
+            final String resolvedTitle =
+                (dayMap['title'] as String?) ??
+                (dayMap['plan_name'] as String?) ??
+                (dayMap['name'] as String?) ??
+                (dayMap['child_plan_title'] as String?) ??
+                (dayMap['effective_title'] as String?) ??
+                ((dayMap['child_plan'] is Map)
+                    ? ((dayMap['child_plan']['name'] ??
+                            dayMap['child_plan']['title'] ??
+                            dayMap['child_plan']['plan_name'])
+                        as String?)
+                    : null) ??
+                'Day $dayNum';
+
+            final List<dynamic> exerciseList =
+                (dayMap['exercises'] as List<dynamic>?) ??
+                ((dayMap['child_plan'] is Map)
+                    ? (dayMap['child_plan']['exercises'] as List<dynamic>?)
+                    : null) ??
+                [];
+
+            final parsedExercises =
+                exerciseList.map((e) {
+                  final Map<String, dynamic> item = Map<String, dynamic>.from(
+                    e as Map,
+                  );
+                  final workout = Map<String, dynamic>.from(
+                    item['workout_detail'] as Map? ?? {},
+                  );
+                  final List<dynamic> rawSets =
+                      item['sets'] as List<dynamic>? ?? [];
+                  final setsList =
+                      rawSets
+                          .map((s) => Map<String, dynamic>.from(s as Map))
+                          .toList();
+                  final int orderIdx =
+                      (item['order_index'] as int?) ??
+                      (item['order'] as int?) ??
+                      0;
+                  return WorkoutExercise(
+                    id: item['id'].toString(),
+                    workoutId: item['workout'].toString(),
+                    name: workout['name'] as String? ?? 'Exercise',
+                    muscle:
+                        workout['primary_muscle_group_name'] as String? ??
+                        'General',
+                    equipment: workout['equipment_name'] as String? ?? 'None',
+                    type: workout['type'] as String? ?? 'Other',
+                    videoLink:
+                        item['video_url'] as String? ??
+                        workout['video_url'] as String? ??
+                        '',
+                    trackBy: workout['track_by'] as String? ?? 'reps',
+                    sets: setsList,
+                    orderIndex: orderIdx,
+                  );
+                }).toList();
+
+            parsedExercises.sort(
+              (a, b) => a.orderIndex.compareTo(b.orderIndex),
+            );
+
+            parsedPlanDays.add(
+              PlanDayItem(
+                id: dayId,
+                dayNumber: dayNum,
+                title: resolvedTitle,
+                exercises: List.from(parsedExercises),
+                originalExercises: List.from(parsedExercises),
+              ),
+            );
+          }
+
+          parsedPlanDays.sort((a, b) {
+            final cmp = a.dayNumber.compareTo(b.dayNumber);
+            if (cmp != 0) return cmp;
+            return (a.id ?? 0).compareTo(b.id ?? 0);
+          });
 
           if (!mounted) return;
           setState(() {
-            _exercises = List.from(parsedExercises);
-            _originalExercises = List.from(parsedExercises);
+            _planDays = parsedPlanDays;
             _isLoading = false;
           });
         } else {
-          if (!mounted) return;
-          setState(() {
-            _isLoading = false;
-          });
+          final List<dynamic> directExercises =
+              data['exercises'] as List<dynamic>? ?? [];
+          if (directExercises.isNotEmpty) {
+            final parsedExercises =
+                directExercises.map((e) {
+                  final Map<String, dynamic> item = Map<String, dynamic>.from(
+                    e as Map,
+                  );
+                  final workout = Map<String, dynamic>.from(
+                    item['workout_detail'] as Map? ?? {},
+                  );
+                  final List<dynamic> rawSets =
+                      item['sets'] as List<dynamic>? ?? [];
+                  final setsList =
+                      rawSets
+                          .map((s) => Map<String, dynamic>.from(s as Map))
+                          .toList();
+                  final int orderIdx =
+                      (item['order_index'] as int?) ??
+                      (item['order'] as int?) ??
+                      0;
+                  return WorkoutExercise(
+                    id: item['id'].toString(),
+                    workoutId: item['workout'].toString(),
+                    name: workout['name'] as String? ?? 'Exercise',
+                    muscle:
+                        workout['primary_muscle_group_name'] as String? ??
+                        'General',
+                    equipment: workout['equipment_name'] as String? ?? 'None',
+                    type: workout['type'] as String? ?? 'Other',
+                    videoLink:
+                        item['video_url'] as String? ??
+                        workout['video_url'] as String? ??
+                        '',
+                    trackBy: workout['track_by'] as String? ?? 'reps',
+                    sets: setsList,
+                    orderIndex: orderIdx,
+                  );
+                }).toList();
+
+            parsedExercises.sort(
+              (a, b) => a.orderIndex.compareTo(b.orderIndex),
+            );
+
+            if (!mounted) return;
+            setState(() {
+              _planDays = [
+                PlanDayItem(
+                  id: widget.planDayId ?? widget.planId,
+                  dayNumber: 1,
+                  title: widget.planTitle,
+                  exercises: List.from(parsedExercises),
+                  originalExercises: List.from(parsedExercises),
+                ),
+              ];
+              _isLoading = false;
+            });
+          } else {
+            if (!mounted) return;
+            setState(() {
+              _planDays = [];
+              _isLoading = false;
+            });
+          }
         }
       } else {
         if (!mounted) return;
@@ -135,13 +264,14 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
     }
   }
 
-  Future<void> _saveChanges() async {
-    if (_dayId == null) {
-      Dialogs.showSnack(msg: 'No plan day linked.');
-      return;
+  Future<bool> _saveAllDayChanges() async {
+    final daysWithId = _planDays.where((d) => d.id != null).toList();
+    if (daysWithId.isEmpty) {
+      Dialogs.showSnack(msg: 'No plan days linked.');
+      return false;
     }
 
-    if (!mounted) return;
+    if (!mounted) return false;
     setState(() {
       _isSaving = true;
     });
@@ -149,90 +279,95 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
     try {
       final dio = DioClient().dio;
 
-      // 1. Find deleted exercises
-      final List<WorkoutExercise> toDelete = [];
-      for (var orig in _originalExercises) {
-        if (!_exercises.any((curr) => curr.id == orig.id)) {
-          toDelete.add(orig);
-        }
-      }
+      for (final day in daysWithId) {
+        final dayId = day.id!;
 
-      // 2. Perform deletions
-      for (var item in toDelete) {
-        final exerciseId = int.tryParse(item.id);
-        if (exerciseId != null) {
-          await dio.delete<dynamic>(
-            ApiUris.planDayExerciseDetail(_dayId!, exerciseId),
-            options: Options(headers: {'X-Platform': platformSource}),
-          );
-        }
-      }
-
-      // 3. Perform additions and updates
-      for (var i = 0; i < _exercises.length; i++) {
-        final curr = _exercises[i];
-        final isNew = curr.id.startsWith('temp_');
-        if (isNew) {
-          final workoutId = int.parse(curr.workoutId);
-          final res = await dio.post<dynamic>(
-            ApiUris.planDayExercises(_dayId!),
-            data: {
-              'workout': workoutId,
-              'video_url': curr.videoLink,
-              'order_index': i,
-              'sets': curr.sets,
-            },
-            options: Options(headers: {'X-Platform': platformSource}),
-          );
-          if ((res.statusCode == 200 || res.statusCode == 201) &&
-              res.data is Map) {
-            final newId = res.data['id'];
-            if (newId != null) {
-              _exercises[i] = _exercises[i].copyWith(id: newId.toString());
-            }
+        // 1. Find deleted exercises
+        final List<WorkoutExercise> toDelete = [];
+        for (var orig in day.originalExercises) {
+          if (!day.exercises.any((curr) => curr.id == orig.id)) {
+            toDelete.add(orig);
           }
-        } else {
-          final exerciseId = int.tryParse(curr.id);
+        }
+
+        // 2. Perform deletions
+        for (var item in toDelete) {
+          final exerciseId = int.tryParse(item.id);
           if (exerciseId != null) {
-            await dio.put<dynamic>(
-              ApiUris.planDayExerciseDetail(_dayId!, exerciseId),
-              data: {
-                'video_url': curr.videoLink,
-                'sets': curr.sets,
-                'order_index': i,
-                'order': i,
-              },
+            await dio.delete<dynamic>(
+              ApiUris.planDayExerciseDetail(dayId, exerciseId),
               options: Options(headers: {'X-Platform': platformSource}),
             );
           }
         }
-      }
 
-      // 4. Perform reorder update
-      final List<Map<String, dynamic>> reorderPayload = [];
-      for (var i = 0; i < _exercises.length; i++) {
-        final exerciseId = int.tryParse(_exercises[i].id);
-        if (exerciseId != null) {
-          reorderPayload.add({
-            'id': exerciseId,
-            'order_index': i,
-            'order': i,
-          });
+        // 3. Perform additions and updates
+        for (var i = 0; i < day.exercises.length; i++) {
+          final curr = day.exercises[i];
+          final isNew = curr.id.startsWith('temp_');
+          if (isNew) {
+            final workoutId = int.parse(curr.workoutId);
+            final res = await dio.post<dynamic>(
+              ApiUris.planDayExercises(dayId),
+              data: {
+                'workout': workoutId,
+                'video_url': curr.videoLink,
+                'order_index': i,
+                'sets': curr.sets,
+              },
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+            if ((res.statusCode == 200 || res.statusCode == 201) &&
+                res.data is Map) {
+              final newId = res.data['id'];
+              if (newId != null) {
+                day.exercises[i] =
+                    day.exercises[i].copyWith(id: newId.toString());
+              }
+            }
+          } else {
+            final exerciseId = int.tryParse(curr.id);
+            if (exerciseId != null) {
+              await dio.put<dynamic>(
+                ApiUris.planDayExerciseDetail(dayId, exerciseId),
+                data: {
+                  'video_url': curr.videoLink,
+                  'sets': curr.sets,
+                  'order_index': i,
+                  'order': i,
+                },
+                options: Options(headers: {'X-Platform': platformSource}),
+              );
+            }
+          }
+        }
+
+        // 4. Perform reorder update
+        final List<Map<String, dynamic>> reorderPayload = [];
+        for (var i = 0; i < day.exercises.length; i++) {
+          final exerciseId = int.tryParse(day.exercises[i].id);
+          if (exerciseId != null) {
+            reorderPayload.add({
+              'id': exerciseId,
+              'order_index': i,
+              'order': i,
+            });
+          }
+        }
+
+        if (reorderPayload.isNotEmpty) {
+          await dio.post<dynamic>(
+            ApiUris.planDayExercisesReorder(dayId),
+            data: reorderPayload,
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
         }
       }
 
-      if (reorderPayload.isNotEmpty) {
-        await dio.post<dynamic>(
-          ApiUris.planDayExercisesReorder(_dayId!),
-          data: reorderPayload,
-          options: Options(headers: {'X-Platform': platformSource}),
-        );
-      }
-
-      Dialogs.showSnack(msg: 'Changes saved successfully');
-      await _fetchPlanDetails();
+      return true;
     } catch (e) {
       Dialogs.showSnack(msg: 'Error saving changes: ${e.toString()}');
+      return false;
     } finally {
       if (mounted) {
         setState(() {
@@ -242,124 +377,27 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
     }
   }
 
+  Future<void> _saveChanges() async {
+    final success = await _saveAllDayChanges();
+    if (success) {
+      Dialogs.showSnack(msg: 'Changes saved successfully');
+      await _fetchPlanDetails();
+    }
+  }
+
   Future<void> _saveAndAssignWorkout(int customerId) async {
-    if (_exercises.isEmpty) {
+    if (_totalExercisesCount == 0) {
       Dialogs.showSnack(
         msg: 'Please add at least one exercise before assigning.',
       );
       return;
     }
 
-    if (_dayId == null) {
-      Dialogs.showSnack(msg: 'No plan day linked.');
-      return;
-    }
+    final success = await _saveAllDayChanges();
+    if (!success) return;
 
-    if (!mounted) return;
-    setState(() {
-      _isSaving = true;
-    });
-
-    try {
-      final dio = DioClient().dio;
-
-      // 1. Find deleted exercises
-      final List<WorkoutExercise> toDelete = [];
-      for (var orig in _originalExercises) {
-        if (!_exercises.any((curr) => curr.id == orig.id)) {
-          toDelete.add(orig);
-        }
-      }
-
-      // 2. Perform deletions
-      for (var item in toDelete) {
-        final exerciseId = int.tryParse(item.id);
-        if (exerciseId != null) {
-          await dio.delete<dynamic>(
-            ApiUris.planDayExerciseDetail(_dayId!, exerciseId),
-            options: Options(headers: {'X-Platform': platformSource}),
-          );
-        }
-      }
-
-      // 3. Perform additions and updates
-      for (var i = 0; i < _exercises.length; i++) {
-        final curr = _exercises[i];
-        final isNew = curr.id.startsWith('temp_');
-        if (isNew) {
-          final workoutId = int.parse(curr.workoutId);
-          final res = await dio.post<dynamic>(
-            ApiUris.planDayExercises(_dayId!),
-            data: {
-              'workout': workoutId,
-              'video_url': curr.videoLink,
-              'order_index': i,
-              'sets': curr.sets,
-            },
-            options: Options(headers: {'X-Platform': platformSource}),
-          );
-          if ((res.statusCode == 200 || res.statusCode == 201) &&
-              res.data is Map) {
-            final newId = res.data['id'];
-            if (newId != null) {
-              _exercises[i] = _exercises[i].copyWith(id: newId.toString());
-            }
-          }
-        } else {
-          final exerciseId = int.tryParse(curr.id);
-          if (exerciseId != null) {
-            await dio.put<dynamic>(
-              ApiUris.planDayExerciseDetail(_dayId!, exerciseId),
-              data: {
-                'video_url': curr.videoLink,
-                'sets': curr.sets,
-                'order_index': i,
-                'order': i,
-              },
-              options: Options(headers: {'X-Platform': platformSource}),
-            );
-          }
-        }
-      }
-
-      // 4. Perform reorder update
-      final List<Map<String, dynamic>> reorderPayload = [];
-      for (var i = 0; i < _exercises.length; i++) {
-        final exerciseId = int.tryParse(_exercises[i].id);
-        if (exerciseId != null) {
-          reorderPayload.add({
-            'id': exerciseId,
-            'order_index': i,
-            'order': i,
-          });
-        }
-      }
-
-      if (reorderPayload.isNotEmpty) {
-        await dio.post<dynamic>(
-          ApiUris.planDayExercisesReorder(_dayId!),
-          data: reorderPayload,
-          options: Options(headers: {'X-Platform': platformSource}),
-        );
-      }
-
-      // 5. Save completed. Refresh state and assign!
-      await _fetchPlanDetails();
-      setState(() {
-        _isSaving = false;
-      });
-
-      // trigger assignment prompt
-      await _assignWorkout(customerId);
-
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
-      Dialogs.showSnack(msg: 'Error saving and assigning: ${e.toString()}');
-    }
+    await _fetchPlanDetails();
+    await _assignWorkout(customerId);
   }
 
   Future<void> _assignWorkout(int customerId) async {
@@ -567,45 +605,46 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'Save as Template?',
-          style: AppStyles.text16Px.poppins.w600,
-        ),
-        content: const Text(
-          'Would you like to save this instant workout as a template for future use?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(
-              'No, thanks',
-              style: AppStyles.text14Px.poppins.w500.copyWith(
-                color: Colors.grey,
-              ),
+      builder:
+          (dialogContext) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
+            title: Text(
+              'Save as Template?',
+              style: AppStyles.text16Px.poppins.w600,
+            ),
+            content: const Text(
+              'Would you like to save this instant workout as a template for future use?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(
+                  'No, thanks',
+                  style: AppStyles.text14Px.poppins.w500.copyWith(
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Yes, Save',
+                  style: AppStyles.text14Px.poppins.w600.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              'Yes, Save',
-              style: AppStyles.text14Px.poppins.w600.copyWith(
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
 
     if (confirmed == true) {
@@ -614,19 +653,116 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (sheetContext) => _SaveTemplateBottomSheet(
-          planId: widget.planId,
-          defaultTemplateName: widget.planTitle,
-        ),
+        builder:
+            (sheetContext) => _SaveTemplateBottomSheet(
+              planId: widget.planId,
+              defaultTemplateName: widget.planTitle,
+            ),
       );
     }
   }
 
-  void _showSelectExerciseSheet(BuildContext context) {
-    if (_dayId == null) {
-      Dialogs.showSnack(msg: 'Cannot add exercise: no plan day found.');
-      return;
+  Future<PlanDayItem?> _askToSelectDay(String title) async {
+    if (_planDays.isEmpty) return null;
+    if (_planDays.length == 1) return _planDays.first;
+
+    return showModalBottomSheet<PlanDayItem>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (sheetCtx) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppStyles.text16Px.poppins.w600.copyWith(
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: _planDays.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, idx) {
+                        final day = _planDays[idx];
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFFD30000,
+                              ).withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'DAY ${day.dayNumber}',
+                              style: AppStyles.text12Px.poppins.w700.copyWith(
+                                color: const Color(0xFFD30000),
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            day.title,
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${day.exercises.length} exercises',
+                            style: AppStyles.text12Px.poppins.w400.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.chevron_right,
+                            color: Colors.grey,
+                          ),
+                          onTap: () => Navigator.pop(sheetCtx, day),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  void _showSelectExerciseSheet(
+    BuildContext context, [
+    PlanDayItem? targetDay,
+  ]) async {
+    PlanDayItem? dayToUse = targetDay;
+    if (dayToUse == null) {
+      if (_planDays.isEmpty) {
+        Dialogs.showSnack(msg: 'Cannot add exercise: no plan day found.');
+        return;
+      }
+      if (_planDays.length == 1) {
+        dayToUse = _planDays.first;
+      } else {
+        dayToUse = await _askToSelectDay('Select Day to Add Exercise');
+        if (dayToUse == null) return;
+      }
     }
+
     final user = context.read<AppCubit>().state.currentUser;
     final isTrainer = user?.userRole == 35;
 
@@ -636,25 +772,27 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       backgroundColor: Colors.transparent,
       builder:
           (sheetContext) => SelectExerciseSheetContent(
-            existingExercises: _exercises,
+            existingExercises: dayToUse!.exercises,
             hideYouCreated: !isTrainer,
             onAddExercise: (WorkoutExercise newEx) {
               if (!mounted) return;
               setState(() {
-                _exercises.add(newEx);
+                dayToUse!.exercises.add(newEx);
               });
             },
             onRemoveExercise: (String workoutId) {
               if (!mounted) return;
               setState(() {
-                _exercises.removeWhere((item) => item.workoutId == workoutId);
+                dayToUse!.exercises.removeWhere(
+                  (item) => item.workoutId == workoutId,
+                );
               });
             },
           ),
     );
   }
 
-  void _editExerciseBottomSheet(WorkoutExercise ex) {
+  void _editExerciseBottomSheet(WorkoutExercise ex, PlanDayItem day) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -665,19 +803,96 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
             onSave: (updatedEx) {
               if (!mounted) return;
               setState(() {
-                final index = _exercises.indexWhere((item) => item.id == ex.id);
+                final index = day.exercises.indexWhere(
+                  (item) => item.id == ex.id,
+                );
                 if (index != -1) {
-                  _exercises[index] = updatedEx;
+                  day.exercises[index] = updatedEx;
                 }
               });
             },
             onDelete: () {
               if (!mounted) return;
               setState(() {
-                _exercises.removeWhere((item) => item.id == ex.id);
+                day.exercises.removeWhere((item) => item.id == ex.id);
               });
             },
           ),
+    );
+  }
+
+  Widget _buildDayHeader(PlanDayItem day) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD30000).withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Day ${day.dayNumber}',
+              style: AppStyles.text12Px.poppins.w700.copyWith(
+                color: const Color(0xFFD30000),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  day.title,
+                  style: AppStyles.text16Px.poppins.w600.copyWith(
+                    color: AppColors.textDark,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '${day.exercises.length} ${day.exercises.length == 1 ? "exercise" : "exercises"}',
+                  style: AppStyles.text12Px.poppins.w400.copyWith(
+                    color: AppColors.textGrey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: () => _showSelectExerciseSheet(context, day),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF5F5F5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Color(0xFFD30000),
+                size: 20,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -714,7 +929,9 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                   child: Text(
-                    '${_exercises.length} Exercises',
+                    _planDays.length > 1
+                        ? '${_planDays.length} Days • $_totalExercisesCount Exercises'
+                        : '$_totalExercisesCount Exercises',
                     style: AppStyles.text14Px.poppins.w400.copyWith(
                       color: AppColors.textGrey,
                     ),
@@ -724,7 +941,9 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                   child:
                       _isLoading
                           ? const Center(child: CircularProgressIndicator())
-                          : _exercises.isEmpty
+                          : _planDays.isEmpty ||
+                              (_planDays.length == 1 &&
+                                  _planDays.first.exercises.isEmpty)
                           ? Center(
                             child: Text(
                               'No exercises in this plan.\nTap "+" below to add.',
@@ -734,17 +953,95 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                               ),
                             ),
                           )
-                          : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
-                            itemCount: _exercises.length,
+                          : _planDays.length == 1
+                          ? ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(
+                              20,
+                              24,
+                              20,
+                              120,
+                            ),
+                            itemCount: _planDays.first.exercises.length,
                             separatorBuilder:
-                                (context, index) => const SizedBox(height: 12),
+                                (context, index) =>
+                                    const SizedBox(height: 12),
                             itemBuilder: (context, index) {
-                              final item = _exercises[index];
+                              final item = _planDays.first.exercises[index];
                               return _ExerciseCard(
                                 index: index + 1,
                                 exercise: item,
-                                onEditTap: () => _editExerciseBottomSheet(item),
+                                onEditTap:
+                                    () => _editExerciseBottomSheet(
+                                      item,
+                                      _planDays.first,
+                                    ),
+                              );
+                            },
+                          )
+                          : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(
+                              20,
+                              16,
+                              20,
+                              120,
+                            ),
+                            itemCount: _planDays.length,
+                            separatorBuilder:
+                                (context, index) =>
+                                    const SizedBox(height: 20),
+                            itemBuilder: (context, dayIndex) {
+                              final day = _planDays[dayIndex];
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildDayHeader(day),
+                                  if (day.exercises.isEmpty)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 20,
+                                        horizontal: 16,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: const Color(0xFFE2E8F0),
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          'No exercises for this day.\nTap "+" on the header to add.',
+                                          textAlign: TextAlign.center,
+                                          style: AppStyles.text13Px.poppins.w400
+                                              .copyWith(
+                                                color: AppColors.textGrey,
+                                              ),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    ListView.separated(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: day.exercises.length,
+                                      separatorBuilder:
+                                          (context, exIndex) =>
+                                              const SizedBox(height: 12),
+                                      itemBuilder: (context, exIndex) {
+                                        final item = day.exercises[exIndex];
+                                        return _ExerciseCard(
+                                          index: exIndex + 1,
+                                          exercise: item,
+                                          onEditTap:
+                                              () => _editExerciseBottomSheet(
+                                                item,
+                                                day,
+                                              ),
+                                        );
+                                      },
+                                    ),
+                                ],
                               );
                             },
                           ),
@@ -778,21 +1075,37 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                       const SizedBox(width: 16),
                       InkWell(
                         onTap: () async {
+                          if (_planDays.isEmpty) return;
+                          PlanDayItem? dayToReorder;
+                          if (_planDays.length == 1) {
+                            dayToReorder = _planDays.first;
+                          } else {
+                            dayToReorder = await _askToSelectDay(
+                              'Select Day to Reorder',
+                            );
+                            if (dayToReorder == null) return;
+                          }
+
                           final updatedExercises =
                               await Navigator.push<List<WorkoutExercise>>(
                                 context,
                                 MaterialPageRoute(
                                   builder:
                                       (context) => WorkoutPlanReorderScreen(
-                                        planTitle: widget.planTitle,
-                                        exercises: _exercises,
+                                        planTitle:
+                                            _planDays.length > 1
+                                                ? 'Day ${dayToReorder!.dayNumber}: ${dayToReorder.title}'
+                                                : widget.planTitle,
+                                        exercises: List.from(
+                                          dayToReorder!.exercises,
+                                        ),
                                       ),
                                 ),
                               );
                           if (updatedExercises != null) {
                             if (!mounted) return;
                             setState(() {
-                              _exercises = updatedExercises;
+                              dayToReorder!.exercises = updatedExercises;
                             });
                           }
                         },
@@ -814,46 +1127,47 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                   _isSaving
                       ? const CircularProgressIndicator()
                       : widget.assignToCustomerId != null
-                          ? ElevatedButton(
-                              onPressed: () => _saveAndAssignWorkout(
-                                widget.assignToCustomerId!,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              child: Text(
-                                'Save & Assign',
-                                style: AppStyles.text14Px.poppins.w600.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            )
-                          : ElevatedButton(
-                              onPressed: _saveChanges,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD30000),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              child: Text(
-                                'Save Changes',
-                                style: AppStyles.text14Px.poppins.w600.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
+                      ? ElevatedButton(
+                        onPressed:
+                            () => _saveAndAssignWorkout(
+                              widget.assignToCustomerId!,
                             ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: Text(
+                          'Save & Assign',
+                          style: AppStyles.text14Px.poppins.w600.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                      : ElevatedButton(
+                        onPressed: _saveChanges,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD30000),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: Text(
+                          'Save Changes',
+                          style: AppStyles.text14Px.poppins.w600.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                 ],
               ),
             ),

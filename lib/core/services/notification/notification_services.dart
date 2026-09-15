@@ -2,12 +2,15 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/api/uris/api_uris.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/core/storage/local_storage_service.dart';
 import 'package:mentor_mobile_app/firebase_options.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_notifications_screen.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -85,6 +88,11 @@ class NotificationServices {
         if (kDebugMode) {
           print('🔔 Notification clicked: ${details.payload}');
         }
+        Feggy.navKey.currentState?.push(
+          MaterialPageRoute<void>(
+            builder: (context) => const TrainerNotificationsScreen(),
+          ),
+        );
       },
     );
 
@@ -122,6 +130,11 @@ class NotificationServices {
       if (kDebugMode) {
         print('🔔 App opened from notification: ${message.data}');
       }
+      Feggy.navKey.currentState?.push(
+        MaterialPageRoute<void>(
+          builder: (context) => const TrainerNotificationsScreen(),
+        ),
+      );
     });
 
     // Listen for token refresh

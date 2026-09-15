@@ -2,6 +2,8 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_clients_trained_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_pending_verifications_screen.dart';
 
 final ValueNotifier<int> reportsRefreshTrigger = ValueNotifier<int>(0);
 
@@ -173,18 +175,52 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                             value: '$dailyWorkoutsAssigned',
                             icon: Icons.assignment_outlined,
                             color: const Color(0xff9C51BF),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder:
+                                      (context) =>
+                                          const TrainerAssignedWorkoutsScreen(),
+                                ),
+                              );
+                            },
                           ),
                           _buildReportCard(
                             title: 'Workouts Completed',
                             value: '$dailyWorkoutsCompleted',
                             icon: Icons.check_circle_outline,
                             color: const Color(0xff527F50),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder:
+                                      (context) =>
+                                          const TrainerPendingVerificationsScreen(
+                                            initialTabIndex: 0,
+                                          ),
+                                ),
+                              );
+                            },
                           ),
                           _buildReportCard(
                             title: 'Verified Workouts',
                             value: '$dailyVerifiedWorkouts',
                             icon: Icons.verified_outlined,
                             color: const Color(0xffE67E22),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder:
+                                      (context) =>
+                                          const TrainerPendingVerificationsScreen(
+                                            initialTabIndex: 1,
+                                          ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

@@ -31,6 +31,8 @@ class __MembersAndLeadsListingScreenState
   List<({String label, String value})>? _selectedMembersSorts;
   final _filterOptions = const [
     (label: 'Active', value: 'active'),
+    (label: 'Paused', value: 'paused'),
+    (label: 'Expired', value: 'expired'),
     (label: 'New', value: 'new'),
   ];
 
@@ -58,16 +60,23 @@ class __MembersAndLeadsListingScreenState
     String? searchQuery,
     bool? isPagination = false,
   }) async {
+    MemberStatus? status;
+    if (_selectedMembersSorts != null) {
+      if (_selectedMembersSorts!.any((e) => e.value == 'active')) {
+        status = MemberStatus.active;
+      } else if (_selectedMembersSorts!.any((e) => e.value == 'paused')) {
+        status = MemberStatus.paused;
+      } else if (_selectedMembersSorts!.any((e) => e.value == 'expired')) {
+        status = MemberStatus.expired;
+      }
+    }
+
+    final isNew = _selectedMembersSorts?.any((e) => e.value == 'new') ?? false;
+
     await _cubit.fetchMembers(
       isPagination: isPagination!,
-      sort:
-          (_selectedMembersSorts?.contains(_filterOptions[1]) ?? false)
-              ? ListingSort.recent
-              : null,
-      status:
-          (_selectedMembersSorts?.contains(_filterOptions[0]) ?? false)
-              ? MemberStatus.active
-              : null,
+      sort: isNew ? ListingSort.recent : null,
+      status: status,
       searchQuery: searchQuery,
     );
   }

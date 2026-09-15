@@ -405,19 +405,20 @@ class _MemberAllMembershipsScreenState
   }) {
     final now = DateTime.now();
 
+    final memStatusStr = membership.status?.toLowerCase() ?? '';
+    final isPaused = memStatusStr == 'paused';
     final isActive = membership.isActive ?? false;
     final isTrial = membership.isTrial ?? false;
     final isTrialExpired =
         isTrial && (membership.trialEndAt?.isBefore(now) ?? false);
     final isMembershipExpired = membership.endDate?.isBefore(now) ?? false;
-    final isCancelled =
-        membership.status?.toLowerCase() == 'cancelled';
+    final isCancelled = memStatusStr == 'cancelled';
     final isExpired =
-        membership.status?.toLowerCase() == 'expired' || isMembershipExpired;
+        memStatusStr == 'expired' || isMembershipExpired;
 
     final actualIsActive =
-        isActive && !isMembershipExpired && !isTrialExpired && !isCancelled;
-    final actualIsTrial = isTrial && !isTrialExpired && !isCancelled;
+        isActive && !isMembershipExpired && !isTrialExpired && !isCancelled && !isPaused;
+    final actualIsTrial = isTrial && !isTrialExpired && !isCancelled && !isPaused;
 
     return Container(
       decoration: BoxDecoration(
@@ -426,9 +427,11 @@ class _MemberAllMembershipsScreenState
         border: Border.all(
           color: isCancelled
               ? Colors.red.withOpacity(0.3)
-              : actualIsActive
-                  ? Colors.green.withOpacity(0.3)
-                  : Colors.grey.withOpacity(0.2),
+              : isPaused
+                  ? Colors.amber.withOpacity(0.4)
+                  : actualIsActive
+                      ? Colors.green.withOpacity(0.3)
+                      : Colors.grey.withOpacity(0.2),
           width: 1.5,
         ),
         boxShadow: [
@@ -449,11 +452,13 @@ class _MemberAllMembershipsScreenState
                 end: Alignment.bottomRight,
                 colors: isCancelled
                     ? [Colors.red.shade50, Colors.red.shade100]
-                    : actualIsActive
-                        ? [Colors.green.shade50, Colors.green.shade100]
-                        : isExpired
-                            ? [Colors.red.shade50, Colors.red.shade100]
-                            : [Colors.orange.shade50, Colors.orange.shade100],
+                    : isPaused
+                        ? [Colors.amber.shade50, Colors.amber.shade100]
+                        : actualIsActive
+                            ? [Colors.green.shade50, Colors.green.shade100]
+                            : isExpired
+                                ? [Colors.red.shade50, Colors.red.shade100]
+                                : [Colors.orange.shade50, Colors.orange.shade100],
               ),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
@@ -468,21 +473,25 @@ class _MemberAllMembershipsScreenState
                   decoration: BoxDecoration(
                     color: isCancelled
                         ? Colors.red.shade700
-                        : actualIsActive
-                            ? Colors.green
-                            : isExpired
-                                ? Colors.red
-                                : Colors.orange,
+                        : isPaused
+                            ? Colors.amber.shade800
+                            : actualIsActive
+                                ? Colors.green
+                                : isExpired
+                                    ? Colors.red
+                                    : Colors.orange,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     isCancelled
                         ? Icons.block
-                        : actualIsActive
-                            ? Icons.fitness_center
-                            : isExpired
-                                ? Icons.cancel
-                                : Icons.pending,
+                        : isPaused
+                            ? Icons.pause_circle_filled
+                            : actualIsActive
+                                ? Icons.fitness_center
+                                : isExpired
+                                    ? Icons.cancel
+                                    : Icons.pending,
                     color: Colors.white,
                     size: 20,
                   ),
@@ -528,38 +537,46 @@ class _MemberAllMembershipsScreenState
                           Icon(
                             isCancelled
                                 ? Icons.block
-                                : actualIsActive
-                                    ? Icons.check_circle
-                                    : isExpired
-                                        ? Icons.cancel
-                                        : Icons.schedule,
+                                : isPaused
+                                    ? Icons.pause_circle_outline
+                                    : actualIsActive
+                                        ? Icons.check_circle
+                                        : isExpired
+                                            ? Icons.cancel
+                                            : Icons.schedule,
                             size: 14,
                             color: isCancelled
                                 ? Colors.red.shade700
-                                : actualIsActive
-                                    ? Colors.green
-                                    : isExpired
-                                        ? Colors.red
-                                        : Colors.orange,
+                                : isPaused
+                                    ? Colors.amber.shade800
+                                    : actualIsActive
+                                        ? Colors.green
+                                        : isExpired
+                                            ? Colors.red
+                                            : Colors.orange,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             isCancelled
                                 ? 'CANCELLED'
-                                : actualIsActive
-                                    ? 'Active'
-                                    : isExpired
-                                        ? 'Expired'
-                                        : membership.status?.toUpperCase() ??
-                                            'Unknown',
+                                : isPaused
+                                    ? 'Paused'
+                                    : actualIsActive
+                                        ? 'Active'
+                                        : isExpired
+                                            ? 'Expired'
+                                            : membership.status?.toUpperCase() ??
+                                                'Unknown',
                             style: AppStyles.text12Px.poppins.w500.copyWith(
                               color: isCancelled
                                   ? Colors.red.shade700
-                                  : actualIsActive
-                                      ? Colors.green
-                                      : isExpired
-                                          ? Colors.red
-                                          : Colors.orange,
+                                  : isPaused
+                                      ? Colors.amber.shade800
+                                      : actualIsActive
+                                          ? Colors.green
+                                          : isExpired
+                                              ? Colors.red
+                                              : Colors.orange,
                             ),
                           ),
                         ],
@@ -601,9 +618,11 @@ class _MemberAllMembershipsScreenState
                     Icons.more_vert,
                     color: isCancelled
                         ? Colors.red.shade700
-                        : actualIsActive
-                            ? Colors.green.shade700
-                            : Colors.grey.shade700,
+                        : isPaused
+                            ? Colors.amber.shade800
+                            : actualIsActive
+                                ? Colors.green.shade700
+                                : Colors.grey.shade700,
                     size: 22,
                   ),
                   shape: RoundedRectangleBorder(
@@ -612,6 +631,10 @@ class _MemberAllMembershipsScreenState
                   onSelected: (value) {
                     if (value == 'edit') {
                       _navigateToEditMembership(membership, data);
+                    } else if (value == 'pause') {
+                      _showPauseMembershipDialog(membership);
+                    } else if (value == 'resume') {
+                      _showResumeMembershipDialog(membership);
                     } else if (value == 'cancel') {
                       _showCancelMembershipDialog(membership);
                     }
@@ -630,6 +653,46 @@ class _MemberAllMembershipsScreenState
                         ],
                       ),
                     ),
+                    if (actualIsActive && !isPaused && !isCancelled)
+                      PopupMenuItem<String>(
+                        value: 'pause',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.pause_circle_outline,
+                              size: 18,
+                              color: Colors.amber.shade800,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Pause Membership',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: Colors.amber.shade800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (isPaused)
+                      PopupMenuItem<String>(
+                        value: 'resume',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.play_circle_outline,
+                              size: 18,
+                              color: Colors.green.shade700,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Resume Membership',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     if (!isCancelled)
                       PopupMenuItem<String>(
                         value: 'cancel',
@@ -661,6 +724,32 @@ class _MemberAllMembershipsScreenState
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                if (isPaused)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.amber.shade300),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.pause_circle_outline,
+                            size: 16, color: Colors.amber.shade800),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Membership is currently paused. Tap ⋮ to resume.',
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: Colors.amber.shade900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                 // Progress indicator for active memberships
                 if (actualIsActive &&
                     membership.startDate != null &&
@@ -950,6 +1039,528 @@ class _MemberAllMembershipsScreenState
           currentMembership: membership,
           onUpdated: _fetch,
         ),
+      ),
+    );
+  }
+
+  void _showPauseMembershipDialog(MembershipDataModel membership) {
+    final membershipId = membership.id;
+    if (membershipId == null) {
+      Dialogs.showSnack(msg: 'Unable to pause: Membership ID is missing');
+      return;
+    }
+
+    final reasonController = TextEditingController();
+    final durationController = TextEditingController(text: '7');
+    String durationType = 'days'; // 'days' or 'months'
+    bool isSubmitting = false;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            contentPadding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.pause_circle_filled,
+                    color: Colors.amber.shade800,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pause Membership',
+                        style: AppStyles.text16Px.poppins.w600.dark,
+                      ),
+                      Text(
+                        membership.membershipName ?? 'Current Plan',
+                        style: AppStyles.text12Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.amber.shade200),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: Colors.amber.shade800,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Temporarily freezes attendance. The membership end date will automatically be extended by the pause duration.',
+                            style: AppStyles.text12Px.poppins.w400.copyWith(
+                              color: Colors.amber.shade900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Pause Duration',
+                    style: AppStyles.text12Px.poppins.w600.dark,
+                  ),
+                  const SizedBox(height: 8),
+                  // Preset duration chips
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      (count: 7, type: 'days', label: '7 Days'),
+                      (count: 14, type: 'days', label: '14 Days'),
+                      (count: 30, type: 'days', label: '30 Days'),
+                      (count: 1, type: 'months', label: '1 Month'),
+                      (count: 2, type: 'months', label: '2 Months'),
+                    ].map((preset) {
+                      final isSelected =
+                          durationController.text == preset.count.toString() &&
+                              durationType == preset.type;
+                      return ChoiceChip(
+                        label: Text(preset.label),
+                        selected: isSelected,
+                        onSelected: isSubmitting
+                            ? null
+                            : (selected) {
+                                if (selected) {
+                                  setDialogState(() {
+                                    durationController.text =
+                                        preset.count.toString();
+                                    durationType = preset.type;
+                                  });
+                                }
+                              },
+                        selectedColor: Colors.amber.shade100,
+                        backgroundColor: Colors.grey.shade100,
+                        labelStyle: AppStyles.text12Px.poppins.w500.copyWith(
+                          color: isSelected
+                              ? Colors.amber.shade900
+                              : AppColors.textDark,
+                        ),
+                        side: BorderSide(
+                          color: isSelected
+                              ? Colors.amber.shade700
+                              : Colors.grey.shade300,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextField(
+                          controller: durationController,
+                          keyboardType: TextInputType.number,
+                          enabled: !isSubmitting,
+                          decoration: InputDecoration(
+                            labelText: 'Custom Count',
+                            labelStyle: AppStyles.text12Px.poppins.w400,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 3,
+                        child: DropdownButtonFormField<String>(
+                          value: durationType,
+                          items: const [
+                            DropdownMenuItem(value: 'days', child: Text('Days')),
+                            DropdownMenuItem(value: 'months', child: Text('Months')),
+                          ],
+                          onChanged: isSubmitting
+                              ? null
+                              : (val) {
+                                  if (val != null) {
+                                    setDialogState(() {
+                                      durationType = val;
+                                    });
+                                  }
+                                },
+                          decoration: InputDecoration(
+                            labelText: 'Unit',
+                            labelStyle: AppStyles.text12Px.poppins.w400,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: reasonController,
+                    maxLines: 2,
+                    enabled: !isSubmitting,
+                    decoration: InputDecoration(
+                      labelText: 'Reason (Optional)',
+                      hintText: 'e.g., Medical leave, Traveling',
+                      labelStyle: AppStyles.text12Px.poppins.w400,
+                      hintStyle: AppStyles.text12Px.poppins.w400.copyWith(
+                        color: Colors.grey.shade400,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: isSubmitting
+                              ? null
+                              : () => Navigator.pop(dialogContext),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey.shade300),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: Text(
+                            'Dismiss',
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: isSubmitting
+                              ? null
+                              : () async {
+                                  final durationVal = int.tryParse(
+                                    durationController.text.trim(),
+                                  );
+                                  if (durationVal == null || durationVal <= 0) {
+                                    Dialogs.showSnack(
+                                      msg: 'Please enter a valid positive duration',
+                                    );
+                                    return;
+                                  }
+
+                                  setDialogState(() {
+                                    isSubmitting = true;
+                                  });
+
+                                  final result = await MembershipRepository()
+                                      .pauseCustomerMembership(
+                                    customerMembershipId: membershipId,
+                                    duration: durationVal,
+                                    durationType: durationType,
+                                    reason: reasonController.text.trim(),
+                                  );
+
+                                  if (!mounted) return;
+                                  Navigator.pop(dialogContext);
+
+                                  result.fold(
+                                    (error) {
+                                      Dialogs.showSnack(
+                                        msg: error.msg.isNotEmpty
+                                            ? error.msg
+                                            : 'Failed to pause membership',
+                                      );
+                                    },
+                                    (_) {
+                                      Dialogs.showSnack(
+                                        msg: 'Membership paused successfully',
+                                      );
+                                      _fetch();
+                                    },
+                                  );
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber.shade800,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: isSubmitting
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Pause Plan',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showResumeMembershipDialog(MembershipDataModel membership) {
+    final membershipId = membership.id;
+    if (membershipId == null) {
+      Dialogs.showSnack(msg: 'Unable to resume: Membership ID is missing');
+      return;
+    }
+
+    final reasonController = TextEditingController();
+    bool isSubmitting = false;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            contentPadding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.play_circle_filled,
+                    color: Colors.green.shade700,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Resume Membership',
+                        style: AppStyles.text16Px.poppins.w600.dark,
+                      ),
+                      Text(
+                        membership.membershipName ?? 'Current Plan',
+                        style: AppStyles.text12Px.poppins.w400.copyWith(
+                          color: AppColors.textGrey,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.green.shade700,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Resuming early automatically recalculates elapsed pause days and credits back any unused days by adjusting the end date accordingly.',
+                          style: AppStyles.text12Px.poppins.w400.copyWith(
+                            color: Colors.green.shade900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: reasonController,
+                  maxLines: 2,
+                  enabled: !isSubmitting,
+                  decoration: InputDecoration(
+                    labelText: 'Reason for Resuming (Optional)',
+                    hintText: 'e.g., Returned from vacation earlier than planned',
+                    labelStyle: AppStyles.text12Px.poppins.w400,
+                    hintStyle: AppStyles.text12Px.poppins.w400.copyWith(
+                      color: Colors.grey.shade400,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: isSubmitting
+                            ? null
+                            : () => Navigator.pop(dialogContext),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text(
+                          'Keep Paused',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: isSubmitting
+                            ? null
+                            : () async {
+                                setDialogState(() {
+                                  isSubmitting = true;
+                                });
+
+                                final result = await MembershipRepository()
+                                    .resumeCustomerMembership(
+                                  customerMembershipId: membershipId,
+                                  reason: reasonController.text.trim(),
+                                );
+
+                                if (!mounted) return;
+                                Navigator.pop(dialogContext);
+
+                                result.fold(
+                                  (error) {
+                                    Dialogs.showSnack(
+                                      msg: error.msg.isNotEmpty
+                                          ? error.msg
+                                          : 'Failed to resume membership',
+                                    );
+                                  },
+                                  (_) {
+                                    Dialogs.showSnack(
+                                      msg: 'Membership resumed successfully',
+                                    );
+                                    _fetch();
+                                  },
+                                );
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade600,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: isSubmitting
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Yes, Resume',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

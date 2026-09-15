@@ -76,10 +76,31 @@ class __SubscriptionSelectionScreenState
                 } else {
                   Dialogs.showSnack(msg: 'member added successfully');
                 }
+                final planAmt = double.tryParse(
+                      _membershipPackageModel?.offerPrice ??
+                          _membershipPackageModel?.actualPrice ??
+                          '0',
+                    ) ??
+                    0;
                 context.push(
                   BlocProvider.value(
                     value: _cubit,
-                    child: const MemberOnboardPaymentSuccessScreen(),
+                    child: MemberOnboardPaymentSuccessScreen(
+                      memberDetails: r,
+                      planName: _membershipPackageModel?.name,
+                      planAmount: planAmt,
+                      discount: 0,
+                      amountPaid: planAmt,
+                      pendingDue: 0,
+                      startDate: DateTime.now(),
+                      endDate: _membershipPackageModel?.durationDays != null
+                          ? DateTime.now().add(
+                              Duration(
+                                days: _membershipPackageModel!.durationDays!,
+                              ),
+                            )
+                          : null,
+                    ),
                   ),
                 );
               },

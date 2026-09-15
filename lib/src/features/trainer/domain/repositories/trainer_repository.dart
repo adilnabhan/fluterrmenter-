@@ -116,6 +116,7 @@ class TrainerRepository {
     required int customerId,
     required String clientName,
     String? dateStr,
+    String? planType,
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -127,6 +128,7 @@ class TrainerRepository {
       'page_size': pageSize,
       'status': 'all',
       if (dateStr != null && dateStr.isNotEmpty) 'date': dateStr,
+      if (planType != null && planType.isNotEmpty) 'plan_type': planType,
     };
 
     // 1. Primary Endpoint
@@ -202,11 +204,13 @@ class TrainerRepository {
 
   Future<WorkoutsFetchResult> fetchAllTrainerAssignedWorkouts({
     String? dateStr,
+    String? planType,
     int page = 1,
     int pageSize = 20,
   }) async {
     final Map<String, dynamic> queryParams = {
       if (dateStr != null && dateStr.isNotEmpty) 'date': dateStr,
+      if (planType != null && planType.isNotEmpty) 'plan_type': planType,
       'status': 'all',
       'page': page,
       'page_size': pageSize,
@@ -262,6 +266,7 @@ class TrainerRepository {
               customerId: cid,
               clientName: cname,
               dateStr: dateStr,
+              planType: planType,
             ));
           }
         }

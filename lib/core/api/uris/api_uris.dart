@@ -91,6 +91,10 @@ final class ApiUris {
       '${_v1}fitnesscenter/customer-memberships/$id/';
   static String cancelCustomerMembership(int id) =>
       '${_v1}fitnesscenter/customer-memberships/$id/cancel/';
+  static String pauseCustomerMembership(int id) =>
+      '${_v1}fitnesscenter/customer-memberships/$id/pause/';
+  static String resumeCustomerMembership(int id) =>
+      '${_v1}fitnesscenter/customer-memberships/$id/resume/';
   static final paymentHistory = '${_v1}fitnesscenter/customer-payments/';
   static final reports = '${_v1}fitnesscenter/reports/';
   static final reportsCustomers = '${_v1}fitnesscenter/reports/customers/';
@@ -214,7 +218,7 @@ final class ApiUris {
       '${_v1}trainer/multi-day-workouts/$id/assign/';
 
   // Legacy Multi-Day Workout endpoints (maintained for backward compatibility)
-  static final multiDayAssign = '${_v1}trainer/multi-day-assign/';
+  static final multiDayAssign = '${_v1}trainer/multi-day-container-assign/';
   static String multiDayAssignPreview({
     required int customerId,
     required String startDate,
@@ -259,4 +263,6 @@ final class ApiUris {
 
   ///============================= Communication & Notifications =============================\\\
   static final registerDeviceToken = '${_v1}communication/device-token/register/';
+  static final notifications = '${_v1}communication/notifications/';
+  static final trainerNotifications = '${_v1}trainer/notifications/';
 }

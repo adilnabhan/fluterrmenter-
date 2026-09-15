@@ -235,9 +235,20 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
-      if (response.statusCode == 200 && response.data is List) {
-        final List<dynamic> data = response.data as List<dynamic>;
-        // Debug: Print workout history response to check field names
+      if (response.statusCode == 200 && response.data != null) {
+        List<dynamic> data = [];
+        if (response.data is List) {
+          data = response.data as List<dynamic>;
+        } else if (response.data is Map) {
+          final map = response.data as Map;
+          if (map['results'] is List) {
+            data = map['results'] as List;
+          } else if (map['data'] is List) {
+            data = map['data'] as List;
+          } else if (map['history'] is List) {
+            data = map['history'] as List;
+          }
+        }
         for (final entry in data) {
           write('WORKOUT_HISTORY_ENTRY: $entry');
         }

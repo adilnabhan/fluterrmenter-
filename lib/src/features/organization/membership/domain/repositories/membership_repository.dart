@@ -701,4 +701,112 @@ final class MembershipRepository {
       );
     }
   }
+
+  /// POST /api/v1/fitnesscenter/customer-memberships/{id}/pause/
+  /// Pauses a customer membership
+  Future<Either<ApiException, Map<String, dynamic>>> pauseCustomerMembership({
+    required int customerMembershipId,
+    required int duration,
+    required String durationType, // 'days' or 'months'
+    String? reason,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        ApiUris.pauseCustomerMembership(customerMembershipId),
+        data: {
+          'duration': duration,
+          'duration_type': durationType,
+          if (reason != null && reason.trim().isNotEmpty)
+            'reason': reason.trim(),
+        },
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      final statusCode = response.statusCode ?? 0;
+      if (statusCode == 200 || statusCode == 201) {
+        final data = response.data is Map<String, dynamic>
+            ? response.data as Map<String, dynamic>
+            : <String, dynamic>{};
+        return right(data);
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: 'Unexpected response from server. Code: $statusCode',
+        ),
+      );
+    } on DioException catch (e) {
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.isNotEmpty) {
+          final firstValue = data['message'] ?? data['detail'] ?? data.values.first;
+          if (firstValue is List && firstValue.isNotEmpty) {
+            return left(ApiException.unknown(msg: firstValue.first.toString()));
+          }
+          return left(ApiException.unknown(msg: firstValue.toString()));
+        }
+      }
+      return left(
+        ApiException.unknown(
+          msg: e.message ?? 'Something went wrong while pausing membership.',
+        ),
+      );
+    } catch (e) {
+      return left(
+        ApiException.unknown(msg: 'Unexpected error: ${e.toString()}'),
+      );
+    }
+  }
+
+  /// POST /api/v1/fitnesscenter/customer-memberships/{id}/resume/
+  /// Resumes a paused customer membership
+  Future<Either<ApiException, Map<String, dynamic>>> resumeCustomerMembership({
+    required int customerMembershipId,
+    String? reason,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        ApiUris.resumeCustomerMembership(customerMembershipId),
+        data: {
+          if (reason != null && reason.trim().isNotEmpty)
+            'reason': reason.trim(),
+        },
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      final statusCode = response.statusCode ?? 0;
+      if (statusCode == 200 || statusCode == 201) {
+        final data = response.data is Map<String, dynamic>
+            ? response.data as Map<String, dynamic>
+            : <String, dynamic>{};
+        return right(data);
+      }
+
+      return left(
+        ApiException.unknown(
+          msg: 'Unexpected response from server. Code: $statusCode',
+        ),
+      );
+    } on DioException catch (e) {
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.isNotEmpty) {
+          final firstValue = data['message'] ?? data['detail'] ?? data.values.first;
+          if (firstValue is List && firstValue.isNotEmpty) {
+            return left(ApiException.unknown(msg: firstValue.first.toString()));
+          }
+          return left(ApiException.unknown(msg: firstValue.toString()));
+        }
+      }
+      return left(
+        ApiException.unknown(
+          msg: e.message ?? 'Something went wrong while resuming membership.',
+        ),
+      );
+    } catch (e) {
+      return left(
+        ApiException.unknown(msg: 'Unexpected error: ${e.toString()}'),
+      );
+    }
+  }
 }

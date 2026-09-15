@@ -36,8 +36,19 @@ class _TrainerClientWorkoutHistoryCalendarState
   final Map<String, CalendarDayState> _dayStates = {};
 
   DateTime get _firstWorkoutDate {
-    return widget.startDate ??
-        DateTime.now().subtract(const Duration(days: 30));
+    DateTime earliest =
+        widget.startDate ?? DateTime.now().subtract(const Duration(days: 30));
+    for (final entry in widget.workoutHistory) {
+      final dateStr = entry['date'] as String? ?? '';
+      if (dateStr.isEmpty) continue;
+      final cleanDateStr = dateStr.split('T').first;
+      final parsed =
+          DateTime.tryParse(cleanDateStr) ?? DateTime.tryParse(dateStr);
+      if (parsed != null && parsed.isBefore(earliest)) {
+        earliest = parsed;
+      }
+    }
+    return earliest;
   }
 
   @override
@@ -65,7 +76,9 @@ class _TrainerClientWorkoutHistoryCalendarState
     for (final entry in widget.workoutHistory) {
       final dateStr = entry['date'] as String? ?? '';
       if (dateStr.isEmpty) continue;
-      final date = DateTime.tryParse(dateStr);
+      final cleanDateStr = dateStr.split('T').first;
+      final date =
+          DateTime.tryParse(cleanDateStr) ?? DateTime.tryParse(dateStr);
       if (date == null) continue;
       final dateKey = DateFormat('yyyy-MM-dd').format(date);
       historyByDate[dateKey] = entry;
@@ -87,19 +100,8 @@ class _TrainerClientWorkoutHistoryCalendarState
       final dateOnly = DateTime(date.year, date.month, date.day);
       final dateKey = DateFormat('yyyy-MM-dd').format(dateOnly);
 
-      // Future dates (strictly after today) → no indicator
-      if (dateOnly.isAfter(todayOnly)) {
-        _dayStates[dateKey] = CalendarDayState.future;
-        continue;
-      }
-
-      // Before membership start → no indicator
-      if (dateOnly.isBefore(startDateOnly)) {
-        _dayStates[dateKey] = CalendarDayState.future;
-        continue;
-      }
-
-      // Check if there's a workout history entry for this date
+      // 1. FIRST: Check if there's a workout history entry for this date!
+      // If a workout exists, it takes highest precedence regardless of membership start or future date.
       final historyEntry = historyByDate[dateKey];
       if (historyEntry != null) {
         final logs = historyEntry['logs'] as List<dynamic>? ?? [];
@@ -129,13 +131,27 @@ class _TrainerClientWorkoutHistoryCalendarState
         if (isVerified) {
           _dayStates[dateKey] = CalendarDayState.verified;
         } else {
-          // Assigned but not yet verified
+          // Assigned / Logged but not yet verified
           _dayStates[dateKey] = CalendarDayState.assigned;
         }
-      } else {
-        // Past date with no entry → missed
-        _dayStates[dateKey] = CalendarDayState.missed;
+        continue;
       }
+
+      // 2. Only if NO workout history exists for this date:
+      // Future dates (strictly after today) → no indicator
+      if (dateOnly.isAfter(todayOnly)) {
+        _dayStates[dateKey] = CalendarDayState.future;
+        continue;
+      }
+
+      // Before membership start → no indicator
+      if (dateOnly.isBefore(startDateOnly)) {
+        _dayStates[dateKey] = CalendarDayState.future;
+        continue;
+      }
+
+      // Past date within membership period with no workout logged → missed
+      _dayStates[dateKey] = CalendarDayState.missed;
     }
 
     if (mounted) {
@@ -576,14 +592,15 @@ class _TrainerClientWorkoutHistoryCalendarState
 
   void _showDayWorkoutBottomSheet(DateTime date) {
     final dateKey = DateFormat('yyyy-MM-dd').format(date);
-    final state = _dayStates[dateKey] ?? CalendarDayState.future;
 
     // Find the history entry for this date
     Map<String, dynamic>? historyEntry;
     for (final entry in widget.workoutHistory) {
       final dateStr = entry['date'] as String? ?? '';
       if (dateStr.isEmpty) continue;
-      final entryDate = DateTime.tryParse(dateStr);
+      final cleanDateStr = dateStr.split('T').first;
+      final entryDate =
+          DateTime.tryParse(cleanDateStr) ?? DateTime.tryParse(dateStr);
       if (entryDate != null &&
           entryDate.year == date.year &&
           entryDate.month == date.month &&
@@ -594,6 +611,10 @@ class _TrainerClientWorkoutHistoryCalendarState
     }
 
     final logs = (historyEntry?['logs'] as List<dynamic>?) ?? [];
+    final state = _dayStates[dateKey] ??
+        (historyEntry != null
+            ? CalendarDayState.assigned
+            : CalendarDayState.future);
 
     showModalBottomSheet<void>(
       context: context,
@@ -649,7 +670,7 @@ class _TrainerClientWorkoutHistoryCalendarState
                         ],
                       ),
                     ),
-                    _buildStatusBadge(state),
+                    _buildStatusBadge(state, hasLogs: logs.isNotEmpty),
                   ],
                 ),
               ),
@@ -675,7 +696,7 @@ class _TrainerClientWorkoutHistoryCalendarState
     );
   }
 
-  Widget _buildStatusBadge(CalendarDayState state) {
+  Widget _buildStatusBadge(CalendarDayState state, {bool hasLogs = false}) {
     Color bgColor;
     Color textColor;
     IconData icon;
@@ -691,7 +712,7 @@ class _TrainerClientWorkoutHistoryCalendarState
         bgColor = const Color(0xffFFF8E1);
         textColor = const Color(0xFFD1AC19);
         icon = Icons.schedule;
-        label = 'Assigned';
+        label = hasLogs ? 'Logged' : 'Assigned';
       case CalendarDayState.rest:
         bgColor = const Color(0xffE8EAF6);
         textColor = const Color(0xFF3949AB);

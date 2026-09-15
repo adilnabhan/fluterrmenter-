@@ -143,6 +143,42 @@ class _TrainerAssignedWorkoutsViewState
     return raw;
   }
 
+  Widget _buildSegmentButton({
+    required String title,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(9),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          title,
+          style: AppStyles.text14Px.poppins.copyWith(
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? AppColors.primary : const Color(0xff718096),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AssignedWorkoutsCubit, AssignedWorkoutsState>(
@@ -180,9 +216,44 @@ class _TrainerAssignedWorkoutsViewState
           ),
           body: Column(
             children: [
+              // Segmented Control: Single Day vs Multi Day
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                child: Container(
+                  height: 44,
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffEDF2F7),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildSegmentButton(
+                          title: 'Single Day',
+                          isSelected: state.selectedPlanType == 'single_day',
+                          onTap: () => context
+                              .read<AssignedWorkoutsCubit>()
+                              .selectPlanType('single_day'),
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildSegmentButton(
+                          title: 'Multi Day',
+                          isSelected: state.selectedPlanType == 'multi_day',
+                          onTap: () => context
+                              .read<AssignedWorkoutsCubit>()
+                              .selectPlanType('multi_day'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               // Search Bar with Calendar Filter Icon
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
                 child: Row(
                   children: [
                     Expanded(

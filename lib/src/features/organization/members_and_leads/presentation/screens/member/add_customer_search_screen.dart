@@ -321,10 +321,29 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
               },
               (r) {
                 Dialogs.showSnack(msg: 'Member added successfully');
+                final methodsStr = _paymentSplits
+                    .map((s) => s.method)
+                    .where((m) => m.isNotEmpty)
+                    .join(', ');
                 context.pushReplacement(
                   BlocProvider.value(
                     value: _cubit,
-                    child: const MemberOnboardPaymentSuccessScreen(),
+                    child: MemberOnboardPaymentSuccessScreen(
+                      memberDetails: r,
+                      planName: _selectedPlan?.name,
+                      planAmount: _planAmount,
+                      discount: _discount,
+                      amountPaid: _totalPaid,
+                      pendingDue: _pendingDue,
+                      startDate: _startDate,
+                      endDate: _selectedPlan?.durationDays != null
+                          ? _startDate.add(
+                              Duration(days: _selectedPlan!.durationDays!),
+                            )
+                          : null,
+                      paymentMethod:
+                          methodsStr.isNotEmpty ? methodsStr : null,
+                    ),
                   ),
                 );
               },

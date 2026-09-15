@@ -10,6 +10,7 @@ import 'package:mentor_mobile_app/src/features/organization/listing_and_details/
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/domain/model/organization_details_model.dart';
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/faq_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_notifications_screen.dart';
 
 class TrainerProfileSettingsScreen extends StatefulWidget {
   const TrainerProfileSettingsScreen({super.key});
@@ -317,6 +318,14 @@ class _TrainerProfileSettingsScreenState
               _buildSettingsItem(
                 icon: Icons.notifications_outlined,
                 title: 'Notifications',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (context) => const TrainerNotificationsScreen(),
+                    ),
+                  );
+                },
               ),
               _buildSettingsItem(
                 icon: Icons.contrast,

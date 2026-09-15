@@ -571,6 +571,22 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                           ),
                         ),
                         PopupMenuItem<String>(
+                          value: 'paused',
+                          child: Text(
+                            'Paused Clients',
+                            style: AppStyles.text12Px.poppins.copyWith(
+                              fontWeight:
+                                  _statusFilter == 'paused'
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                              color:
+                                  _statusFilter == 'paused'
+                                      ? AppColors.primary
+                                      : AppColors.textDark,
+                            ),
+                          ),
+                        ),
+                        PopupMenuItem<String>(
                           value: 'expired',
                           child: Text(
                             'Expired Clients',
@@ -622,6 +638,8 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                               ? 'Filter'
                               : _statusFilter == 'active'
                               ? 'Active Clients'
+                              : _statusFilter == 'paused'
+                              ? 'Paused Clients'
                               : 'Expired Clients',
                           style: AppStyles.text12Px.poppins.w600.copyWith(
                             color:

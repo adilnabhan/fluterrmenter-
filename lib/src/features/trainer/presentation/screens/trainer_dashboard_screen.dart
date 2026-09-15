@@ -11,6 +11,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/client_attendance_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reviews_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_notifications_screen.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
   const TrainerDashboardScreen({super.key});
@@ -290,7 +291,15 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                             Row(
                               children: [
                                 IconButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute<void>(
+                                        builder: (context) =>
+                                            const TrainerNotificationsScreen(),
+                                      ),
+                                    );
+                                  },
                                   icon: Icon(
                                     Icons.notifications_none_rounded,
                                     color: context.colors.icon,
@@ -370,16 +379,15 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                     Color(0xffFFAB91),
                                   ],
                                 ),
-                                onTap: () async {
-                                  await Navigator.push(
+                                onTap: () {
+                                  Navigator.push(
                                     context,
-                                    MaterialPageRoute(
+                                    MaterialPageRoute<void>(
                                       builder:
                                           (context) =>
                                               const TrainerPendingVerificationsScreen(),
                                     ),
                                   );
-                                  _fetchDashboardData(isSilent: true);
                                 },
                               ),
                               _buildStatCard(
@@ -387,16 +395,15 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                 value: '${stats['todays_assigned_workouts_count'] ?? stats['todays_assigned_workouts'] ?? stats['today_assigned_workouts_count'] ?? stats['assigned_workouts_count'] ?? stats['assigned_plans_count'] ?? 0}',
                                 valueColor: const Color(0xFFD97706),
                                 titleColor: context.colors.textPrimary,
-                                onTap: () async {
-                                  await Navigator.push(
+                                onTap: () {
+                                  Navigator.push(
                                     context,
-                                    MaterialPageRoute(
+                                    MaterialPageRoute<void>(
                                       builder:
                                           (context) =>
                                               const TrainerAssignedWorkoutsScreen(),
                                     ),
                                   );
-                                  _fetchDashboardData(isSilent: true);
                                 },
                               ),
                               _buildStatCard(
@@ -404,8 +411,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                 value: '$averageRating',
                                 valueColor: const Color(0xFF16A34A),
                                 titleColor: context.colors.textPrimary,
-                                onTap: () async {
-                                  await Navigator.push(
+                                onTap: () {
+                                  Navigator.push(
                                     context,
                                     MaterialPageRoute<void>(
                                       builder:
@@ -413,7 +420,6 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                               const TrainerReviewsScreen(),
                                     ),
                                   );
-                                  _fetchDashboardData(isSilent: true);
                                 },
                               ),
                               _buildStatCard(
@@ -421,8 +427,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                 value: '${stats['today_client_attendance_count'] ?? stats['today_present_count'] ?? stats['present_count'] ?? stats['client_attendance_count'] ?? stats['active_clients'] ?? activeClients}',
                                 valueColor: const Color(0xFF3B66D4),
                                 titleColor: context.colors.textPrimary,
-                                onTap: () async {
-                                  await Navigator.push(
+                                onTap: () {
+                                  Navigator.push(
                                     context,
                                     MaterialPageRoute<void>(
                                       builder:
@@ -432,7 +438,6 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                           ),
                                     ),
                                   );
-                                  _fetchDashboardData(isSilent: true);
                                 },
                               ),
                             ],

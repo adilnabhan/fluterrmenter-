@@ -19,12 +19,14 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
   Future<void> loadAssignedWorkouts({
     bool reset = true,
     DateTime? dateOverride,
+    String? planTypeOverride,
   }) async {
     if (isClosed) return;
 
     final date = dateOverride ?? state.selectedDate;
     final dateStr =
         date != null ? DateFormat('yyyy-MM-dd').format(date) : null;
+    final planType = planTypeOverride ?? state.selectedPlanType;
 
     if (reset) {
       emit(state.copyWith(
@@ -34,6 +36,7 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
         workouts: [],
         selectedDate: date,
         clearSelectedDate: date == null,
+        selectedPlanType: planType,
       ));
     } else {
       if (!state.hasMore || state.isLoadingMore) return;
@@ -49,11 +52,13 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
           customerId: customerId!,
           clientName: customerName ?? 'Client',
           dateStr: dateStr,
+          planType: planType,
           page: pageToFetch,
         );
       } else {
         result = await repository.fetchAllTrainerAssignedWorkouts(
           dateStr: dateStr,
+          planType: planType,
           page: pageToFetch,
         );
       }
@@ -108,6 +113,12 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
       clearSelectedDate: date == null,
     ));
     loadAssignedWorkouts(dateOverride: date);
+  }
+
+  void selectPlanType(String planType) {
+    if (isClosed || state.selectedPlanType == planType) return;
+    emit(state.copyWith(selectedPlanType: planType));
+    loadAssignedWorkouts(reset: true, planTypeOverride: planType);
   }
 
   void setSearchQuery(String query) {

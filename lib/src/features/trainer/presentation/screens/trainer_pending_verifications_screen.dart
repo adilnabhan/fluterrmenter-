@@ -3,9 +3,15 @@ import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reports_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_workout_session_detail_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
 
 class TrainerPendingVerificationsScreen extends StatefulWidget {
-  const TrainerPendingVerificationsScreen({super.key});
+  const TrainerPendingVerificationsScreen({
+    super.key,
+    this.initialTabIndex = 0,
+  });
+
+  final int initialTabIndex;
 
   @override
   State<TrainerPendingVerificationsScreen> createState() =>
@@ -21,10 +27,10 @@ class _TrainerPendingVerificationsScreenState
   List<Map<String, dynamic>> _verificationHistory = [];
 
   bool _isLoadingPending = true;
-  bool _isLoadingHistory = true;
-
-  Map<String, String> _clientProfilesByName = {};
-  Map<int, String> _clientProfilesById = {};
+  bool _isLoadingHistory = false;
+  bool _hasFetchedPending = false;
+  bool _hasFetchedHistory = false;
+  int _lastTabIndex = 0;
 
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -115,60 +121,27 @@ class _TrainerPendingVerificationsScreenState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _lastTabIndex = widget.initialTabIndex;
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
     _tabController.addListener(_handleTabSelection);
-    _fetchClientProfiles();
-    _fetchPendingVerifications();
-    _fetchVerificationHistory();
-  }
-
-  Future<void> _fetchClientProfiles() async {
-    try {
-      final response = await DioClient().dio.get<dynamic>(
-        ApiUris.trainerCustomers,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> data =
-            (response.data is Map)
-                ? (List<dynamic>.from(
-                  (response.data as Map)['results'] as List? ?? [],
-                ))
-                : (response.data as List<dynamic>);
-        final Map<String, String> byName = {};
-        final Map<int, String> byId = {};
-        for (final e in data) {
-          if (e is Map) {
-            final String name = e['name'] as String? ?? '';
-            final String pic =
-                e['profile_picture'] as String? ??
-                e['image_url'] as String? ??
-                '';
-            final int id = e['id'] as int? ?? 0;
-            if (name.isNotEmpty && pic.isNotEmpty) {
-              byName[name] = pic;
-            }
-            if (id > 0 && pic.isNotEmpty) {
-              byId[id] = pic;
-            }
-          }
-        }
-        if (mounted) {
-          setState(() {
-            _clientProfilesByName = byName;
-            _clientProfilesById = byId;
-          });
-        }
-      }
-    } catch (_) {}
+    if (widget.initialTabIndex == 1) {
+      _fetchVerificationHistory();
+    } else {
+      _fetchPendingVerifications();
+    }
   }
 
   void _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
-      if (_tabController.index == 0) {
-        _fetchPendingVerifications();
-      } else {
+    if (_tabController.index != _lastTabIndex) {
+      _lastTabIndex = _tabController.index;
+      if (_tabController.index == 1 && !_hasFetchedHistory) {
         _fetchVerificationHistory();
+      } else if (_tabController.index == 0 && !_hasFetchedPending) {
+        _fetchPendingVerifications();
       }
     }
   }
@@ -226,6 +199,7 @@ class _TrainerPendingVerificationsScreenState
           setState(() {
             _pendingVerifications = parsedPending;
             _isLoadingPending = false;
+            _hasFetchedPending = true;
           });
         }
       } else {
@@ -337,6 +311,7 @@ class _TrainerPendingVerificationsScreenState
           setState(() {
             _verificationHistory = parsedHistory;
             _isLoadingHistory = false;
+            _hasFetchedHistory = true;
           });
         }
       } else {
@@ -364,7 +339,10 @@ class _TrainerPendingVerificationsScreenState
         reportsRefreshTrigger.value++;
         Dialogs.showSnack(msg: 'Workout $status successfully');
         _fetchPendingVerifications();
-        _fetchVerificationHistory();
+        _hasFetchedHistory = false;
+        if (_tabController.index == 1) {
+          _fetchVerificationHistory();
+        }
       } else {
         Dialogs.showSnack(msg: 'Failed to update status');
       }
@@ -768,7 +746,12 @@ class _TrainerPendingVerificationsScreenState
                       final sessionId = item['session_id'] as int? ?? 0;
                       final customerName =
                           item['customer_name'] as String? ?? 'Client';
-                      final customerId = item['customer_id'] as int? ?? 0;
+                      final customerId = item['customer_id'] as int? ??
+                          (item['customer'] is Map
+                              ? (item['customer'] as Map)['id'] as int?
+                              : null) ??
+                          (item['client_id'] as int?) ??
+                          0;
                       final profilePic =
                           item['customer_profile_picture'] as String? ??
                           item['profile_picture'] as String? ??
@@ -777,9 +760,7 @@ class _TrainerPendingVerificationsScreenState
                           (item['customer'] is Map
                               ? (item['customer'] as Map)['profile_picture']
                                   as String?
-                              : null) ??
-                          _clientProfilesById[customerId] ??
-                          _clientProfilesByName[customerName];
+                              : null);
                       final workoutTitle =
                           item['workout_title'] as String? ?? 'Workout';
                       final completedAtRaw =
@@ -837,43 +818,61 @@ class _TrainerPendingVerificationsScreenState
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  if (profilePic != null &&
-                                      profilePic.isNotEmpty)
-                                    ProfileImage(
-                                      isEdit: false,
-                                      url: profilePic,
-                                      radius: 20,
-                                    )
-                                  else
-                                    const Icon(
-                                      Icons.person,
-                                      size: 24,
-                                      color: AppColors.primary,
-                                    ),
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () {
+                                      if (customerId > 0) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute<void>(
+                                            builder:
+                                                (context) =>
+                                                    TrainerClientDetailScreen(
+                                                      customerId: customerId,
+                                                    ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child:
+                                        profilePic != null &&
+                                                profilePic.isNotEmpty
+                                            ? ProfileImage(
+                                              isEdit: false,
+                                              url: profilePic,
+                                              radius: 26,
+                                            )
+                                            : Container(
+                                              width: 52,
+                                              height: 52,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.primary
+                                                    .withValues(alpha: 0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.person,
+                                                size: 28,
+                                                color: AppColors.primary,
+                                              ),
+                                            ),
+                                  ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                customerName,
-                                                style:
-                                                    AppStyles
-                                                        .text16Px
-                                                        .poppins
-                                                        .w600
-                                                        .dark,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 6),
-                                            _buildWorkoutTypeBadge(item),
-                                          ],
+                                        Text(
+                                          customerName,
+                                          style:
+                                              AppStyles
+                                                  .text16Px
+                                                  .poppins
+                                                  .w600
+                                                  .dark,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
@@ -882,20 +881,29 @@ class _TrainerPendingVerificationsScreenState
                                               .copyWith(
                                                 color: AppColors.textDark,
                                               ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
                                   ),
-                                  if (completedAt.isNotEmpty)
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        const Icon(
-                                          Icons.check_circle_outline,
-                                          size: 16,
-                                          color: Colors.green,
-                                        ),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _buildWorkoutTypeBadge(item),
+                                          const SizedBox(width: 8),
+                                          const Icon(
+                                            Icons.check_circle_outline,
+                                            size: 16,
+                                            color: Colors.green,
+                                          ),
+                                        ],
+                                      ),
+                                      if (completedAt.isNotEmpty) ...[
                                         const SizedBox(height: 4),
                                         Text(
                                           completedAt,
@@ -905,7 +913,8 @@ class _TrainerPendingVerificationsScreenState
                                               ),
                                         ),
                                       ],
-                                    ),
+                                    ],
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 16),
@@ -1254,7 +1263,12 @@ class _TrainerPendingVerificationsScreenState
                       final item = historyList[index];
                       final customerName =
                           item['customer_name'] as String? ?? 'Client';
-                      final customerId = item['customer_id'] as int? ?? 0;
+                      final customerId = item['customer_id'] as int? ??
+                          (item['customer'] is Map
+                              ? (item['customer'] as Map)['id'] as int?
+                              : null) ??
+                          (item['client_id'] as int?) ??
+                          0;
                       final profilePic =
                           item['customer_profile_picture'] as String? ??
                           item['profile_picture'] as String? ??
@@ -1263,9 +1277,7 @@ class _TrainerPendingVerificationsScreenState
                           (item['customer'] is Map
                               ? (item['customer'] as Map)['profile_picture']
                                   as String?
-                              : null) ??
-                          _clientProfilesById[customerId] ??
-                          _clientProfilesByName[customerName];
+                              : null);
                       final workoutTitle =
                           item['workout_title'] as String? ?? 'Workout';
                       final verifiedAtRaw =
@@ -1359,20 +1371,46 @@ class _TrainerPendingVerificationsScreenState
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  if (profilePic != null &&
-                                      profilePic.isNotEmpty)
-                                    ProfileImage(
-                                      isEdit: false,
-                                      url: profilePic,
-                                      radius: 20,
-                                    )
-                                  else
-                                    const Icon(
-                                      Icons.person,
-                                      size: 24,
-                                      color: AppColors.primary,
-                                    ),
-                                  const SizedBox(width: 6),
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () {
+                                      if (customerId > 0) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute<void>(
+                                            builder:
+                                                (context) =>
+                                                    TrainerClientDetailScreen(
+                                                      customerId: customerId,
+                                                    ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child:
+                                        profilePic != null &&
+                                                profilePic.isNotEmpty
+                                            ? ProfileImage(
+                                              isEdit: false,
+                                              url: profilePic,
+                                              radius: 24,
+                                            )
+                                            : Container(
+                                              width: 48,
+                                              height: 48,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.primary
+                                                    .withValues(alpha: 0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.person,
+                                                size: 24,
+                                                color: AppColors.primary,
+                                              ),
+                                            ),
+                                  ),
+                                  const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
                                       customerName,

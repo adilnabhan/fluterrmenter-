@@ -17,6 +17,7 @@ class AssignedWorkoutsState {
     this.isLoadingMore = false,
     this.currentPage = 1,
     this.selectedDate,
+    this.selectedPlanType = 'single_day',
     this.searchQuery = '',
     this.sortNewestFirst = true,
     this.errorMessage,
@@ -30,6 +31,7 @@ class AssignedWorkoutsState {
   final bool isLoadingMore;
   final int currentPage;
   final DateTime? selectedDate;
+  final String selectedPlanType;
   final String searchQuery;
   final bool sortNewestFirst;
   final String? errorMessage;
@@ -44,6 +46,7 @@ class AssignedWorkoutsState {
     int? currentPage,
     DateTime? selectedDate,
     bool clearSelectedDate = false,
+    String? selectedPlanType,
     String? searchQuery,
     bool? sortNewestFirst,
     String? errorMessage,
@@ -57,6 +60,7 @@ class AssignedWorkoutsState {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       currentPage: currentPage ?? this.currentPage,
       selectedDate: clearSelectedDate ? null : (selectedDate ?? this.selectedDate),
+      selectedPlanType: selectedPlanType ?? this.selectedPlanType,
       searchQuery: searchQuery ?? this.searchQuery,
       sortNewestFirst: sortNewestFirst ?? this.sortNewestFirst,
       errorMessage: errorMessage,
