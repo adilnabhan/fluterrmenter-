@@ -81,6 +81,8 @@ final class ApiUris {
   static final listMembershipPackages = '${_v1}fitnesscenter/membership-plans/';
   static final manualMembershipEntry =
       '${_v1}fitnesscenter/memberships/manual-entry/';
+  static final renewMembership =
+      '${_v1}fitnesscenter/memberships/renew/';
   static final customerRenewals = '${_v1}fitnesscenter/customer_renewals/';
   static String updateMembershipPackage(int id) =>
       '${_v1}fitnesscenter/membership-plans/$id/';
@@ -119,6 +121,8 @@ final class ApiUris {
   static final clientAttendanceDashboard = '${_v1}fitnesscenter/client-attendance/dashboard/';
   static final gymHolidays = '${_v1}fitnesscenter/holidays/';
   static String gymHolidayDetail(int id) => '${_v1}fitnesscenter/holidays/$id/';
+  static String collectMembershipFee(int customerMembershipId) =>
+      '${_v1}fitnesscenter/customer-memberships/$customerMembershipId/collect-fee/';
   // static String paymentHistory(String orgId) =>
   //     '${_v1}fitnesscenter/customer-payments/$orgId';
 
@@ -263,6 +267,15 @@ final class ApiUris {
 
   ///============================= Communication & Notifications =============================\\\
   static final registerDeviceToken = '${_v1}communication/device-token/register/';
-  static final notifications = '${_v1}communication/notifications/';
+  static final notifications = '${_v1}mentor/notifications/';
   static final trainerNotifications = '${_v1}trainer/notifications/';
+  static final mentorNotifications = '${_v1}mentor/notifications/';
+  static final mentorNotificationsUnreadCount =
+      '${_v1}mentor/notifications/unread-count/';
+  static String mentorNotificationRead(dynamic id) =>
+      '${_v1}mentor/notifications/$id/read/';
+  static final mentorNotificationsReadAll =
+      '${_v1}mentor/notifications/read-all/';
+  static String deleteMentorNotification(dynamic id) =>
+      '${_v1}mentor/notifications/$id/';
 }

@@ -15,6 +15,7 @@ import 'package:mentor_mobile_app/src/features/organization/listing_and_details/
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_amenities_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_banners_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_notifications_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   final int? orgId;
@@ -463,6 +464,17 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 icon: Icons.notifications_outlined,
                 title: 'Notifications',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (context) => TrainerNotificationsScreen(
+                        isTrainer: false,
+                        orgId: orgId,
+                      ),
+                    ),
+                  );
+                },
               ),
               _buildSettingsItem(
                 context,

@@ -3,6 +3,8 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 class MemberOnboardPaymentSuccessScreen extends StatefulWidget {
   const MemberOnboardPaymentSuccessScreen({
     this.memberDetails,
+    this.clientName,
+    this.clientPhone,
     this.planName,
     this.planAmount,
     this.discount,
@@ -11,10 +13,16 @@ class MemberOnboardPaymentSuccessScreen extends StatefulWidget {
     this.startDate,
     this.endDate,
     this.paymentMethod,
+    this.isRenewal = false,
+    this.title,
+    this.subtitle,
+    this.onDone,
     super.key,
   });
 
   final MemberDetailsModel? memberDetails;
+  final String? clientName;
+  final String? clientPhone;
   final String? planName;
   final double? planAmount;
   final double? discount;
@@ -23,6 +31,10 @@ class MemberOnboardPaymentSuccessScreen extends StatefulWidget {
   final DateTime? startDate;
   final DateTime? endDate;
   final String? paymentMethod;
+  final bool isRenewal;
+  final String? title;
+  final String? subtitle;
+  final VoidCallback? onDone;
 
   @override
   State<MemberOnboardPaymentSuccessScreen> createState() =>
@@ -39,6 +51,9 @@ class _MemberOnboardPaymentSuccessScreenState
   }
 
   String get _clientName {
+    if (widget.clientName != null && widget.clientName!.trim().isNotEmpty) {
+      return widget.clientName!.trim();
+    }
     final name = widget.memberDetails?.fullName ??
         '${widget.memberDetails?.firstName ?? ''} ${widget.memberDetails?.lastName ?? ''}'
             .trim();
@@ -46,6 +61,9 @@ class _MemberOnboardPaymentSuccessScreenState
   }
 
   String get _clientPhone {
+    if (widget.clientPhone != null && widget.clientPhone!.trim().isNotEmpty) {
+      return widget.clientPhone!.trim();
+    }
     return widget.memberDetails?.mobileNumber ?? '';
   }
 
@@ -110,7 +128,11 @@ class _MemberOnboardPaymentSuccessScreenState
         : 'N/A';
 
     final buffer = StringBuffer();
-    buffer.writeln('🧾 *INVOICE & MEMBERSHIP RECEIPT*');
+    buffer.writeln(
+      widget.isRenewal
+          ? '🧾 *MEMBERSHIP RENEWAL RECEIPT*'
+          : '🧾 *INVOICE & MEMBERSHIP RECEIPT*',
+    );
     buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━━');
     buffer.writeln('🏋️ *Fitness Center:* $_fitnessCenterName');
     buffer.writeln('👤 *Member Name:* $_clientName');
@@ -141,7 +163,9 @@ class _MemberOnboardPaymentSuccessScreenState
     }
     buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━━');
     buffer.writeln(
-      'Thank you for choosing $_fitnessCenterName! Stay fit, stay disciplined. 💪',
+      widget.isRenewal
+          ? 'Thank you for renewing with $_fitnessCenterName! Stay fit, stay disciplined. 💪'
+          : 'Thank you for choosing $_fitnessCenterName! Stay fit, stay disciplined. 💪',
     );
 
     final encodedText = Uri.encodeComponent(buffer.toString());
@@ -153,6 +177,14 @@ class _MemberOnboardPaymentSuccessScreenState
   }
 
   void _onDone() {
+    if (widget.onDone != null) {
+      widget.onDone!();
+      return;
+    }
+    if (widget.isRenewal) {
+      Navigator.pop(context);
+      return;
+    }
     context.pushAndRemoveUntil(const OrganizationListingScreen());
   }
 
@@ -196,7 +228,10 @@ class _MemberOnboardPaymentSuccessScreenState
                     .fadeIn(duration: const Duration(milliseconds: 300)),
                 const SizedBox(height: 12),
                 Text(
-                  'Client Added Successfully!',
+                  widget.title ??
+                      (widget.isRenewal
+                          ? 'Membership Renewed Successfully!'
+                          : 'Client Added Successfully!'),
                   style: AppStyles.text18Px.poppins.w700.copyWith(
                     color: context.colors.textPrimary,
                   ),
@@ -204,7 +239,10 @@ class _MemberOnboardPaymentSuccessScreenState
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Membership has been activated for $_clientName',
+                  widget.subtitle ??
+                      (widget.isRenewal
+                          ? 'Membership has been renewed for $_clientName'
+                          : 'Membership has been activated for $_clientName'),
                   style: AppStyles.text12Px.poppins.w400.copyWith(
                     color: context.colors.textSecondary,
                   ),
@@ -249,7 +287,9 @@ class _MemberOnboardPaymentSuccessScreenState
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'INVOICE SUMMARY',
+                                widget.isRenewal
+                                    ? 'RENEWAL SUMMARY'
+                                    : 'INVOICE SUMMARY',
                                 style: AppStyles.text12Px.poppins.w700.copyWith(
                                   letterSpacing: 0.8,
                                   color: AppColors.primary,

@@ -28,12 +28,24 @@ class __MembersAndLeadsListingScreenState
     extends State<_MembersAndLeadsListingScreen> {
   late final ScrollController _scrollController;
   late final MembersAndLeadsCubit _cubit;
-  List<({String label, String value})>? _selectedMembersSorts;
+  List<({String label, String value})>? _selectedFilters;
+  ({String label, String value})? _selectedSort;
+
   final _filterOptions = const [
     (label: 'Active', value: 'active'),
-    (label: 'Paused', value: 'paused'),
+    (label: 'Expired in last 10 days', value: 'expired_10d'),
+    (label: 'Pending Fee', value: 'pending_fee'),
     (label: 'Expired', value: 'expired'),
-    (label: 'New', value: 'new'),
+    (label: 'Frozen', value: 'frozen'),
+    (label: 'Male', value: 'male'),
+    (label: 'Female', value: 'female'),
+  ];
+
+  final _sortOptions = const [
+    (label: 'Joined Recently', value: 'recent'),
+    (label: 'Joined First', value: 'oldest'),
+    (label: 'A-Z', value: 'a_z'),
+    (label: 'Z-A', value: 'z_a'),
   ];
 
   @override
@@ -60,23 +72,28 @@ class __MembersAndLeadsListingScreenState
     String? searchQuery,
     bool? isPagination = false,
   }) async {
-    MemberStatus? status;
-    if (_selectedMembersSorts != null) {
-      if (_selectedMembersSorts!.any((e) => e.value == 'active')) {
-        status = MemberStatus.active;
-      } else if (_selectedMembersSorts!.any((e) => e.value == 'paused')) {
-        status = MemberStatus.paused;
-      } else if (_selectedMembersSorts!.any((e) => e.value == 'expired')) {
-        status = MemberStatus.expired;
+    String? status;
+    String? gender;
+    bool? pendingFee;
+
+    if (_selectedFilters != null && _selectedFilters!.isNotEmpty) {
+      for (final f in _selectedFilters!) {
+        if (f.value == 'male' || f.value == 'female') {
+          gender = f.value;
+        } else if (f.value == 'pending_fee') {
+          pendingFee = true;
+        } else {
+          status = f.value;
+        }
       }
     }
 
-    final isNew = _selectedMembersSorts?.any((e) => e.value == 'new') ?? false;
-
     await _cubit.fetchMembers(
       isPagination: isPagination!,
-      sort: isNew ? ListingSort.recent : null,
-      status: status,
+      sortString: _selectedSort?.value,
+      statusString: status,
+      gender: gender,
+      pendingFee: pendingFee,
       searchQuery: searchQuery,
     );
   }
@@ -154,18 +171,45 @@ class __MembersAndLeadsListingScreenState
                 child: Column(
                   spacing: 16,
                   children: [
-                    SizedBox(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           FilterButton(
-                            isSelected:
-                                _selectedMembersSorts?.isNotEmpty ?? false,
+                            isSelected: _selectedSort != null,
                             onTap: () {
                               FilterSelectionSheet(
-                                selectedFilters: _selectedMembersSorts,
+                                title: 'Sort by',
+                                isSingleSelect: true,
+                                selectedFilters:
+                                    _selectedSort != null ? [_selectedSort!] : null,
                                 onFilterSelected: (values) {
-                                  _selectedMembersSorts = values;
+                                  _selectedSort =
+                                      values?.isNotEmpty == true
+                                          ? values!.first
+                                          : null;
+                                  _fetchMembers();
+                                  if (!mounted) return;
+                                  setState(() {});
+                                },
+                                items: _sortOptions,
+                              ).show(context);
+                            },
+                            sortLabel: _selectedSort != null
+                                ? 'Sort: ${_selectedSort!.label}'
+                                : 'Sort by',
+                          ),
+                          const SizedBox(width: 8),
+                          FilterButton(
+                            isSelected:
+                                _selectedFilters?.isNotEmpty ?? false,
+                            onTap: () {
+                              FilterSelectionSheet(
+                                title: 'Filter by',
+                                selectedFilters: _selectedFilters,
+                                onFilterSelected: (values) {
+                                  _selectedFilters = values;
                                   _fetchMembers();
                                   if (!mounted) return;
                                   setState(() {});
@@ -173,7 +217,9 @@ class __MembersAndLeadsListingScreenState
                                 items: _filterOptions,
                               ).show(context);
                             },
-                            sortLabel: 'Filter by',
+                            sortLabel: (_selectedFilters?.isNotEmpty ?? false)
+                                ? 'Filter (${_selectedFilters!.length})'
+                                : 'Filter by',
                           ),
                         ],
                       ),

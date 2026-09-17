@@ -8,6 +8,7 @@ import 'package:mentor_mobile_app/src/features/organization/listing_and_details/
 
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/upcoming_payments_widget.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_notifications_screen.dart';
 
 class OrganizationListingScreen extends StatelessWidget {
   const OrganizationListingScreen({super.key});
@@ -361,14 +362,9 @@ class _OrganizationListingAndDetailsScreenState
                       ),
 
                       actions: [
-                        IconButton(
-                          onPressed: () {},
-
-                          icon: const Icon(
-                            Icons.notifications_none_rounded,
-
-                            color: Colors.black87,
-                          ),
+                        NotificationBellButton(
+                          orgId: state.selectedOrganization?.id,
+                          isTrainer: false,
                         ),
 
                         IconButton(
@@ -1188,14 +1184,9 @@ class _OrganizationListingAndDetailsScreenState
 
                             // centerTitle: false,
                             actions: [
-                              IconButton(
-                                onPressed: () {},
-
-                                icon: const Icon(
-                                  Icons.notifications_none_rounded,
-
-                                  color: Colors.black87,
-                                ),
+                              NotificationBellButton(
+                                orgId: state.selectedOrganization?.id,
+                                isTrainer: false,
                               ),
 
                               IconButton(

@@ -31,6 +31,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   String _searchQuery = '';
   String _statusFilter = 'all';
   final _searchController = TextEditingController();
+  Timer? _searchDebounceTimer;
+  bool _isSearching = false;
 
   int _currentPage = 1;
   bool _hasMore = true;
@@ -46,10 +48,33 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
   @override
   void dispose() {
+    _searchDebounceTimer?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _searchDebounceTimer?.cancel();
+    final trimmed = query.trim();
+    setState(() {
+      _searchQuery = trimmed;
+    });
+
+    if (trimmed.isEmpty) {
+      _fetchAttendance(silent: true);
+      return;
+    }
+
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 400), () async {
+      if (!mounted) return;
+      setState(() => _isSearching = true);
+      await _fetchAttendance(silent: true);
+      if (mounted) {
+        setState(() => _isSearching = false);
+      }
+    });
   }
 
   void _onScroll() {
@@ -91,6 +116,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           url += '&membership_status=$_statusFilter';
         } else if (_statusFilter == 'pending_fee') {
           url += '&pending_fee=true';
+        } else if (_statusFilter == 'active_present') {
+          url += '&status=present&membership_status=active';
+        } else if (_statusFilter == 'expired_present') {
+          url += '&status=present&membership_status=expired';
+        } else if (_statusFilter == 'pending_fee_present') {
+          url += '&status=present&pending_fee=true';
         }
       }
       if (_searchQuery.isNotEmpty) {
@@ -242,6 +273,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           url += '&membership_status=$_statusFilter';
         } else if (_statusFilter == 'pending_fee') {
           url += '&pending_fee=true';
+        } else if (_statusFilter == 'active_present') {
+          url += '&status=present&membership_status=active';
+        } else if (_statusFilter == 'expired_present') {
+          url += '&status=present&membership_status=expired';
+        } else if (_statusFilter == 'pending_fee_present') {
+          url += '&status=present&pending_fee=true';
         }
       }
       if (_searchQuery.isNotEmpty) {
@@ -414,37 +451,84 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   }
 
   Future<void> _saveHoliday({
-    required DateTime date,
+    List<DateTime>? dates,
+    DateTime? date,
     required String title,
+    Map<String, String>? customTitles,
     String? description,
     int? holidayId,
   }) async {
     try {
-      final dateStr = DateFormat('yyyy-MM-dd').format(date);
-      final payload = <String, dynamic>{
-        'organization_id': widget.orgId,
-        'date': dateStr,
-        'title': title,
-      };
-      if (description != null && description.isNotEmpty) {
-        payload['description'] = description;
+      final List<DateTime> targetDates = [];
+      if (dates != null && dates.isNotEmpty) {
+        targetDates.addAll(dates);
+      } else if (date != null) {
+        targetDates.add(date);
+      }
+
+      if (targetDates.isEmpty) {
+        Dialogs.showSnack(msg: 'Please select at least one date.');
+        return;
       }
 
       if (holidayId != null) {
+        final d = targetDates.first;
+        final dateStr = DateFormat('yyyy-MM-dd').format(d);
         await DioClient().dio.patch<dynamic>(
           ApiUris.gymHolidayDetail(holidayId),
-          data: payload,
+          data: {
+            'organization_id': widget.orgId,
+            'date': dateStr,
+            'title': title,
+            if (description != null && description.isNotEmpty)
+              'description': description,
+          },
           options: Options(headers: {'X-Platform': platformSource}),
         );
       } else {
-        await DioClient().dio.post<dynamic>(
-          ApiUris.gymHolidays,
-          data: payload,
-          options: Options(headers: {'X-Platform': platformSource}),
-        );
+        // Group dates by title (uses custom title for that date if set, otherwise common title)
+        final Map<String, List<String>> titleToDates = {};
+        for (final d in targetDates) {
+          final dStr = DateFormat('yyyy-MM-dd').format(d);
+          final t = (customTitles != null &&
+                  customTitles[dStr]?.trim().isNotEmpty == true)
+              ? customTitles[dStr]!.trim()
+              : title.trim();
+          titleToDates.putIfAbsent(t, () => []).add(dStr);
+        }
+
+        final futures = <Future>[];
+        for (final entry in titleToDates.entries) {
+          final groupTitle = entry.key;
+          final groupDates = entry.value..sort();
+          final payload = <String, dynamic>{
+            'organization_id': widget.orgId,
+            'dates': groupDates,
+            'date': groupDates.first,
+            'title': groupTitle,
+          };
+          if (description != null && description.isNotEmpty) {
+            payload['description'] = description;
+          }
+
+          futures.add(
+            DioClient().dio.post<dynamic>(
+              ApiUris.gymHolidays,
+              data: payload,
+              options: Options(headers: {'X-Platform': platformSource}),
+            ),
+          );
+        }
+
+        await Future.wait(futures);
       }
 
-      Dialogs.showSnack(msg: 'Holiday saved successfully!');
+      final count = targetDates.length;
+      Dialogs.showSnack(
+        msg: count > 1
+            ? '$count holidays saved successfully!'
+            : 'Holiday saved successfully!',
+      );
       _fetchAttendance();
     } catch (e) {
       Dialogs.showSnack(msg: 'Failed to save holiday.');
@@ -464,11 +548,16 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> _fetchMonthlyHolidays() async {
+  Future<List<Map<String, dynamic>>> _fetchMonthlyHolidays([
+    DateTime? month,
+  ]) async {
     try {
-      final monthStr = DateFormat('yyyy-MM').format(_selectedDate);
+      final target = month ?? _selectedDate;
+      final monthStr = DateFormat('yyyy-MM').format(target);
+      final orgParam =
+          widget.orgId != 0 ? '&organization_id=${widget.orgId}' : '';
       final response = await DioClient().dio.get<dynamic>(
-        '${ApiUris.gymHolidays}?month=$monthStr&organization_id=${widget.orgId}',
+        '${ApiUris.gymHolidays}?month=$monthStr$orgParam',
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -530,9 +619,10 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         ),
                         if (!widget.isTrainer)
                           ElevatedButton.icon(
-                            onPressed: () {
+                            onPressed: () async {
                               Navigator.pop(ctx);
-                              _showSetHolidaySheet();
+                              await _showSetHolidaySheet();
+                              _showHolidaysManagementSheet();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xff2471A3),
@@ -647,11 +737,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                   ),
                                   if (!widget.isTrainer) ...[
                                     IconButton(
-                                      onPressed: () {
+                                      onPressed: () async {
                                         Navigator.pop(ctx);
-                                        _showSetHolidaySheet(
+                                        await _showSetHolidaySheet(
                                           existingHoliday: hol,
                                         );
+                                        _showHolidaysManagementSheet();
                                       },
                                       icon: const Icon(
                                         Icons.edit_outlined,
@@ -663,7 +754,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                       IconButton(
                                         onPressed: () async {
                                           Navigator.pop(ctx);
-                                          _deleteHoliday(id);
+                                          await _deleteHoliday(id);
+                                          _showHolidaysManagementSheet();
                                         },
                                         icon: const Icon(
                                           Icons.delete_outline,
@@ -689,7 +781,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     );
   }
 
-  void _showSetHolidaySheet({Map<String, dynamic>? existingHoliday}) {
+  Future<void> _showSetHolidaySheet({
+    Map<String, dynamic>? existingHoliday,
+  }) async {
     if (existingHoliday == null && _isHoliday) {
       existingHoliday = {
         'id': _dashboard['holiday_id'] ?? _dashboard['id'],
@@ -708,240 +802,1658 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     final descController = TextEditingController(
       text: existingHoliday?['description']?.toString() ?? '',
     );
-    DateTime holidayDate = _selectedDate;
 
-    showModalBottomSheet<void>(
+    // Selected dates set (normalized to midnight)
+    final Set<DateTime> selectedDates = <DateTime>{};
+    // Map of custom titles for specific dates: 'YYYY-MM-DD' -> 'Custom Title'
+    final Map<String, String> customTitles = {};
+
+    if (existingHoliday != null && existingHoliday['date'] != null) {
+      final parsed = DateTime.tryParse(existingHoliday['date'].toString());
+      if (parsed != null) {
+        final d = DateTime(parsed.year, parsed.month, parsed.day);
+        selectedDates.add(d);
+        if (existingHoliday['title'] != null) {
+          customTitles[DateFormat('yyyy-MM-dd').format(d)] =
+              existingHoliday['title'].toString();
+        }
+      }
+    } else {
+      selectedDates.add(
+        DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day),
+      );
+    }
+
+    // Current viewed month in calendar
+    DateTime calendarMonth = selectedDates.isNotEmpty
+        ? DateTime(selectedDates.first.year, selectedDates.first.month, 1)
+        : DateTime(_selectedDate.year, _selectedDate.month, 1);
+
+    // Range selection mode state
+    bool isRangeMode = false;
+    DateTime? rangeStart;
+    DateTime? rangeEnd;
+
+    // Cache of holidays for months viewed: 'YYYY-MM-DD' -> 'Title'
+    final Map<String, String> holidaysCache = Map<String, String>.from(
+      _monthHolidays,
+    );
+    // Detailed map of holidays: 'YYYY-MM-DD' -> full holiday map (with id, title, desc)
+    final Map<String, Map<String, dynamic>> existingHolidaysMap = {};
+
+    void checkAndFetchMonthHolidays(
+      DateTime mMonth,
+      StateSetter setModalState,
+    ) {
+      final mKey = DateFormat('yyyy-MM').format(mMonth);
+      final hasCached = holidaysCache.keys.any((k) => k.startsWith(mKey));
+      if (!hasCached) {
+        _fetchMonthlyHolidays(mMonth).then((list) {
+          if (list.isNotEmpty && mounted) {
+            setModalState(() {
+              for (final h in list) {
+                if (h['date'] != null) {
+                  final d = h['date'].toString();
+                  existingHolidaysMap[d] = h;
+                  holidaysCache[d] =
+                      (h['title'] ?? h['name'] ?? 'Gym Holiday').toString();
+                }
+              }
+            });
+          }
+        });
+      }
+    }
+
+    // Initial fetch of current calendar month details
+    _fetchMonthlyHolidays(calendarMonth).then((list) {
+      if (list.isNotEmpty && mounted) {
+        for (final h in list) {
+          if (h['date'] != null) {
+            final d = h['date'].toString();
+            existingHolidaysMap[d] = h;
+            holidaysCache[d] =
+                (h['title'] ?? h['name'] ?? 'Gym Holiday').toString();
+          }
+        }
+      }
+    });
+
+    await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
       isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setModalState) {
-            return SafeArea(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  top: 16,
-                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+            final now = DateTime.now();
+            final today = DateTime(now.year, now.month, now.day);
+
+            // Month calculation
+            final year = calendarMonth.year;
+            final month = calendarMonth.month;
+            final firstDayOfMonth = DateTime(year, month, 1);
+            final daysInMonth = DateTime(year, month + 1, 0).day;
+            final leadingOffset = firstDayOfMonth.weekday - 1;
+            final prevMonthDays = DateTime(year, month, 0).day;
+
+            final totalCells = leadingOffset + daysInMonth;
+            final totalRows = (totalCells / 7).ceil();
+
+            // Sorted list of selected dates for display
+            final sortedSelectedDates = selectedDates.toList()
+              ..sort((a, b) => a.compareTo(b));
+
+            // Dialog to set custom title for a specific date chip
+            void showCustomTitleSheet(DateTime d, String dKey) {
+              final dateFormatted = DateFormat('EEEE, MMM dd, yyyy').format(d);
+              final customController = TextEditingController(
+                text: customTitles[dKey] ??
+                    (titleController.text.trim().isNotEmpty
+                        ? titleController.text.trim()
+                        : ''),
+              );
+
+              showModalBottomSheet<void>(
+                context: ctx,
+                backgroundColor: Colors.white,
+                isScrollControlled: true,
+                useSafeArea: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
+                builder: (customCtx) {
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 16,
+                      bottom: MediaQuery.of(customCtx).viewInsets.bottom + 20,
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          existingHoliday != null
-                              ? 'Edit Gym Holiday'
-                              : 'Set Gym Holiday',
-                          style: AppStyles.text16Px.poppins.w600.dark,
-                        ),
-                        if (existingHoliday != null &&
-                            existingHoliday['id'] != null)
-                          IconButton(
-                            onPressed: () async {
-                              Navigator.pop(ctx);
-                              _deleteHoliday(existingHoliday!['id'] as int);
-                            },
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.red,
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(2),
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Custom Title for $dateFormatted',
+                          style: AppStyles.text14Px.poppins.w600.dark,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Sets a specific holiday name for this day instead of the common title.',
+                          style: AppStyles.text12Px.poppins.w400.copyWith(
+                            color: AppColors.textGrey,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: customController,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: 'e.g., Vijayadashami, Annual Maintenance',
+                            hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xffF8F9FA),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide:
+                                  const BorderSide(color: Color(0xffEEEEEE)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide:
+                                  const BorderSide(color: Color(0xff2471A3)),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                          style: AppStyles.text14Px.poppins.w400.dark,
+                        ),
+                        const SizedBox(height: 12),
+                        // Presets - Horizontal scrollable
+                        SizedBox(
+                          height: 32,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: const [
+                              'Sunday',
+                              'Vijayadashami',
+                              'Mahanavami',
+                              'Ayudha Pooja',
+                              'Festival',
+                              'Maintenance',
+                            ].length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 6),
+                            itemBuilder: (subCtx, subIdx) {
+                              final pList = const [
+                                'Sunday',
+                                'Vijayadashami',
+                                'Mahanavami',
+                                'Ayudha Pooja',
+                                'Festival',
+                                'Maintenance',
+                              ];
+                              final preset = pList[subIdx];
+                              return ActionChip(
+                                label: Text(
+                                  preset,
+                                  style: AppStyles.text10Px.poppins.w500
+                                      .copyWith(
+                                        color: const Color(0xff2471A3),
+                                      ),
+                                ),
+                                backgroundColor: const Color(0xffEAF2F8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 0,
+                                ),
+                                side: BorderSide(
+                                  color: const Color(0xff2471A3)
+                                      .withValues(alpha: 0.2),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                onPressed: () {
+                                  customController.text = preset;
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            if (customTitles.containsKey(dKey)) ...[
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    setModalState(() {
+                                      customTitles.remove(dKey);
+                                    });
+                                    Navigator.pop(customCtx);
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                    side: const BorderSide(color: Colors.red),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  child: const Text('Reset to Common'),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                            ],
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  final val = customController.text.trim();
+                                  if (val.isNotEmpty) {
+                                    setModalState(() {
+                                      customTitles[dKey] = val;
+                                    });
+                                  }
+                                  Navigator.pop(customCtx);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xff2471A3),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                child: const Text('Apply Custom Title'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                  );
+                },
+              );
+            }
 
-                    Text(
-                      'Holiday Date',
-                      style: AppStyles.text12Px.poppins.w500.copyWith(
-                        color: AppColors.textGrey,
-                      ),
+            // Modal to view/edit/delete an existing saved holiday clicked on the calendar
+            void showEditExistingHolidaySheet(DateTime d, String dKey) {
+              final dateFormatted = DateFormat('EEEE, MMM dd, yyyy').format(d);
+              final existingData = existingHolidaysMap[dKey];
+              final holId = existingData?['id'] as int?;
+              final curTitle =
+                  (existingData?['title'] ?? holidaysCache[dKey] ?? 'Gym Holiday')
+                      .toString();
+              final curDesc = (existingData?['description'] ?? '').toString();
+
+              final editTitleController = TextEditingController(text: curTitle);
+              final editDescController = TextEditingController(text: curDesc);
+
+              showModalBottomSheet<void>(
+                context: ctx,
+                backgroundColor: Colors.white,
+                isScrollControlled: true,
+                useSafeArea: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (holCtx) {
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 16,
+                      bottom: MediaQuery.of(holCtx).viewInsets.bottom + 20,
                     ),
-                    const SizedBox(height: 6),
-                    InkWell(
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: ctx,
-                          initialDate: holidayDate,
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime(2100),
-                        );
-                        if (picked != null) {
-                          setModalState(() => holidayDate = picked);
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xffF8F9FA),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xffEEEEEE)),
-                        ),
-                        child: Row(
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Icon(
-                              Icons.calendar_today,
-                              size: 18,
-                              color: AppColors.primary,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Edit Saved Holiday',
+                                  style: AppStyles.text16Px.poppins.w600.dark,
+                                ),
+                                Text(
+                                  dateFormatted,
+                                  style: AppStyles.text12Px.poppins.w400
+                                      .copyWith(color: AppColors.textGrey),
+                                ),
+                              ],
+                            ),
+                            if (holId != null)
+                              IconButton(
+                                onPressed: () async {
+                                  Navigator.pop(holCtx);
+                                  await _deleteHoliday(holId);
+                                  setModalState(() {
+                                    holidaysCache.remove(dKey);
+                                    existingHolidaysMap.remove(dKey);
+                                    selectedDates.remove(d);
+                                    customTitles.remove(dKey);
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                ),
+                                tooltip: 'Delete Holiday',
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          'Holiday Title *',
+                          style: AppStyles.text12Px.poppins.w500.copyWith(
+                            color: AppColors.textGrey,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: editTitleController,
+                          decoration: InputDecoration(
+                            hintText: 'e.g., Sunday, Festival',
+                            filled: true,
+                            fillColor: const Color(0xffF8F9FA),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide:
+                                  const BorderSide(color: Color(0xffEEEEEE)),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                          style: AppStyles.text14Px.poppins.w400.dark,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Description (Optional)',
+                          style: AppStyles.text12Px.poppins.w500.copyWith(
+                            color: AppColors.textGrey,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: editDescController,
+                          maxLines: 2,
+                          decoration: InputDecoration(
+                            hintText: 'Details...',
+                            filled: true,
+                            fillColor: const Color(0xffF8F9FA),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide:
+                                  const BorderSide(color: Color(0xffEEEEEE)),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                          style: AppStyles.text14Px.poppins.w400.dark,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  setModalState(() {
+                                    if (!selectedDates.contains(d)) {
+                                      selectedDates.add(d);
+                                    }
+                                  });
+                                  Navigator.pop(holCtx);
+                                },
+                                icon: const Icon(Icons.playlist_add, size: 18),
+                                label: const Text('Add to Batch'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xff2471A3),
+                                  side: const BorderSide(
+                                    color: Color(0xff2471A3),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 10),
-                            Text(
-                              DateFormat(
-                                'EEEE, MMM dd, yyyy',
-                              ).format(holidayDate),
-                              style: AppStyles.text14Px.poppins.w500.dark,
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  final newTitle =
+                                      editTitleController.text.trim();
+                                  if (newTitle.isEmpty) {
+                                    Dialogs.showSnack(
+                                      msg: 'Please enter a holiday title',
+                                    );
+                                    return;
+                                  }
+                                  Navigator.pop(holCtx);
+                                  await _saveHoliday(
+                                    date: d,
+                                    title: newTitle,
+                                    description: editDescController.text.trim(),
+                                    holidayId: holId,
+                                  );
+                                  setModalState(() {
+                                    holidaysCache[dKey] = newTitle;
+                                    if (existingData != null) {
+                                      existingHolidaysMap[dKey] = {
+                                        ...existingData,
+                                        'title': newTitle,
+                                        'description':
+                                            editDescController.text.trim(),
+                                      };
+                                    }
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xff2471A3),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                child: const Text('Update Title'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(ctx).size.height * 0.9,
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Drag handle
+                      Center(
+                        child: Container(
+                          width: 44,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Header Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xff2471A3,
+                                  ).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.beach_access,
+                                  color: Color(0xff2471A3),
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    existingHoliday != null
+                                        ? 'Edit Gym Holiday'
+                                        : 'Set Gym Holidays',
+                                    style: AppStyles.text16Px.poppins.w600.dark,
+                                  ),
+                                  Text(
+                                    selectedDates.length > 1
+                                        ? '${selectedDates.length} days selected'
+                                        : selectedDates.length == 1
+                                        ? '1 day selected'
+                                        : 'Select days on calendar',
+                                    style: AppStyles.text12Px.poppins.w400
+                                        .copyWith(color: AppColors.textGrey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  _showHolidaysManagementSheet();
+                                },
+                                icon: const Icon(
+                                  Icons.list_alt_rounded,
+                                  color: Color(0xff2471A3),
+                                  size: 22,
+                                ),
+                                tooltip: 'View Holiday List',
+                              ),
+                              if (existingHoliday != null &&
+                                  existingHoliday['id'] != null)
+                                IconButton(
+                                  onPressed: () async {
+                                    Navigator.pop(ctx);
+                                    await _deleteHoliday(
+                                      existingHoliday!['id'] as int,
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                    size: 22,
+                                  ),
+                                  tooltip: 'Delete Holiday',
+                                ),
+                              IconButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: AppColors.textGrey,
+                                  size: 22,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Calendar Card
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffF8FAFC),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xffE2E8F0)),
+                        ),
+                        child: Column(
+                          children: [
+                            // Month Navigation Header
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    setModalState(() {
+                                      calendarMonth = DateTime(
+                                        calendarMonth.year,
+                                        calendarMonth.month - 1,
+                                        1,
+                                      );
+                                      checkAndFetchMonthHolidays(
+                                        calendarMonth,
+                                        setModalState,
+                                      );
+                                    });
+                                  },
+                                  icon: const Icon(
+                                    Icons.chevron_left,
+                                    color: Color(0xff2471A3),
+                                  ),
+                                  splashRadius: 20,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      DateFormat(
+                                        'MMMM yyyy',
+                                      ).format(calendarMonth),
+                                      style:
+                                          AppStyles.text14Px.poppins.w600.dark,
+                                    ),
+                                    if (calendarMonth.year != now.year ||
+                                        calendarMonth.month != now.month) ...[
+                                      const SizedBox(width: 8),
+                                      InkWell(
+                                        onTap: () {
+                                          setModalState(() {
+                                            calendarMonth = DateTime(
+                                              now.year,
+                                              now.month,
+                                              1,
+                                            );
+                                            checkAndFetchMonthHolidays(
+                                              calendarMonth,
+                                              setModalState,
+                                            );
+                                          });
+                                        },
+                                        borderRadius: BorderRadius.circular(6),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(
+                                              0xff2471A3,
+                                            ).withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'Today',
+                                            style: AppStyles
+                                                .text10Px
+                                                .poppins
+                                                .w600
+                                                .copyWith(
+                                                  color: const Color(
+                                                    0xff2471A3,
+                                                  ),
+                                                ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setModalState(() {
+                                      calendarMonth = DateTime(
+                                        calendarMonth.year,
+                                        calendarMonth.month + 1,
+                                        1,
+                                      );
+                                      checkAndFetchMonthHolidays(
+                                        calendarMonth,
+                                        setModalState,
+                                      );
+                                    });
+                                  },
+                                  icon: const Icon(
+                                    Icons.chevron_right,
+                                    color: Color(0xff2471A3),
+                                  ),
+                                  splashRadius: 20,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+
+                            // Multi-Select vs Range Mode switch & Sunday Shortcut & Clear All
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            setModalState(() {
+                                              isRangeMode = false;
+                                              rangeStart = null;
+                                              rangeEnd = null;
+                                            });
+                                          },
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  !isRangeMode
+                                                      ? const Color(0xff2471A3)
+                                                      : Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color:
+                                                    !isRangeMode
+                                                        ? const Color(
+                                                          0xff2471A3,
+                                                        )
+                                                        : const Color(
+                                                          0xffCBD5E1,
+                                                        ),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'Multi-Days',
+                                              style: AppStyles
+                                                  .text10Px
+                                                  .poppins
+                                                  .w500
+                                                  .copyWith(
+                                                    color:
+                                                        !isRangeMode
+                                                            ? Colors.white
+                                                            : AppColors
+                                                                .textGrey,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        InkWell(
+                                          onTap: () {
+                                            setModalState(() {
+                                              isRangeMode = true;
+                                              rangeStart = null;
+                                              rangeEnd = null;
+                                            });
+                                          },
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  isRangeMode
+                                                      ? const Color(0xff2471A3)
+                                                      : Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color:
+                                                    isRangeMode
+                                                        ? const Color(
+                                                          0xff2471A3,
+                                                        )
+                                                        : const Color(
+                                                          0xffCBD5E1,
+                                                        ),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'Date Range',
+                                              style: AppStyles
+                                                  .text10Px
+                                                  .poppins
+                                                  .w500
+                                                  .copyWith(
+                                                    color:
+                                                        isRangeMode
+                                                            ? Colors.white
+                                                            : AppColors
+                                                                .textGrey,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        // Sunday Shortcut [⚡ All Sundays]
+                                        Builder(
+                                          builder: (_) {
+                                            final sundays = <DateTime>[];
+                                            for (
+                                              int d = 1;
+                                              d <= daysInMonth;
+                                              d++
+                                            ) {
+                                              final dt = DateTime(
+                                                year,
+                                                month,
+                                                d,
+                                              );
+                                              if (dt.weekday ==
+                                                  DateTime.sunday) {
+                                                sundays.add(dt);
+                                              }
+                                            }
+                                            final allSundaysActive =
+                                                sundays.isNotEmpty &&
+                                                sundays.every(
+                                                  selectedDates.contains,
+                                                );
+
+                                            return InkWell(
+                                              onTap: () {
+                                                setModalState(() {
+                                                  if (allSundaysActive) {
+                                                    selectedDates.removeAll(
+                                                      sundays,
+                                                    );
+                                                    for (final s in sundays) {
+                                                      customTitles.remove(
+                                                        DateFormat(
+                                                          'yyyy-MM-dd',
+                                                        ).format(s),
+                                                      );
+                                                    }
+                                                  } else {
+                                                    selectedDates.addAll(
+                                                      sundays,
+                                                    );
+                                                    if (titleController.text
+                                                        .trim()
+                                                        .isEmpty) {
+                                                      titleController.text =
+                                                          'Sunday';
+                                                    }
+                                                  }
+                                                });
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      allSundaysActive
+                                                          ? const Color(
+                                                            0xffF39C12,
+                                                          )
+                                                          : const Color(
+                                                            0xffFEF9E7,
+                                                          ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: const Color(
+                                                      0xffF39C12,
+                                                    ).withValues(alpha: 0.6),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.bolt,
+                                                      size: 13,
+                                                      color:
+                                                          allSundaysActive
+                                                              ? Colors.white
+                                                              : const Color(
+                                                                0xffD68910,
+                                                              ),
+                                                    ),
+                                                    const SizedBox(width: 2),
+                                                    Text(
+                                                      'All Sundays',
+                                                      style: AppStyles
+                                                          .text10Px
+                                                          .poppins
+                                                          .w600
+                                                          .copyWith(
+                                                            color:
+                                                                allSundaysActive
+                                                                    ? Colors
+                                                                        .white
+                                                                    : const Color(
+                                                                      0xffB7950B,
+                                                                    ),
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                if (selectedDates.isNotEmpty)
+                                  GestureDetector(
+                                    onTap: () {
+                                      setModalState(() {
+                                        selectedDates.clear();
+                                        customTitles.clear();
+                                        rangeStart = null;
+                                        rangeEnd = null;
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                        vertical: 2,
+                                      ),
+                                      child: Text(
+                                        'Clear All',
+                                        style: AppStyles.text10Px.poppins.w600
+                                            .copyWith(color: Colors.red),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+
+                            // Weekday Titles (Mon - Sun)
+                            Row(
+                              children:
+                                  ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                                      .map(
+                                        (d) => Expanded(
+                                          child: Center(
+                                            child: Text(
+                                              d,
+                                              style: AppStyles
+                                                  .text12Px
+                                                  .poppins
+                                                  .w600
+                                                  .copyWith(
+                                                    color: AppColors.textGrey,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                            ),
+                            const SizedBox(height: 6),
+
+                            // Calendar Days Grid
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: totalRows * 7,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 7,
+                                    mainAxisSpacing: 4,
+                                    crossAxisSpacing: 4,
+                                    childAspectRatio: 1.1,
+                                  ),
+                              itemBuilder: (cGridCtx, i) {
+                                // Previous month trailing days
+                                if (i < leadingOffset) {
+                                  final dayNum =
+                                      prevMonthDays - leadingOffset + 1 + i;
+                                  return Center(
+                                    child: Text(
+                                      '$dayNum',
+                                      style: AppStyles.text12Px.poppins.w400
+                                          .copyWith(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                    ),
+                                  );
+                                }
+
+                                // Next month leading days
+                                if (i >= leadingOffset + daysInMonth) {
+                                  final dayNum =
+                                      i - (leadingOffset + daysInMonth) + 1;
+                                  return Center(
+                                    child: Text(
+                                      '$dayNum',
+                                      style: AppStyles.text12Px.poppins.w400
+                                          .copyWith(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                    ),
+                                  );
+                                }
+
+                                // Current month day
+                                final dayNum = i - leadingOffset + 1;
+                                final cellDate = DateTime(year, month, dayNum);
+                                final isSelected = selectedDates.contains(
+                                  cellDate,
+                                );
+                                final isTodayDate =
+                                    cellDate.year == today.year &&
+                                    cellDate.month == today.month &&
+                                    cellDate.day == today.day;
+                                final dateStr = DateFormat(
+                                  'yyyy-MM-dd',
+                                ).format(cellDate);
+                                final hasExisting = holidaysCache.containsKey(
+                                  dateStr,
+                                );
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    if (isRangeMode) {
+                                      setModalState(() {
+                                        if (rangeStart == null ||
+                                            (rangeStart != null &&
+                                                rangeEnd != null)) {
+                                          rangeStart = cellDate;
+                                          rangeEnd = null;
+                                          selectedDates.clear();
+                                          customTitles.clear();
+                                          selectedDates.add(cellDate);
+                                        } else {
+                                          rangeEnd = cellDate;
+                                          final start =
+                                              rangeStart!.isBefore(rangeEnd!)
+                                                  ? rangeStart!
+                                                  : rangeEnd!;
+                                          final end =
+                                              rangeStart!.isBefore(rangeEnd!)
+                                                  ? rangeEnd!
+                                                  : rangeStart!;
+                                          final newDates = <DateTime>{};
+                                          var cur = start;
+                                          while (!cur.isAfter(end)) {
+                                            newDates.add(
+                                              DateTime(
+                                                cur.year,
+                                                cur.month,
+                                                cur.day,
+                                              ),
+                                            );
+                                            cur = cur.add(
+                                              const Duration(days: 1),
+                                            );
+                                          }
+                                          selectedDates.clear();
+                                          selectedDates.addAll(newDates);
+                                        }
+                                      });
+                                    } else {
+                                      // Multi-Days mode
+                                      if (isSelected) {
+                                        // Untoggle from current selection
+                                        setModalState(() {
+                                          selectedDates.remove(cellDate);
+                                          customTitles.remove(dateStr);
+                                        });
+                                      } else if (hasExisting) {
+                                        // Existing holiday clicked individually on calendar -> opens edit sheet!
+                                        showEditExistingHolidaySheet(
+                                          cellDate,
+                                          dateStr,
+                                        );
+                                      } else {
+                                        // Regular date toggle
+                                        setModalState(() {
+                                          selectedDates.add(cellDate);
+                                        });
+                                      }
+                                    }
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 150),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isSelected
+                                              ? const Color(0xff2471A3)
+                                              : hasExisting
+                                              ? const Color(0xffFDEDEC)
+                                              : Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color:
+                                            isSelected
+                                                ? const Color(0xff2471A3)
+                                                : hasExisting
+                                                ? const Color(
+                                                  0xffE74C3C,
+                                                ).withValues(alpha: 0.45)
+                                                : isTodayDate
+                                                ? AppColors.primary
+                                                : const Color(0xffE2E8F0),
+                                        width:
+                                            isSelected
+                                                ? 1.5
+                                                : isTodayDate
+                                                ? 1.5
+                                                : 1,
+                                      ),
+                                    ),
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Text(
+                                          '$dayNum',
+                                          style: AppStyles.text12Px.poppins
+                                              .copyWith(
+                                                fontWeight:
+                                                    isSelected ||
+                                                            isTodayDate ||
+                                                            hasExisting
+                                                        ? FontWeight.w600
+                                                        : FontWeight.w400,
+                                                color:
+                                                    isSelected
+                                                        ? Colors.white
+                                                        : hasExisting
+                                                        ? const Color(
+                                                          0xffC0392B,
+                                                        )
+                                                        : isTodayDate
+                                                        ? AppColors.primary
+                                                        : AppColors.dark,
+                                              ),
+                                        ),
+                                        if (hasExisting && !isSelected)
+                                          Positioned(
+                                            bottom: 2,
+                                            child: Container(
+                                              width: 4,
+                                              height: 4,
+                                              decoration: const BoxDecoration(
+                                                color: Color(0xffE74C3C),
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Calendar Legend
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xff2471A3),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Selected',
+                                      style: AppStyles.text10Px.poppins.w500
+                                          .copyWith(color: AppColors.textGrey),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 14),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xffE74C3C),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Saved Holiday',
+                                      style: AppStyles.text10Px.poppins.w500
+                                          .copyWith(color: AppColors.textGrey),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 14),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: AppColors.primary,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Today',
+                                      style: AppStyles.text10Px.poppins.w500
+                                          .copyWith(color: AppColors.textGrey),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 14),
+                      const SizedBox(height: 12),
 
-                    Text(
-                      'Holiday Title *',
-                      style: AppStyles.text12Px.poppins.w500.copyWith(
-                        color: AppColors.textGrey,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: titleController,
-                      decoration: InputDecoration(
-                        hintText: 'e.g., Independence Day, Maintenance',
-                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-                          color: AppColors.textGrey,
+                      // Selected Dates Chips Display (Horizontal scrollable)
+                      if (sortedSelectedDates.isNotEmpty) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Selected Dates (${sortedSelectedDates.length})',
+                              style: AppStyles.text12Px.poppins.w600.dark,
+                            ),
+                            Text(
+                              'Tap date to rename',
+                              style: AppStyles.text10Px.poppins.w500.copyWith(
+                                color: const Color(0xff2471A3),
+                              ),
+                            ),
+                          ],
                         ),
-                        filled: true,
-                        fillColor: const Color(0xffF8F9FA),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xffEEEEEE),
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xffEEEEEE),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
-                        ),
-                      ),
-                      style: AppStyles.text14Px.poppins.w400.dark,
-                    ),
-                    const SizedBox(height: 14),
+                        const SizedBox(height: 6),
+                        SizedBox(
+                          height: 34,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: sortedSelectedDates.length,
+                            separatorBuilder:
+                                (_, __) => const SizedBox(width: 6),
+                            itemBuilder: (cChipsCtx, idx) {
+                              final d = sortedSelectedDates[idx];
+                              final dKey = DateFormat('yyyy-MM-dd').format(d);
+                              final hasCustom = customTitles.containsKey(dKey);
+                              final cTitle = customTitles[dKey];
 
-                    Text(
-                      'Description (Optional)',
-                      style: AppStyles.text12Px.poppins.w500.copyWith(
-                        color: AppColors.textGrey,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: descController,
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        hintText: 'Add details about the holiday...',
-                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-                          color: AppColors.textGrey,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xffF8F9FA),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xffEEEEEE),
+                              return InkWell(
+                                onTap: () => showCustomTitleSheet(d, dKey),
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        hasCustom
+                                            ? const Color(0xffD4E6F1)
+                                            : const Color(0xffEAF2F8),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: const Color(0xff2471A3).withValues(
+                                        alpha: hasCustom ? 0.7 : 0.3,
+                                      ),
+                                      width: hasCustom ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        hasCustom
+                                            ? Icons.label_important_rounded
+                                            : Icons.edit_outlined,
+                                        size: 13,
+                                        color: const Color(0xff2471A3),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        hasCustom
+                                            ? '${DateFormat('E, MMM dd').format(d)}: $cTitle'
+                                            : DateFormat('E, MMM dd').format(d),
+                                        style: AppStyles.text12Px.poppins
+                                            .copyWith(
+                                              fontWeight:
+                                                  hasCustom
+                                                      ? FontWeight.w600
+                                                      : FontWeight.w500,
+                                              color: const Color(0xff2471A3),
+                                            ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      GestureDetector(
+                                        onTap: () {
+                                          setModalState(() {
+                                            selectedDates.remove(d);
+                                            customTitles.remove(dKey);
+                                          });
+                                        },
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 14,
+                                          color: Color(0xff2471A3),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xffEEEEEE),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
-                        ),
-                      ),
-                      style: AppStyles.text14Px.poppins.w400.dark,
-                    ),
-                    const SizedBox(height: 20),
+                        const SizedBox(height: 12),
+                      ],
 
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          final title = titleController.text.trim();
-                          if (title.isEmpty) {
-                            Dialogs.showSnack(
-                              msg: 'Please enter holiday title',
-                            );
-                            return;
-                          }
-                          Navigator.pop(ctx);
-                          _saveHoliday(
-                            date: holidayDate,
-                            title: title,
-                            description: descController.text.trim(),
-                            holidayId: existingHoliday?['id'] as int?,
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xff2471A3),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
+                      // Holiday Title
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Common Holiday Title *',
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                          if (customTitles.isNotEmpty)
+                            Text(
+                              '${customTitles.length} custom title${customTitles.length == 1 ? '' : 's'} set',
+                              style: AppStyles.text10Px.poppins.w500.copyWith(
+                                color: const Color(0xff2471A3),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: titleController,
+                        onChanged: (_) => setModalState(() {}),
+                        decoration: InputDecoration(
+                          hintText:
+                              'e.g., Sunday, Diwali Vacation, Maintenance',
+                          hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                            color: AppColors.textGrey,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xffF8F9FA),
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xffEEEEEE),
+                            ),
                           ),
-                          elevation: 0,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xffEEEEEE),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xff2471A3),
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                         ),
-                        child: Text(
-                          'Save Holiday',
-                          style: AppStyles.text14Px.poppins.w600.copyWith(
-                            color: Colors.white,
+                        style: AppStyles.text14Px.poppins.w400.dark,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Preset Suggestion Chips (Horizontal scrollable with Active Filled State)
+                      SizedBox(
+                        height: 32,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: const [
+                            'Sunday',
+                            'Holiday',
+                            'Festival',
+                            'Maintenance',
+                            'National Holiday',
+                          ].length,
+                          separatorBuilder:
+                              (_, __) => const SizedBox(width: 6),
+                          itemBuilder: (pCtx, pIdx) {
+                            final presets = const [
+                              'Sunday',
+                              'Holiday',
+                              'Festival',
+                              'Maintenance',
+                              'National Holiday',
+                            ];
+                            final preset = presets[pIdx];
+                            final isPresetSelected =
+                                titleController.text.trim().toLowerCase() ==
+                                preset.toLowerCase();
+
+                            return InkWell(
+                              onTap: () {
+                                setModalState(() {
+                                  if (isPresetSelected) {
+                                    titleController.clear();
+                                  } else {
+                                    titleController.text = preset;
+                                  }
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      isPresetSelected
+                                          ? const Color(0xff2471A3)
+                                          : const Color(0xffF1F5F9),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color:
+                                        isPresetSelected
+                                            ? const Color(0xff2471A3)
+                                            : const Color(0xffCBD5E1),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isPresetSelected) ...[
+                                      const Icon(
+                                        Icons.check,
+                                        size: 12,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 4),
+                                    ],
+                                    Text(
+                                      preset,
+                                      style: AppStyles.text10Px.poppins
+                                          .copyWith(
+                                            fontWeight:
+                                                isPresetSelected
+                                                    ? FontWeight.w600
+                                                    : FontWeight.w500,
+                                            color:
+                                                isPresetSelected
+                                                    ? Colors.white
+                                                    : const Color(0xff2471A3),
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Description (Optional)
+                      Text(
+                        'Description (Optional)',
+                        style: AppStyles.text12Px.poppins.w500.copyWith(
+                          color: AppColors.textGrey,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: descController,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          hintText: 'Add details about the holiday...',
+                          hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                            color: AppColors.textGrey,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xffF8F9FA),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xffEEEEEE),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xffEEEEEE),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xff2471A3),
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                        ),
+                        style: AppStyles.text14Px.poppins.w400.dark,
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Dynamic Save Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed:
+                              selectedDates.isEmpty
+                                  ? null
+                                  : () async {
+                                    final commonTitle =
+                                        titleController.text.trim();
+                                    // Check if any date relies on common title and it is empty
+                                    final hasNonCustomDates = selectedDates.any(
+                                      (d) {
+                                        final dKey = DateFormat(
+                                          'yyyy-MM-dd',
+                                        ).format(d);
+                                        return !customTitles.containsKey(dKey);
+                                      },
+                                    );
+                                    if (hasNonCustomDates &&
+                                        commonTitle.isEmpty) {
+                                      Dialogs.showSnack(
+                                        msg:
+                                            'Please enter a common holiday title',
+                                      );
+                                      return;
+                                    }
+
+                                    Navigator.pop(ctx);
+                                    await _saveHoliday(
+                                      dates: selectedDates.toList(),
+                                      title:
+                                          commonTitle.isNotEmpty
+                                              ? commonTitle
+                                              : (customTitles.values
+                                                      .firstOrNull ??
+                                                  'Gym Holiday'),
+                                      customTitles: customTitles,
+                                      description: descController.text.trim(),
+                                      holidayId: existingHoliday?['id'] as int?,
+                                    );
+                                  },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xff2471A3),
+                            disabledBackgroundColor: Colors.grey.shade300,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            selectedDates.isEmpty
+                                ? 'Select Dates to Save'
+                                : selectedDates.length == 1
+                                ? 'Save Holiday'
+                                : 'Save ${selectedDates.length} Holidays',
+                            style: AppStyles.text14Px.poppins.w600.copyWith(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -1191,10 +2703,17 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
             switch (_statusFilter) {
               case 'active':
                 return _isClientActive(c);
+              case 'active_present':
+                return _isClientActive(c) && _getClientStatus(c) == 'present';
               case 'expired':
                 return _isClientExpired(c);
+              case 'expired_present':
+                return _isClientExpired(c) && _getClientStatus(c) == 'present';
               case 'pending_fee':
                 return _isClientPendingFee(c);
+              case 'pending_fee_present':
+                return _isClientPendingFee(c) &&
+                    _getClientStatus(c) == 'present';
               case 'present':
                 return _getClientStatus(c) == 'present';
               case 'absent':
@@ -1212,16 +2731,100 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     }
     if (_searchQuery.isEmpty) return list;
     final q = _searchQuery.toLowerCase();
-    return list.where((c) {
+    final filtered =
+        list.where((c) {
+          final name =
+              (c['name'] ??
+                      c['customer_name'] ??
+                      c['client_name'] ??
+                      c['full_name'] ??
+                      '${c['first_name'] ?? ''} ${c['last_name'] ?? ''}')
+                  .toString()
+                  .toLowerCase();
+          final mobile =
+              (c['mobile'] ??
+                      c['phone'] ??
+                      c['mobile_number'] ??
+                      c['phone_number'] ??
+                      '')
+                  .toString()
+                  .toLowerCase();
+          final plan =
+              (c['plan_name'] ?? c['membership_plan'] ?? '')
+                  .toString()
+                  .toLowerCase();
+          final email = (c['email'] ?? '').toString().toLowerCase();
+          final id =
+              (c['customer_id'] ?? c['client_id'] ?? c['id'] ?? '')
+                  .toString()
+                  .toLowerCase();
+          return name.contains(q) ||
+              mobile.contains(q) ||
+              plan.contains(q) ||
+              email.contains(q) ||
+              id.contains(q);
+        }).toList();
+
+    int getRelevanceScore(Map<String, dynamic> c) {
       final name =
-          (c['name'] ?? c['customer_name'] ?? '').toString().toLowerCase();
-      final mobile = (c['mobile'] ?? '').toString().toLowerCase();
-      final plan =
-          (c['plan_name'] ?? c['membership_plan'] ?? '')
+          (c['name'] ??
+                  c['customer_name'] ??
+                  c['client_name'] ??
+                  c['full_name'] ??
+                  '${c['first_name'] ?? ''} ${c['last_name'] ?? ''}')
+              .toString()
+              .toLowerCase()
+              .trim();
+
+      // Priority 0: Name starts directly with the query (e.g. "DIFIN", "Dilna")
+      if (name.startsWith(q)) return 0;
+
+      // Priority 1: Any individual word in the name starts with query (e.g. "Ananya G Divakaran")
+      final words = name.split(RegExp(r'\s+'));
+      if (words.any((w) => w.startsWith(q))) return 1;
+
+      // Priority 2: Phone number starts with query
+      final mobile =
+          (c['mobile'] ??
+                  c['phone'] ??
+                  c['mobile_number'] ??
+                  c['phone_number'] ??
+                  '')
+              .toString()
+              .toLowerCase()
+              .trim();
+      if (mobile.startsWith(q)) return 2;
+
+      // Priority 3: Substring match inside a word (e.g. "Adithya", "ambadi")
+      return 3;
+    }
+
+    filtered.sort((a, b) {
+      final scoreA = getRelevanceScore(a);
+      final scoreB = getRelevanceScore(b);
+      if (scoreA != scoreB) {
+        return scoreA.compareTo(scoreB);
+      }
+      final nameA =
+          (a['name'] ??
+                  a['customer_name'] ??
+                  a['client_name'] ??
+                  a['full_name'] ??
+                  '')
               .toString()
               .toLowerCase();
-      return name.contains(q) || mobile.contains(q) || plan.contains(q);
-    }).toList();
+      final nameB =
+          (b['name'] ??
+                  b['customer_name'] ??
+                  b['client_name'] ??
+                  b['full_name'] ??
+                  '')
+              .toString()
+              .toLowerCase();
+      return nameA.compareTo(nameB);
+    });
+
+    return filtered;
   }
 
   // --- Status helpers ---
@@ -1499,12 +3102,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         actions: [
           if (!widget.isTrainer)
             IconButton(
-              onPressed: () => _showHolidaysManagementSheet(),
+              onPressed: () => _showSetHolidaySheet(),
               icon: const Icon(
                 Icons.free_cancellation_outlined,
                 color: Color(0xff2471A3),
               ),
-              tooltip: 'Gym Holidays',
+              tooltip: 'Set Gym Holiday',
             ),
           IconButton(
             onPressed: () async {
@@ -1529,33 +3132,47 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           _buildAttendancePieChartSummary(),
 
           if (_isHoliday)
-            Container(
-              margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xffEAF2F8),
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+              child: InkWell(
+                onTap: () => _showSetHolidaySheet(),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xff2471A3).withValues(alpha: 0.3),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.beach_access,
-                    color: Color(0xff2471A3),
-                    size: 20,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Gym Holiday: $_holidayName',
-                      style: AppStyles.text12Px.poppins.w600.copyWith(
-                        color: const Color(0xff2471A3),
-                      ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffEAF2F8),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xff2471A3).withValues(alpha: 0.3),
                     ),
                   ),
-                ],
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.beach_access,
+                        color: Color(0xff2471A3),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Gym Holiday: $_holidayName',
+                          style: AppStyles.text12Px.poppins.w600.copyWith(
+                            color: const Color(0xff2471A3),
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Color(0xff2471A3),
+                        size: 13,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
 
@@ -1968,7 +3585,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                   ),
                   child: TextField(
                     controller: _searchController,
-                    onChanged: (v) => setState(() => _searchQuery = v),
+                    onChanged: _onSearchChanged,
                     decoration: InputDecoration(
                       hintText: 'Search clients...',
                       hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
@@ -1979,6 +3596,32 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         color: AppColors.textGrey,
                         size: 20,
                       ),
+                      suffixIcon:
+                          _isSearching
+                              ? const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              )
+                              : _searchController.text.isNotEmpty
+                              ? IconButton(
+                                icon: const Icon(
+                                  Icons.clear,
+                                  color: AppColors.textGrey,
+                                  size: 18,
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  _onSearchChanged('');
+                                },
+                              )
+                              : null,
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -2067,10 +3710,16 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     switch (key) {
       case 'active':
         return 'Active Members';
+      case 'active_present':
+        return 'Active (Present)';
       case 'expired':
         return 'Expired Members';
+      case 'expired_present':
+        return 'Expired (Present)';
       case 'pending_fee':
         return 'Pending Fee';
+      case 'pending_fee_present':
+        return 'Pending Fee (Present)';
       case 'present':
         return 'Present';
       case 'absent':
@@ -2179,7 +3828,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (_statusFilter == 'pending_fee') ...[
+                      if (_statusFilter == 'pending_fee' ||
+                          _statusFilter == 'pending_fee_present') ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -2233,7 +3883,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             ),
                           ),
                         ),
-                      ] else if (isActive && _statusFilter == 'active') ...[
+                      ] else if (isActive &&
+                          (_statusFilter == 'active' ||
+                              _statusFilter == 'active_present')) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -2737,16 +4389,37 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                       'Active',
                       '$_activePresentCount',
                       const Color(0xff27AE60),
+                      onTap: _activePresentCount > 0
+                          ? () {
+                              Navigator.pop(ctx);
+                              setState(() => _statusFilter = 'active_present');
+                              _fetchAttendance();
+                            }
+                          : null,
                     ),
                     _buildMiniMetric(
                       'Expired',
                       '$_expiredPresentCount',
                       const Color(0xffE74C3C),
+                      onTap: _expiredPresentCount > 0
+                          ? () {
+                              Navigator.pop(ctx);
+                              setState(() => _statusFilter = 'expired_present');
+                              _fetchAttendance();
+                            }
+                          : null,
                     ),
                     _buildMiniMetric(
                       'Pending Fee',
                       '$_pendingFeePresentCount',
                       const Color(0xffE67E22),
+                      onTap: _pendingFeePresentCount > 0
+                          ? () {
+                              Navigator.pop(ctx);
+                              setState(() => _statusFilter = 'pending_fee_present');
+                              _fetchAttendance();
+                            }
+                          : null,
                     ),
                   ],
                 ),
@@ -2789,8 +4462,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     );
   }
 
-  Widget _buildMiniMetric(String label, String value, Color color) {
-    return Column(
+  Widget _buildMiniMetric(String label, String value, Color color, {VoidCallback? onTap}) {
+    final content = Column(
       children: [
         Text(
           value,
@@ -2800,10 +4473,32 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         Text(
           label,
           style: AppStyles.text10Px.poppins.w500.copyWith(
-            color: AppColors.textGrey,
+            color: onTap != null ? color : AppColors.textGrey,
+            decoration: onTap != null ? TextDecoration.underline : null,
+            decorationColor: onTap != null ? color : null,
           ),
         ),
+        if (onTap != null) ...[
+          const SizedBox(height: 2),
+          Icon(Icons.chevron_right, size: 14, color: color),
+        ],
       ],
+    );
+
+    if (onTap == null) return content;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: content,
+      ),
     );
   }
   Widget _buildAttendanceShimmer() {

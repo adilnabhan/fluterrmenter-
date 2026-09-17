@@ -14,8 +14,12 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
   ///============================= Members =============================\\\
 
   Future<void> fetchMembers({
-    required MemberStatus? status,
-    required ListingSort? sort,
+    MemberStatus? status,
+    ListingSort? sort,
+    String? statusString,
+    String? sortString,
+    String? gender,
+    bool? pendingFee,
     bool isPagination = false,
     String? searchQuery,
   }) async {
@@ -35,10 +39,14 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
         ),
       ),
     );
+    final resolvedStatus = statusString ?? (status != null ? status.name : null);
+    final resolvedSort = sortString ?? (sort != null ? sort.name : null);
     final res = await MembersRepository().membersListing(
       queryParameters: {
-        if (status != null) 'status': status.name,
-        if (sort != null) 'sort': sort.name,
+        if (resolvedStatus != null) 'status': resolvedStatus,
+        if (resolvedSort != null) 'sort': resolvedSort,
+        if (gender != null) 'gender': gender,
+        if (pendingFee != null) 'pending_fee': pendingFee,
         'organization_id': orgId,
         if (searchQuery?.trim().isNotEmpty ?? false) 'search': searchQuery,
       },

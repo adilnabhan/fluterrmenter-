@@ -3,7 +3,7 @@ description: "A new Fegno Flutter project."
 
 publish_to: "none"
 
-version: 1.0.10+45
+version: 1.0.11+46
 
 environment:
   sdk: ^3.7.2

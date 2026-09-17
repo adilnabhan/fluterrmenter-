@@ -111,7 +111,7 @@ class _MemberAllMembershipsScreenState
               actions: [
                 if (data != null)
                   TextButton.icon(
-                    onPressed: () => _showRenewMembershipBottomSheet(data),
+                    onPressed: () => _showMembershipActionSheet(data),
                     icon: const Icon(
                       Icons.add_circle_outline,
                       color: AppColors.primary,
@@ -235,8 +235,7 @@ class _MemberAllMembershipsScreenState
                             Button.filled(
                               title: 'Add Membership Plan',
                               buttonColor: AppColors.primary,
-                              ontap: () =>
-                                  _showRenewMembershipBottomSheet(data),
+                              ontap: () => _addNewMembership(data),
                             ),
                           ],
                         ],
@@ -415,6 +414,17 @@ class _MemberAllMembershipsScreenState
     final isCancelled = memStatusStr == 'cancelled';
     final isExpired =
         memStatusStr == 'expired' || isMembershipExpired;
+
+    final payStatus = membership.paymentStatus?.toLowerCase() ?? '';
+    final isFree = membership.assignFree ?? false;
+    final isPaid = payStatus == 'paid' || payStatus == 'completed';
+    final hasPendingFee = !isFree &&
+        !isPaid &&
+        (payStatus == 'pending' ||
+            payStatus == 'partial' ||
+            payStatus == 'due' ||
+            payStatus == 'unpaid' ||
+            (payStatus.isNotEmpty && payStatus != 'paid' && payStatus != 'completed'));
 
     final actualIsActive =
         isActive && !isMembershipExpired && !isTrialExpired && !isCancelled && !isPaused;
@@ -637,9 +647,31 @@ class _MemberAllMembershipsScreenState
                       _showResumeMembershipDialog(membership);
                     } else if (value == 'cancel') {
                       _showCancelMembershipDialog(membership);
+                    } else if (value == 'collect_fee') {
+                      _openCollectFeeSheet(membership, data);
                     }
                   },
                   itemBuilder: (context) => [
+                    if (hasPendingFee && !isCancelled && membership.id != null)
+                      PopupMenuItem<String>(
+                        value: 'collect_fee',
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.payments_outlined,
+                              size: 18,
+                              color: Color(0xff27AE60),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Collect Fee',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: const Color(0xff27AE60),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     PopupMenuItem<String>(
                       value: 'edit',
                       child: Row(
@@ -896,6 +928,40 @@ class _MemberAllMembershipsScreenState
                   ],
                 ),
 
+                if (hasPendingFee && !isCancelled && membership.id != null) ...[
+                  const Divider(
+                    thickness: 1,
+                    color: Color(0xffEEEEEE),
+                  ).pxy(y: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _openCollectFeeSheet(membership, data),
+                      icon: const Icon(
+                        Icons.payments_outlined,
+                        size: 18,
+                        color: Color(0xff27AE60),
+                      ),
+                      label: Text(
+                        'Collect Pending Fee',
+                        style: AppStyles.text14Px.poppins.w600.copyWith(
+                          color: const Color(0xff27AE60),
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: Color(0xff27AE60),
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+
                 if (isExpired) ...[
                   const Divider(
                     thickness: 1,
@@ -904,9 +970,9 @@ class _MemberAllMembershipsScreenState
                   SizedBox(
                     width: double.infinity,
                     child: Button.filled(
-                      title: 'Renew Membership',
+                      title: 'Renew Plan',
                       buttonColor: AppColors.primary,
-                      ontap: () => _showRenewMembershipBottomSheet(data),
+                      ontap: () => _renewSpecificMembership(data, membership),
                     ),
                   ),
                 ],
@@ -1565,6 +1631,28 @@ class _MemberAllMembershipsScreenState
     );
   }
 
+  void _openCollectFeeSheet(
+    MembershipDataModel membership,
+    MemberDetailsModel data,
+  ) {
+    if (membership.id == null) return;
+
+    double? totalAmount;
+    if (membership.amount != null) {
+      totalAmount = double.tryParse(membership.amount!);
+    }
+
+    CollectMembershipFeeSheet.show(
+      context: context,
+      customerMembershipId: membership.id!,
+      membershipName: membership.membershipName,
+      memberName: data.fullName ?? widget.memberName,
+      totalPayable: totalAmount,
+      pendingAmount: null,
+      onFeeCollected: _fetch,
+    );
+  }
+
   void _showCancelMembershipDialog(MembershipDataModel membership) {
     final membershipId = membership.id;
     if (membershipId == null) {
@@ -1751,20 +1839,178 @@ class _MemberAllMembershipsScreenState
     );
   }
 
-  void _showRenewMembershipBottomSheet(MemberDetailsModel memberDetails) {
+  void _renewSpecificMembership(
+    MemberDetailsModel memberDetails,
+    MembershipDataModel membership,
+  ) {
+    DateTime? calcStartDate;
+    if (membership.endDate != null &&
+        membership.endDate!.isAfter(DateTime.now())) {
+      calcStartDate = membership.endDate!.add(const Duration(days: 1));
+    } else {
+      calcStartDate = DateTime.now();
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (context) => RenewMembershipScreen(
-          orgId: widget.orgId ?? _cubit.orgId,
-          memberId: widget.memberId,
-          memberName:
-              '${memberDetails.firstName ?? ''} ${memberDetails.lastName ?? ''}'
-                  .trim(),
-          memberDetails: memberDetails,
-          onRenewed: _fetch,
-        ),
+        builder:
+            (context) => RenewMembershipScreen(
+              orgId: widget.orgId ?? _cubit.orgId,
+              memberId: widget.memberId,
+              memberName:
+                  '${memberDetails.firstName ?? ''} ${memberDetails.lastName ?? ''}'
+                      .trim(),
+              memberDetails: memberDetails,
+              onRenewed: _fetch,
+              isAddNew: false,
+              initialPlanId: membership.membership,
+              initialStartDate: calcStartDate,
+            ),
       ),
     );
+  }
+
+  void _addNewMembership(MemberDetailsModel memberDetails) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder:
+            (context) => RenewMembershipScreen(
+              orgId: widget.orgId ?? _cubit.orgId,
+              memberId: widget.memberId,
+              memberName:
+                  '${memberDetails.firstName ?? ''} ${memberDetails.lastName ?? ''}'
+                      .trim(),
+              memberDetails: memberDetails,
+              onRenewed: _fetch,
+              isAddNew: true,
+              initialStartDate: DateTime.now(),
+            ),
+      ),
+    );
+  }
+
+  void _showMembershipActionSheet(MemberDetailsModel memberDetails) {
+    final membershipsList = memberDetails.memberships ?? [];
+    if (membershipsList.isEmpty) {
+      _addNewMembership(memberDetails);
+      return;
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Membership Actions',
+                    style: AppStyles.text18Px.poppins.w600.dark,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                tileColor: AppColors.primary.withValues(alpha: 0.05),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                  ),
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.autorenew_rounded,
+                    color: AppColors.primary,
+                  ),
+                ),
+                title: Text(
+                  'Renew Existing Plan',
+                  style: AppStyles.text14Px.poppins.w600.dark,
+                ),
+                subtitle: Text(
+                  'Extend duration of current membership',
+                  style: AppStyles.text12Px.poppins.w400.textGrey,
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _renewSpecificMembership(
+                    memberDetails,
+                    membershipsList.first,
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                tileColor: const Color(0xFFE8F8EE),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Color(0xFFB8E8CA)),
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFD5F5E3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.add_circle_outline_rounded,
+                    color: Color(0xFF27AE60),
+                  ),
+                ),
+                title: Text(
+                  'Add Another Membership',
+                  style: AppStyles.text14Px.poppins.w600.dark,
+                ),
+                subtitle: Text(
+                  'Assign a concurrent plan (PT, Sauna, Locker, etc.)',
+                  style: AppStyles.text12Px.poppins.w400.textGrey,
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _addNewMembership(memberDetails);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showRenewMembershipBottomSheet(MemberDetailsModel memberDetails) {
+    _showMembershipActionSheet(memberDetails);
   }
 }
