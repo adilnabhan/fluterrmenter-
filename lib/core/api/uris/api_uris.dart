@@ -79,6 +79,11 @@ final class ApiUris {
   static final createMembershipPackage =
       '${_v1}fitnesscenter/membership-plans/';
   static final listMembershipPackages = '${_v1}fitnesscenter/membership-plans/';
+  static final packageGroups = '${_v1}fitnesscenter/package-groups/';
+  static String packageGroupDetail(int id) =>
+      '${_v1}fitnesscenter/package-groups/$id/';
+  static final groupedMembershipPackages =
+      '${_v1}fitnesscenter/membership-plans/grouped/';
   static final manualMembershipEntry =
       '${_v1}fitnesscenter/memberships/manual-entry/';
   static final renewMembership =

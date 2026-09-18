@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/membership/domain/models/emi_options_model.dart';
+import 'package:mentor_mobile_app/src/features/organization/membership/domain/models/package_group_model.dart';
 
 class GymAddOrEditPackageScreen extends StatefulWidget {
   const GymAddOrEditPackageScreen({super.key, this.membershipPackage});
@@ -15,6 +16,9 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
   late final MembershipCubit _cubit;
   final _formKey = GlobalKey<FormState>();
   String _selectedPriceType = 'Monthly Price';
+  List<MembershipPackageGroupModel> _groups = [];
+  int? _selectedGroupId;
+  bool _isLoadingGroups = false;
   late final FieldData<String> _membershipNameField;
   late final FieldData<String> _daysField;
   late final FieldData<String> _packageTypeField;
@@ -121,6 +125,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
   void initState() {
     super.initState();
     _cubit = context.read<MembershipCubit>();
+    _fetchGroups();
     _emiOptions = [];
 
     _selectedPackageType =
@@ -394,6 +399,66 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
     });
   }
 
+  Future<void> _fetchGroups() async {
+    setState(() => _isLoadingGroups = true);
+    final groups = await _cubit.fetchPackageGroups();
+    if (mounted) {
+      setState(() {
+        _groups = groups;
+        _isLoadingGroups = false;
+      });
+    }
+  }
+
+  Future<void> _showAddGroupDialog() async {
+    final textController = TextEditingController();
+    final group = await showDialog<MembershipPackageGroupModel?>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Add Package Group'),
+        content: TextField(
+          controller: textController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'e.g. CrossFit, Personal Training, Zumba',
+            labelText: 'Group Name',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final name = textController.text.trim();
+              if (name.isEmpty) return;
+              final res = await _cubit.createPackageGroup(name: name);
+              res.fold(
+                (err) => Dialogs.showSnack(msg: err.msg),
+                (newGroup) {
+                  Navigator.pop(c, newGroup);
+                },
+              );
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+
+    if (group != null && mounted) {
+      await _fetchGroups();
+      setState(() {
+        _selectedGroupId = group.id;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _isDisposed = true;
@@ -598,6 +663,71 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
               //   color: Colors.transparent,
               // ),
 
+              // Group / Category Selector
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Package Group (Optional)',
+                        style: AppStyles.text14Px.poppins.w500.dark,
+                      ),
+                      TextButton.icon(
+                        onPressed: _showAddGroupDialog,
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text('New Group'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.borderGrey),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int?>(
+                        value: _selectedGroupId,
+                        isExpanded: true,
+                        hint: Text(
+                          _isLoadingGroups
+                              ? 'Loading groups...'
+                              : 'Select Group (e.g. General Gym, CrossFit)',
+                          style: AppStyles.text14Px.poppins.w400.textGrey,
+                        ),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('No Group (General / Ungrouped)'),
+                          ),
+                          ..._groups.map(
+                            (g) => DropdownMenuItem<int?>(
+                              value: g.id,
+                              child: Text(g.name ?? ''),
+                            ),
+                          ),
+                        ],
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedGroupId = val;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               // New Layout matching the image
               Field(data: _membershipNameField),
               const SizedBox(height: 16),
@@ -839,6 +969,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                   offerPrice: _offerPriceField.controller!.text.trim(),
                   features: [],
                   isEmiAvailable: _isEmi,
+                  groupId: _selectedGroupId,
                   emiOptions: emiData,
                 );
               },

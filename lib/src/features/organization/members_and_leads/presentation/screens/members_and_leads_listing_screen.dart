@@ -30,23 +30,127 @@ class __MembersAndLeadsListingScreenState
   late final MembersAndLeadsCubit _cubit;
   List<({String label, String value})>? _selectedFilters;
   ({String label, String value})? _selectedSort;
+  String? _currentSearchQuery;
 
-  final _filterOptions = const [
-    (label: 'Active', value: 'active'),
-    (label: 'Expired in last 10 days', value: 'expired_10d'),
-    (label: 'Pending Fee', value: 'pending_fee'),
-    (label: 'Expired', value: 'expired'),
-    (label: 'Frozen', value: 'frozen'),
-    (label: 'Male', value: 'male'),
-    (label: 'Female', value: 'female'),
+  final _filterCategories = const [
+    FilterCategory(
+      title: 'Membership Status',
+      isSingleSelect: true,
+      items: [
+        (label: 'Active', value: 'active'),
+        (label: 'Frozen / Paused', value: 'frozen'),
+        (label: 'Expired (Last 10 Days)', value: 'expired_10d'),
+        (label: 'Expired', value: 'expired'),
+        (label: 'Pending Fee', value: 'pending_fee'),
+      ],
+    ),
+    FilterCategory(
+      title: 'Gender',
+      isSingleSelect: true,
+      items: [
+        (label: 'Male', value: 'male'),
+        (label: 'Female', value: 'female'),
+      ],
+    ),
   ];
 
   final _sortOptions = const [
     (label: 'Joined Recently', value: 'recent'),
     (label: 'Joined First', value: 'oldest'),
-    (label: 'A-Z', value: 'a_z'),
-    (label: 'Z-A', value: 'z_a'),
+    (label: 'Name: A-Z', value: 'a_z'),
+    (label: 'Name: Z-A', value: 'z_a'),
   ];
+
+  List<FilterCategory> get _sortAndFilterCategories => [
+    FilterCategory(
+      title: 'Sort by',
+      isSingleSelect: true,
+      items: _sortOptions,
+    ),
+    ..._filterCategories,
+  ];
+
+  void _openSortAndFilterSheet() {
+    final initialSelected = <({String label, String value})>[
+      if (_selectedSort != null) _selectedSort!,
+      if (_selectedFilters != null) ..._selectedFilters!,
+    ];
+
+    FilterSelectionSheet(
+      title: 'Sort & Filter',
+      categories: _sortAndFilterCategories,
+      selectedFilters: initialSelected.isNotEmpty ? initialSelected : null,
+      onFilterSelected: (values) {
+        if (values == null || values.isEmpty) {
+          _selectedSort = null;
+          _selectedFilters = null;
+        } else {
+          final sortValues = _sortOptions.map((e) => e.value).toSet();
+          final selectedSortList =
+              values.where((e) => sortValues.contains(e.value)).toList();
+          _selectedSort =
+              selectedSortList.isNotEmpty ? selectedSortList.first : null;
+          _selectedFilters =
+              values.where((e) => !sortValues.contains(e.value)).toList();
+        }
+        _fetchMembers();
+        if (!mounted) return;
+        setState(() {});
+      },
+    ).show(context);
+  }
+
+  Widget _buildFilterIconButton() {
+    final hasActiveFilter =
+        _selectedSort != null || (_selectedFilters?.isNotEmpty ?? false);
+
+    return Material(
+      color: hasActiveFilter
+          ? AppColors.primary.withValues(alpha: 0.08)
+          : Colors.white,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: _openSortAndFilterSheet,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: hasActiveFilter
+                  ? AppColors.primary
+                  : const Color(0xffDDDDDD),
+              width: hasActiveFilter ? 1.5 : 1.0,
+            ),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.tune_rounded,
+                size: 22,
+                color: hasActiveFilter ? AppColors.primary : AppColors.textGrey,
+              ),
+              if (hasActiveFilter)
+                Positioned(
+                  top: 7,
+                  right: 7,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -72,6 +176,9 @@ class __MembersAndLeadsListingScreenState
     String? searchQuery,
     bool? isPagination = false,
   }) async {
+    if (searchQuery != null) {
+      _currentSearchQuery = searchQuery;
+    }
     String? status;
     String? gender;
     bool? pendingFee;
@@ -82,6 +189,7 @@ class __MembersAndLeadsListingScreenState
           gender = f.value;
         } else if (f.value == 'pending_fee') {
           pendingFee = true;
+          status = 'pending_fee';
         } else {
           status = f.value;
         }
@@ -94,7 +202,7 @@ class __MembersAndLeadsListingScreenState
       statusString: status,
       gender: gender,
       pendingFee: pendingFee,
-      searchQuery: searchQuery,
+      searchQuery: _currentSearchQuery,
     );
   }
 
@@ -124,110 +232,67 @@ class __MembersAndLeadsListingScreenState
         ),
         body: Column(
           children: [
-            TextField(
-              onChanged: (q) {
-                if (q.isEmpty) {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                }
-                EasyDebounce.debounce(
-                  'members_and_leads_search_query',
-                  const Duration(milliseconds: 300),
-                  () {
-                    _fetchMembers(searchQuery: q);
-                  },
-                );
-              },
-              decoration: InputDecoration(
-                hintText: 'Search for name or phone number',
-                hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-                filled: false,
-                prefixIcon: SizedBox.square(
-                  dimension: 32,
-                  child:
-                      SvgPicture.asset(
-                        'assets/images/svg/icons/search.svg',
-                        height: 32,
-                        width: 32,
-                        color: AppColors.textGrey,
-                      ).center,
-                ),
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                  borderSide: BorderSide(color: Color(0xffDDDDDD)),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                  borderSide: BorderSide(color: Color(0xffDDDDDD)),
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                  borderSide: BorderSide(color: Color(0xffDDDDDD)),
-                ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onChanged: (q) {
+                        if (q.isEmpty) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        }
+                        EasyDebounce.debounce(
+                          'members_and_leads_search_query',
+                          const Duration(milliseconds: 300),
+                          () {
+                            _fetchMembers(searchQuery: q);
+                          },
+                        );
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search for name or phone number',
+                        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+                        filled: false,
+                        prefixIcon: SizedBox.square(
+                          dimension: 32,
+                          child: SvgPicture.asset(
+                            'assets/images/svg/icons/search.svg',
+                            height: 32,
+                            width: 32,
+                            color: AppColors.textGrey,
+                          ).center,
+                        ),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide(color: Color(0xffDDDDDD)),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide(color: Color(0xffDDDDDD)),
+                        ),
+                        enabledBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide(color: Color(0xffDDDDDD)),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  _buildFilterIconButton(),
+                ],
               ),
-            ).pad(16),
+            ),
             Expanded(
               child: ColoredBox(
                 color: const Color(0xffF7F7F7),
-                child: Column(
-                  spacing: 16,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          FilterButton(
-                            isSelected: _selectedSort != null,
-                            onTap: () {
-                              FilterSelectionSheet(
-                                title: 'Sort by',
-                                isSingleSelect: true,
-                                selectedFilters:
-                                    _selectedSort != null ? [_selectedSort!] : null,
-                                onFilterSelected: (values) {
-                                  _selectedSort =
-                                      values?.isNotEmpty == true
-                                          ? values!.first
-                                          : null;
-                                  _fetchMembers();
-                                  if (!mounted) return;
-                                  setState(() {});
-                                },
-                                items: _sortOptions,
-                              ).show(context);
-                            },
-                            sortLabel: _selectedSort != null
-                                ? 'Sort: ${_selectedSort!.label}'
-                                : 'Sort by',
-                          ),
-                          const SizedBox(width: 8),
-                          FilterButton(
-                            isSelected:
-                                _selectedFilters?.isNotEmpty ?? false,
-                            onTap: () {
-                              FilterSelectionSheet(
-                                title: 'Filter by',
-                                selectedFilters: _selectedFilters,
-                                onFilterSelected: (values) {
-                                  _selectedFilters = values;
-                                  _fetchMembers();
-                                  if (!mounted) return;
-                                  setState(() {});
-                                },
-                                items: _filterOptions,
-                              ).show(context);
-                            },
-                            sortLabel: (_selectedFilters?.isNotEmpty ?? false)
-                                ? 'Filter (${_selectedFilters!.length})'
-                                : 'Filter by',
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child:
-                      //* Members Listing
-                      BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
+                child:
+                //* Members Listing
+                BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
                         buildWhen: (p, c) => p.members != c.members,
                         bloc: _cubit,
                         builder: (context, state) {
@@ -376,64 +441,8 @@ class __MembersAndLeadsListingScreenState
                                                           ),
                                                         ),
                                                       ),
-                                                      if (memberData
-                                                                  ?.activePlan
-                                                                  ?.status
-                                                                  ?.toLowerCase() ==
-                                                              'active' ||
-                                                          memberData
-                                                                  ?.activePlan
-                                                                  ?.status
-                                                                  ?.toLowerCase() ==
-                                                              'expired')
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets.symmetric(
-                                                                horizontal: 10,
-                                                                vertical: 4,
-                                                              ),
-                                                          decoration: BoxDecoration(
-                                                            color:
-                                                                memberData!
-                                                                            .activePlan!
-                                                                            .status!
-                                                                            .toLowerCase() ==
-                                                                        'active'
-                                                                    ? const Color(
-                                                                      0xFFE8F5E9,
-                                                                    )
-                                                                    : const Color(
-                                                                      0xFFFFEBEE,
-                                                                    ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  12,
-                                                                ),
-                                                          ),
-                                                          child: Text(
-                                                            memberData!
-                                                                        .activePlan!
-                                                                        .status!
-                                                                        .toLowerCase() ==
-                                                                    'active'
-                                                                ? 'Active'
-                                                                : 'Expired',
-                                                            style: AppStyles.text10Px.poppins.w500.copyWith(
-                                                              color:
-                                                                  memberData!
-                                                                              .activePlan!
-                                                                              .status!
-                                                                              .toLowerCase() ==
-                                                                          'active'
-                                                                      ? const Color(
-                                                                        0xFF4CAF50,
-                                                                      )
-                                                                      : const Color(
-                                                                        0xFFD30000,
-                                                                      ),
-                                                            ),
-                                                          ),
-                                                        ),
+                                                      if (_buildStatusBadge(memberData) != null)
+                                                        _buildStatusBadge(memberData)!,
                                                     ],
                                                   ),
                                                   // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
@@ -471,10 +480,7 @@ class __MembersAndLeadsListingScreenState
                             ),
                           );
                         },
-                      ),
-                    ),
-                  ],
-                ).pad(16),
+                      ).pad(16),
               ),
             ),
           ],
@@ -513,6 +519,50 @@ class __MembersAndLeadsListingScreenState
           },
           child: const Icon(Icons.add),
         ).pOnly(right: 16),
+      ),
+    );
+  }
+
+  Widget? _buildStatusBadge(MemberDataModel? member) {
+    final rawStatus = member?.activePlan?.status?.trim();
+    if (rawStatus == null || rawStatus.isEmpty) return null;
+    final statusLower = rawStatus.toLowerCase();
+
+    Color bg;
+    Color text;
+    String label;
+
+    if (statusLower == 'active') {
+      bg = const Color(0xFFE8F5E9);
+      text = const Color(0xFF4CAF50);
+      label = 'Active';
+    } else if (statusLower == 'expired') {
+      bg = const Color(0xFFFFEBEE);
+      text = const Color(0xFFD30000);
+      label = 'Expired';
+    } else if (statusLower == 'frozen' || statusLower == 'paused' || statusLower == 'hold') {
+      bg = const Color(0xFFE1F5FE);
+      text = const Color(0xFF0288D1);
+      label = statusLower == 'frozen' ? 'Frozen' : 'Paused';
+    } else if (statusLower == 'pending' || statusLower.contains('due')) {
+      bg = const Color(0xFFFFF3E0);
+      text = const Color(0xFFE65100);
+      label = 'Pending';
+    } else {
+      bg = const Color(0xFFF5F5F5);
+      text = const Color(0xFF616161);
+      label = rawStatus;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: AppStyles.text10Px.poppins.w500.copyWith(color: text),
       ),
     );
   }

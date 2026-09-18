@@ -1,4 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: unused_element
 
 part of 'payment_history_model.dart';
 
@@ -14,6 +15,7 @@ _$PaymentHistoryImpl _$$PaymentHistoryImplFromJson(Map<String, dynamic> json) =>
       pendingPayments: PaymentHistorySection.fromJson(
         json['pending_payments'] as Map<String, dynamic>,
       ),
+      totalAmount: json['total_amount'],
     );
 
 Map<String, dynamic> _$$PaymentHistoryImplToJson(
@@ -21,6 +23,7 @@ Map<String, dynamic> _$$PaymentHistoryImplToJson(
 ) => <String, dynamic>{
   'all_payments': instance.allPayments,
   'pending_payments': instance.pendingPayments,
+  'total_amount': instance.totalAmount,
 };
 
 _$PaymentHistorySectionImpl _$$PaymentHistorySectionImplFromJson(
@@ -36,6 +39,7 @@ _$PaymentHistorySectionImpl _$$PaymentHistorySectionImplFromJson(
       const <PaymentHistoryItem>[],
   totalPaidToday: json['total_paid_today'] as num? ?? 0,
   totalPendingAmount: json['total_pending_amount'] as num? ?? 0,
+  totalAmount: json['total_amount'],
 );
 
 Map<String, dynamic> _$$PaymentHistorySectionImplToJson(
@@ -47,6 +51,7 @@ Map<String, dynamic> _$$PaymentHistorySectionImplToJson(
   'results': instance.results,
   'total_paid_today': instance.totalPaidToday,
   'total_pending_amount': instance.totalPendingAmount,
+  'total_amount': instance.totalAmount,
 };
 
 _$PaymentHistoryItemImpl _$$PaymentHistoryItemImplFromJson(
@@ -66,6 +71,7 @@ _$PaymentHistoryItemImpl _$$PaymentHistoryItemImplFromJson(
   platformFeePercentage: json['platform_fee_percentage'] as String?,
   totalAmount: json['total_amount'] as String?,
   settlementTime: json['settlement_time'] as String?,
+  profilePhoto: (json['profile_photo'] ?? json['profile_picture']) as String?,
 );
 
 Map<String, dynamic> _$$PaymentHistoryItemImplToJson(
@@ -85,4 +91,5 @@ Map<String, dynamic> _$$PaymentHistoryItemImplToJson(
   'platform_fee_percentage': instance.platformFeePercentage,
   'total_amount': instance.totalAmount,
   'settlement_time': instance.settlementTime,
+  'profile_photo': instance.profilePhoto,
 };

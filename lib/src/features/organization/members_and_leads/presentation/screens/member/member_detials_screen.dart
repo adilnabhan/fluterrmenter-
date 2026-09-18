@@ -211,28 +211,18 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
             },
             child: Row(
               children: [
-                AbsorbPointer(
-                  child: ProfileImage(
-                    isEdit: true,
-                    onChanged: (image) {},
-                    radius: 80.w,
-                    url: data.profilePicture ?? '',
-                  ),
+                ProfileImage(
+                  isEdit: false,
+                  radius: 80.w,
+                  url: data.profilePicture ?? '',
                 ),
                 const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${data.firstName ?? ''} ${data.lastName ?? ''}',
-                      style: AppStyles.text14Px.poppins.w500,
-                    ),
-                    const SizedBox(height: 4),
-                    Text('#${data.id}', style: AppStyles.text12Px.poppins.w400),
-                    const Divider(thickness: 1, color: Color(0xffDDDDDD)),
-                  ],
+                Expanded(
+                  child: Text(
+                    '${data.firstName ?? ''} ${data.lastName ?? ''}',
+                    style: AppStyles.text14Px.poppins.w500,
+                  ),
                 ),
-                const Spacer(),
                 const Icon(
                   Icons.arrow_forward_ios,
                   size: 14,

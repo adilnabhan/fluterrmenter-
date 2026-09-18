@@ -26,6 +26,8 @@ mixin _$PaymentHistory {
   @JsonKey(name: 'pending_payments')
   PaymentHistorySection get pendingPayments =>
       throw _privateConstructorUsedError;
+  @JsonKey(name: 'total_amount')
+  dynamic get totalAmount => throw _privateConstructorUsedError;
 
   /// Serializes this PaymentHistory to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -47,6 +49,7 @@ abstract class $PaymentHistoryCopyWith<$Res> {
   $Res call({
     @JsonKey(name: 'all_payments') PaymentHistorySection allPayments,
     @JsonKey(name: 'pending_payments') PaymentHistorySection pendingPayments,
+    @JsonKey(name: 'total_amount') dynamic totalAmount,
   });
 
   $PaymentHistorySectionCopyWith<$Res> get allPayments;
@@ -67,7 +70,11 @@ class _$PaymentHistoryCopyWithImpl<$Res, $Val extends PaymentHistory>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? allPayments = null, Object? pendingPayments = null}) {
+  $Res call({
+    Object? allPayments = null,
+    Object? pendingPayments = null,
+    Object? totalAmount = freezed,
+  }) {
     return _then(
       _value.copyWith(
             allPayments:
@@ -80,6 +87,11 @@ class _$PaymentHistoryCopyWithImpl<$Res, $Val extends PaymentHistory>
                     ? _value.pendingPayments
                     : pendingPayments // ignore: cast_nullable_to_non_nullable
                         as PaymentHistorySection,
+            totalAmount:
+                freezed == totalAmount
+                    ? _value.totalAmount
+                    : totalAmount // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
           )
           as $Val,
     );
@@ -120,6 +132,7 @@ abstract class _$$PaymentHistoryImplCopyWith<$Res>
   $Res call({
     @JsonKey(name: 'all_payments') PaymentHistorySection allPayments,
     @JsonKey(name: 'pending_payments') PaymentHistorySection pendingPayments,
+    @JsonKey(name: 'total_amount') dynamic totalAmount,
   });
 
   @override
@@ -141,7 +154,11 @@ class __$$PaymentHistoryImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? allPayments = null, Object? pendingPayments = null}) {
+  $Res call({
+    Object? allPayments = null,
+    Object? pendingPayments = null,
+    Object? totalAmount = freezed,
+  }) {
     return _then(
       _$PaymentHistoryImpl(
         allPayments:
@@ -154,6 +171,11 @@ class __$$PaymentHistoryImplCopyWithImpl<$Res>
                 ? _value.pendingPayments
                 : pendingPayments // ignore: cast_nullable_to_non_nullable
                     as PaymentHistorySection,
+        totalAmount:
+            freezed == totalAmount
+                ? _value.totalAmount
+                : totalAmount // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
       ),
     );
   }
@@ -165,6 +187,7 @@ class _$PaymentHistoryImpl implements _PaymentHistory {
   const _$PaymentHistoryImpl({
     @JsonKey(name: 'all_payments') required this.allPayments,
     @JsonKey(name: 'pending_payments') required this.pendingPayments,
+    @JsonKey(name: 'total_amount') this.totalAmount,
   });
 
   factory _$PaymentHistoryImpl.fromJson(Map<String, dynamic> json) =>
@@ -176,10 +199,13 @@ class _$PaymentHistoryImpl implements _PaymentHistory {
   @override
   @JsonKey(name: 'pending_payments')
   final PaymentHistorySection pendingPayments;
+  @override
+  @JsonKey(name: 'total_amount')
+  final dynamic totalAmount;
 
   @override
   String toString() {
-    return 'PaymentHistory(allPayments: $allPayments, pendingPayments: $pendingPayments)';
+    return 'PaymentHistory(allPayments: $allPayments, pendingPayments: $pendingPayments, totalAmount: $totalAmount)';
   }
 
   @override
@@ -190,12 +216,21 @@ class _$PaymentHistoryImpl implements _PaymentHistory {
             (identical(other.allPayments, allPayments) ||
                 other.allPayments == allPayments) &&
             (identical(other.pendingPayments, pendingPayments) ||
-                other.pendingPayments == pendingPayments));
+                other.pendingPayments == pendingPayments) &&
+            const DeepCollectionEquality().equals(
+              other.totalAmount,
+              totalAmount,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, allPayments, pendingPayments);
+  int get hashCode => Object.hash(
+    runtimeType,
+    allPayments,
+    pendingPayments,
+    const DeepCollectionEquality().hash(totalAmount),
+  );
 
   /// Create a copy of PaymentHistory
   /// with the given fields replaced by the non-null parameter values.
@@ -220,6 +255,7 @@ abstract class _PaymentHistory implements PaymentHistory {
     required final PaymentHistorySection allPayments,
     @JsonKey(name: 'pending_payments')
     required final PaymentHistorySection pendingPayments,
+    @JsonKey(name: 'total_amount') final dynamic totalAmount,
   }) = _$PaymentHistoryImpl;
 
   factory _PaymentHistory.fromJson(Map<String, dynamic> json) =
@@ -231,6 +267,9 @@ abstract class _PaymentHistory implements PaymentHistory {
   @override
   @JsonKey(name: 'pending_payments')
   PaymentHistorySection get pendingPayments;
+  @override
+  @JsonKey(name: 'total_amount')
+  dynamic get totalAmount;
 
   /// Create a copy of PaymentHistory
   /// with the given fields replaced by the non-null parameter values.
@@ -262,6 +301,8 @@ mixin _$PaymentHistorySection {
   num get totalPaidToday => throw _privateConstructorUsedError;
   @JsonKey(name: 'total_pending_amount')
   num get totalPendingAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'total_amount')
+  dynamic get totalAmount => throw _privateConstructorUsedError;
 
   /// Serializes this PaymentHistorySection to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -287,6 +328,7 @@ abstract class $PaymentHistorySectionCopyWith<$Res> {
     @JsonKey(name: 'results') List<PaymentHistoryItem> results,
     @JsonKey(name: 'total_paid_today') num totalPaidToday,
     @JsonKey(name: 'total_pending_amount') num totalPendingAmount,
+    @JsonKey(name: 'total_amount') dynamic totalAmount,
   });
 }
 
@@ -314,6 +356,7 @@ class _$PaymentHistorySectionCopyWithImpl<
     Object? results = null,
     Object? totalPaidToday = null,
     Object? totalPendingAmount = null,
+    Object? totalAmount = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -347,6 +390,11 @@ class _$PaymentHistorySectionCopyWithImpl<
                     ? _value.totalPendingAmount
                     : totalPendingAmount // ignore: cast_nullable_to_non_nullable
                         as num,
+            totalAmount:
+                freezed == totalAmount
+                    ? _value.totalAmount
+                    : totalAmount // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
           )
           as $Val,
     );
@@ -369,6 +417,7 @@ abstract class _$$PaymentHistorySectionImplCopyWith<$Res>
     @JsonKey(name: 'results') List<PaymentHistoryItem> results,
     @JsonKey(name: 'total_paid_today') num totalPaidToday,
     @JsonKey(name: 'total_pending_amount') num totalPendingAmount,
+    @JsonKey(name: 'total_amount') dynamic totalAmount,
   });
 }
 
@@ -393,6 +442,7 @@ class __$$PaymentHistorySectionImplCopyWithImpl<$Res>
     Object? results = null,
     Object? totalPaidToday = null,
     Object? totalPendingAmount = null,
+    Object? totalAmount = freezed,
   }) {
     return _then(
       _$PaymentHistorySectionImpl(
@@ -426,6 +476,11 @@ class __$$PaymentHistorySectionImplCopyWithImpl<$Res>
                 ? _value.totalPendingAmount
                 : totalPendingAmount // ignore: cast_nullable_to_non_nullable
                     as num,
+        totalAmount:
+            freezed == totalAmount
+                ? _value.totalAmount
+                : totalAmount // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
       ),
     );
   }
@@ -442,6 +497,7 @@ class _$PaymentHistorySectionImpl implements _PaymentHistorySection {
     final List<PaymentHistoryItem> results = const <PaymentHistoryItem>[],
     @JsonKey(name: 'total_paid_today') this.totalPaidToday = 0,
     @JsonKey(name: 'total_pending_amount') this.totalPendingAmount = 0,
+    @JsonKey(name: 'total_amount') this.totalAmount,
   }) : _results = results;
 
   factory _$PaymentHistorySectionImpl.fromJson(Map<String, dynamic> json) =>
@@ -475,10 +531,13 @@ class _$PaymentHistorySectionImpl implements _PaymentHistorySection {
   @override
   @JsonKey(name: 'total_pending_amount')
   final num totalPendingAmount;
+  @override
+  @JsonKey(name: 'total_amount')
+  final dynamic totalAmount;
 
   @override
   String toString() {
-    return 'PaymentHistorySection(count: $count, next: $next, previous: $previous, results: $results, totalPaidToday: $totalPaidToday, totalPendingAmount: $totalPendingAmount)';
+    return 'PaymentHistorySection(count: $count, next: $next, previous: $previous, results: $results, totalPaidToday: $totalPaidToday, totalPendingAmount: $totalPendingAmount, totalAmount: $totalAmount)';
   }
 
   @override
@@ -494,7 +553,11 @@ class _$PaymentHistorySectionImpl implements _PaymentHistorySection {
             (identical(other.totalPaidToday, totalPaidToday) ||
                 other.totalPaidToday == totalPaidToday) &&
             (identical(other.totalPendingAmount, totalPendingAmount) ||
-                other.totalPendingAmount == totalPendingAmount));
+                other.totalPendingAmount == totalPendingAmount) &&
+            const DeepCollectionEquality().equals(
+              other.totalAmount,
+              totalAmount,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -507,6 +570,7 @@ class _$PaymentHistorySectionImpl implements _PaymentHistorySection {
     const DeepCollectionEquality().hash(_results),
     totalPaidToday,
     totalPendingAmount,
+    const DeepCollectionEquality().hash(totalAmount),
   );
 
   /// Create a copy of PaymentHistorySection
@@ -535,6 +599,7 @@ abstract class _PaymentHistorySection implements PaymentHistorySection {
     @JsonKey(name: 'results') final List<PaymentHistoryItem> results,
     @JsonKey(name: 'total_paid_today') final num totalPaidToday,
     @JsonKey(name: 'total_pending_amount') final num totalPendingAmount,
+    @JsonKey(name: 'total_amount') final dynamic totalAmount,
   }) = _$PaymentHistorySectionImpl;
 
   factory _PaymentHistorySection.fromJson(Map<String, dynamic> json) =
@@ -560,6 +625,9 @@ abstract class _PaymentHistorySection implements PaymentHistorySection {
   @override
   @JsonKey(name: 'total_pending_amount')
   num get totalPendingAmount;
+  @override
+  @JsonKey(name: 'total_amount')
+  dynamic get totalAmount;
 
   /// Create a copy of PaymentHistorySection
   /// with the given fields replaced by the non-null parameter values.
@@ -567,10 +635,6 @@ abstract class _PaymentHistorySection implements PaymentHistorySection {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PaymentHistorySectionImplCopyWith<_$PaymentHistorySectionImpl>
   get copyWith => throw _privateConstructorUsedError;
-}
-
-PaymentHistoryItem _$PaymentHistoryItemFromJson(Map<String, dynamic> json) {
-  return _PaymentHistoryItem.fromJson(json);
 }
 
 /// @nodoc
@@ -605,9 +669,8 @@ mixin _$PaymentHistoryItem {
   String? get totalAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'settlement_time')
   String? get settlementTime => throw _privateConstructorUsedError;
-
-  /// Serializes this PaymentHistoryItem to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(name: 'profile_photo')
+  String? get profilePhoto => throw _privateConstructorUsedError;
 
   /// Create a copy of PaymentHistoryItem
   /// with the given fields replaced by the non-null parameter values.
@@ -638,6 +701,7 @@ abstract class $PaymentHistoryItemCopyWith<$Res> {
     @JsonKey(name: 'platform_fee_percentage') String? platformFeePercentage,
     @JsonKey(name: 'total_amount') String? totalAmount,
     @JsonKey(name: 'settlement_time') String? settlementTime,
+    @JsonKey(name: 'profile_photo') String? profilePhoto,
   });
 }
 
@@ -670,6 +734,7 @@ class _$PaymentHistoryItemCopyWithImpl<$Res, $Val extends PaymentHistoryItem>
     Object? platformFeePercentage = freezed,
     Object? totalAmount = freezed,
     Object? settlementTime = freezed,
+    Object? profilePhoto = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -743,6 +808,11 @@ class _$PaymentHistoryItemCopyWithImpl<$Res, $Val extends PaymentHistoryItem>
                     ? _value.settlementTime
                     : settlementTime // ignore: cast_nullable_to_non_nullable
                         as String?,
+            profilePhoto:
+                freezed == profilePhoto
+                    ? _value.profilePhoto
+                    : profilePhoto // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -773,6 +843,7 @@ abstract class _$$PaymentHistoryItemImplCopyWith<$Res>
     @JsonKey(name: 'platform_fee_percentage') String? platformFeePercentage,
     @JsonKey(name: 'total_amount') String? totalAmount,
     @JsonKey(name: 'settlement_time') String? settlementTime,
+    @JsonKey(name: 'profile_photo') String? profilePhoto,
   });
 }
 
@@ -804,6 +875,7 @@ class __$$PaymentHistoryItemImplCopyWithImpl<$Res>
     Object? platformFeePercentage = freezed,
     Object? totalAmount = freezed,
     Object? settlementTime = freezed,
+    Object? profilePhoto = freezed,
   }) {
     return _then(
       _$PaymentHistoryItemImpl(
@@ -877,13 +949,18 @@ class __$$PaymentHistoryItemImplCopyWithImpl<$Res>
                 ? _value.settlementTime
                 : settlementTime // ignore: cast_nullable_to_non_nullable
                     as String?,
+        profilePhoto:
+            freezed == profilePhoto
+                ? _value.profilePhoto
+                : profilePhoto // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
   const _$PaymentHistoryItemImpl({
     @JsonKey(name: 'id') required this.id,
@@ -900,10 +977,8 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
     @JsonKey(name: 'platform_fee_percentage') this.platformFeePercentage,
     @JsonKey(name: 'total_amount') this.totalAmount,
     @JsonKey(name: 'settlement_time') this.settlementTime,
+    @JsonKey(name: 'profile_photo') this.profilePhoto,
   });
-
-  factory _$PaymentHistoryItemImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PaymentHistoryItemImplFromJson(json);
 
   @override
   @JsonKey(name: 'id')
@@ -950,10 +1025,13 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
   @override
   @JsonKey(name: 'settlement_time')
   final String? settlementTime;
+  @override
+  @JsonKey(name: 'profile_photo')
+  final String? profilePhoto;
 
   @override
   String toString() {
-    return 'PaymentHistoryItem(id: $id, customerName: $customerName, membershipName: $membershipName, amount: $amount, status: $status, paymentMethod: $paymentMethod, paymentDate: $paymentDate, orderId: $orderId, paymentId: $paymentId, createdAt: $createdAt, platformFee: $platformFee, platformFeePercentage: $platformFeePercentage, totalAmount: $totalAmount, settlementTime: $settlementTime)';
+    return 'PaymentHistoryItem(id: $id, customerName: $customerName, membershipName: $membershipName, amount: $amount, status: $status, paymentMethod: $paymentMethod, paymentDate: $paymentDate, orderId: $orderId, paymentId: $paymentId, createdAt: $createdAt, platformFee: $platformFee, platformFeePercentage: $platformFeePercentage, totalAmount: $totalAmount, settlementTime: $settlementTime, profilePhoto: $profilePhoto)';
   }
 
   @override
@@ -984,10 +1062,11 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
             (identical(other.totalAmount, totalAmount) ||
                 other.totalAmount == totalAmount) &&
             (identical(other.settlementTime, settlementTime) ||
-                other.settlementTime == settlementTime));
+                other.settlementTime == settlementTime) &&
+            (identical(other.profilePhoto, profilePhoto) ||
+                other.profilePhoto == profilePhoto));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
@@ -1005,6 +1084,7 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
     platformFeePercentage,
     totalAmount,
     settlementTime,
+    profilePhoto,
   );
 
   /// Create a copy of PaymentHistoryItem
@@ -1017,11 +1097,6 @@ class _$PaymentHistoryItemImpl implements _PaymentHistoryItem {
         this,
         _$identity,
       );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$PaymentHistoryItemImplToJson(this);
-  }
 }
 
 abstract class _PaymentHistoryItem implements PaymentHistoryItem {
@@ -1041,10 +1116,8 @@ abstract class _PaymentHistoryItem implements PaymentHistoryItem {
     final String? platformFeePercentage,
     @JsonKey(name: 'total_amount') final String? totalAmount,
     @JsonKey(name: 'settlement_time') final String? settlementTime,
+    @JsonKey(name: 'profile_photo') final String? profilePhoto,
   }) = _$PaymentHistoryItemImpl;
-
-  factory _PaymentHistoryItem.fromJson(Map<String, dynamic> json) =
-      _$PaymentHistoryItemImpl.fromJson;
 
   @override
   @JsonKey(name: 'id')
@@ -1090,6 +1163,9 @@ abstract class _PaymentHistoryItem implements PaymentHistoryItem {
   @override
   @JsonKey(name: 'settlement_time')
   String? get settlementTime;
+  @override
+  @JsonKey(name: 'profile_photo')
+  String? get profilePhoto;
 
   /// Create a copy of PaymentHistoryItem
   /// with the given fields replaced by the non-null parameter values.

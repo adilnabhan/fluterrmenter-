@@ -1,6 +1,16 @@
-import 'package:dio/dio.dart' show Response;
+import 'dart:async';
+import 'package:dio/dio.dart' show DioException, Options, Response;
+import 'package:flutter/services.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
+
+class _PaymentSplit {
+  _PaymentSplit({required this.method});
+
+  final String method;
+  final TextEditingController amountController = TextEditingController();
+  final TextEditingController referenceController = TextEditingController();
+}
 
 class CollectMembershipFeeSheet extends StatefulWidget {
   const CollectMembershipFeeSheet({
@@ -82,21 +92,20 @@ class CollectMembershipFeeSheet extends StatefulWidget {
 }
 
 class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
-  final _amountController = TextEditingController();
-  final _referenceController = TextEditingController();
   final _notesController = TextEditingController();
 
-  String _selectedPaymentMethod = 'UPI';
+  final List<_PaymentSplit> _paymentSplits = [];
   bool _isSubmitting = false;
   double? _pendingAmount;
   double? _totalPayable;
   bool _isLoadingDetails = false;
 
-  final List<({String method, IconData icon})> _paymentMethods = [
-    (method: 'UPI', icon: Icons.qr_code_2_rounded),
-    (method: 'Cash', icon: Icons.payments_outlined),
-    (method: 'Card', icon: Icons.credit_card_outlined),
-    (method: 'Net Banking', icon: Icons.account_balance_outlined),
+  final List<String> _allPaymentMethods = [
+    'Cash',
+    'UPI',
+    'Debit Card',
+    'Credit Card',
+    'Net Banking',
   ];
 
   @override
@@ -106,20 +115,25 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
     _totalPayable = widget.totalPayable;
 
     if (_pendingAmount != null && _pendingAmount! > 0) {
-      final val = _pendingAmount!;
-      _amountController.text =
-          val == val.toInt() ? val.toInt().toString() : val.toStringAsFixed(2);
+      _initSplitsWithAmount(_pendingAmount!);
     } else if (widget.pendingAmount == null) {
-      // Pending amount is unknown; wait for fetch rather than prefilling full totalPayable
       _isLoadingDetails = true;
     } else if (_totalPayable != null && _totalPayable! > 0) {
-      final val = _totalPayable!;
-      _amountController.text =
-          val == val.toInt() ? val.toInt().toString() : val.toStringAsFixed(2);
+      _initSplitsWithAmount(_totalPayable!);
     }
 
     if (widget.pendingAmount == null || widget.totalPayable == null) {
       _fetchMembershipDetails();
+    }
+  }
+
+  void _initSplitsWithAmount(double amount) {
+    if (_paymentSplits.isEmpty) {
+      final s = _PaymentSplit(method: 'Cash');
+      s.amountController.text = amount == amount.toInt()
+          ? amount.toInt().toString()
+          : amount.toStringAsFixed(2);
+      _paymentSplits.add(s);
     }
   }
 
@@ -142,9 +156,16 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
           setState(() {
             if (pending != null) {
               _pendingAmount = pending;
-              _amountController.text = pending == pending.toInt()
-                  ? pending.toInt().toString()
-                  : pending.toStringAsFixed(2);
+              if (_paymentSplits.isEmpty) {
+                _initSplitsWithAmount(pending);
+              } else if (_paymentSplits.length == 1 &&
+                  (_paymentSplits.first.amountController.text.isEmpty ||
+                      _paymentSplits.first.amountController.text == '0')) {
+                _paymentSplits.first.amountController.text =
+                    pending == pending.toInt()
+                        ? pending.toInt().toString()
+                        : pending.toStringAsFixed(2);
+              }
             }
             if (payable != null) {
               _totalPayable = payable;
@@ -153,11 +174,8 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
         }
       }
     } catch (_) {
-      // If request fails and amount was never set, fall back to totalPayable
-      if (mounted && _amountController.text.isEmpty && _totalPayable != null) {
-        final val = _totalPayable!;
-        _amountController.text =
-            val == val.toInt() ? val.toInt().toString() : val.toStringAsFixed(2);
+      if (mounted && _paymentSplits.isEmpty && _totalPayable != null) {
+        _initSplitsWithAmount(_totalPayable!);
       }
     } finally {
       if (mounted) {
@@ -168,28 +186,114 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
 
   @override
   void dispose() {
-    _amountController.dispose();
-    _referenceController.dispose();
+    for (final split in _paymentSplits) {
+      split.amountController.dispose();
+      split.referenceController.dispose();
+    }
     _notesController.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    final amountText = _amountController.text.trim();
-    final amount = double.tryParse(amountText);
+  double get _totalCollected {
+    double sum = 0;
+    for (final split in _paymentSplits) {
+      sum += double.tryParse(split.amountController.text.trim()) ?? 0;
+    }
+    return sum;
+  }
 
-    if (amount == null || amount <= 0) {
+  double get _remainingDue {
+    final p = _pendingAmount ?? _totalPayable ?? 0;
+    return (p - _totalCollected).clamp(0.0, double.infinity);
+  }
+
+  List<String> get _availableMethods {
+    final usedMethods = _paymentSplits.map((s) => s.method).toSet();
+    return _allPaymentMethods.where((m) => !usedMethods.contains(m)).toList();
+  }
+
+  void _addPaymentSplit(String method) {
+    setState(() {
+      final split = _PaymentSplit(method: method);
+      if (_remainingDue > 0) {
+        split.amountController.text = _remainingDue == _remainingDue.toInt()
+            ? _remainingDue.toInt().toString()
+            : _remainingDue.toStringAsFixed(2);
+      }
+      _paymentSplits.add(split);
+    });
+  }
+
+  void _removePaymentSplit(int index) {
+    setState(() {
+      _paymentSplits[index].amountController.dispose();
+      _paymentSplits[index].referenceController.dispose();
+      _paymentSplits.removeAt(index);
+    });
+  }
+
+  ({Color bgColor, Color textColor, Color borderColor, IconData icon})
+  _getPaymentMethodStyle(String method) {
+    switch (method) {
+      case 'Cash':
+        return (
+          bgColor: const Color(0xFFE8F5E9),
+          textColor: const Color(0xFF2E7D32),
+          borderColor: const Color(0xFFA5D6A7),
+          icon: Icons.payments_outlined,
+        );
+      case 'UPI':
+        return (
+          bgColor: const Color(0xFFE3F2FD),
+          textColor: const Color(0xFF1565C0),
+          borderColor: const Color(0xFF90CAF9),
+          icon: Icons.qr_code_2_rounded,
+        );
+      case 'Debit Card':
+      case 'Credit Card':
+      case 'Card':
+        return (
+          bgColor: const Color(0xFFEDE7F6),
+          textColor: const Color(0xFF4527A0),
+          borderColor: const Color(0xFFB39DDB),
+          icon: Icons.credit_card_outlined,
+        );
+      case 'Net Banking':
+        return (
+          bgColor: const Color(0xFFFFF3E0),
+          textColor: const Color(0xFFE65100),
+          borderColor: const Color(0xFFFFCC80),
+          icon: Icons.account_balance_outlined,
+        );
+      default:
+        return (
+          bgColor: const Color(0xFFF5F5F5),
+          textColor: const Color(0xFF424242),
+          borderColor: const Color(0xFFBDBDBD),
+          icon: Icons.payment_outlined,
+        );
+    }
+  }
+
+  Future<void> _submit() async {
+    final validSplits = _paymentSplits.where((s) {
+      final amt = double.tryParse(s.amountController.text.trim()) ?? 0;
+      return amt > 0;
+    }).toList();
+
+    if (validSplits.isEmpty) {
       unawaited(Dialogs.showSnack(msg: 'Please enter a valid amount'));
       return;
     }
 
+    final total = _totalCollected;
     if (_pendingAmount != null &&
         _pendingAmount! > 0 &&
-        amount > (_pendingAmount! + 0.01)) {
+        total > (_pendingAmount! + 0.01)) {
       unawaited(
         Dialogs.showSnack(
           msg:
-              'Amount to collect (₹${amount == amount.toInt() ? amount.toInt() : amount.toStringAsFixed(2)}) cannot exceed pending due (₹${_pendingAmount == _pendingAmount!.toInt() ? _pendingAmount!.toInt() : _pendingAmount!.toStringAsFixed(2)}).',
+              'Total amount to collect (₹${total == total.toInt() ? total.toInt() : total.toStringAsFixed(2)}) cannot exceed pending due (₹${_pendingAmount == _pendingAmount!.toInt() ? _pendingAmount!.toInt() : _pendingAmount!.toStringAsFixed(2)}).',
         ),
       );
       return;
@@ -198,11 +302,23 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
     setState(() => _isSubmitting = true);
 
     try {
+      final payments = validSplits.map((s) {
+        final amt = double.tryParse(s.amountController.text.trim()) ?? 0;
+        final map = <String, dynamic>{
+          'payment_method': s.method,
+          'amount': amt,
+        };
+        final ref = s.referenceController.text.trim();
+        if (ref.isNotEmpty) {
+          map['reference'] = ref;
+        }
+        return map;
+      }).toList();
+
       final payload = <String, dynamic>{
-        'amount': amount,
-        'payment_method': _selectedPaymentMethod,
-        if (_referenceController.text.trim().isNotEmpty)
-          'reference': _referenceController.text.trim(),
+        'payments': payments,
+        'amount': total,
+        'payment_method': payments.first['payment_method'],
         if (_notesController.text.trim().isNotEmpty)
           'notes': _notesController.text.trim(),
       };
@@ -216,10 +332,10 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
         );
       } on DioException catch (dioErr) {
         if (dioErr.response?.statusCode == 404) {
-          // Fallback to updateCustomerMembership with new_payment
+          // Fallback to updateCustomerMembership with new_payments
           response = await DioClient().dio.patch<dynamic>(
             ApiUris.updateCustomerMembership(widget.customerMembershipId),
-            data: {'new_payment': payload},
+            data: {'new_payments': payments},
             options: Options(headers: {'X-Platform': platformSource}),
           );
         } else {
@@ -316,7 +432,7 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Collect Membership Fee',
+                            'Collect Pending Fee',
                             style: AppStyles.text16Px.poppins.w600.dark,
                           ),
                           if (widget.memberName != null ||
@@ -436,171 +552,377 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
                 const SizedBox(height: 16),
               ],
 
-              // Amount Field
-              Text(
-                'Amount to Collect *',
-                style: AppStyles.text12Px.poppins.w500.copyWith(
-                  color: AppColors.textGrey,
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                ],
-                style: AppStyles.text18Px.poppins.w600.dark,
-                decoration: InputDecoration(
-                  prefixIcon: const Padding(
-                    padding: EdgeInsets.only(left: 14, right: 6),
-                    child: Text(
-                      '₹',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xff27AE60),
+              // Split Payment Section Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Payment Details',
+                        style: AppStyles.text14Px.poppins.w600.dark,
                       ),
-                    ),
+                      if (_paymentSplits.length > 1) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE3F2FD),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Split',
+                            style: AppStyles.text10Px.poppins.w600.copyWith(
+                              color: const Color(0xFF1565C0),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  prefixIconConstraints: const BoxConstraints(),
-                  hintText: '0.00',
-                  hintStyle: AppStyles.text18Px.poppins.w400.copyWith(
-                    color: Colors.grey.shade400,
-                  ),
-                  filled: true,
-                  fillColor: const Color(0xffF8F9FA),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xffEEEEEE)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xffEEEEEE)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xff27AE60), width: 1.5),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 14,
-                  ),
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 16),
-
-              // Payment Method
-              Text(
-                'Payment Method *',
-                style: AppStyles.text12Px.poppins.w500.copyWith(
-                  color: AppColors.textGrey,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 38,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _paymentMethods.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, idx) {
-                    final item = _paymentMethods[idx];
-                    final isSelected = _selectedPaymentMethod == item.method;
-
-                    return InkWell(
+                  if (_availableMethods.isNotEmpty)
+                    InkWell(
                       onTap: () {
-                        setState(() => _selectedPaymentMethod = item.method);
+                        _addPaymentSplit(_availableMethods.first);
                       },
-                      borderRadius: BorderRadius.circular(10),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                          horizontal: 10,
+                          vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xff2471A3)
-                              : const Color(0xffF8FAFC),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isSelected
-                                ? const Color(0xff2471A3)
-                                : const Color(0xffE2E8F0),
-                          ),
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              item.icon,
-                              size: 15,
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xff2471A3),
+                              Icons.add,
+                              size: 16,
+                              color: AppColors.primary,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 4),
                             Text(
-                              item.method,
-                              style: AppStyles.text12Px.poppins.copyWith(
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w500,
-                                color: isSelected
-                                    ? Colors.white
-                                    : AppColors.dark,
+                              'Add Method',
+                              style: AppStyles.text12Px.poppins.w600.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Split Payment Cards
+              if (_paymentSplits.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAFAFA),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'No payment method selected',
+                      style: AppStyles.text13Px.poppins.w400.copyWith(
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                ...List.generate(_paymentSplits.length, (index) {
+                  final split = _paymentSplits[index];
+                  final style = _getPaymentMethodStyle(split.method);
+                  final needsRef = split.method == 'UPI' ||
+                      split.method == 'Net Banking' ||
+                      split.method == 'Debit Card' ||
+                      split.method == 'Credit Card';
+
+                  return Container(
+                    margin: EdgeInsets.only(
+                      bottom: index < _paymentSplits.length - 1 ? 12 : 0,
+                    ),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: style.borderColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header: Method pill + Split label + Delete
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: style.bgColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(style.icon, size: 14, color: style.textColor),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    split.method,
+                                    style: AppStyles.text12Px.poppins.w600.copyWith(
+                                      color: style.textColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Split ${index + 1}',
+                              style: AppStyles.text12Px.poppins.w400.copyWith(
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                            const Spacer(),
+                            if (_paymentSplits.length > 1)
+                              InkWell(
+                                onTap: () => _removePaymentSplit(index),
+                                borderRadius: BorderRadius.circular(6),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 18,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        // Amount Field
+                        TextField(
+                          controller: split.amountController,
+                          keyboardType:
+                              const TextInputType.numberWithOptions(decimal: true),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d*'),
+                            ),
+                          ],
+                          onChanged: (_) => setState(() {}),
+                          style: AppStyles.text16Px.poppins.w600.dark,
+                          decoration: InputDecoration(
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.only(left: 12, right: 6),
+                              child: Text(
+                                '₹',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff27AE60),
+                                ),
+                              ),
+                            ),
+                            prefixIconConstraints: const BoxConstraints(),
+                            hintText: '0.00',
+                            hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                              color: Colors.grey.shade400,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xffF8F9FA),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xffEEEEEE)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xffEEEEEE)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  BorderSide(color: style.textColor, width: 1.5),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                          ),
+                        ),
+                        if (needsRef) ...[
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: split.referenceController,
+                            style: AppStyles.text12Px.poppins.w400.dark,
+                            decoration: InputDecoration(
+                              hintText: 'Reference / Transaction ID (Optional)',
+                              hintStyle:
+                                  AppStyles.text12Px.poppins.w400.copyWith(
+                                color: Colors.grey.shade400,
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xffF8F9FA),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    const BorderSide(color: Color(0xffEEEEEE)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    const BorderSide(color: Color(0xffEEEEEE)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: style.textColor,
+                                  width: 1.2,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }),
+
+              // Quick Add Buttons for Available Methods
+              if (_availableMethods.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _availableMethods.map((method) {
+                    return InkWell(
+                      onTap: () => _addPaymentSplit(method),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE0E0E0)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.add,
+                              size: 14,
+                              color: Colors.grey.shade700,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              method,
+                              style: AppStyles.text12Px.poppins.w500.copyWith(
+                                color: const Color(0xFF424242),
                               ),
                             ),
                           ],
                         ),
                       ),
                     );
-                  },
+                  }).toList(),
                 ),
-              ),
+              ],
+
+              // Summary Card (Total Collecting vs Remaining Due)
+              if (_paymentSplits.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _remainingDue == 0
+                        ? const Color(0xFFE8F5E9)
+                        : const Color(0xFFFFF8E1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: _remainingDue == 0
+                          ? const Color(0xFFA5D6A7)
+                          : const Color(0xFFFFE082),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Total Collecting',
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '₹${_totalCollected == _totalCollected.toInt() ? _totalCollected.toInt() : _totalCollected.toStringAsFixed(2)}',
+                            style: AppStyles.text15Px.poppins.w700.copyWith(
+                              color: const Color(0xFF2E7D32),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            _remainingDue == 0 ? 'Settlement' : 'Remaining Due',
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _remainingDue == 0
+                                ? 'Full Settlement ✓'
+                                : '₹${_remainingDue == _remainingDue.toInt() ? _remainingDue.toInt() : _remainingDue.toStringAsFixed(2)}',
+                            style: AppStyles.text13Px.poppins.w600.copyWith(
+                              color: _remainingDue == 0
+                                  ? const Color(0xFF2E7D32)
+                                  : const Color(0xFFC0392B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               const SizedBox(height: 16),
 
-              // Reference (Optional)
-              Text(
-                'Reference / Transaction ID (Optional)',
-                style: AppStyles.text12Px.poppins.w500.copyWith(
-                  color: AppColors.textGrey,
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _referenceController,
-                decoration: InputDecoration(
-                  hintText: 'e.g., UPI9823749823, UTR or Cheque No.',
-                  hintStyle: AppStyles.text13Px.poppins.w400.copyWith(
-                    color: AppColors.textGrey,
-                  ),
-                  filled: true,
-                  fillColor: const Color(0xffF8F9FA),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xffEEEEEE)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xffEEEEEE)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xff2471A3)),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                ),
-                style: AppStyles.text14Px.poppins.w400.dark,
-              ),
-              const SizedBox(height: 16),
-
-              // Notes (Optional)
+              // Notes / Remarks (Optional)
               Text(
                 'Notes / Remarks (Optional)',
                 style: AppStyles.text12Px.poppins.w500.copyWith(
@@ -612,7 +934,7 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
                 controller: _notesController,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  hintText: 'e.g., Collected at counter',
+                  hintText: 'e.g., Collected at counter via split payment',
                   hintStyle: AppStyles.text13Px.poppins.w400.copyWith(
                     color: AppColors.textGrey,
                   ),
@@ -683,8 +1005,8 @@ class _CollectMembershipFeeSheetState extends State<CollectMembershipFeeSheet> {
                             const Icon(Icons.check_circle_outline, size: 18),
                             const SizedBox(width: 8),
                             Text(
-                              _amountController.text.trim().isNotEmpty
-                                  ? 'Collect ₹${_amountController.text.trim()} Fee'
+                              _totalCollected > 0
+                                  ? 'Collect ₹${_totalCollected == _totalCollected.toInt() ? _totalCollected.toInt() : _totalCollected.toStringAsFixed(2)} Fee'
                                   : 'Collect Fee',
                               style: AppStyles.text14Px.poppins.w600.copyWith(
                                 color: Colors.white,

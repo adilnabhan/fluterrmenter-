@@ -825,6 +825,12 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
   Future<void> fetchPaymentHistory({
     bool isPagination = false,
     required int orgId,
+    String? paymentMode,
+    String? date,
+    String? startDate,
+    String? endDate,
+    String? searchQuery,
+    String? name,
   }) async {
     final paymentHistoryData = state.paymentHistory.data.fold(
       () => null,
@@ -847,9 +853,24 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       ),
     );
 
+    final queryParameters = <String, dynamic>{
+      if (paymentMode != null &&
+          paymentMode.isNotEmpty &&
+          paymentMode.toLowerCase() != 'all')
+        'payment_mode': paymentMode.toLowerCase(),
+      if (date != null && date.isNotEmpty && date.toLowerCase() != 'all')
+        'date': date,
+      if (startDate != null && startDate.isNotEmpty) 'start_date': startDate,
+      if (endDate != null && endDate.isNotEmpty) 'end_date': endDate,
+      if (searchQuery != null && searchQuery.trim().isNotEmpty)
+        'search': searchQuery.trim(),
+      if (name != null && name.trim().isNotEmpty) 'name': name.trim(),
+    };
+
     final res = await MembershipRepository().listPaymentHistory(
       nextUrl: isPagination ? nextUrl : null,
       orgId: orgId,
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
     );
 
     if (isPagination) {

@@ -344,15 +344,15 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                               _buildStatCard(
                                 title: 'Active\nClients',
                                 value: '$activeClients',
-                                valueColor: const Color(0xff3B5998),
-                                titleColor: const Color(0xff3B5998),
-                                circleArrowColor: const Color(0xff3B5998),
+                                valueColor: const Color(0xff15803D),
+                                titleColor: const Color(0xff15803D),
+                                circleArrowColor: const Color(0xff15803D),
                                 gradient: const LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Color(0xffD6E4FF),
-                                    Color(0xffADC8FF),
+                                    Color(0xffDCFCE7),
+                                    Color(0xffBBF7D0),
                                   ],
                                 ),
                                 onTap: () {

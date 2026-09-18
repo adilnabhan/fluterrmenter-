@@ -2177,6 +2177,11 @@ class _OrganizationListingAndDetailsScreenState
 
                 GymTrainersScreen(orgDetails: orgDetails!),
 
+                PaymentHistoryScreen(
+                  orgId: state.selectedOrganization!.id!,
+                  showBackButton: false,
+                ),
+
                 OrganizationReportsScreen(
                   orgId: state.selectedOrganization!.id!,
                 ),

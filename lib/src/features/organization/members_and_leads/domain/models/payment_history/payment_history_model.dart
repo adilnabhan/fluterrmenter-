@@ -98,6 +98,9 @@ class PaymentHistory with _$PaymentHistory {
 
     @JsonKey(name: 'pending_payments')
     required PaymentHistorySection pendingPayments,
+
+    @JsonKey(name: 'total_amount')
+    dynamic totalAmount,
   }) = _PaymentHistory;
 
   factory PaymentHistory.fromJson(Map<String, dynamic> json) =>
@@ -128,6 +131,9 @@ class PaymentHistorySection with _$PaymentHistorySection {
     @JsonKey(name: 'total_pending_amount')
     @Default(0)
     num totalPendingAmount,
+
+    @JsonKey(name: 'total_amount')
+    dynamic totalAmount,
   }) = _PaymentHistorySection;
 
   factory PaymentHistorySection.fromJson(Map<String, dynamic> json) =>
@@ -180,8 +186,16 @@ class PaymentHistoryItem with _$PaymentHistoryItem {
 
     @JsonKey(name: 'settlement_time')
     String? settlementTime,
+
+    @JsonKey(name: 'profile_photo')
+    String? profilePhoto,
   }) = _PaymentHistoryItem;
 
-  factory PaymentHistoryItem.fromJson(Map<String, dynamic> json) =>
-      _$PaymentHistoryItemFromJson(json);
+  factory PaymentHistoryItem.fromJson(Map<String, dynamic> json) {
+    final copy = Map<String, dynamic>.from(json);
+    if (copy['profile_photo'] == null && copy['profile_picture'] != null) {
+      copy['profile_photo'] = copy['profile_picture'];
+    }
+    return _$$PaymentHistoryItemImplFromJson(copy);
+  }
 }

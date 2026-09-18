@@ -1,6 +1,4 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/leads/add_or_edit_lead_screen.dart';
-import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/leads/add_trainer_search_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_screen.dart';
@@ -239,76 +237,82 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
               top: 8,
               bottom: 16,
             ),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search trainers...',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search trainers...',
+                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xffDDDDDD)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xffDDDDDD)),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    onChanged: (value) {
+                      if (!mounted) return;
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                      if (value.isEmpty) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      }
+                    },
+                  ),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xffDDDDDD)),
+                const SizedBox(width: 12),
+                Material(
+                  color: AppColors.primary,
+                  shape: const CircleBorder(),
+                  elevation: 0,
+                  child: InkWell(
+                    onTap: () async {
+                      await Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder:
+                              (context) => BlocProvider(
+                                create:
+                                    (context) => MembersAndLeadsCubit(
+                                      orgId: widget.orgDetails.id ?? 0,
+                                    ),
+                                child: AddTrainerSearchScreen(
+                                  orgId: widget.orgDetails.id ?? 0,
+                                ),
+                              ),
+                        ),
+                      );
+                      _fetchTrainers();
+                    },
+                    customBorder: const CircleBorder(),
+                    child: const SizedBox(
+                      width: 42,
+                      height: 42,
+                      child: Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xffDDDDDD)),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-              onChanged: (value) {
-                if (!mounted) return;
-                setState(() {
-                  _searchQuery = value;
-                });
-                if (value.isEmpty) {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                }
-              },
+              ],
             ),
           ),
         ),
       ),
       body: Column(
         children: [
-          Row(
-            children: [
-              Text('Trainers', style: AppStyles.text16Px.poppins.w600.dark),
-              const Spacer(),
-              FilledButton.icon(
-                onPressed: () async {
-                  await Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder:
-                          (context) => BlocProvider(
-                            create:
-                                (context) => MembersAndLeadsCubit(
-                                  orgId: widget.orgDetails.id ?? 0,
-                                ),
-                            child: AddTrainerSearchScreen(
-                              orgId: widget.orgDetails.id ?? 0,
-                            ),
-                          ),
-                    ),
-                  );
-                  _fetchTrainers();
-                },
-                label: const Text('Add'),
-                icon: const Icon(Icons.add, size: 16),
-                style: FilledButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  backgroundColor: const Color(0xffFFEAEA),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           Expanded(
             child: RefreshIndicator(
               onRefresh: _fetchTrainers,

@@ -7,6 +7,7 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/add_or_edit_memeber_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/components/sheets/filter_selection_sheet.dart';
 
 class TrainerCustomersScreen extends StatefulWidget {
   final bool isPushed;
@@ -31,6 +32,131 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   late String _statusFilter;
   String _selectedGymFilter = 'All'; // Selected gym capsule filter
 
+  List<({String label, String value})>? _selectedFilters;
+  ({String label, String value})? _selectedSort;
+
+  final _filterCategories = const [
+    FilterCategory(
+      title: 'Membership Status',
+      isSingleSelect: true,
+      items: [
+        (label: 'Active', value: 'active'),
+        (label: 'Frozen / Paused', value: 'frozen'),
+        (label: 'Expired (Last 10 Days)', value: 'expired_10d'),
+        (label: 'Expired', value: 'expired'),
+        (label: 'Pending Fee', value: 'pending_fee'),
+      ],
+    ),
+    FilterCategory(
+      title: 'Gender',
+      isSingleSelect: true,
+      items: [
+        (label: 'Male', value: 'male'),
+        (label: 'Female', value: 'female'),
+      ],
+    ),
+  ];
+
+  final _sortOptions = const [
+    (label: 'Joined Recently', value: 'recent'),
+    (label: 'Joined First', value: 'oldest'),
+    (label: 'Name: A-Z', value: 'a_z'),
+    (label: 'Name: Z-A', value: 'z_a'),
+  ];
+
+  List<FilterCategory> get _sortAndFilterCategories => [
+    FilterCategory(
+      title: 'Sort by',
+      isSingleSelect: true,
+      items: _sortOptions,
+    ),
+    ..._filterCategories,
+  ];
+
+  void _openSortAndFilterSheet() {
+    final initialSelected = <({String label, String value})>[
+      if (_selectedSort != null) _selectedSort!,
+      if (_selectedFilters != null) ..._selectedFilters!,
+    ];
+
+    FilterSelectionSheet(
+      title: 'Sort & Filter',
+      categories: _sortAndFilterCategories,
+      selectedFilters: initialSelected.isNotEmpty ? initialSelected : null,
+      onFilterSelected: (values) {
+        if (values == null || values.isEmpty) {
+          _selectedSort = null;
+          _selectedFilters = null;
+        } else {
+          final sortValues = _sortOptions.map((e) => e.value).toSet();
+          final selectedSortList =
+              values.where((e) => sortValues.contains(e.value)).toList();
+          _selectedSort =
+              selectedSortList.isNotEmpty ? selectedSortList.first : null;
+          _selectedFilters =
+              values.where((e) => !sortValues.contains(e.value)).toList();
+        }
+        _fetchClients();
+        if (!mounted) return;
+        setState(() {});
+      },
+    ).show(context);
+  }
+
+  Widget _buildFilterIconButton() {
+    final hasActiveFilter =
+        _selectedSort != null || (_selectedFilters?.isNotEmpty ?? false);
+
+    return Material(
+      color: hasActiveFilter
+          ? AppColors.primary.withValues(alpha: 0.08)
+          : context.colors.card,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: _openSortAndFilterSheet,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: hasActiveFilter
+                  ? AppColors.primary
+                  : context.colors.border,
+              width: hasActiveFilter ? 1.5 : 1.0,
+            ),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.tune_rounded,
+                size: 22,
+                color: hasActiveFilter
+                    ? AppColors.primary
+                    : context.colors.textSecondary,
+              ),
+              if (hasActiveFilter)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   String? _nextUrl;
   int? _totalCount;
   bool _isFetchingMore = false;
@@ -40,6 +166,16 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   void initState() {
     super.initState();
     _statusFilter = widget.initialStatusFilter;
+    if (widget.initialStatusFilter != 'all') {
+      final label = widget.initialStatusFilter == 'active'
+          ? 'Active'
+          : widget.initialStatusFilter == 'paused'
+              ? 'Frozen / Paused'
+              : widget.initialStatusFilter == 'expired'
+                  ? 'Expired'
+                  : widget.initialStatusFilter;
+      _selectedFilters = [(label: label, value: widget.initialStatusFilter)];
+    }
     _fetchClients();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -65,11 +201,33 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
       _totalCount = null;
     });
 
+    String? status;
+    String? gender;
+    bool? pendingFee;
+
+    if (_selectedFilters != null && _selectedFilters!.isNotEmpty) {
+      for (final f in _selectedFilters!) {
+        if (f.value == 'male' || f.value == 'female') {
+          gender = f.value;
+        } else if (f.value == 'pending_fee') {
+          pendingFee = true;
+          status = 'pending_fee';
+        } else {
+          status = f.value;
+        }
+      }
+    } else if (_statusFilter != 'all') {
+      status = _statusFilter;
+    }
+
     try {
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.trainerCustomers,
         queryParameters: {
-          'status': _statusFilter,
+          if (status != null && status != 'all') 'status': status,
+          if (gender != null) 'gender': gender,
+          if (pendingFee == true) 'pending_fee': 'true',
+          if (_selectedSort != null) 'sort': _selectedSort!.value,
           if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
         },
         options: Options(headers: {'X-Platform': platformSource}),
@@ -181,16 +339,6 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
       final orgName = client['organization_name'] ?? 'Direct Client';
       if (_selectedGymFilter != 'All' && orgName != _selectedGymFilter) {
         return false;
-      }
-      // If we are showing only active clients from the API, trust the backend status directly
-      if (!_shouldHideFilter) {
-        if (_statusFilter == 'active') {
-          final statusInfo = _evaluateClientStatus(client);
-          if (statusInfo['isExpired'] == true) return false;
-        } else if (_statusFilter == 'expired') {
-          final statusInfo = _evaluateClientStatus(client);
-          if (statusInfo['isExpired'] != true) return false;
-        }
       }
       return true;
     }).toList();
@@ -307,11 +455,44 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
       }
     }
 
+    final String resolvedStatus = (client['resolved_status'] ?? client['status'])
+        ?.toString()
+        .toLowerCase()
+        .trim() ?? '';
+
+    // Check frozen / paused / hold
+    if (resolvedStatus == 'frozen' ||
+        resolvedStatus == 'paused' ||
+        resolvedStatus == 'hold' ||
+        latestStatus == 'frozen' ||
+        latestStatus == 'paused' ||
+        latestStatus == 'hold') {
+      final isFrozen = resolvedStatus == 'frozen' || latestStatus == 'frozen';
+      return {
+        'text': isFrozen ? 'Frozen' : 'Paused',
+        'color': const Color(0xff0288D1),
+        'bgColor': const Color(0xffE1F5FE),
+        'isExpired': false,
+      };
+    }
+
+    // Check pending fee
+    if (resolvedStatus == 'pending_fee' ||
+        (client['payment_status']?.toString().toLowerCase() == 'pending')) {
+      return {
+        'text': 'Fee Due',
+        'color': const Color(0xffE65100),
+        'bgColor': const Color(0xffFFF3E0),
+        'isExpired': false,
+      };
+    }
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
     // 1. If explicit status says expired / inactive / completed
-    if (latestStatus == 'expired' ||
+    if (resolvedStatus == 'expired' ||
+        latestStatus == 'expired' ||
         latestStatus == 'inactive' ||
         latestStatus == 'completed' ||
         isActiveMember == false) {
@@ -423,35 +604,45 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
           preferredSize: const Size.fromHeight(80),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: context.colors.card,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: context.colors.border),
-              ),
-              child: TextField(
-                onChanged: (val) {
-                  if (!mounted) return;
-                  setState(() {
-                    _searchQuery = val;
-                  });
-                  EasyDebounce.debounce(
-                    'clients-search',
-                    const Duration(milliseconds: 400),
-                    () => _fetchClients(),
-                  );
-                },
-                decoration: InputDecoration(
-                  icon: Icon(Icons.search, color: context.colors.textSecondary),
-                  hintText: 'Search for name or phone number',
-                  fillColor: context.colors.card,
-                  hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-                    color: context.colors.textSecondary,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: context.colors.card,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: context.colors.border),
+                    ),
+                    child: TextField(
+                      onChanged: (val) {
+                        if (!mounted) return;
+                        setState(() {
+                          _searchQuery = val;
+                        });
+                        EasyDebounce.debounce(
+                          'clients-search',
+                          const Duration(milliseconds: 400),
+                          () => _fetchClients(),
+                        );
+                      },
+                      decoration: InputDecoration(
+                        icon: Icon(Icons.search, color: context.colors.textSecondary),
+                        hintText: 'Search for name or phone number',
+                        fillColor: context.colors.card,
+                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
+                        border: InputBorder.none,
+                      ),
+                    ),
                   ),
-                  border: InputBorder.none,
                 ),
-              ),
+                if (!_shouldHideFilter) ...[
+                  const SizedBox(width: 10),
+                  _buildFilterIconButton(),
+                ],
+              ],
             ),
           ),
         ),
@@ -515,170 +706,6 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
               ),
             ),
 
-          // 3. Sub-filter Chips (Filter and Active Clients)
-          if (!_shouldHideFilter)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Row(
-              children: [
-                PopupMenuButton<String>(
-                  onSelected: (String value) {
-                    if (!mounted) return;
-                    setState(() {
-                      _statusFilter = value;
-                    });
-                    _fetchClients();
-                  },
-                  color: context.colors.card,
-                  surfaceTintColor: context.colors.card,
-                  position: PopupMenuPosition.under,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  itemBuilder:
-                      (BuildContext context) => <PopupMenuEntry<String>>[
-                        PopupMenuItem<String>(
-                          value: 'all',
-                          child: Text(
-                            'All Clients',
-                            style: AppStyles.text12Px.poppins.copyWith(
-                              fontWeight:
-                                  _statusFilter == 'all'
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                              color:
-                                  _statusFilter == 'all'
-                                      ? AppColors.primary
-                                      : AppColors.textDark,
-                            ),
-                          ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'active',
-                          child: Text(
-                            'Active Clients',
-                            style: AppStyles.text12Px.poppins.copyWith(
-                              fontWeight:
-                                  _statusFilter == 'active'
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                              color:
-                                  _statusFilter == 'active'
-                                      ? AppColors.primary
-                                      : AppColors.textDark,
-                            ),
-                          ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'paused',
-                          child: Text(
-                            'Paused Clients',
-                            style: AppStyles.text12Px.poppins.copyWith(
-                              fontWeight:
-                                  _statusFilter == 'paused'
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                              color:
-                                  _statusFilter == 'paused'
-                                      ? AppColors.primary
-                                      : AppColors.textDark,
-                            ),
-                          ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'expired',
-                          child: Text(
-                            'Expired Clients',
-                            style: AppStyles.text12Px.poppins.copyWith(
-                              fontWeight:
-                                  _statusFilter == 'expired'
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                              color:
-                                  _statusFilter == 'expired'
-                                      ? AppColors.primary
-                                      : AppColors.textDark,
-                            ),
-                          ),
-                        ),
-                      ],
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color:
-                          _statusFilter != 'all'
-                              ? const Color(0xffFFEAEA)
-                              : context.colors.card,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color:
-                            _statusFilter != 'all'
-                                ? AppColors.primary.withOpacity(0.2)
-                                : context.colors.border,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.filter_alt_outlined,
-                          size: 13,
-                          color:
-                              _statusFilter != 'all'
-                                  ? AppColors.primary
-                                  : context.colors.icon,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _statusFilter == 'all'
-                              ? 'Filter'
-                              : _statusFilter == 'active'
-                              ? 'Active Clients'
-                              : _statusFilter == 'paused'
-                              ? 'Paused Clients'
-                              : 'Expired Clients',
-                          style: AppStyles.text12Px.poppins.w600.copyWith(
-                            color:
-                                _statusFilter != 'all'
-                                    ? AppColors.primary
-                                    : context.colors.textPrimary,
-                          ),
-                        ),
-                        if (_statusFilter != 'all') ...[
-                          const SizedBox(width: 4),
-                          GestureDetector(
-                            onTap: () {
-                              if (!mounted) return;
-                              setState(() {
-                                _statusFilter = 'all';
-                              });
-                              _fetchClients();
-                            },
-                            child: const Icon(
-                              Icons.close,
-                              size: 12,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ] else ...[
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.keyboard_arrow_down,
-                            size: 14,
-                            color: AppColors.textDark,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
 
           // 4. Member Count
           Padding(

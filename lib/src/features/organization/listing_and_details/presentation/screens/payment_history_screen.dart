@@ -2,45 +2,182 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/payment_history/payment_history_model.dart';
 
 class PaymentHistoryScreen extends StatelessWidget {
-  const PaymentHistoryScreen({required this.orgId, super.key});
+  const PaymentHistoryScreen({
+    required this.orgId,
+    this.showBackButton = true,
+    super.key,
+  });
   final int orgId;
+  final bool showBackButton;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => MembersAndLeadsCubit(orgId: orgId),
-      child: PaymentHistoryList(orgId: orgId),
+      child: PaymentHistoryList(orgId: orgId, showBackButton: showBackButton),
     );
   }
 }
 
 class PaymentHistoryList extends StatefulWidget {
-  const PaymentHistoryList({required this.orgId});
+  const PaymentHistoryList({
+    required this.orgId,
+    this.showBackButton = true,
+    super.key,
+  });
   final int orgId;
+  final bool showBackButton;
   @override
   State<PaymentHistoryList> createState() => _PaymentHistoryListState();
 }
 
-class _PaymentHistoryListState extends State<PaymentHistoryList>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+class _PaymentHistoryListState extends State<PaymentHistoryList> {
   late final MembersAndLeadsCubit _cubit;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  String? _selectedPaymentMode;
+  String? _selectedDate;
+
+  final _paymentFilterCategories = const [
+    FilterCategory(
+      title: 'Payment Mode',
+      isSingleSelect: true,
+      items: [
+        (label: 'Cash', value: 'cash'),
+        (label: 'UPI', value: 'upi'),
+      ],
+    ),
+    FilterCategory(
+      title: 'Date',
+      isSingleSelect: true,
+      items: [
+        (label: 'Today', value: 'today'),
+        (label: 'Yesterday', value: 'yesterday'),
+        (label: 'This Month', value: 'month'),
+      ],
+    ),
+  ];
+
+  List<({String label, String value})>? get _selectedFilters {
+    final list = <({String label, String value})>[];
+    if (_selectedPaymentMode != null) {
+      final label = _selectedPaymentMode == 'cash' ? 'Cash' : 'UPI';
+      list.add((label: label, value: _selectedPaymentMode!));
+    }
+    if (_selectedDate != null) {
+      final label = _selectedDate == 'today'
+          ? 'Today'
+          : _selectedDate == 'yesterday'
+              ? 'Yesterday'
+              : 'This Month';
+      list.add((label: label, value: _selectedDate!));
+    }
+    return list.isNotEmpty ? list : null;
+  }
+
+  void _openFilterSheet() {
+    FilterSelectionSheet(
+      title: 'Filter Payments',
+      categories: _paymentFilterCategories,
+      selectedFilters: _selectedFilters,
+      onFilterSelected: (values) {
+        if (values == null || values.isEmpty) {
+          _selectedPaymentMode = null;
+          _selectedDate = null;
+        } else {
+          final modeValues = {'cash', 'upi'};
+          final dateValues = {'today', 'yesterday', 'month'};
+
+          String? mode;
+          String? date;
+
+          for (final v in values) {
+            if (modeValues.contains(v.value)) mode = v.value;
+            if (dateValues.contains(v.value)) date = v.value;
+          }
+
+          _selectedPaymentMode = mode;
+          _selectedDate = date;
+        }
+        _fetch();
+        if (!mounted) return;
+        setState(() {});
+      },
+    ).show(context);
+  }
+
+  Widget _buildFilterIconButton() {
+    final hasActiveFilter =
+        _selectedPaymentMode != null || _selectedDate != null;
+
+    return Material(
+      color: hasActiveFilter
+          ? AppColors.primary.withValues(alpha: 0.08)
+          : Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: _openFilterSheet,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: hasActiveFilter
+                  ? AppColors.primary
+                  : Colors.grey.shade200,
+              width: hasActiveFilter ? 1.5 : 1.0,
+            ),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.tune_rounded,
+                size: 22,
+                color: hasActiveFilter ? AppColors.primary : Colors.grey,
+              ),
+              if (hasActiveFilter)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _cubit = context.read<MembersAndLeadsCubit>();
-    print('org id isss----${widget.orgId}');
-    _tabController = TabController(length: 2, vsync: this);
     _fetch();
   }
 
-  Future<void> _fetch() async {
-    await _cubit.fetchPaymentHistory(orgId: widget.orgId);
+  Future<void> _fetch({bool isPagination = false}) async {
+    await _cubit.fetchPaymentHistory(
+      orgId: widget.orgId,
+      isPagination: isPagination,
+      paymentMode: _selectedPaymentMode,
+      date: _selectedDate,
+      searchQuery: _searchQuery,
+    );
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -51,7 +188,9 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: const PopButton().center,
+        automaticallyImplyLeading: false,
+        titleSpacing: widget.showBackButton ? null : 16,
+        leading: widget.showBackButton ? const PopButton().center : null,
         title: Text(
           'Payments',
           style: AppStyles.text18Px.poppins.w600.copyWith(color: Colors.black),
@@ -65,33 +204,78 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
       ),
       body: Column(
         children: [
-          // Padding(
-          //   padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          //   child: TextField(
-          //     decoration: InputDecoration(
-          //       hintText: 'Search for name or date of payment',
-          //       hintStyle: AppStyles.text14Px.poppins.copyWith(
-          //         color: Colors.grey,
-          //       ),
-          //       prefixIcon: const Icon(Icons.search, color: Colors.grey),
-          //       filled: true,
-          //       fillColor: Colors.grey.shade50,
-          //       contentPadding: EdgeInsets.zero,
-          //       border: OutlineInputBorder(
-          //         borderRadius: BorderRadius.circular(12),
-          //         borderSide: BorderSide(color: Colors.grey.shade200),
-          //       ),
-          //       enabledBorder: OutlineInputBorder(
-          //         borderRadius: BorderRadius.circular(12),
-          //         borderSide: BorderSide(color: Colors.grey.shade200),
-          //       ),
-          //       focusedBorder: OutlineInputBorder(
-          //         borderRadius: BorderRadius.circular(12),
-          //         borderSide: const BorderSide(color: AppColors.primary),
-          //       ),
-          //     ),
-          //   ),
-          // ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (val) {
+                      EasyDebounce.cancel('payment_search_query');
+                      _searchQuery = val.trim();
+                      _fetch();
+                    },
+                    onChanged: (val) {
+                      setState(() {});
+                      EasyDebounce.debounce(
+                        'payment_search_query',
+                        const Duration(milliseconds: 350),
+                        () {
+                          _searchQuery = val.trim();
+                          _fetch();
+                        },
+                      );
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Search for name or phone number',
+                      hintStyle: AppStyles.text14Px.poppins.copyWith(
+                        color: Colors.grey,
+                      ),
+                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                _searchQuery = '';
+                                setState(() {});
+                                EasyDebounce.cancel('payment_search_query');
+                                _fetch();
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                _buildFilterIconButton(),
+              ],
+            ),
+          ),
           BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
             buildWhen: (p, c) => p.paymentHistory != c.paymentHistory,
             builder: (context, state) {
@@ -109,76 +293,14 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
                   ),
                   (data) {
                     return Expanded(
-                      child: Column(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border(
-                                bottom: BorderSide(color: Colors.grey.shade300),
+                      child: ColoredBox(
+                        color: const Color(0xfff9f9f9),
+                        child: data.allPayments.results.isEmpty
+                            ? ErrorUi.empty().center
+                            : _AllPaymentsTab(
+                                allPayment: data.allPayments,
+                                dateFilter: _selectedDate,
                               ),
-                            ),
-                            child: TabBar(
-                              controller: _tabController,
-                              isScrollable: true,
-                              padding: const EdgeInsets.only(left: 10),
-                              labelColor: Colors.black,
-                              unselectedLabelColor: Colors.grey,
-                              labelStyle: AppStyles.text14Px.poppins.w600,
-                              indicatorColor: Colors.transparent,
-                              dividerColor: Colors.transparent,
-                              indicatorSize: TabBarIndicatorSize.tab,
-                              indicator: _FolderTabIndicator(
-                                color: const Color(0xfff9f9f9),
-                                borderColor: Colors.grey.shade300,
-                                radius: 12,
-                              ),
-                              tabs: const [
-                                Tab(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    child: Text('All Payments'),
-                                  ),
-                                ),
-                                Tab(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    child: Text('Processing'),
-                                    // child: Text('Pending'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: ColoredBox(
-                              color: const Color(0xfff9f9f9),
-                              child: TabBarView(
-                                controller: _tabController,
-                                children: [
-                                  if (data.allPayments.results.isEmpty)
-                                    ErrorUi.empty().center
-                                  else
-                                    _AllPaymentsTab(
-                                      allPayment: data.allPayments,
-                                    ),
-                                  if (data.pendingPayments.results.isEmpty)
-                                    ErrorUi.empty().center
-                                  else
-                                    _AllPaymentsTab(
-                                      isAllPayment: false,
-                                      allPayment: data.pendingPayments,
-                                    ),
-                                  // _ProcessingPaymentsTab(),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     );
                   },
@@ -194,12 +316,52 @@ class _PaymentHistoryListState extends State<PaymentHistoryList>
 
 class _AllPaymentsTab extends StatelessWidget {
   final bool isAllPayment;
-  const _AllPaymentsTab({super.key, this.allPayment, this.isAllPayment = true});
+  final String? dateFilter;
+  const _AllPaymentsTab({
+    super.key,
+    this.allPayment,
+    this.isAllPayment = true,
+    this.dateFilter,
+  });
 
   final PaymentHistorySection? allPayment;
 
+  String _formatAmount(dynamic amount, num fallback) {
+    if (amount != null) {
+      if (amount is num) {
+        if (amount % 1 == 0) return amount.toInt().toString();
+        return amount.toStringAsFixed(2);
+      }
+      final str = amount.toString().trim();
+      if (str.isNotEmpty && str != 'null') {
+        final parsed = double.tryParse(str);
+        if (parsed != null) {
+          if (parsed % 1 == 0) return parsed.toInt().toString();
+          return parsed.toStringAsFixed(2);
+        }
+        return str;
+      }
+    }
+    if (fallback % 1 == 0) return fallback.toInt().toString();
+    return fallback.toStringAsFixed(2);
+  }
+
+  String _getDateLabel() {
+    if (dateFilter == 'today') return 'today';
+    if (dateFilter == 'yesterday') return 'yesterday';
+    if (dateFilter == 'month') return 'this month';
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final count = (allPayment?.count != null && allPayment!.count > 0)
+        ? allPayment!.count
+        : (allPayment?.results.length ?? 0);
+    final baseLabel = count == 1 ? '1 payment' : '$count payments';
+    final dateLabel = _getDateLabel();
+    final countText = dateLabel.isNotEmpty ? '$baseLabel $dateLabel' : baseLabel;
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: allPayment?.results.length ?? 0,
@@ -207,45 +369,13 @@ class _AllPaymentsTab extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // SingleChildScrollView(
-            //   scrollDirection: Axis.horizontal,
-            //   child: Row(
-            //     children: [
-            //       _FilterChip(
-            //         label: 'Filter x',
-            //         onTap: () {},
-            //         textColor: const Color(0xffEF5350),
-            //         borderColor: const Color(0xffEF5350).withOpacity(0.2),
-            //         backgroundColor: const Color(0xffFFEBEE),
-            //         icon: Icons.filter_list,
-            //         iconColor: const Color(0xffEF5350),
-            //       ),
-            //       const SizedBox(width: 8),
-            //       _FilterChip(
-            //         label: 'Today',
-            //         onTap: () {},
-            //         textColor: const Color(0xffEF5350),
-            //         borderColor: const Color(0xffEF5350).withOpacity(0.2),
-            //         backgroundColor: const Color(0xffFFEBEE),
-            //       ),
-            //       const SizedBox(width: 8),
-            //       _FilterChip(
-            //         label: 'Type: All',
-            //         onTap: () {},
-            //         textColor: const Color(0xffEF5350),
-            //         borderColor: const Color(0xffEF5350).withOpacity(0.2),
-            //         backgroundColor: const Color(0xffFFEBEE),
-            //       ),
-            //     ],
-            //   ),
-            // ),
             if (index == 0) const SizedBox(height: 16),
             if (index == 0)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${allPayment?.results.length ?? 0} payments today',
+                    countText,
                     style: AppStyles.text14Px.poppins.copyWith(
                       color: Colors.grey,
                     ),
@@ -258,7 +388,8 @@ class _AllPaymentsTab extends StatelessWidget {
                       ),
                       children: [
                         TextSpan(
-                          text: '₹${allPayment?.totalPaidToday}',
+                          text:
+                              '₹${_formatAmount(allPayment?.totalAmount, allPayment?.totalPaidToday ?? 0)}',
                           style: AppStyles.text16Px.poppins.w700.copyWith(
                             color: Colors.green,
                           ),
@@ -275,8 +406,6 @@ class _AllPaymentsTab extends StatelessWidget {
             ),
           ],
         );
-
-        // return _PaymentCard.fromModel(item);
       },
     );
   }
@@ -304,12 +433,10 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundImage: const NetworkImage(
-                'https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png',
-              ),
-              backgroundColor: Colors.grey.shade200,
+            ProfileImage(
+              isEdit: false,
+              url: data?.profilePhoto,
+              radius: 40,
             ),
             const SizedBox(width: 12),
             Expanded(

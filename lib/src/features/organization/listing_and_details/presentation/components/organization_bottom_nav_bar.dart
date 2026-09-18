@@ -58,17 +58,29 @@ class OrganizationBottomNavBar extends StatelessWidget {
                   onTap: () => onTap(1),
                 ),
                 _NavBarItem(
+                  icon: SvgPicture.asset(
+                    'assets/images/svg/icons/payments.svg',
+                    color:
+                        currentIndex == 2
+                            ? AppColors.primary
+                            : context.colors.textSecondary,
+                  ),
+                  label: 'Payments',
+                  isSelected: currentIndex == 2,
+                  onTap: () => onTap(2),
+                ),
+                _NavBarItem(
                   icon: Icon(
                     Icons.bar_chart_rounded,
                     color:
-                        currentIndex == 2
+                        currentIndex == 3
                             ? AppColors.primary
                             : context.colors.textSecondary,
                     size: 24,
                   ),
                   label: 'Reports',
-                  isSelected: currentIndex == 2,
-                  onTap: () => onTap(2),
+                  isSelected: currentIndex == 3,
+                  onTap: () => onTap(3),
                 ),
                 _NavBarItem(
                   icon: IgnorePointer(
@@ -79,8 +91,8 @@ class OrganizationBottomNavBar extends StatelessWidget {
                     ),
                   ),
                   label: 'Profile',
-                  isSelected: currentIndex == 3,
-                  onTap: () => onTap(3),
+                  isSelected: currentIndex == 4,
+                  onTap: () => onTap(4),
                   profileImageUrl: profileImageUrl,
                 ),
               ] else ...[

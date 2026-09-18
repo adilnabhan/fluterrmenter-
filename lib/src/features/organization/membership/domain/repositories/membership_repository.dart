@@ -3,6 +3,7 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/payment_history/payment_history_model.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/upcoming_renewals/upcoming_renewal_model.dart';
+import 'package:mentor_mobile_app/src/features/organization/membership/domain/models/package_group_model.dart';
 
 @immutable
 final class MembershipRepository {
@@ -154,6 +155,110 @@ final class MembershipRepository {
       return left(const ApiException.unknown());
     } catch (_) {
       return left(const ApiException.unknown());
+    }
+  }
+
+  /// List Package Groups
+  Future<Either<ApiException, List<MembershipPackageGroupModel>>> listPackageGroups({
+    required String orgId,
+  }) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        ApiUris.packageGroups,
+        queryParameters: {'organization_id': orgId},
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      final statusCode = response.statusCode ?? 0;
+      if (statusCode == 200 && response.data != null) {
+        final dynamic data = response.data;
+        final rawList = data is List
+            ? data
+            : (data is Map && data['results'] != null)
+                ? data['results'] as List
+                : [];
+        final groups = rawList
+            .map((e) =>
+                MembershipPackageGroupModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return right(groups);
+      }
+      return left(
+          const ApiException.unknown(msg: 'Failed to load package groups'));
+    } catch (e) {
+      return left(ApiException.unknown(msg: e.toString()));
+    }
+  }
+
+  /// Create Package Group
+  Future<Either<ApiException, MembershipPackageGroupModel>> createPackageGroup({
+    required Map<String, dynamic> body,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        ApiUris.packageGroups,
+        data: body,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+      final statusCode = response.statusCode ?? 0;
+      if ((statusCode == 200 || statusCode == 201) &&
+          response.data is Map<String, dynamic>) {
+        return right(MembershipPackageGroupModel.fromJson(
+            response.data as Map<String, dynamic>));
+      }
+      return left(
+          const ApiException.unknown(msg: 'Failed to create package group'));
+    } on DioException catch (e) {
+      if (e.response?.data != null && e.response!.data is Map) {
+        return left(ApiException.unknown(msg: e.response!.data.toString()));
+      }
+      return left(
+          ApiException.unknown(msg: e.message ?? 'Unknown network error'));
+    } catch (e) {
+      return left(ApiException.unknown(msg: e.toString()));
+    }
+  }
+
+  /// Delete Package Group
+  Future<Either<ApiException, void>> deletePackageGroup({
+    required int id,
+  }) async {
+    try {
+      final response = await _dio.delete<dynamic>(
+        ApiUris.packageGroupDetail(id),
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+      final statusCode = response.statusCode ?? 0;
+      if (statusCode == 200 || statusCode == 204) {
+        return right(null);
+      }
+      return left(
+          const ApiException.unknown(msg: 'Failed to delete package group'));
+    } catch (e) {
+      return left(ApiException.unknown(msg: e.toString()));
+    }
+  }
+
+  /// Get Grouped Membership Packages
+  Future<Either<ApiException, GroupedMembershipPackagesModel>>
+      getGroupedMembershipPackages({
+    required String orgId,
+  }) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        ApiUris.groupedMembershipPackages,
+        queryParameters: {'organization_id': orgId},
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+      if (response.statusCode == 200 &&
+          response.data is Map<String, dynamic>) {
+        return right(GroupedMembershipPackagesModel.fromJson(
+            response.data as Map<String, dynamic>));
+      }
+      return left(
+          const ApiException.unknown(msg: 'Failed to load grouped packages'));
+    } catch (e) {
+      return left(ApiException.unknown(msg: e.toString()));
     }
   }
 
@@ -421,15 +526,19 @@ final class MembershipRepository {
   }
 
   Future<Either<ApiException, PaymentHistory>> listPaymentHistory({
-    // required Map<String, dynamic> queryParameters,
+    Map<String, dynamic>? queryParameters,
     String? nextUrl,
     required int orgId,
   }) async {
     try {
+      final qParams = <String, dynamic>{
+        'organization_id': orgId,
+        ...?queryParameters,
+      };
       return await Feggy.async(
         call: _dio.get<dynamic>(
-          nextUrl ?? '${ApiUris.paymentHistory}?organization_id=$orgId',
-          // queryParameters: queryParameters,
+          nextUrl ?? ApiUris.paymentHistory,
+          queryParameters: nextUrl != null ? null : qParams,
           options: Options(headers: {'X-Platform': platformSource}).token,
         ),
         onSuccess: (res) {

@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/membership/domain/models/package_group_model.dart';
 
 class GymPackagesScreen extends StatelessWidget {
   const GymPackagesScreen({
@@ -29,6 +30,8 @@ class _GymPackagesScreen extends StatefulWidget {
 
 class __GymPackagesScreenState extends State<_GymPackagesScreen> {
   late final MembershipCubit _cubit;
+  List<MembershipPackageGroupModel> _groups = [];
+  int? _selectedGroupId;
 
   @override
   void initState() {
@@ -38,7 +41,192 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
   }
 
   Future<void> _fetch() async {
-    await _cubit.fetchMembershipPackages();
+    _fetchGroups();
+    await _cubit.fetchMembershipPackages(groupId: _selectedGroupId);
+  }
+
+  Future<void> _fetchGroups() async {
+    final groups = await _cubit.fetchPackageGroups();
+    if (mounted) {
+      setState(() {
+        _groups = groups;
+      });
+    }
+  }
+
+  void _showManageGroupsSheet() {
+    final nameController = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Package Groups',
+                        style: AppStyles.text18Px.poppins.w600.dark,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    'Categorize packages into Gym, CrossFit, Personal Training, etc.',
+                    style: AppStyles.text12Px.poppins.w400.textGrey,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: nameController,
+                          decoration: InputDecoration(
+                            hintText: 'New group name (e.g. CrossFit)',
+                            hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: AppColors.borderGrey),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                        ),
+                        onPressed: () async {
+                          final name = nameController.text.trim();
+                          if (name.isEmpty) return;
+                          final res =
+                              await _cubit.createPackageGroup(name: name);
+                          res.fold(
+                            (err) => Dialogs.showSnack(msg: err.msg),
+                            (group) {
+                              nameController.clear();
+                              Dialogs.showSnack(
+                                  msg: 'Group "${group.name}" created');
+                              _fetchGroups();
+                              setSheetState(() {});
+                            },
+                          );
+                        },
+                        child: const Text('Add'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (_groups.isNotEmpty) ...[
+                    Text(
+                      'Existing Groups (${_groups.length})',
+                      style: AppStyles.text14Px.poppins.w500.dark,
+                    ),
+                    const SizedBox(height: 8),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 220),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: _groups.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, i) {
+                          final g = _groups[i];
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              g.name ?? '',
+                              style: AppStyles.text14Px.poppins.w500.dark,
+                            ),
+                            subtitle: Text(
+                              '${g.plansCount} plans',
+                              style: AppStyles.text12Px.poppins.w400.textGrey,
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.red, size: 20),
+                              onPressed: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (c) => AlertDialog(
+                                    title: const Text('Delete Group'),
+                                    content: Text(
+                                      'Are you sure you want to delete "${g.name}"? Packages in this group will become ungrouped.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(c, false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(c, true),
+                                        child: const Text('Delete',
+                                            style:
+                                                TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true && g.id != null) {
+                                  final res = await _cubit.deletePackageGroup(
+                                      groupId: g.id!);
+                                  res.fold(
+                                    (err) => Dialogs.showSnack(msg: err.msg),
+                                    (_) {
+                                      Dialogs.showSnack(msg: 'Group deleted');
+                                      if (_selectedGroupId == g.id) {
+                                        _selectedGroupId = null;
+                                      }
+                                      _fetch();
+                                      setSheetState(() {});
+                                    },
+                                  );
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _onDeletePackage({int? id}) async {
@@ -219,6 +407,21 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                   style: AppStyles.text16Px.poppins.w500.dark,
                 ),
                 const Spacer(),
+                OutlinedButton.icon(
+                  onPressed: _showManageGroupsSheet,
+                  label: const Text('Groups'),
+                  icon: const Icon(Icons.folder_outlined, size: 16),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primary),
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 FilledButton.icon(
                   onPressed: () {
                     if (widget.orgDetails.id == null) {
@@ -241,7 +444,60 @@ class __GymPackagesScreenState extends State<_GymPackagesScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            if (_groups.isNotEmpty) ...[
+              SizedBox(
+                height: 36,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _groups.length + 1,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final isAll = index == 0;
+                    final isSelected = isAll
+                        ? _selectedGroupId == null
+                        : _selectedGroupId == _groups[index - 1].id;
+                    final label =
+                        isAll ? 'All' : (_groups[index - 1].name ?? '');
+                    final count = isAll ? null : _groups[index - 1].plansCount;
+
+                    return ChoiceChip(
+                      label: Text(
+                        count != null && count > 0 ? '$label ($count)' : label,
+                        style: AppStyles.text12Px.poppins.copyWith(
+                          color: isSelected ? Colors.white : Colors.black87,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: AppColors.primary,
+                      backgroundColor: const Color(0xffF2F4F7),
+                      showCheckmark: false,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                        side: BorderSide(
+                          color: isSelected
+                              ? AppColors.primary
+                              : const Color(0xffE4E7EC),
+                        ),
+                      ),
+                      onSelected: (_) {
+                        setState(() {
+                          _selectedGroupId =
+                              isAll ? null : _groups[index - 1].id;
+                        });
+                        _cubit.fetchMembershipPackages(
+                          groupId: _selectedGroupId,
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+            ] else
+              const SizedBox(height: 4),
             Expanded(
               child: BlocBuilder<MembershipCubit, MembershipState>(
                 buildWhen:
