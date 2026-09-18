@@ -3,9 +3,14 @@ import 'package:mentor_mobile_app/src/features/organization/membership/domain/mo
 import 'package:mentor_mobile_app/src/features/organization/membership/domain/models/package_group_model.dart';
 
 class GymAddOrEditPackageScreen extends StatefulWidget {
-  const GymAddOrEditPackageScreen({super.key, this.membershipPackage});
+  const GymAddOrEditPackageScreen({
+    super.key,
+    this.membershipPackage,
+    this.initialGroupId,
+  });
 
   final MembershipPackageModel? membershipPackage;
+  final int? initialGroupId;
 
   @override
   State<GymAddOrEditPackageScreen> createState() =>
@@ -125,6 +130,7 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
   void initState() {
     super.initState();
     _cubit = context.read<MembershipCubit>();
+    _selectedGroupId = widget.initialGroupId;
     _fetchGroups();
     _emiOptions = [];
 

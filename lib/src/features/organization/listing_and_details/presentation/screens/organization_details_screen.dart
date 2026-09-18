@@ -1632,7 +1632,7 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
     _fetchReviews();
   }
 
-  String _period = 'latest';
+  String _period = 'all';
 
   Future<void> _fetchReviews() async {
     setState(() {
@@ -1644,7 +1644,7 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
         ApiUris.fcOrganizationReviews,
         queryParameters: {
           'organization_id': widget.orgId,
-          if (_period != 'latest') 'period': _period,
+          if (_period != 'all' && _period != 'latest') 'period': _period,
         },
       );
 
@@ -1725,7 +1725,16 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    value: _period,
+                    value: const [
+                      'latest',
+                      'all',
+                      'last_30_days',
+                      'last_3_months',
+                      'last_6_months',
+                      'last_12_months',
+                    ].contains(_period)
+                        ? _period
+                        : 'latest',
                     isDense: true,
                     icon: const Icon(Icons.keyboard_arrow_down, size: 20),
                     style: AppStyles.text13Px.poppins.w500.copyWith(color: AppColors.textDark),
@@ -1737,6 +1746,8 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
                     },
                     items: const [
                       DropdownMenuItem(value: 'latest', child: Text('Latest')),
+                      DropdownMenuItem(value: 'all', child: Text('All')),
+                      DropdownMenuItem(value: 'last_30_days', child: Text('Last 30 Days')),
                       DropdownMenuItem(value: 'last_3_months', child: Text('Last 3 Months')),
                       DropdownMenuItem(value: 'last_6_months', child: Text('Last 6 Months')),
                       DropdownMenuItem(value: 'last_12_months', child: Text('Last 12 Months')),

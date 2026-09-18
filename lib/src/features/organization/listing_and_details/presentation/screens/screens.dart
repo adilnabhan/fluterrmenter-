@@ -19,3 +19,4 @@ export 'gym_banners_screen.dart';
 export 'reports_customer_list_screen.dart';
 export 'trainer_attendance_screen.dart';
 export 'client_attendance_screen.dart';
+export 'group_packages_detail_screen.dart';

@@ -12,18 +12,27 @@ class MembershipCubit extends Cubit<MembershipState> {
 
   final String orgId;
 
-  Future<void> fetchMembershipPackages({int? groupId}) async {
+  Future<void> fetchMembershipPackages({dynamic groupId}) async {
     if (isClosed) return;
     emit(state.copyWith(membershipPackages: none()));
     final queryParams = <String, dynamic>{'organization_id': orgId};
     if (groupId != null) {
-      queryParams['group_id'] = groupId;
+      queryParams['group_id'] = groupId.toString();
     }
     final res = await MembershipRepository().list(
       queryParameters: queryParams,
     );
     if (isClosed) return;
     emit(state.copyWith(membershipPackages: some(res)));
+  }
+
+  Future<GroupedMembershipPackagesModel?> fetchGroupedPackages() async {
+    final res =
+        await MembershipRepository().getGroupedMembershipPackages(orgId: orgId);
+    return res.fold(
+      (error) => null,
+      (data) => data,
+    );
   }
 
   Future<List<MembershipPackageGroupModel>> fetchPackageGroups() async {
