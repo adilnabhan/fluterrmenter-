@@ -144,21 +144,10 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
     }
   }
 
-  String _getPrValue(List<dynamic> prs, String workoutName, String defaultVal) {
-    for (var item in prs) {
-      final map = Map<String, dynamic>.from(item as Map);
-      final name = (map['workout_name'] as String? ?? '').toLowerCase();
-      if (name.contains(workoutName.toLowerCase())) {
-        return '${map['value']} ${map['unit']}';
-      }
-    }
-    return defaultVal;
-  }
-
   int _calculateAge(String? dobStr) {
-    if (dobStr == null || dobStr.isEmpty) return 25; // Default age if not set
+    if (dobStr == null || dobStr.isEmpty) return 0;
     final dob = DateTime.tryParse(dobStr);
-    if (dob == null) return 25;
+    if (dob == null) return 0;
     int age = DateTime.now().year - dob.year;
     if (DateTime.now().month < dob.month ||
         (DateTime.now().month == dob.month && DateTime.now().day < dob.day)) {
@@ -207,89 +196,58 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
     String? trainerName,
   ) {
     final String gender = profile['gender'] as String? ?? 'N/A';
-    final String height = (profile['height'] ?? 'N/A').toString();
-    final String weight = (profile['weight'] ?? 'N/A').toString();
+    final rawHeight = profile['height'];
+    final rawWeight = profile['weight'];
+    final String height =
+        (rawHeight != null && rawHeight.toString().isNotEmpty && rawHeight.toString() != 'N/A')
+            ? '${rawHeight} cm'
+            : 'N/A';
+    final String weight =
+        (rawWeight != null && rawWeight.toString().isNotEmpty && rawWeight.toString() != 'N/A')
+            ? '${rawWeight} kg'
+            : 'N/A';
     final String bmi = (profile['bmi'] ?? 'N/A').toString();
     final String fitnessLevel = profile['fitness_level'] as String? ?? 'N/A';
     final hasActiveMembership = membership.isNotEmpty;
 
-    // Resolve PRs
-    final bp = _getPrValue(prRecords, 'Bench Press', '15 kg');
-    final dl = _getPrValue(prRecords, 'Deadlift', '15 kg');
-    final sq = _getPrValue(prRecords, 'Squat', '15 kg');
-    final pu = _getPrValue(prRecords, 'Push-Ups', '15 reps');
-    final pl = _getPrValue(prRecords, 'Pull-Ups', '15 reps');
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // PR Records Panel
-        Text('PR Records', style: AppStyles.text16Px.poppins.w600.dark),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
+        // PR Records Panel (dynamic, only shown if real PR records exist)
+        if (prRecords.isNotEmpty) ...[
+          Text('PR Records', style: AppStyles.text16Px.poppins.w600.dark),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                for (int i = 0; i < prRecords.length; i++) ...[
+                  if (i > 0) const Divider(height: 20, thickness: 0.5),
+                  Builder(
+                    builder: (context) {
+                      final item = Map<String, dynamic>.from(prRecords[i] as Map);
+                      final workoutName = item['workout_name'] as String? ?? 'Exercise';
+                      final val = item['value'] != null ? '${item['value']} ${item['unit'] ?? ''}'.trim() : 'N/A';
+                      return _buildPrRow(Icons.fitness_center, workoutName, val);
+                    },
+                  ),
+                ],
+              ],
+            ),
           ),
-          child: Column(
-            children: [
-              _buildPrRow(Icons.fitness_center, 'Bench Press', bp),
-              const Divider(height: 20, thickness: 0.5),
-              _buildPrRow(Icons.fitness_center, 'Deadlift', dl),
-              const Divider(height: 20, thickness: 0.5),
-              _buildPrRow(Icons.fitness_center, 'Squat', sq),
-              const Divider(height: 20, thickness: 0.5),
-              _buildPrRow(Icons.fitness_center, 'Push-Ups', pu),
-              const Divider(height: 20, thickness: 0.5),
-              _buildPrRow(Icons.fitness_center, 'Pull-Ups', pl),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Strength Stats Panel
-        Text('Strength Stats', style: AppStyles.text16Px.poppins.w600.dark),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              _buildStatRow(
-                'Max Bench Press',
-                bp.contains('kg') ? bp : '225 lbs',
-              ),
-              const Divider(height: 20, thickness: 0.5),
-              _buildStatRow('Max Deadlift', dl.contains('kg') ? dl : '315 lbs'),
-              const Divider(height: 20, thickness: 0.5),
-              _buildStatRow('Max Squat', sq.contains('kg') ? sq : '275 lbs'),
-              const Divider(height: 20, thickness: 0.5),
-              _buildStatRow(
-                'Max Pull Ups',
-                pl.contains('reps') ? pl : '15 reps',
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
+          const SizedBox(height: 20),
+        ],
 
         // Health & Body Stats
         Text(
@@ -930,7 +888,9 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Age: $age  |  Phone: $mobile',
+                            age > 0
+                                ? 'Age: $age  |  Phone: $mobile'
+                                : 'Phone: $mobile',
                             style: AppStyles.text12Px.poppins.w400.copyWith(
                               color: AppColors.textGrey,
                             ),

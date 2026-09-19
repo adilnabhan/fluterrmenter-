@@ -25,6 +25,13 @@ class _UpdateBasicDetailsScreenState extends State<UpdateBasicDetailsScreen> {
     imageUrl =
         memebrDetails?.profilePicture.toString() ??
         leadDetails?.profilePicture.toString();
+    final memberFullName = (memebrDetails?.fullName?.trim().isNotEmpty == true)
+        ? memebrDetails!.fullName!.trim()
+        : '${memebrDetails?.firstName ?? ""} ${memebrDetails?.lastName ?? ""}'.trim();
+    final leadFullName =
+        '${leadDetails?.firstName ?? ""} ${leadDetails?.lastName ?? ""}'.trim();
+    final initialName = leadDetails != null ? leadFullName : memberFullName;
+
     _fields = [
       FieldData(
         type: FieldType.word,
@@ -41,7 +48,7 @@ class _UpdateBasicDetailsScreenState extends State<UpdateBasicDetailsScreen> {
           _fields[1].focusNode?.requestFocus();
         },
         controller: TextEditingController(
-          text: leadDetails?.firstName ?? memebrDetails?.firstName,
+          text: initialName,
         ),
         // focusNode: FocusNode(),
         keyboardType: TextInputType.name,

@@ -32,8 +32,26 @@ class MemberDetailsModel with _$MemberDetailsModel {
     @JsonKey(name: 'whatsapp_link') String? whatsappLink,
   }) = _MemberDetailsModel;
 
-  factory MemberDetailsModel.fromJson(Map<String, dynamic> json) =>
-      _$MemberDetailsModelFromJson(json);
+  factory MemberDetailsModel.fromJson(Map<String, dynamic> json) {
+    final sanitized = Map<String, dynamic>.from(json);
+    if (sanitized['user_role'] != null) {
+      sanitized['user_role'] = sanitized['user_role'].toString();
+    }
+    if (sanitized['height'] != null) {
+      sanitized['height'] = sanitized['height'].toString();
+    }
+    if (sanitized['weight'] != null) {
+      sanitized['weight'] = sanitized['weight'].toString();
+    }
+    if (sanitized['emergency_contact_number'] != null) {
+      sanitized['emergency_contact_number'] =
+          sanitized['emergency_contact_number'].toString();
+    }
+    if (sanitized['mobile_number'] != null) {
+      sanitized['mobile_number'] = sanitized['mobile_number'].toString();
+    }
+    return _$MemberDetailsModelFromJson(sanitized);
+  }
 }
 
 @freezed

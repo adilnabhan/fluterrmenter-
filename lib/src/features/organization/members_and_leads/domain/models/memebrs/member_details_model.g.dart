@@ -12,9 +12,9 @@ _$MemberDetailsModelImpl _$$MemberDetailsModelImplFromJson(
   id: (json['id'] as num?)?.toInt(),
   profilePicture: json['profile_picture'] as String?,
   emergencyContactName: json['emergency_contact_name'] as String?,
-  emergencyContactNumber: json['emergency_contact_number'] as String?,
-  height: json['height'] as String?,
-  weight: json['weight'] as String?,
+  emergencyContactNumber: json['emergency_contact_number']?.toString(),
+  height: json['height']?.toString(),
+  weight: json['weight']?.toString(),
   address: json['address'] as String?,
   profession: json['profession'] as String?,
   isActiveMember: json['is_active_member'] as bool?,
@@ -31,7 +31,7 @@ _$MemberDetailsModelImpl _$$MemberDetailsModelImplFromJson(
       json['modified'] == null
           ? null
           : DateTime.parse(json['modified'] as String),
-  mobileNumber: json['mobile_number'] as String?,
+  mobileNumber: json['mobile_number']?.toString(),
   firstName: json['first_name'] as String?,
   lastName: json['last_name'] as String?,
   email: json['email'] as String?,
@@ -41,7 +41,7 @@ _$MemberDetailsModelImpl _$$MemberDetailsModelImplFromJson(
           : DateTime.parse(json['date_of_birth'] as String),
   gender: json['gender'] as String?,
   bloodGroup: json['blood_group'] as String?,
-  userRole: json['user_role'] as String?,
+  userRole: json['user_role']?.toString(),
   hashOfUserPhoneNumber: json['hash_of_user_phone_number'] as String?,
   whatsappLink: json['whatsapp_link'] as String?,
 );
@@ -89,7 +89,7 @@ _$MembershipDataModelImpl _$$MembershipDataModelImplFromJson(
           ? null
           : DateTime.parse(json['end_date'] as String),
   status: json['status'] as String?,
-  amount: json['amount'] as String?,
+  amount: json['amount']?.toString(),
   assignFree: json['assign_free'] as bool?,
   isTrial: json['is_trial'] as bool?,
   paymentStatus: json['payment_status'] as String?,

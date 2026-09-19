@@ -10,6 +10,7 @@ import 'package:mentor_mobile_app/core/widgets/dialogs/image_picker_dialog.dart'
 import 'package:mentor_mobile_app/src/features/auth/login/domain/models/login_with_otp_model.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'dart:io';
+import 'dart:ui';
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -734,40 +735,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                               ),
                             ),
                         ] else ...[
-                          // Grey color background with a + icon
-                          GestureDetector(
-                            onTap: () {
-                              if (!widget.isViewOnly) {
-                                _uploadPortfolioImage();
-                              }
-                            },
-                            child: Container(
-                              color: const Color(0xFFE5E7EB),
-                              padding: const EdgeInsets.only(top: 50, bottom: 90),
-                              child: Center(
-                                child: Container(
-                                  width: 36,
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.08),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.add,
-                                    size: 20,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildCoverBackdrop(user),
                         ],
                         // Top bar (Account switcher + Settings)
                         if (!widget.isViewOnly)
@@ -935,6 +903,94 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCoverBackdrop(dynamic user) {
+    final profilePic = user?.profilePicture?.toString();
+    final hasProfilePic = profilePic != null &&
+        profilePic.isNotEmpty &&
+        profilePic != 'null';
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (hasProfilePic) ...[
+          ImageNetwork(
+            profilePic,
+            fit: BoxFit.cover,
+            errorWidget: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                ),
+              ),
+            ),
+          ),
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              color: Colors.black.withOpacity(0.45),
+            ),
+          ),
+        ] else ...[
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+              ),
+            ),
+            child: Center(
+              child: Icon(
+                Icons.fitness_center,
+                size: 72,
+                color: Colors.white.withOpacity(0.06),
+              ),
+            ),
+          ),
+        ],
+        // Only show "Add Cover Photo" button for trainer's own account, NEVER in view-only / fitness center account
+        if (!widget.isViewOnly)
+          Center(
+            child: GestureDetector(
+              onTap: _uploadPortfolioImage,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.45),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.add_a_photo_outlined,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Add Cover Photo',
+                      style: AppStyles.text12Px.poppins.w500.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 

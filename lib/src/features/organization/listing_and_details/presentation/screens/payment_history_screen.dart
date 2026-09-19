@@ -384,7 +384,7 @@ class _AllPaymentsTab extends StatelessWidget {
                     text: TextSpan(
                       text: 'Total: ',
                       style: AppStyles.text14Px.poppins.copyWith(
-                        color: Colors.grey,
+                        color: Colors.black,
                       ),
                       children: [
                         TextSpan(
@@ -411,19 +411,75 @@ class _AllPaymentsTab extends StatelessWidget {
   }
 }
 
+({Color bg, Color text, Color border}) _getPaymentModeStyle(String? mode) {
+  final clean = (mode ?? '').trim().toLowerCase();
+  switch (clean) {
+    case 'cash':
+    case 'cod':
+      return (
+        bg: const Color(0xFFE8F5E9), // Light green
+        text: const Color(0xFF2E7D32), // Deep green
+        border: const Color(0xFFC8E6C9),
+      );
+    case 'upi':
+      return (
+        bg: const Color(0xFFEDE7F6), // Light purple / violet
+        text: const Color(0xFF5E35B1), // Deep purple
+        border: const Color(0xFFD1C4E9),
+      );
+    case 'card':
+    case 'credit_card':
+    case 'debit_card':
+      return (
+        bg: const Color(0xFFFFF3E0), // Warm amber / orange
+        text: const Color(0xFFE65100), // Rich orange
+        border: const Color(0xFFFFCC80),
+      );
+    case 'net_banking':
+    case 'netbanking':
+    case 'bank_transfer':
+      return (
+        bg: const Color(0xFFE0F7FA), // Light cyan / teal
+        text: const Color(0xFF00838F), // Deep teal
+        border: const Color(0xFF80DEEA),
+      );
+    case 'cheque':
+      return (
+        bg: const Color(0xFFFBE9E7), // Light coral / peach
+        text: const Color(0xFFD84315), // Deep rust
+        border: const Color(0xFFFFAB91),
+      );
+    case 'online':
+      return (
+        bg: const Color(0xFFE3F2FD), // Light blue
+        text: const Color(0xFF1565C0), // Royal blue
+        border: const Color(0xFFBBDEFB),
+      );
+    default:
+      return (
+        bg: const Color(0xFFF5F5F5), // Light neutral grey
+        text: const Color(0xFF616161),
+        border: const Color(0xFFE0E0E0),
+      );
+  }
+}
+
 Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
+  final modeStyle = _getPaymentModeStyle(data?.paymentMethod);
+  final paymentMethodText = (data?.paymentMethod ?? '').trim();
+
   return Container(
-    margin: const EdgeInsets.only(bottom: 16),
-    padding: const EdgeInsets.all(16),
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.grey.shade200, width: 0.8),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.08),
-          offset: const Offset(0, 6),
-          blurRadius: 16,
-          spreadRadius: 2,
+          color: Colors.black.withOpacity(0.03),
+          offset: const Offset(0, 2),
+          blurRadius: 6,
         ),
       ],
     ),
@@ -431,14 +487,14 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ProfileImage(
               isEdit: false,
               url: data?.profilePhoto,
-              radius: 40,
+              radius: 36,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,45 +504,86 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
                       Expanded(
                         child: Text(
                           data?.customerName ?? '',
-                          maxLines: 2,
-                          style: AppStyles.text16Px.poppins.w600.copyWith(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppStyles.text15Px.poppins.w600.copyWith(
                             color: Colors.black,
                           ),
                         ),
                       ),
-                      Text(
-                        formatPaymentDate(data!.paymentDate.toString()),
-                        style: AppStyles.text12Px.poppins.copyWith(
-                          color: Colors.grey,
+                      const SizedBox(width: 6),
+                      // Amount positioned at top-right with decreased font weight
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffE8F5E9),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(
+                          '₹${data?.amount ?? 0}',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: const Color(0xff2E7D32),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  Text(
-                    data.membershipName ?? '',
-                    style: AppStyles.text14Px.poppins.copyWith(
-                      color: Colors.grey,
+                  if (data?.membershipName != null &&
+                      data!.membershipName!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3F4F6),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: const Color(0xFFE5E7EB),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              data.membershipName!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppStyles.text13Px.poppins.w500.copyWith(
+                                fontSize: 12.5,
+                                color: const Color(0xFF374151),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         if (!isAllPayments) ...[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Membership + ${data.membershipName}',
-                style: AppStyles.text14Px.poppins.w500.copyWith(
+                'Membership',
+                style: AppStyles.text13Px.poppins.w500.copyWith(
                   color: Colors.black,
                 ),
               ),
               Text(
-                '₹${data.amount}',
-                style: AppStyles.text14Px.poppins.w600.copyWith(
+                '₹${data?.amount ?? 0}',
+                style: AppStyles.text13Px.poppins.w500.copyWith(
                   color: Colors.green,
                 ),
               ),
@@ -497,96 +594,76 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Platform fee (${data.platformFee}%)',
-                style: AppStyles.text14Px.poppins.copyWith(color: Colors.grey),
+                'Platform fee (${data?.platformFee ?? 0}%)',
+                style: AppStyles.text13Px.poppins.copyWith(color: Colors.grey),
               ),
               Text(
-                '-₹${data.platformFeePercentage}',
-                style: AppStyles.text14Px.poppins.w600.copyWith(
+                '-₹${data?.platformFeePercentage ?? 0}',
+                style: AppStyles.text13Px.poppins.w600.copyWith(
                   color: Colors.grey,
                 ),
               ),
             ],
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Divider(),
+            padding: EdgeInsets.symmetric(vertical: 6.0),
+            child: Divider(height: 1),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Total :',
-                style: AppStyles.text14Px.poppins.copyWith(color: Colors.grey),
+                style: AppStyles.text13Px.poppins.copyWith(color: Colors.grey),
               ),
               Text(
-                '₹${data.totalAmount ?? 0}',
-                style: AppStyles.text20Px.poppins.w700.copyWith(
+                '₹${data?.totalAmount ?? 0}',
+                style: AppStyles.text16Px.poppins.w700.copyWith(
                   color: Colors.green,
                 ),
               ),
             ],
           ),
-          Text(
-            data.settlementTime ?? '',
-            style: AppStyles.text12Px.poppins.copyWith(color: Colors.grey),
-          ),
+          if (data?.settlementTime != null && data!.settlementTime!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                data.settlementTime!,
+                style: AppStyles.text12Px.poppins.copyWith(color: Colors.grey),
+              ),
+            ),
         ] else ...[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              if (paymentMethodText.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 2.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: modeStyle.bg,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: modeStyle.border, width: 0.8),
+                  ),
+                  child: Text(
+                    paymentMethodText.toUpperCase(),
+                    style: AppStyles.text10Px.poppins.w600.copyWith(
+                      color: modeStyle.text,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                )
+              else
+                const SizedBox.shrink(),
+              // Date & Time positioned at bottom-right (switched with amount)
               Text(
-                'Membership + ${data.membershipName}',
-                style: AppStyles.text14Px.poppins.w500.copyWith(
-                  color: Colors.black,
+                formatPaymentDate(data?.paymentDate?.toString() ?? ''),
+                style: AppStyles.text12Px.poppins.copyWith(
+                  color: Colors.grey.shade500,
                 ),
               ),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xffE8F5E9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '₹${data.amount}',
-                  style: AppStyles.text16Px.poppins.w700.copyWith(
-                    color: const Color(0xff2E7D32),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xffE3F2FD),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  '${data.paymentMethod}'.toUpperCase(),
-                  style: AppStyles.text12Px.poppins.w600.copyWith(
-                    color: const Color(0xff1565C0),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 8),
-              // Text(
-              //   'statusPendingText sdgts drgdrsf ',
-              //   style: AppStyles.text12Px.poppins.w400.copyWith(
-              //     color: Colors.grey,
-              //   ),
-              // ),
             ],
           ),
         ],

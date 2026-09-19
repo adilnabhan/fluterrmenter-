@@ -393,9 +393,13 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       );
       return;
     }
+    final nameParts = (fullName ?? '').trim().split(RegExp(r'\s+'));
+    final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+    final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
     final formData = FormData.fromMap({
-      'first_name': fullName,
-      'last_name': '',
+      'first_name': firstName,
+      'last_name': lastName,
       'mobile_number': '+91$mobileNumber',
       'email': email,
       'gender': gender?.toLowerCase(),
@@ -480,8 +484,13 @@ class MembersAndLeadsCubit extends Cubit<MembersAndLeadsState> {
       }
     }
 
-    addIfNotNull('first_name', fullName);
-    addIfNotNull('last_name', '');
+    final nameParts = (fullName ?? '').trim().split(RegExp(r'\s+'));
+    final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+    final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+    addIfNotNull('first_name', firstName);
+    addIfNotNull('last_name', lastName);
+    addIfNotNull('full_name', (fullName ?? '').trim());
     addIfNotNull('mobile_number', '+91$mobileNumber');
     addIfNotNull('email', email);
     addIfNotNull('gender', gender?.toLowerCase());
