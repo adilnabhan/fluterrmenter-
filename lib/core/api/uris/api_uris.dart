@@ -193,6 +193,7 @@ final class ApiUris {
   static final equipment = '${_v1}trainer/equipment/';
   static final exerciseTypes = '${_v1}trainer/exercise-types/';
   static final workoutExercises = '${_v1}trainer/exercises/';
+  static String workoutExerciseDetail(int id) => '${_v1}trainer/exercises/$id/';
   static final customerExercises = '${_v1}customers/exercises/';
   static final trainerMuscleClassification = '${_v1}trainer/muscle-classification/';
   static final customerMuscleClassification = '${_v1}customers/muscle-classification/';

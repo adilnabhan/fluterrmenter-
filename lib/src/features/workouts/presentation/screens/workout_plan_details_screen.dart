@@ -496,7 +496,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                           Expanded(
                             child: Text(
                               selectedDate != null
-                                  ? "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}"
+                                  ? "${selectedDate!.day.toString().padLeft(2, '0')}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.year}"
                                   : 'Select start date (Default: Today)',
                               style: AppStyles.text14Px.poppins.w400.copyWith(
                                 color:
@@ -1494,7 +1494,7 @@ class _SelectExerciseSheetContentState
     return _allExercises;
   }
 
-  Future<void> _deleteGymExercise(int id) async {
+  Future<void> _deleteExercise(int id, {bool isGym = false}) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -1525,7 +1525,13 @@ class _SelectExerciseSheetContentState
     setState(() => _isLoading = true);
 
     try {
-      await DioClient().dio.delete<dynamic>(ApiUris.deleteGymExercise(id));
+      final deleteUri = isGym
+          ? ApiUris.deleteGymExercise(id)
+          : ApiUris.workoutExerciseDetail(id);
+      await DioClient().dio.delete<dynamic>(
+        deleteUri,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
       Dialogs.showSnack(msg: 'Exercise deleted successfully');
       _tabCaches.clear();
       _fetchExercises();
@@ -1536,10 +1542,19 @@ class _SelectExerciseSheetContentState
     }
   }
 
+  Future<void> _deleteGymExercise(int id) async {
+    return _deleteExercise(id, isGym: true);
+  }
+
   void _showCreateExerciseSheet(
     BuildContext context, [
     Map<String, dynamic>? exercise,
   ]) {
+    final bool isGym = exercise != null
+        ? (exercise['source'] == 'gym' ||
+            (_shouldHideYouCreated && _currentTabSource == 'gym'))
+        : (_shouldHideYouCreated || _currentTabSource == 'gym');
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -1547,7 +1562,7 @@ class _SelectExerciseSheetContentState
       builder:
           (sheetContext) => _CreateExerciseBottomSheet(
             editExercise: exercise,
-            isGymExercise: _shouldHideYouCreated || _currentTabSource == 'gym',
+            isGymExercise: isGym,
             onCreated: () {
               _tabCaches.clear();
               _fetchExercises();
@@ -1867,43 +1882,48 @@ class _SelectExerciseSheetContentState
                           (e) => e.workoutId == idStr,
                         );
                         final showAdd = _shouldShowAddButton;
+                        final bool canEdit = _currentTabSource == 'you_created' ||
+                            item['source'] == 'you_created' ||
+                            (_shouldHideYouCreated && _currentTabSource == 'gym');
 
                         return InkWell(
-                          onTap: !showAdd
-                              ? null
-                              : () {
-                                  final exName = item['name'] as String? ?? 'Exercise';
-                                  if (isAdded) {
-                                    if (widget.onRemoveExercise != null) {
-                                      widget.onRemoveExercise!(idStr);
-                                    } else {
-                                      widget.existingExercises.removeWhere((e) => e.workoutId == idStr);
-                                    }
-                                    Dialogs.showSnack(
-                                      msg: '$exName removed from plan',
-                                    );
-                                  } else {
-                                    final WorkoutExercise newEx = WorkoutExercise(
-                                      id: 'temp_${DateTime.now().millisecondsSinceEpoch}_$index',
-                                      workoutId: idStr,
-                                      name: exName,
-                                      muscle: item['primary_muscle_group_name'] as String? ?? 'General',
-                                      equipment: item['equipment_name'] as String? ?? 'None',
-                                      type: item['type'] as String? ?? 'Other',
-                                      videoLink: item['video_url'] as String? ?? '',
-                                      trackBy: item['track_by']?.toString().toLowerCase() ?? 'reps',
-                                      sets: const [
-                                        {'set_number': 1},
-                                      ],
-                                    );
-                                    widget.onAddExercise?.call(newEx);
-                                    Dialogs.showSnack(
-                                      msg: '$exName added to plan list',
-                                    );
-                                  }
-                                  if (!mounted) return;
-                                  setState(() {});
-                                },
+                          onTap: () {
+                            if (showAdd) {
+                              final exName = item['name'] as String? ?? 'Exercise';
+                              if (isAdded) {
+                                if (widget.onRemoveExercise != null) {
+                                  widget.onRemoveExercise!(idStr);
+                                } else {
+                                  widget.existingExercises.removeWhere((e) => e.workoutId == idStr);
+                                }
+                                Dialogs.showSnack(
+                                  msg: '$exName removed from plan',
+                                );
+                              } else {
+                                final WorkoutExercise newEx = WorkoutExercise(
+                                  id: 'temp_${DateTime.now().millisecondsSinceEpoch}_$index',
+                                  workoutId: idStr,
+                                  name: exName,
+                                  muscle: item['primary_muscle_group_name'] as String? ?? 'General',
+                                  equipment: item['equipment_name'] as String? ?? 'None',
+                                  type: item['type'] as String? ?? 'Other',
+                                  videoLink: item['video_url'] as String? ?? '',
+                                  trackBy: item['track_by']?.toString().toLowerCase() ?? 'reps',
+                                  sets: const [
+                                    {'set_number': 1},
+                                  ],
+                                );
+                                widget.onAddExercise?.call(newEx);
+                                Dialogs.showSnack(
+                                  msg: '$exName added to plan list',
+                                );
+                              }
+                              if (!mounted) return;
+                              setState(() {});
+                            } else if (canEdit) {
+                              _showCreateExerciseSheet(context, item);
+                            }
+                          },
                           child: _SelectExerciseItem(
                             exercise: WorkoutExercise(
                               id: '',
@@ -1924,8 +1944,20 @@ class _SelectExerciseSheetContentState
                             ),
                             isAdded: isAdded,
                             showAddButton: showAdd,
-                            onEdit: null,
-                            onDelete: null,
+                            onEdit: canEdit
+                                ? () => _showCreateExerciseSheet(context, item)
+                                : null,
+                            onDelete: canEdit
+                                ? () {
+                                    final exId = int.tryParse(idStr);
+                                    if (exId != null) {
+                                      _deleteExercise(
+                                        exId,
+                                        isGym: _shouldHideYouCreated || _currentTabSource == 'gym',
+                                      );
+                                    }
+                                  }
+                                : null,
                           ),
                         );
                       },
@@ -1983,28 +2015,61 @@ class _CreateExerciseBottomSheetState
   void initState() {
     super.initState();
     if (widget.editExercise != null) {
-      _nameController.text = widget.editExercise!['name']?.toString() ?? '';
+      final ex = widget.editExercise!;
+      _nameController.text = ex['name']?.toString() ?? '';
       _youtubeController.text =
-          widget.editExercise!['video_url']?.toString() ??
-          widget.editExercise!['youtube_link']?.toString() ??
+          ex['video_url']?.toString() ??
+          ex['youtube_link']?.toString() ??
+          ex['video']?.toString() ??
           '';
 
       final muscle =
-          widget.editExercise!['primary_muscle_group_id'] ??
-          widget.editExercise!['primary_muscle_group'] ??
-          widget.editExercise!['muscle_group_id'];
-      if (muscle != null) _selectedMuscleId = int.tryParse(muscle.toString());
+          ex['primary_muscle_group_id'] ??
+          ex['primary_muscle_group'] ??
+          ex['muscle_group_id'] ??
+          ex['muscle_id'];
+      if (muscle != null) {
+        if (muscle is Map) {
+          _selectedMuscleId = int.tryParse(muscle['id']?.toString() ?? '');
+        } else {
+          _selectedMuscleId = int.tryParse(muscle.toString());
+        }
+      }
+
+      final secondary =
+          ex['secondary_muscle_group'] ??
+          ex['secondary_muscle_groups'] ??
+          ex['secondary_muscles'] ??
+          ex['secondary_muscle_group_ids'];
+      if (secondary is List) {
+        _selectedSecondaryMuscleIds = secondary
+            .map((m) {
+              if (m is Map) {
+                return int.tryParse(m['id']?.toString() ?? '') ?? 0;
+              }
+              return int.tryParse(m.toString()) ?? 0;
+            })
+            .where((id) => id > 0)
+            .toList();
+      }
 
       final equipment =
-          widget.editExercise!['equipment_id'] ??
-          widget.editExercise!['equipment'];
-      if (equipment != null)
-        _selectedEquipmentId = int.tryParse(equipment.toString());
+          ex['equipment_id'] ??
+          ex['equipment'];
+      if (equipment != null) {
+        if (equipment is Map) {
+          _selectedEquipmentId =
+              int.tryParse(equipment['id']?.toString() ?? '');
+        } else {
+          _selectedEquipmentId = int.tryParse(equipment.toString());
+        }
+      }
 
       _selectedType =
-          widget.editExercise!['exercise_type_id']?.toString() ??
-          widget.editExercise!['type']?.toString();
-      _selectedTrackBy = widget.editExercise!['track_by']?.toString();
+          ex['exercise_type_id']?.toString() ??
+          ex['exercise_type']?.toString() ??
+          ex['type']?.toString();
+      _selectedTrackBy = ex['track_by']?.toString().toLowerCase();
     }
     _fetchDropdownData();
   }
@@ -2030,6 +2095,98 @@ class _CreateExerciseBottomSheetState
             (tRes.data as List)
                 .map((e) => Map<String, dynamic>.from(e as Map))
                 .toList();
+
+        if (widget.editExercise != null) {
+          final ex = widget.editExercise!;
+
+          // Fallback match primary muscle by name if ID was not matched or not valid
+          if (_selectedMuscleId != null &&
+              !_muscles.any((m) => m['id'] == _selectedMuscleId)) {
+            _selectedMuscleId = null;
+          }
+          if (_selectedMuscleId == null) {
+            final mName =
+                (ex['primary_muscle_group_name'] ??
+                        ex['muscle'] ??
+                        ex['muscle_name'])
+                    ?.toString()
+                    .trim()
+                    .toLowerCase();
+            if (mName != null && mName.isNotEmpty) {
+              final match = _muscles.firstWhere(
+                (m) => m['name']?.toString().trim().toLowerCase() == mName,
+                orElse: () => {},
+              );
+              if (match.isNotEmpty && match['id'] != null) {
+                _selectedMuscleId = int.tryParse(match['id'].toString());
+              }
+            }
+          }
+
+          // Fallback match equipment by name if ID was not matched or not valid
+          if (_selectedEquipmentId != null &&
+              !_equipments.any((e) => e['id'] == _selectedEquipmentId)) {
+            _selectedEquipmentId = null;
+          }
+          if (_selectedEquipmentId == null) {
+            final eqName =
+                (ex['equipment_name'] ?? ex['equipment'])
+                    ?.toString()
+                    .trim()
+                    .toLowerCase();
+            if (eqName != null && eqName.isNotEmpty) {
+              final match = _equipments.firstWhere(
+                (e) => e['name']?.toString().trim().toLowerCase() == eqName,
+                orElse: () => {},
+              );
+              if (match.isNotEmpty && match['id'] != null) {
+                _selectedEquipmentId = int.tryParse(match['id'].toString());
+              }
+            }
+          }
+
+          // Fallback match type by value/label
+          if (_selectedType != null) {
+            final match = _types.firstWhere(
+              (t) =>
+                  t['value']?.toString().toLowerCase() ==
+                      _selectedType?.toLowerCase() ||
+                  t['label']?.toString().toLowerCase() ==
+                      _selectedType?.toLowerCase(),
+              orElse: () => {},
+            );
+            if (match.isNotEmpty && match['value'] != null) {
+              _selectedType = match['value'].toString();
+            } else {
+              _selectedType = null;
+            }
+          }
+          if (_selectedType == null) {
+            final tName =
+                (ex['exercise_type_name'] ?? ex['type'])
+                    ?.toString()
+                    .trim()
+                    .toLowerCase();
+            if (tName != null && tName.isNotEmpty) {
+              final match = _types.firstWhere(
+                (t) =>
+                    t['value']?.toString().toLowerCase() == tName ||
+                    t['label']?.toString().toLowerCase() == tName,
+                orElse: () => {},
+              );
+              if (match.isNotEmpty && match['value'] != null) {
+                _selectedType = match['value'].toString();
+              }
+            }
+          }
+
+          // Validate track_by
+          if (_selectedTrackBy != null &&
+              !['reps', 'time', 'distance'].contains(_selectedTrackBy)) {
+            _selectedTrackBy = null;
+          }
+        }
+
         _isLoadingDropdowns = false;
       });
     } catch (e) {
@@ -2056,41 +2213,87 @@ class _CreateExerciseBottomSheetState
     });
 
     try {
-      final isEditingGym = widget.editExercise != null && widget.isGymExercise;
-      final data = {
-        'name': _nameController.text.trim(),
-        'primary_muscle_group': _selectedMuscleId,
-        'secondary_muscle_group': _selectedSecondaryMuscleIds,
-        'equipment': _selectedEquipmentId,
-        'type': _selectedType,
-        'track_by': _selectedTrackBy,
-        'video_url': _youtubeController.text.trim(),
-        'instructions': '',
-        'status': true,
-      };
+      final isEditing = widget.editExercise != null;
+      final isEditingGym = isEditing && widget.isGymExercise;
 
-      final response =
-          isEditingGym
-              ? await DioClient().dio.put<dynamic>(
-                ApiUris.editGymExercise(widget.editExercise!['id'] as int),
-                data: data,
-                options: Options(headers: {'X-Platform': platformSource}),
-              )
-              : await DioClient().dio.post<dynamic>(
-                ApiUris.workoutExercises,
+      final Map<String, dynamic> data = isEditingGym
+          ? {
+              'name': _nameController.text.trim(),
+              'primary_muscle_group': _selectedMuscleId,
+              'primary_muscle_group_id': _selectedMuscleId,
+              'muscle_group_id': _selectedMuscleId,
+              'secondary_muscle_group': _selectedSecondaryMuscleIds,
+              'equipment': _selectedEquipmentId,
+              'equipment_id': _selectedEquipmentId,
+              'exercise_type_id': _selectedType,
+              'type': _selectedType,
+              'track_by': _selectedTrackBy,
+              'video_url': _youtubeController.text.trim(),
+              'youtube_link': _youtubeController.text.trim(),
+              'instructions': '',
+              'status': true,
+            }
+          : {
+              'name': _nameController.text.trim(),
+              'primary_muscle_group': _selectedMuscleId,
+              'secondary_muscle_group': _selectedSecondaryMuscleIds,
+              'equipment': _selectedEquipmentId,
+              'type': _selectedType,
+              'track_by': _selectedTrackBy,
+              'video_url': _youtubeController.text.trim(),
+              'instructions': '',
+              'status': true,
+            };
+
+      final dynamic response;
+      if (isEditing) {
+        final exerciseId =
+            int.tryParse(widget.editExercise!['id'].toString()) ?? 0;
+        if (isEditingGym) {
+          response = await DioClient().dio.put<dynamic>(
+            ApiUris.editGymExercise(exerciseId),
+            data: data,
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+        } else {
+          // Editing trainer's own custom exercise
+          dynamic res;
+          try {
+            res = await DioClient().dio.put<dynamic>(
+              ApiUris.workoutExerciseDetail(exerciseId),
+              data: data,
+              options: Options(headers: {'X-Platform': platformSource}),
+            );
+          } on DioException catch (dioErr) {
+            if (dioErr.response?.statusCode == 405) {
+              res = await DioClient().dio.patch<dynamic>(
+                ApiUris.workoutExerciseDetail(exerciseId),
                 data: data,
                 options: Options(headers: {'X-Platform': platformSource}),
               );
+            } else {
+              rethrow;
+            }
+          }
+          response = res;
+        }
+      } else {
+        response = await DioClient().dio.post<dynamic>(
+          ApiUris.workoutExercises,
+          data: data,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Dialogs.showSnack(
           msg:
-              isEditingGym
+              isEditing
                   ? 'Exercise updated successfully'
                   : 'Exercise created successfully',
         );
         widget.onCreated();
-        Navigator.pop(context); // Close create form
+        Navigator.pop(context); // Close create/edit form
       } else {
         if (!mounted) return;
         setState(() {
@@ -2098,7 +2301,7 @@ class _CreateExerciseBottomSheetState
         });
         Dialogs.showSnack(
           msg:
-              isEditingGym
+              isEditing
                   ? 'Failed to update exercise'
                   : 'Failed to create exercise',
         );
@@ -2108,7 +2311,7 @@ class _CreateExerciseBottomSheetState
       setState(() {
         _isCreating = false;
       });
-      Dialogs.showSnack(msg: 'Error creating exercise: ${e.toString()}');
+      Dialogs.showSnack(msg: 'Error: ${e.toString()}');
     }
   }
 
@@ -2215,7 +2418,9 @@ class _CreateExerciseBottomSheetState
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Create new Exercise',
+                          widget.editExercise != null
+                              ? 'Edit Exercise'
+                              : 'Create new Exercise',
                           style: AppStyles.text16Px.poppins.w600.copyWith(
                             color: AppColors.textDark,
                           ),
@@ -2624,7 +2829,9 @@ class _CreateExerciseBottomSheetState
                                   ),
                                 ),
                                 child: Text(
-                                  'Create Exercise',
+                                  widget.editExercise != null
+                                      ? 'Update Exercise'
+                                      : 'Create Exercise',
                                   style: AppStyles.text16Px.poppins.w600
                                       .copyWith(color: Colors.white),
                                 ),

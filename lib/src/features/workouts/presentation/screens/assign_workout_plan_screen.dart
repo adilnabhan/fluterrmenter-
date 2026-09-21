@@ -177,7 +177,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                           Expanded(
                             child: Text(
                               selectedDate != null
-                                  ? "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}"
+                                  ? "${selectedDate!.day.toString().padLeft(2, '0')}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.year}"
                                   : 'Select start date (Default: Today)',
                               style: AppStyles.text14Px.poppins.w400.copyWith(
                                 color:

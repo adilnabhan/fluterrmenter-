@@ -60,16 +60,23 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     final trimmed = query.trim();
     setState(() {
       _searchQuery = trimmed;
+      if (trimmed.isNotEmpty) {
+        _isSearching = true;
+      }
     });
 
     if (trimmed.isEmpty) {
-      _fetchAttendance(silent: true);
+      setState(() => _isSearching = true);
+      _fetchAttendance(silent: true).then((_) {
+        if (mounted) {
+          setState(() => _isSearching = false);
+        }
+      });
       return;
     }
 
-    _searchDebounceTimer = Timer(const Duration(milliseconds: 400), () async {
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () async {
       if (!mounted) return;
-      setState(() => _isSearching = true);
       await _fetchAttendance(silent: true);
       if (mounted) {
         setState(() => _isSearching = false);
@@ -205,43 +212,48 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         }
       }
 
-      try {
-        final monthStr = DateFormat('yyyy-MM').format(_selectedDate);
-        final orgParam =
-            widget.orgId != 0 ? '&organization_id=${widget.orgId}' : '';
-        final holResp = await DioClient().dio.get<dynamic>(
-          '${ApiUris.gymHolidays}?month=$monthStr$orgParam',
-          options: Options(headers: {'X-Platform': platformSource}),
-        );
-        if (holResp.statusCode == 200) {
-          final holList =
-              holResp.data is List
-                  ? (holResp.data as List<dynamic>)
-                  : (holResp.data is Map && holResp.data['results'] is List)
-                  ? (holResp.data['results'] as List<dynamic>)
-                  : [];
-          final Map<String, String> monthHolMap = {};
-          for (final h in holList) {
-            if (h is Map && h['date'] != null) {
-              final d = h['date'].toString();
-              final name =
-                  (h['title'] ?? h['name'] ?? h['description'] ?? 'Gym Holiday')
-                      .toString();
-              monthHolMap[d] = name;
+      if (_monthHolidays.isEmpty || forceRefresh) {
+        try {
+          final monthStr = DateFormat('yyyy-MM').format(_selectedDate);
+          final orgParam =
+              widget.orgId != 0 ? '&organization_id=${widget.orgId}' : '';
+          final holResp = await DioClient().dio.get<dynamic>(
+            '${ApiUris.gymHolidays}?month=$monthStr$orgParam',
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+          if (holResp.statusCode == 200) {
+            final holList =
+                holResp.data is List
+                    ? (holResp.data as List<dynamic>)
+                    : (holResp.data is Map && holResp.data['results'] is List)
+                    ? (holResp.data['results'] as List<dynamic>)
+                    : [];
+            final Map<String, String> monthHolMap = {};
+            for (final h in holList) {
+              if (h is Map && h['date'] != null) {
+                final d = h['date'].toString();
+                final name =
+                    (h['title'] ?? h['name'] ?? h['description'] ?? 'Gym Holiday')
+                        .toString();
+                monthHolMap[d] = name;
+              }
+            }
+
+            if (mounted) {
+              setState(() {
+                _monthHolidays = monthHolMap;
+                if (monthHolMap.containsKey(dateStr)) {
+                  _dashboard['is_holiday'] = true;
+                  _dashboard['holiday_name'] = monthHolMap[dateStr];
+                }
+              });
             }
           }
-
-          if (mounted) {
-            setState(() {
-              _monthHolidays = monthHolMap;
-              if (monthHolMap.containsKey(dateStr)) {
-                _dashboard['is_holiday'] = true;
-                _dashboard['holiday_name'] = monthHolMap[dateStr];
-              }
-            });
-          }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      } else if (_monthHolidays.containsKey(dateStr)) {
+        _dashboard['is_holiday'] = true;
+        _dashboard['holiday_name'] = _monthHolidays[dateStr];
+      }
     } catch (e, stackTrace) {
       debugPrint('❌ _fetchAttendance error: $e');
       debugPrint('❌ Stack trace: $stackTrace');
@@ -2695,6 +2707,24 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           )
           .length;
 
+  double get _attendancePercentage {
+    final raw =
+        _dashboard['attendance_percentage'] ?? _dashboard['present_percentage'];
+    if (raw != null) {
+      final parsed = double.tryParse(raw.toString());
+      if (parsed != null) return parsed;
+    }
+    final activeTotal = _activeMembersCount;
+    if (activeTotal > 0) {
+      return (_activePresentCount / activeTotal) * 100;
+    }
+    final present = _presentCount;
+    final total = (_dashboard['total_clients_count'] as int?) ??
+        (_dashboard['count'] as int?) ??
+        (present + _absentCount + _unmarkedCount + _holidayCount);
+    return total > 0 ? (present / total) * 100 : 0.0;
+  }
+
   List<Map<String, dynamic>> get _filteredClients {
     var list = _clients;
     if (_statusFilter != 'all') {
@@ -3184,6 +3214,12 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
             child:
                 _isLoading
                     ? _buildAttendanceShimmer()
+                    : _isSearching
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
                     : _filteredClients.isEmpty
                     ? Center(
                       child: Column(
@@ -3389,7 +3425,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         (_dashboard['count'] as int?) ??
         (present + absent + unmarked + holiday);
 
-    final presentPct = total > 0 ? (present / total) * 100 : 0.0;
+    final presentPct = _attendancePercentage;
 
     final slices = [
       (
@@ -3597,19 +3633,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         size: 20,
                       ),
                       suffixIcon:
-                          _isSearching
-                              ? const Padding(
-                                padding: EdgeInsets.all(12),
-                                child: SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              )
-                              : _searchController.text.isNotEmpty
+                          _searchController.text.isNotEmpty
                               ? IconButton(
                                 icon: const Icon(
                                   Icons.clear,
@@ -3792,7 +3816,6 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     }
 
     final isExpired = _isClientExpired(client);
-    final isPendingFee = _isClientPendingFee(client);
     final isActive = _isClientActive(client);
 
     return InkWell(
@@ -3828,26 +3851,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (_statusFilter == 'pending_fee' ||
-                          _statusFilter == 'pending_fee_present') ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xffFEF5E7),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Pending Fee',
-                            style: AppStyles.text10Px.poppins.w600.copyWith(
-                              color: const Color(0xffE67E22),
-                            ),
-                          ),
-                        ),
-                      ] else if (isExpired) ...[
+                      if (isExpired) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -3862,24 +3866,6 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             'Expired',
                             style: AppStyles.text10Px.poppins.w600.copyWith(
                               color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ] else if (isPendingFee) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xffFEF5E7),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Pending Fee',
-                            style: AppStyles.text10Px.poppins.w600.copyWith(
-                              color: const Color(0xffE67E22),
                             ),
                           ),
                         ),
@@ -4220,9 +4206,13 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         (_dashboard['count'] as int?) ??
         (present + absent + unmarked + holiday);
 
-    final presentPct = total > 0 ? (present / total) * 100 : 0.0;
-    final absentPct = total > 0 ? (absent / total) * 100 : 0.0;
-    final unmarkedPct = total > 0 ? (unmarked / total) * 100 : 0.0;
+    final presentPct = _attendancePercentage;
+    final absentPct = (_dashboard['absent_percentage'] != null)
+        ? (double.tryParse(_dashboard['absent_percentage'].toString()) ?? 0.0)
+        : (total > 0 ? (absent / total) * 100 : 0.0);
+    final unmarkedPct = (_dashboard['unmarked_percentage'] != null)
+        ? (double.tryParse(_dashboard['unmarked_percentage'].toString()) ?? 0.0)
+        : (total > 0 ? (unmarked / total) * 100 : 0.0);
 
     final slices = [
       (
@@ -4410,7 +4400,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                           : null,
                     ),
                     _buildMiniMetric(
-                      'Pending Fee',
+                      'Balance',
                       '$_pendingFeePresentCount',
                       const Color(0xffE67E22),
                       onTap: _pendingFeePresentCount > 0

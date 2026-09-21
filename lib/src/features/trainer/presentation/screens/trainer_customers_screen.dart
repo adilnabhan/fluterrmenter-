@@ -30,7 +30,6 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   bool _isLoading = true;
   String _searchQuery = '';
   late String _statusFilter;
-  String _selectedGymFilter = 'All'; // Selected gym capsule filter
 
   List<({String label, String value})>? _selectedFilters;
   ({String label, String value})? _selectedSort;
@@ -320,29 +319,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     }
   }
 
-  List<String> get _gymFilters {
-    final Set<String> gyms = {'All'};
-    for (var client in _clients) {
-      final orgName = client['organization_name'] as String?;
-      if (orgName != null && orgName.isNotEmpty) {
-        gyms.add(orgName);
-      }
-    }
-    return gyms.toList();
-  }
-
   bool get _shouldHideFilter =>
       widget.hideStatusFilter || widget.initialStatusFilter == 'active';
 
-  List<Map<String, dynamic>> get _filteredClients {
-    return _clients.where((client) {
-      final orgName = client['organization_name'] ?? 'Direct Client';
-      if (_selectedGymFilter != 'All' && orgName != _selectedGymFilter) {
-        return false;
-      }
-      return true;
-    }).toList();
-  }
+  List<Map<String, dynamic>> get _filteredClients => _clients;
 
   DateTime? _parseAnyDate(dynamic val) {
     if (val == null) return null;
@@ -650,64 +630,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 2. Horizontal Gym Selection Chips
-          if (_clients.isNotEmpty)
-            Container(
-              height: 32,
-              margin: const EdgeInsets.only(top: 14, bottom: 10),
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children:
-                    _gymFilters.map((gymName) {
-                      final isSelected = _selectedGymFilter == gymName;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: InkWell(
-                          onTap: () {
-                            if (!mounted) return;
-                            setState(() {
-                              _selectedGymFilter = gymName;
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSelected ? AppColors.primary : context.colors.card,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color:
-                                    isSelected
-                                        ? AppColors.primary
-                                        : context.colors.border,
-                                width: 1,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                gymName,
-                                style: AppStyles.text12Px.poppins.w600.copyWith(
-                                  color:
-                                      isSelected
-                                          ? Colors.white
-                                          : context.colors.textPrimary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-              ),
-            ),
-
-
-          // 4. Member Count
+          // Member Count
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Text(

@@ -1582,7 +1582,7 @@ class _OrganizationListingAndDetailsScreenState
 
                               final newCards = [
                                 (
-                                  title: 'Active\nMembers',
+                                  title: 'Active\nClients',
 
                                   count: orgHomeData.activeCustomersCount ?? 0,
 
@@ -1624,7 +1624,7 @@ class _OrganizationListingAndDetailsScreenState
                                 ),
 
                                 (
-                                  title: 'Expired\nMembers',
+                                  title: 'Expired\nClients',
 
                                   count: orgHomeData.expiredCustomersCount ?? 0,
 
@@ -1740,7 +1740,7 @@ class _OrganizationListingAndDetailsScreenState
                                 ),
 
                                 (
-                                  title: 'Total\nMembers',
+                                  title: 'Total\nClients',
 
                                   count:
                                       orgHomeData.totalCustomers ??

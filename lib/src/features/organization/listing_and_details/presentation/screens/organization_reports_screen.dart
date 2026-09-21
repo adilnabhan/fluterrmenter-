@@ -77,11 +77,13 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     }
   }
 
-  Future<void> _fetchReports() async {
+  Future<void> _fetchReports({bool silent = false}) async {
     if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-    });
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     final now = DateTime.now();
     final year = _startDate?.year ?? now.year;
@@ -238,7 +240,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       // ignore/handle revenue target error quietly
     }
 
-    if (mounted) {
+    if (mounted && !silent) {
       setState(() {
         _isLoading = false;
       });
@@ -471,32 +473,27 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     );
 
     if (confirm != true) return;
-
-    if (mounted) {
-      setState(() {
-        _isLoading = true;
-      });
-    }
-
+ 
     try {
       final response = await DioClient().dio.delete<dynamic>(
         ApiUris.expenseDetail(id),
         options: Options(headers: {'X-Platform': platformSource}).token,
       );
       if (response.statusCode == 200 || response.statusCode == 204) {
-        await Dialogs.showSnack(msg: 'Expense deleted successfully');
-        await _fetchReports();
+        if (mounted) {
+          setState(() {
+            _expenses.removeWhere(
+              (e) => e['id'] == id || e['id']?.toString() == id.toString(),
+            );
+          });
+        }
+        Dialogs.showSnack(msg: 'Expense deleted successfully');
+        await _fetchReports(silent: true);
       } else {
-        await Dialogs.showSnack(msg: 'Failed to delete expense');
+        Dialogs.showSnack(msg: 'Failed to delete expense');
       }
     } catch (e) {
-      await Dialogs.showSnack(msg: 'Error deleting expense');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      Dialogs.showSnack(msg: 'Error deleting expense');
     }
   }
 
@@ -1181,32 +1178,27 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     );
 
     if (confirm != true) return;
-
-    if (mounted) {
-      setState(() {
-        _isLoading = true;
-      });
-    }
-
+ 
     try {
       final response = await DioClient().dio.delete<dynamic>(
         ApiUris.revenueDetail(id),
         options: Options(headers: {'X-Platform': platformSource}).token,
       );
       if (response.statusCode == 200 || response.statusCode == 204) {
-        await Dialogs.showSnack(msg: 'Revenue record deleted successfully');
-        await _fetchReports();
+        if (mounted) {
+          setState(() {
+            _revenues.removeWhere(
+              (r) => r['id'] == id || r['id']?.toString() == id.toString(),
+            );
+          });
+        }
+        Dialogs.showSnack(msg: 'Revenue record deleted successfully');
+        await _fetchReports(silent: true);
       } else {
-        await Dialogs.showSnack(msg: 'Failed to delete revenue record');
+        Dialogs.showSnack(msg: 'Failed to delete revenue record');
       }
     } catch (e) {
-      await Dialogs.showSnack(msg: 'Error deleting revenue record');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      Dialogs.showSnack(msg: 'Error deleting revenue record');
     }
   }
 
@@ -2256,7 +2248,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
               childAspectRatio: 1.4,
               children: [
                 _buildReportCard(
-                  title: 'Active Clients',
+                  title: 'Total Clients',
                   value: totalClients,
                   icon: Icons.people_outline,
                   color: const Color(0xff486CC2),
@@ -4422,93 +4414,150 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    bool isExpanded = false;
+
+    return StatefulBuilder(
+      builder: (context, setInnerState) {
+        final visibleItems = (list.length > 5 && !isExpanded)
+            ? list.take(5).toList()
+            : list;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xffEEEEEE)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: list.map((item) {
-          final String title = item['title'] as String;
-          final String label = item['label'] as String;
-          final String pctStr = item['percentage'] as String;
-          final int count = item['count'] as int;
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...visibleItems.map((item) {
+                  final String title = item['title'] as String;
+                  final String label = item['label'] as String;
+                  final String pctStr = item['percentage'] as String;
+                  final int count = item['count'] as int;
 
-          double parsedPct = 0.0;
-          try {
-            parsedPct = double.parse(pctStr.replaceAll('%', '')) / 100.0;
-          } catch (_) {}
+                  double parsedPct = 0.0;
+                  try {
+                    parsedPct = double.parse(pctStr.replaceAll('%', '')) / 100.0;
+                  } catch (_) {}
 
-          return InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ReportsCustomerListScreen(
-                    orgId: widget.orgId,
-                    filterType: filterType,
-                    filterValue: title,
-                    filterLabel: '$label ($count)',
-                    startDate: _startDate,
-                    endDate: _endDate,
-                    count: count,
-                  ),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Icon(icon, size: 18, color: barColor),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 120,
-                    child: Text(
-                      label,
-                      style: AppStyles.text12Px.poppins.w500.dark,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReportsCustomerListScreen(
+                            orgId: widget.orgId,
+                            filterType: filterType,
+                            filterValue: title,
+                            filterLabel: '$label ($count)',
+                            startDate: _startDate,
+                            endDate: _endDate,
+                            count: count,
+                          ),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Icon(icon, size: 18, color: barColor),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: 120,
+                            child: Text(
+                              label,
+                              style: AppStyles.text12Px.poppins.w500.dark,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: parsedPct,
+                                backgroundColor: const Color(0xffF0F0F0),
+                                color: barColor,
+                                minHeight: 8,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 60,
+                            child: Text(
+                              '$count ($pctStr)',
+                              style: AppStyles.text10Px.poppins.w600.dark,
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: parsedPct,
-                        backgroundColor: const Color(0xffF0F0F0),
-                        color: barColor,
-                        minHeight: 8,
+                  );
+                }),
+                if (list.length > 5) ...[
+                  const SizedBox(height: 4),
+                  const Divider(height: 1, color: Color(0xffF0F0F0)),
+                  const SizedBox(height: 4),
+                  InkWell(
+                    onTap: () {
+                      setInnerState(() {
+                        isExpanded = !isExpanded;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            isExpanded
+                                ? 'Show Less'
+                                : filterType == 'profession'
+                                    ? 'More Professions (${list.length - 5})'
+                                    : 'Show More (${list.length - 5})',
+                            style: AppStyles.text12Px.poppins.w600.copyWith(
+                              color: barColor,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            isExpanded
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            size: 18,
+                            color: barColor,
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 60,
-                    child: Text(
-                      '$count ($pctStr)',
-                      style: AppStyles.text10Px.poppins.w600.dark,
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
                 ],
-              ),
+              ],
             ),
-          );
-        }).toList(),
-      ),
+          ),
+        );
+      },
     );
   }
 
