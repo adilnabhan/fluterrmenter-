@@ -69,7 +69,7 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
   double get _planAmount {
     if (_selectedPlan == null) return 0;
     return double.tryParse(
-          _selectedPlan?.offerPrice ?? _selectedPlan?.actualPrice ?? '0',
+          _selectedPlan?.actualPrice ?? '0',
         ) ??
         0;
   }
@@ -1187,6 +1187,18 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                       setState(() {
                         _selectedPlan = plan;
                         _isPlanDropdownOpen = false;
+
+                        // Auto-fill discount if offer price exists
+                        final actual = double.tryParse(plan.actualPrice ?? '') ?? 0;
+                        final offer = double.tryParse(plan.offerPrice ?? '') ?? 0;
+                        if (offer > 0 && actual > offer) {
+                          final discount = actual - offer;
+                          _discountController.text = discount == discount.toInt()
+                              ? discount.toInt().toString()
+                              : discount.toStringAsFixed(2);
+                        } else {
+                          _discountController.text = '0';
+                        }
                       });
                     },
                     child: Padding(

@@ -750,18 +750,42 @@ class _GymAddOrEditPackageScreenState extends State<GymAddOrEditPackageScreen> {
                   ),
                 ),
               ], */
-              /* const SizedBox(height: 16),
-              Field(data: _offerPriceField),
-              if (_offerCommissionMessage.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  _offerCommissionMessage,
-                  style: AppStyles.text13Px.poppins.w500.copyWith(
-                    fontSize: 10,
-                    color: AppColors.error,
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Offer Price',
+                    style: AppStyles.text14Px.poppins.w500.dark,
                   ),
-                ),
-              ], */
+                  Switch(
+                    value: _showOfferPrice,
+                    activeColor: AppColors.primary,
+                    onChanged: (value) {
+                      if (!mounted) return;
+                      setState(() {
+                        _showOfferPrice = value;
+                        if (!_showOfferPrice) {
+                          _offerPriceField.controller?.clear();
+                        }
+                      });
+                    },
+                  ),
+                ],
+              ),
+              if (_showOfferPrice) ...[
+                Field(data: _offerPriceField),
+                if (_offerCommissionMessage.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    _offerCommissionMessage,
+                    style: AppStyles.text13Px.poppins.w500.copyWith(
+                      fontSize: 10,
+                      color: AppColors.error,
+                    ),
+                  ),
+                ],
+              ],
               const SizedBox(height: 16),
               Field(data: _descriptionField),
               const SizedBox(height: 24),
