@@ -434,6 +434,8 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                     ClipOval(
                                       child: ProfileImage(
                                         isEdit: false,
+                                        canViewFullImage: true,
+                                        name: record.trainerName,
                                         url: record.profileImage ?? '',
                                         radius: 40,
                                       ),
@@ -684,6 +686,8 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                     ClipOval(
                                       child: ProfileImage(
                                         isEdit: false,
+                                        canViewFullImage: true,
+                                        name: trainer.trainerName,
                                         url: trainer.profileImage ?? '',
                                         radius: 36,
                                       ),

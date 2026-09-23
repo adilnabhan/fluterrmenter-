@@ -397,6 +397,8 @@ class __MembersAndLeadsListingScreenState
                                                             ),
                                                         child: ProfileImage(
                                                           isEdit: false,
+                                                          canViewFullImage: true,
+                                                          name: memberData?.name,
                                                           url:
                                                               '${memberData?.profilePicture ?? ''}',
                                                           radius: 40,

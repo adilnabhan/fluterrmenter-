@@ -3832,7 +3832,13 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           children: [
             // Avatar
             ClipOval(
-              child: ProfileImage(isEdit: false, url: profilePic, radius: 48),
+              child: ProfileImage(
+                isEdit: false,
+                canViewFullImage: true,
+                name: name,
+                url: profilePic,
+                radius: 48,
+              ),
             ),
             const SizedBox(width: 12),
 

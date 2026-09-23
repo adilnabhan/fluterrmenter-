@@ -201,6 +201,8 @@ class __UpcomingRenewalsListingScreenState
                                                           ),
                                                       child: ProfileImage(
                                                         isEdit: false,
+                                                        canViewFullImage: true,
+                                                        name: memberData?.name,
                                                         url:
                                                             '${memberData?.profileImage ?? ''}',
                                                         radius: 40,

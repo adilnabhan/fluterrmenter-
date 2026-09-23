@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/reports_customer_list_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/monthly_revenue_detail_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/monthly_expense_detail_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/client_workout_calendar_widget.dart';
 
 class OrganizationReportsScreen extends StatefulWidget {
@@ -2090,18 +2092,35 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                 },
               ),
           ],
-          bottom: TabBar(
-            indicatorColor: AppColors.primary,
-            indicatorWeight: 3,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.textGrey,
-            labelStyle: AppStyles.text14Px.poppins.w600,
-            unselectedLabelStyle: AppStyles.text14Px.poppins.w400,
-            tabs: const [
-              Tab(text: 'Finance'),
-              Tab(text: 'Trainers'),
-              Tab(text: 'Clients'),
-            ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(56),
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: const Color(0xffE8ECEF),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: TabBar(
+                dividerColor: Colors.transparent,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                splashFactory: NoSplash.splashFactory,
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+                labelColor: Colors.white,
+                unselectedLabelColor: const Color(0xff2D3139),
+                labelStyle: AppStyles.text14Px.poppins.w600,
+                unselectedLabelStyle: AppStyles.text14Px.poppins.w500,
+                tabs: const [
+                  Tab(height: 36, text: 'Finance'),
+                  Tab(height: 36, text: 'Trainers'),
+                  Tab(height: 36, text: 'Clients'),
+                ],
+              ),
+            ),
           ),
         ),
         body: Column(
@@ -2967,14 +2986,52 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                   value: '₹${monthlyRevenue.toStringAsFixed(0)}',
                   icon: Icons.currency_rupee,
                   color: const Color(0xff27AE60),
-                  onTap: _showRevenueCategoryPieChartSheet,
+                  onTap: () async {
+                    final didChange = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MonthlyRevenueDetailScreen(
+                          orgId: widget.orgId,
+                          startDate: _startDate,
+                          endDate: _endDate,
+                          month: _startDate?.month ?? DateTime.now().month,
+                          year: _startDate?.year ?? DateTime.now().year,
+                          initialRevenues: _revenues,
+                          initialPlanRevenueBreakdown: planRevenueBreakdown,
+                          initialPaymentModes: paymentModes,
+                          initialRevenueCategories: _revenueCategories,
+                        ),
+                      ),
+                    );
+                    if (didChange == true) {
+                      _fetchReports(silent: true);
+                    }
+                  },
                 ),
                 _buildReportCard(
-                  title: 'Total Expense',
+                  title: 'Monthly Expenses',
                   value: '₹${totalExpense.toStringAsFixed(0)}',
                   icon: Icons.money_off,
                   color: const Color(0xffE74C3C),
-                  onTap: _showExpenseCategoryPieChartSheet,
+                  onTap: () async {
+                    final didChange = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MonthlyExpenseDetailScreen(
+                          orgId: widget.orgId,
+                          startDate: _startDate,
+                          endDate: _endDate,
+                          month: _startDate?.month ?? DateTime.now().month,
+                          year: _startDate?.year ?? DateTime.now().year,
+                          initialExpenses: _expenses,
+                          currentBudget: budget,
+                        ),
+                      ),
+                    );
+                    if (didChange == true) {
+                      _fetchReports(silent: true);
+                    }
+                  },
                 ),
               ],
             ),
@@ -3165,547 +3222,6 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-
-            _buildSectionTitle('Amount Received by Payment Mode'),
-            if (paymentModes.isEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xffEEEEEE)),
-                ),
-                child: Center(
-                  child: Text(
-                    'No payment mode data available',
-                    style: AppStyles.text14Px.poppins.w400.copyWith(
-                      color: AppColors.textGrey,
-                    ),
-                  ),
-                ),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xffEEEEEE)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: paymentModes.map((item) {
-                    final Map<String, dynamic> itemMap = Map<String, dynamic>.from(item as Map);
-                    final String mode = itemMap['mode']?.toString() ?? '';
-                    final double amount = double.tryParse(itemMap['amount']?.toString() ?? '') ?? 0.0;
-                    final double totalReceived = paymentModes.fold(0.0, (sum, e) {
-                      final map = Map<String, dynamic>.from(e as Map);
-                      return sum + (double.tryParse(map['amount']?.toString() ?? '') ?? 0.0);
-                    });
-                    final double pct = totalReceived > 0 ? (amount / totalReceived) : 0.0;
-
-                    IconData modeIcon = Icons.payment_outlined;
-                    Color modeColor = const Color(0xff3498db);
-
-                    final modeLower = mode.toLowerCase();
-                    if (modeLower.contains('cash')) {
-                      modeIcon = Icons.money_outlined;
-                      modeColor = const Color(0xff2ecc71);
-                    } else if (modeLower.contains('upi') || modeLower.contains('gpay') || modeLower.contains('phonepe') || modeLower.contains('paytm')) {
-                      modeIcon = Icons.qr_code_scanner_outlined;
-                      modeColor = const Color(0xff9b59b6);
-                    } else if (modeLower.contains('card') || modeLower.contains('credit') || modeLower.contains('debit')) {
-                      modeIcon = Icons.credit_card_outlined;
-                      modeColor = const Color(0xffe74c3c);
-                    } else if (modeLower.contains('net') || modeLower.contains('bank') || modeLower.contains('transfer')) {
-                      modeIcon = Icons.account_balance_outlined;
-                      modeColor = const Color(0xfff1c40f);
-                    }
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: modeColor.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(modeIcon, size: 16, color: modeColor),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                mode,
-                                style: AppStyles.text14Px.poppins.w600.dark,
-                              ),
-                              const Spacer(),
-                              Text(
-                                '₹${amount.toStringAsFixed(0)}',
-                                style: AppStyles.text14Px.poppins.w600.dark,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '(${(pct * 100).toStringAsFixed(0)}%)',
-                                style: AppStyles.text12Px.poppins.w400.copyWith(
-                                  color: AppColors.textGrey,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: pct,
-                              backgroundColor: const Color(0xffF0F0F0),
-                              color: modeColor,
-                              minHeight: 6,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            const SizedBox(height: 24),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildSectionTitle('Recent Expenses'),
-                Row(
-                  children: [
-                    if (_expenses.length > 5)
-                      GestureDetector(
-                        onTap: () => _showAllExpensesSheet(),
-                        child: Text(
-                          'View All (${_expenses.length})',
-                          style: AppStyles.text13Px.poppins.w600.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    IconButton(
-                      onPressed: () => _showExpenseSheet(),
-                      icon: const Icon(
-                        Icons.add_circle,
-                        color: AppColors.primary,
-                        size: 28,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            if (_expenses.isEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xffEEEEEE)),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.receipt_long_outlined,
-                      size: 44,
-                      color: AppColors.textGrey.withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'No expenses recorded yet',
-                      style: AppStyles.text14Px.poppins.w500.copyWith(
-                        color: AppColors.textGrey,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () => _showExpenseSheet(),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Add First Expense'),
-                    ),
-                  ],
-                ),
-              )
-            else
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xffEEEEEE)),
-                ),
-                child: Column(
-                  children: [
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _expenses.length > 5 ? 5 : _expenses.length,
-                      separatorBuilder:
-                          (context, index) =>
-                              const Divider(height: 1, color: Color(0xffEEEEEE)),
-                      itemBuilder: (context, index) {
-                        final exp = _expenses[index];
-                        final id = exp['id'] as int? ?? 0;
-                        final title =
-                            exp['title']?.toString() ?? 'Unspecified Expense';
-                        final category = exp['category']?.toString() ?? 'Other';
-                        final amount = exp['amount'] ?? 0.0;
-                        final dateStr = exp['expense_date']?.toString() ?? '';
-
-                        var parsedAmount = 0.0;
-                        if (amount is double) {
-                          parsedAmount = amount;
-                        } else if (amount != null) {
-                          parsedAmount = double.tryParse(amount.toString()) ?? 0.0;
-                        }
-
-                        return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
-                          ),
-                          title: Text(
-                            title,
-                            style: AppStyles.text14Px.poppins.w600.dark,
-                          ),
-                          subtitle: Text(
-                            '$category • $dateStr',
-                            style: AppStyles.text12Px.poppins.w400.copyWith(
-                              color: AppColors.textGrey,
-                            ),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '₹${parsedAmount.toStringAsFixed(2)}',
-                                style: AppStyles.text14Px.poppins.w600.copyWith(
-                                  color: const Color(0xffE74C3C),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              PopupMenuButton<String>(
-                                color: Colors.white,
-                                surfaceTintColor: Colors.white,
-                                onSelected: (val) {
-                                  if (val == 'edit') {
-                                    _showExpenseSheet(expense: exp);
-                                  } else if (val == 'delete') {
-                                    _deleteExpense(id);
-                                  }
-                                },
-                                itemBuilder:
-                                    (context) => [
-                                      const PopupMenuItem(
-                                        value: 'edit',
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.edit, size: 18),
-                                            SizedBox(width: 8),
-                                            Text('Edit'),
-                                          ],
-                                        ),
-                                      ),
-                                      const PopupMenuItem(
-                                        value: 'delete',
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.delete,
-                                              color: Colors.red,
-                                              size: 18,
-                                            ),
-                                            SizedBox(width: 8),
-                                            Text(
-                                              'Delete',
-                                              style: TextStyle(color: Colors.red),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    if (_expenses.length > 5) ...[
-                      const Divider(height: 1, color: Color(0xffEEEEEE)),
-                      InkWell(
-                        onTap: () => _showAllExpensesSheet(),
-                        borderRadius: const BorderRadius.vertical(
-                          bottom: Radius.circular(16),
-                        ),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          alignment: Alignment.center,
-                          child: Text(
-                            'View All ${_expenses.length} Expenses',
-                            style: AppStyles.text13Px.poppins.w600.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            const SizedBox(height: 24),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildSectionTitle('Recent Revenues'),
-                Row(
-                  children: [
-                    if (_revenues.length > 5)
-                      GestureDetector(
-                        onTap: () => _showAllRevenuesSheet(),
-                        child: Text(
-                          'View All (${_revenues.length})',
-                          style: AppStyles.text13Px.poppins.w600.copyWith(
-                            color: const Color(0xff27AE60),
-                          ),
-                        ),
-                      ),
-                    IconButton(
-                      onPressed: () => _showRevenueSheet(),
-                      icon: const Icon(
-                        Icons.add_circle,
-                        color: Color(0xff27AE60),
-                        size: 28,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            if (_revenues.isEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xffEEEEEE)),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet_outlined,
-                      size: 44,
-                      color: AppColors.textGrey.withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'No revenue records yet',
-                      style: AppStyles.text14Px.poppins.w500.copyWith(
-                        color: AppColors.textGrey,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff27AE60),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () => _showRevenueSheet(),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Add First Revenue'),
-                    ),
-                  ],
-                ),
-              )
-            else
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xffEEEEEE)),
-                ),
-                child: Column(
-                  children: [
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _revenues.length > 5 ? 5 : _revenues.length,
-                      separatorBuilder:
-                          (context, index) =>
-                              const Divider(height: 1, color: Color(0xffEEEEEE)),
-                      itemBuilder: (context, index) {
-                        final rev = _revenues[index];
-                        final id = rev['id'] as int? ?? 0;
-                        final title =
-                            rev['title']?.toString() ?? rev['name']?.toString() ?? 'Unspecified Revenue';
-                        final category = rev['category']?.toString() ?? rev['category_name']?.toString() ?? 'Membership Fee';
-                        final amount = rev['amount'] ?? 0.0;
-                        final dateStr = rev['revenue_date']?.toString() ?? rev['date']?.toString() ?? '';
-
-                        var parsedAmount = 0.0;
-                        if (amount is double) {
-                          parsedAmount = amount;
-                        } else if (amount != null) {
-                          parsedAmount = double.tryParse(amount.toString()) ?? 0.0;
-                        }
-
-                        return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
-                          ),
-                          title: Text(
-                            title,
-                            style: AppStyles.text14Px.poppins.w600.dark,
-                          ),
-                          subtitle: Text(
-                            '$category • $dateStr',
-                            style: AppStyles.text12Px.poppins.w400.copyWith(
-                              color: AppColors.textGrey,
-                            ),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '+ ₹${parsedAmount.toStringAsFixed(2)}',
-                                style: AppStyles.text14Px.poppins.w600.copyWith(
-                                  color: const Color(0xff27AE60),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              PopupMenuButton<String>(
-                                color: Colors.white,
-                                surfaceTintColor: Colors.white,
-                                onSelected: (val) {
-                                  if (val == 'edit') {
-                                    _showRevenueSheet(revenue: rev);
-                                  } else if (val == 'delete') {
-                                    _deleteRevenue(id);
-                                  }
-                                },
-                                itemBuilder:
-                                    (context) => [
-                                      const PopupMenuItem(
-                                        value: 'edit',
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.edit, size: 18),
-                                            SizedBox(width: 8),
-                                            Text('Edit'),
-                                          ],
-                                        ),
-                                      ),
-                                      const PopupMenuItem(
-                                        value: 'delete',
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.delete,
-                                              color: Colors.red,
-                                              size: 18,
-                                            ),
-                                            SizedBox(width: 8),
-                                            Text(
-                                              'Delete',
-                                              style: TextStyle(color: Colors.red),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    if (_revenues.length > 5) ...[
-                      const Divider(height: 1, color: Color(0xffEEEEEE)),
-                      InkWell(
-                        onTap: () => _showAllRevenuesSheet(),
-                        borderRadius: const BorderRadius.vertical(
-                          bottom: Radius.circular(16),
-                        ),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          alignment: Alignment.center,
-                          child: Text(
-                            'View All ${_revenues.length} Revenues',
-                            style: AppStyles.text13Px.poppins.w600.copyWith(
-                              color: const Color(0xff27AE60),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            const SizedBox(height: 24),
-
-            _buildSectionTitle('Plan Revenue Breakdown'),
-            if (planRevenueBreakdown.isEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xffEEEEEE)),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.monetization_on_outlined,
-                      size: 48,
-                      color: AppColors.textGrey.withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'No plan revenue breakdown data available',
-                      style: AppStyles.text14Px.poppins.w500.copyWith(
-                        color: AppColors.textGrey,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              )
-            else
-              _buildPlanRevenueBreakdown(planRevenueBreakdown),
             const SizedBox(height: 24),
           ],
         ),

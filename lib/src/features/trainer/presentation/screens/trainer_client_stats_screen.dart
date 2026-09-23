@@ -850,31 +850,40 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.iconBackground,
-                      ),
-                      child: ClipOval(
-                        child:
-                            imgUrl != null
-                                ? Image.network(
-                                  imgUrl as String,
-                                  fit: BoxFit.cover,
-                                  errorBuilder:
-                                      (_, __, ___) => const Icon(
-                                        Icons.person,
-                                        size: 30,
-                                        color: AppColors.primary,
-                                      ),
-                                )
-                                : const Icon(
-                                  Icons.person,
-                                  size: 30,
-                                  color: AppColors.primary,
-                                ),
+                    GestureDetector(
+                      onTap: () {
+                        Dialogs.showEnlargedProfilePhoto(
+                          context,
+                          imgUrl as String?,
+                          name: profile['name'] as String?,
+                        );
+                      },
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.iconBackground,
+                        ),
+                        child: ClipOval(
+                          child:
+                              imgUrl != null
+                                  ? Image.network(
+                                    imgUrl as String,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (_, __, ___) => const Icon(
+                                          Icons.person,
+                                          size: 30,
+                                          color: AppColors.primary,
+                                        ),
+                                  )
+                                  : const Icon(
+                                    Icons.person,
+                                    size: 30,
+                                    color: AppColors.primary,
+                                  ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),

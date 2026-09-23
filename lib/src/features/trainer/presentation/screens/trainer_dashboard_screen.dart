@@ -59,71 +59,79 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
       );
       debugPrint("Trainer Dashboard: Initial orgId resolved to: $orgId");
 
-      final needProfileFetch = orgId == null ||
-          currentUser?.profilePicture == null ||
-          currentUser?.profilePicture.toString().isEmpty == true;
+      try {
+        debugPrint(
+          "Trainer Dashboard: syncing trainer basic details from server...",
+        );
+        final profileRes = await DioClient().dio.get<dynamic>(
+          ApiUris.editTrainerBasicDetails,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        );
+        debugPrint(
+          "Trainer Dashboard: editTrainerBasicDetails Response status=${profileRes.statusCode}, data=${profileRes.data}",
+        );
+        if (profileRes.statusCode == 200 && profileRes.data is Map) {
+          final responseMap = profileRes.data as Map;
+          final data =
+              responseMap['data'] is Map
+                  ? responseMap['data'] as Map
+                  : responseMap;
+          final profileOrgId =
+              data['organization_id'] as int? ??
+              data['trainer']?['organization_id'] as int? ??
+              data['mentor_profile']?['organization']?['id'] as int? ??
+              data['organization']?['id'] as int?;
+          final profileOrgName =
+              data['organization_name']?.toString() ??
+              data['trainer']?['organization_name']?.toString() ??
+              data['mentor_profile']?['organization']?['name']?.toString() ??
+              data['organization']?['name']?.toString();
+          final profilePic =
+              data['profile_picture']?.toString() ??
+              data['profile_pic']?.toString() ??
+              data['profile_image']?.toString() ??
+              data['image']?.toString() ??
+              data['avatar']?.toString();
 
-      if (needProfileFetch) {
-        try {
           debugPrint(
-            "Trainer Dashboard: fetching trainer basic details...",
+            "Trainer Dashboard: resolved profileOrgId: $profileOrgId, profileOrgName: $profileOrgName, profilePic: $profilePic",
           );
-          final profileRes = await DioClient().dio.get<dynamic>(
-            ApiUris.editTrainerBasicDetails,
-            options: Options(headers: {'X-Platform': platformSource}),
-          );
-          debugPrint(
-            "Trainer Dashboard: editTrainerBasicDetails Response status=${profileRes.statusCode}, data=${profileRes.data}",
-          );
-          if (profileRes.statusCode == 200 && profileRes.data is Map) {
-            final responseMap = profileRes.data as Map;
-            final data =
-                responseMap['data'] is Map
-                    ? responseMap['data'] as Map
-                    : responseMap;
-            final profileOrgId =
-                data['organization_id'] as int? ??
-                data['trainer']?['organization_id'] as int? ??
-                data['mentor_profile']?['organization']?['id'] as int? ??
-                data['organization']?['id'] as int?;
-            final profileOrgName =
-                data['organization_name']?.toString() ??
-                data['trainer']?['organization_name']?.toString() ??
-                data['mentor_profile']?['organization']?['name']?.toString() ??
-                data['organization']?['name']?.toString();
-            final profilePic =
-                data['profile_picture']?.toString() ??
-                data['profile_pic']?.toString() ??
-                data['image']?.toString() ??
-                data['avatar']?.toString();
-
-            debugPrint(
-              "Trainer Dashboard: resolved profileOrgId: $profileOrgId, profileOrgName: $profileOrgName, profilePic: $profilePic",
-            );
-            if (currentUser != null) {
-              if (profileOrgId != null) orgId = profileOrgId;
-              final updatedUser = currentUser.copyWith(
-                organizationId: profileOrgId ?? currentUser.organizationId,
-                organizationName: profileOrgName ?? currentUser.organizationName,
-                profilePicture: (profilePic != null && profilePic.isNotEmpty && profilePic != 'null')
-                    ? profilePic
-                    : currentUser.profilePicture,
-                trainer: currentUser.trainer?.copyWith(
-                  organizationId: profileOrgId ?? currentUser.trainer?.organizationId,
-                  organizationName: profileOrgName ?? currentUser.trainer?.organizationName,
-                ),
-              );
-              if (mounted) {
-                context.read<AppCubit>().addUser(updatedUser);
-                debugPrint(
-                  "Trainer Dashboard: Saved updated user profile to AppCubit with profilePicture: ${updatedUser.profilePicture}",
+          if (currentUser != null) {
+            if (profileOrgId != null) orgId = profileOrgId;
+            final isPicChanged = profilePic != null &&
+                profilePic.isNotEmpty &&
+                profilePic != 'null' &&
+                profilePic != currentUser.profilePicture;
+            if (isPicChanged) {
+              if (currentUser.profilePicture != null) {
+                CachedNetworkImage.evictFromCache(
+                  currentUser.profilePicture.toString(),
                 );
               }
+              CachedNetworkImage.evictFromCache(profilePic);
+            }
+
+            final updatedUser = currentUser.copyWith(
+              organizationId: profileOrgId ?? currentUser.organizationId,
+              organizationName: profileOrgName ?? currentUser.organizationName,
+              profilePicture: (profilePic != null && profilePic.isNotEmpty && profilePic != 'null')
+                  ? profilePic
+                  : currentUser.profilePicture,
+              trainer: currentUser.trainer?.copyWith(
+                organizationId: profileOrgId ?? currentUser.trainer?.organizationId,
+                organizationName: profileOrgName ?? currentUser.trainer?.organizationName,
+              ),
+            );
+            if (mounted) {
+              context.read<AppCubit>().addUser(updatedUser);
+              debugPrint(
+                "Trainer Dashboard: Saved updated user profile to AppCubit with profilePicture: ${updatedUser.profilePicture}",
+              );
             }
           }
-        } catch (e) {
-          debugPrint("Failed to resolve trainer basic details: $e");
         }
+      } catch (e) {
+        debugPrint("Failed to resolve trainer basic details: $e");
       }
 
       debugPrint(

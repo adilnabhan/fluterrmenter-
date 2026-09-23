@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reports_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_workout_session_detail_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/domain/repositories/trainer_repository.dart';
 
 class TrainerPendingVerificationsScreen extends StatefulWidget {
   const TrainerPendingVerificationsScreen({
@@ -25,6 +27,10 @@ class _TrainerPendingVerificationsScreenState
 
   List<Map<String, dynamic>> _pendingVerifications = [];
   List<Map<String, dynamic>> _verificationHistory = [];
+
+  final Set<int> _selectedSessionIds = {};
+  bool _isBulkVerifying = false;
+  bool _isSelectionMode = false;
 
   bool _isLoadingPending = true;
   bool _isLoadingHistory = false;
@@ -138,11 +144,16 @@ class _TrainerPendingVerificationsScreenState
   void _handleTabSelection() {
     if (_tabController.index != _lastTabIndex) {
       _lastTabIndex = _tabController.index;
+      if (_isSelectionMode) {
+        _isSelectionMode = false;
+        _selectedSessionIds.clear();
+      }
       if (_tabController.index == 1 && !_hasFetchedHistory) {
         _fetchVerificationHistory();
       } else if (_tabController.index == 0 && !_hasFetchedPending) {
         _fetchPendingVerifications();
       }
+      if (mounted) setState(() {});
     }
   }
 
@@ -161,6 +172,8 @@ class _TrainerPendingVerificationsScreenState
     setState(() {
       _isLoadingPending = true;
       _pendingVerifications = [];
+      _selectedSessionIds.clear();
+      _isSelectionMode = false;
     });
 
     final Map<String, dynamic> queryParams = {};
@@ -338,6 +351,7 @@ class _TrainerPendingVerificationsScreenState
       if (response.statusCode == 200 || response.statusCode == 201) {
         reportsRefreshTrigger.value++;
         Dialogs.showSnack(msg: 'Workout $status successfully');
+        _selectedSessionIds.remove(sessionId);
         _fetchPendingVerifications();
         _hasFetchedHistory = false;
         if (_tabController.index == 1) {
@@ -349,6 +363,160 @@ class _TrainerPendingVerificationsScreenState
     } catch (e) {
       Dialogs.showSnack(msg: 'Error: ${e.toString()}');
     }
+  }
+
+  Future<void> _executeBulkVerification(
+    List<int> sessionIds,
+    String remarks,
+  ) async {
+    if (sessionIds.isEmpty) return;
+
+    setState(() {
+      _isBulkVerifying = true;
+    });
+
+    try {
+      final response = await TrainerRepository().bulkVerifyWorkoutSessions(
+        sessionIds: sessionIds,
+        remarks: remarks.isNotEmpty ? remarks : 'Batch verified by trainer',
+      );
+
+      reportsRefreshTrigger.value++;
+      final msg = response.message.isNotEmpty
+          ? response.message
+          : 'Successfully verified ${response.successCount} workout session(s).';
+
+      if (response.failureCount > 0) {
+        Dialogs.showSnack(
+          msg: '$msg (${response.failureCount} failed)',
+        );
+      } else {
+        Dialogs.showSnack(msg: msg);
+      }
+
+      setState(() {
+        _selectedSessionIds.clear();
+        _isSelectionMode = false;
+      });
+      await _fetchPendingVerifications();
+      _hasFetchedHistory = false;
+      if (_tabController.index == 1) {
+        await _fetchVerificationHistory();
+      }
+    } catch (e) {
+      Dialogs.showSnack(msg: 'Bulk verification failed: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBulkVerifying = false;
+        });
+      }
+    }
+  }
+
+  void _showBulkVerificationDialog() {
+    final count = _selectedSessionIds.length;
+    if (count == 0) return;
+
+    final remarksController =
+        TextEditingController(text: 'Batch verified by trainer');
+
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  const Icon(Icons.done_all, color: Colors.green, size: 24),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Bulk Verify Workouts',
+                      style: AppStyles.text18Px.poppins.w600.dark,
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Are you sure you want to verify $count selected workout session${count > 1 ? 's' : ''} in a single batch?',
+                    style: AppStyles.text14Px.poppins.w400.copyWith(
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: remarksController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: 'Add remarks (optional)',
+                      labelText: 'Remarks',
+                      hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                        color: AppColors.textGrey,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed:
+                      _isBulkVerifying ? null : () => Navigator.pop(context),
+                  child: Text(
+                    'Cancel',
+                    style: AppStyles.text14Px.poppins.w500.copyWith(
+                      color: AppColors.textGrey,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: _isBulkVerifying
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                          unawaited(
+                            _executeBulkVerification(
+                              _selectedSessionIds.toList(),
+                              remarksController.text.trim(),
+                            ),
+                          );
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Verify All ($count)',
+                    style: AppStyles.text14Px.poppins.w600.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   void _showVerificationDialog(
@@ -441,6 +609,147 @@ class _TrainerPendingVerificationsScreenState
     );
   }
 
+  List<int> _getVisiblePendingSessionIds() {
+    final rawPendingList = _pendingVerifications;
+    final pendingList = rawPendingList.where((item) {
+      if (_pendingTypeFilter == 'assigned' && !_isAssignedWorkout(item)) {
+        return false;
+      }
+      if (_pendingTypeFilter == 'self' && _isAssignedWorkout(item)) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    return pendingList
+        .map((item) => item['session_id'] as int? ?? item['id'] as int? ?? 0)
+        .where((id) => id > 0)
+        .toList();
+  }
+
+  Widget _buildMoreMenu() {
+    final visibleIds = _getVisiblePendingSessionIds();
+    final hasItems = visibleIds.isNotEmpty;
+
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert, color: AppColors.textDark),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      onSelected: (value) {
+        if (value == 'select') {
+          setState(() {
+            _isSelectionMode = true;
+          });
+        } else if (value == 'select_all') {
+          setState(() {
+            _isSelectionMode = true;
+            _selectedSessionIds.addAll(visibleIds);
+          });
+        } else if (value == 'deselect_all') {
+          setState(_selectedSessionIds.clear);
+        } else if (value == 'cancel') {
+          setState(() {
+            _isSelectionMode = false;
+            _selectedSessionIds.clear();
+          });
+        }
+      },
+      itemBuilder: (context) {
+        if (!_isSelectionMode) {
+          return [
+            PopupMenuItem(
+              value: 'select',
+              enabled: hasItems,
+              child: const Row(
+                children: [
+                  Icon(Icons.check_circle_outline, size: 20, color: AppColors.textDark),
+                  SizedBox(width: 12),
+                  Text('Select'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'select_all',
+              enabled: hasItems,
+              child: const Row(
+                children: [
+                  Icon(Icons.done_all, size: 20, color: AppColors.textDark),
+                  SizedBox(width: 12),
+                  Text('Select All'),
+                ],
+              ),
+            ),
+          ];
+        } else {
+          final isAllSelected =
+              hasItems && visibleIds.every(_selectedSessionIds.contains);
+          return [
+            PopupMenuItem(
+              value: isAllSelected ? 'deselect_all' : 'select_all',
+              enabled: hasItems,
+              child: Row(
+                children: [
+                  Icon(
+                    isAllSelected ? Icons.remove_done : Icons.done_all,
+                    size: 20,
+                    color: AppColors.textDark,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(isAllSelected ? 'Deselect All' : 'Select All'),
+                ],
+              ),
+            ),
+            if (_selectedSessionIds.isNotEmpty && !isAllSelected)
+              const PopupMenuItem(
+                value: 'deselect_all',
+                child: Row(
+                  children: [
+                    Icon(Icons.remove_done, size: 20, color: AppColors.textDark),
+                    SizedBox(width: 12),
+                    Text('Deselect All'),
+                  ],
+                ),
+              ),
+            const PopupMenuItem(
+              value: 'cancel',
+              child: Row(
+                children: [
+                  Icon(Icons.close, size: 20, color: Colors.red),
+                  SizedBox(width: 12),
+                  Text('Cancel Selection', style: TextStyle(color: Colors.red)),
+                ],
+              ),
+            ),
+          ];
+        }
+      },
+    );
+  }
+
+  Widget _buildRoundSelector(bool isSelected) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isSelected ? AppColors.primary : Colors.transparent,
+        border: Border.all(
+          color: isSelected ? AppColors.primary : AppColors.borderGrey,
+          width: 2,
+        ),
+      ),
+      child: isSelected
+          ? const Icon(
+              Icons.check,
+              size: 14,
+              color: Colors.white,
+            )
+          : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -448,12 +757,29 @@ class _TrainerPendingVerificationsScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: const PopButton().center,
+        leading: _isSelectionMode
+            ? IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textDark),
+                onPressed: () {
+                  setState(() {
+                    _isSelectionMode = false;
+                    _selectedSessionIds.clear();
+                  });
+                },
+              )
+            : const PopButton().center,
         centerTitle: false,
         title: Text(
-          'Verifications',
+          _isSelectionMode
+              ? (_selectedSessionIds.isEmpty
+                  ? 'Select Workouts'
+                  : '${_selectedSessionIds.length} Selected')
+              : 'Verifications',
           style: AppStyles.text18Px.poppins.w600.dark,
         ),
+        actions: [
+          if (_tabController.index == 0) _buildMoreMenu(),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primary,
@@ -724,6 +1050,8 @@ class _TrainerPendingVerificationsScreenState
             ],
           ),
         ),
+        if (_isSelectionMode && pendingList.isNotEmpty)
+          _buildSelectAllBar(pendingList),
         Expanded(
           child:
               _isLoadingPending
@@ -782,9 +1110,22 @@ class _TrainerPendingVerificationsScreenState
                         }
                       }
 
+                      final isSelected =
+                          sessionId > 0 && _selectedSessionIds.contains(sessionId);
+
                       return GestureDetector(
                         onTap: () {
-                          if (sessionId > 0) {
+                          if (_isSelectionMode) {
+                            if (sessionId > 0) {
+                              setState(() {
+                                if (isSelected) {
+                                  _selectedSessionIds.remove(sessionId);
+                                } else {
+                                  _selectedSessionIds.add(sessionId);
+                                }
+                              });
+                            }
+                          } else if (sessionId > 0) {
                             Navigator.push(
                               context,
                               MaterialPageRoute<void>(
@@ -798,15 +1139,31 @@ class _TrainerPendingVerificationsScreenState
                             );
                           }
                         },
+                        onLongPress: () {
+                          if (!_isSelectionMode && sessionId > 0) {
+                            setState(() {
+                              _isSelectionMode = true;
+                              _selectedSessionIds.add(sessionId);
+                            });
+                          }
+                        },
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isSelected
+                                ? AppColors.primary.withValues(alpha: 0.04)
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : Colors.transparent,
+                              width: 1.5,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.03),
+                                color: Colors.black.withValues(alpha: 0.03),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -818,6 +1175,27 @@ class _TrainerPendingVerificationsScreenState
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  if (_isSelectionMode && sessionId > 0) ...[
+                                    GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        setState(() {
+                                          if (isSelected) {
+                                            _selectedSessionIds.remove(sessionId);
+                                          } else {
+                                            _selectedSessionIds.add(sessionId);
+                                          }
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 12,
+                                          top: 14,
+                                        ),
+                                        child: _buildRoundSelector(isSelected),
+                                      ),
+                                    ),
+                                  ],
                                   GestureDetector(
                                     behavior: HitTestBehavior.opaque,
                                     onTap: () {
@@ -985,7 +1363,162 @@ class _TrainerPendingVerificationsScreenState
                     },
                   ),
         ),
+        if (_selectedSessionIds.isNotEmpty) _buildBulkActionBar(),
       ],
+    );
+  }
+
+  Widget _buildSelectAllBar(List<Map<String, dynamic>> pendingList) {
+    final visibleIds = pendingList
+        .map((item) => item['session_id'] as int? ?? item['id'] as int? ?? 0)
+        .where((id) => id > 0)
+        .toList();
+    final isAllSelected = visibleIds.isNotEmpty &&
+        visibleIds.every((id) => _selectedSessionIds.contains(id));
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                if (isAllSelected) {
+                  _selectedSessionIds.removeAll(visibleIds);
+                } else {
+                  _selectedSessionIds.addAll(visibleIds);
+                }
+              });
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildRoundSelector(isAllSelected),
+                  const SizedBox(width: 8),
+                  Text(
+                    isAllSelected
+                        ? 'Deselect All'
+                        : 'Select All (${visibleIds.length})',
+                    style: AppStyles.text13Px.poppins.w500.copyWith(
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isSelectionMode = false;
+                _selectedSessionIds.clear();
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Done',
+                style: AppStyles.text12Px.poppins.w600.copyWith(
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBulkActionBar() {
+    final count = _selectedSessionIds.length;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '$count Selected',
+                style: AppStyles.text14Px.poppins.w600.copyWith(
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const Spacer(),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _selectedSessionIds.clear();
+                });
+              },
+              child: Text(
+                'Clear',
+                style: AppStyles.text14Px.poppins.w500.copyWith(
+                  color: AppColors.textGrey,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton.icon(
+              onPressed: _isBulkVerifying ? null : _showBulkVerificationDialog,
+              icon: _isBulkVerifying
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.done_all,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+              label: Text(
+                'Verify ($count)',
+                style: AppStyles.text14Px.poppins.w600.copyWith(
+                  color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

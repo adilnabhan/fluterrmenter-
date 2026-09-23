@@ -172,6 +172,186 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
     return gyms.toList();
   }
 
+  DateTime? _parseAnyDate(String? str) {
+    if (str == null || str.isEmpty || str == 'null') return null;
+    try {
+      final trimmed = str.trim();
+      if (trimmed.length >= 10 && trimmed[4] == '-' && trimmed[7] == '-') {
+        final parts = trimmed.substring(0, 10).split('-');
+        return DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
+      }
+      return DateTime.parse(trimmed);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Map<String, dynamic> _evaluateClientStatus(Map<String, dynamic> client) {
+    final List<Map<String, dynamic>> allMemberships = [];
+
+    final rawList = client['memberships'] ?? client['all_memberships'];
+    if (rawList is List) {
+      for (var item in rawList) {
+        if (item is Map) {
+          allMemberships.add(Map<String, dynamic>.from(item));
+        }
+      }
+    }
+
+    if (client['membership_details'] is Map) {
+      allMemberships.add(
+        Map<String, dynamic>.from(client['membership_details'] as Map),
+      );
+    }
+
+    if (client['active_membership'] is Map) {
+      allMemberships.add(
+        Map<String, dynamic>.from(client['active_membership'] as Map),
+      );
+    }
+
+    if (client['customer_membership'] is Map) {
+      allMemberships.add(
+        Map<String, dynamic>.from(client['customer_membership'] as Map),
+      );
+    }
+
+    // Direct Boolean Flags
+    final bool? isActiveMember =
+        client['is_active_member'] as bool? ??
+        client['is_membership_active'] as bool?;
+    final bool? isUserActive = client['is_active'] as bool?;
+
+    DateTime? latestEndDate;
+    String? latestStatus;
+
+    // Check root client fields
+    final rootEndStr = (client['membership_end_date'] ??
+            client['end_date'] ??
+            client['expiry_date'] ??
+            client['expire_date'] ??
+            client['valid_to'])
+        ?.toString();
+    final parsedRootEnd = _parseAnyDate(rootEndStr);
+    if (parsedRootEnd != null) {
+      latestEndDate = parsedRootEnd;
+    }
+
+    final rootStatus = (client['membership_status'] ?? client['status'])
+        ?.toString()
+        .toLowerCase();
+    if (rootStatus != null && rootStatus.isNotEmpty && rootStatus != 'null') {
+      latestStatus = rootStatus;
+    }
+
+    for (var mem in allMemberships) {
+      final endStr = (mem['end_date'] ??
+              mem['membership_end_date'] ??
+              mem['expiry_date'] ??
+              mem['expire_date'] ??
+              mem['valid_to'])
+          ?.toString();
+      final parsedEnd = _parseAnyDate(endStr);
+      if (parsedEnd != null) {
+        if (latestEndDate == null || parsedEnd.isAfter(latestEndDate)) {
+          latestEndDate = parsedEnd;
+        }
+      }
+      final status = (mem['status'] ?? mem['membership_status'])
+          ?.toString()
+          .toLowerCase();
+      if (status != null && status.isNotEmpty && status != 'null') {
+        latestStatus = status;
+      }
+    }
+
+    final String resolvedStatus = (client['resolved_status'] ?? client['status'])
+        ?.toString()
+        .toLowerCase()
+        .trim() ?? '';
+
+    // Check frozen / paused / hold
+    if (resolvedStatus == 'frozen' ||
+        resolvedStatus == 'paused' ||
+        resolvedStatus == 'hold' ||
+        latestStatus == 'frozen' ||
+        latestStatus == 'paused' ||
+        latestStatus == 'hold') {
+      return {
+        'text': 'Frozen',
+        'color': const Color(0xff0288D1),
+        'bgColor': const Color(0xffE1F5FE),
+        'isExpired': false,
+      };
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Explicit status expired / inactive / completed or isActiveMember == false
+    if (resolvedStatus == 'expired' ||
+        latestStatus == 'expired' ||
+        latestStatus == 'inactive' ||
+        latestStatus == 'completed' ||
+        isActiveMember == false ||
+        isUserActive == false) {
+      return {
+        'text': 'Expired',
+        'color': const Color(0xffD32F2F),
+        'bgColor': const Color(0xffFFEBEE),
+        'isExpired': true,
+      };
+    }
+
+    // End date checking
+    if (latestEndDate != null) {
+      final endDay = DateTime(
+        latestEndDate.year,
+        latestEndDate.month,
+        latestEndDate.day,
+      );
+      if (endDay.isBefore(today)) {
+        return {
+          'text': 'Expired',
+          'color': const Color(0xffD32F2F),
+          'bgColor': const Color(0xffFFEBEE),
+          'isExpired': true,
+        };
+      }
+    }
+
+    if (isActiveMember == true ||
+        resolvedStatus == 'active' ||
+        latestStatus == 'active') {
+      return {
+        'text': 'Active',
+        'color': const Color(0xff2E7D32),
+        'bgColor': const Color(0xffE8F5E9),
+        'isExpired': false,
+      };
+    }
+
+    if (latestEndDate != null) {
+      return {
+        'text': 'Active',
+        'color': const Color(0xff2E7D32),
+        'bgColor': const Color(0xffE8F5E9),
+        'isExpired': false,
+      };
+    }
+
+    return {
+      'text': 'Active',
+      'color': const Color(0xff2E7D32),
+      'bgColor': const Color(0xffE8F5E9),
+      'isExpired': false,
+    };
+  }
+
   List<Map<String, dynamic>> get _filteredClients {
     return _clients.where((client) {
       final name = (client['name'] as String? ?? '').toLowerCase();
@@ -823,6 +1003,11 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                             _submittingMap[customerId] ?? false;
                         final imgUrl = client['profile_picture'];
 
+                        final statusInfo = _evaluateClientStatus(client);
+                        final String statusText = statusInfo['text'] as String;
+                        final Color statusColor = statusInfo['color'] as Color;
+                        final Color statusBgColor = statusInfo['bgColor'] as Color;
+
                         final String? todayWorkoutName =
                             client['today_workout_name'] as String?;
                         final String? previousWorkoutName =
@@ -854,50 +1039,100 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: AppColors.iconBackground,
-                                      backgroundImage:
-                                          imgUrl != null
-                                              ? NetworkImage(imgUrl as String)
-                                              : null,
-                                      child:
-                                          imgUrl == null
-                                              ? const Icon(
-                                                Icons.person,
-                                                color: AppColors.primary,
-                                              )
-                                              : null,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            name,
-                                            style:
-                                                AppStyles
-                                                    .text14Px
-                                                    .poppins
-                                                    .w600
-                                                    .dark,
-                                          ),
-                                          Text(
-                                            organizationName,
-                                            style: AppStyles
-                                                .text12Px
-                                                .poppins
-                                                .w400
-                                                .copyWith(
-                                                  color: AppColors.textGrey,
-                                                ),
-                                          ),
-                                        ],
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (imgUrl != null &&
+                                              (imgUrl as String).trim().isNotEmpty) {
+                                            Dialogs.showEnlargedProfilePhoto(
+                                              context,
+                                              (imgUrl as String).trim(),
+                                              name: name,
+                                            );
+                                          } else {
+                                            unawaited(Dialogs.showSnack(
+                                              msg: 'No profile photo uploaded for $name',
+                                            ));
+                                          }
+                                        },
+                                        child: CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: AppColors.iconBackground,
+                                          backgroundImage:
+                                              imgUrl != null
+                                                  ? NetworkImage(imgUrl as String)
+                                                  : null,
+                                          child:
+                                              imgUrl == null
+                                                  ? const Icon(
+                                                    Icons.person,
+                                                    color: AppColors.primary,
+                                                  )
+                                                  : null,
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Flexible(
+                                                  child: Text(
+                                                    name,
+                                                    style: AppStyles
+                                                        .text14Px
+                                                        .poppins
+                                                        .w600
+                                                        .dark,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: statusBgColor,
+                                                    borderRadius:
+                                                        BorderRadius.circular(4),
+                                                  ),
+                                                  child: Text(
+                                                    statusText,
+                                                    style: AppStyles
+                                                        .text10Px
+                                                        .poppins
+                                                        .w600
+                                                        .copyWith(
+                                                      color: statusColor,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              organizationName,
+                                              style: AppStyles
+                                                  .text12Px
+                                                  .poppins
+                                                  .w400
+                                                  .copyWith(
+                                                    color: AppColors.textGrey,
+                                                  ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     const SizedBox(width: 8),
                                     isSubmitting
                                         ? const SizedBox(

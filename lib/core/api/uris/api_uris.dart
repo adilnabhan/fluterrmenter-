@@ -255,6 +255,11 @@ final class ApiUris {
   static final pendingVerifications = '${_v1}mentor/verification/pending/';
   static String verifyWorkoutSession(int sessionId) =>
       '${_v1}mentor/verification/verify/$sessionId/';
+  static final bulkVerifyWorkoutSessions = '${_v1}mentor/verification/verify/';
+  static final bulkVerifyWorkoutSessionsAlias =
+      '${_v1}mentor/verification/bulk-verify/';
+  static final trainerBulkVerifyWorkoutSessions =
+      '${_v1}trainer/verification/verify/';
   static String workoutSessionDetails(int sessionId) =>
       '${_v1}mentor/verification/session/$sessionId/';
   static final verificationHistory = '${_v1}mentor/verification/history/';

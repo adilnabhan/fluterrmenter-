@@ -354,6 +354,168 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
     }
   }
 
+  DateTime? _parseAnyDate(String? str) {
+    if (str == null || str.isEmpty || str == 'null') return null;
+    try {
+      final trimmed = str.trim();
+      if (trimmed.length >= 10 && trimmed[4] == '-' && trimmed[7] == '-') {
+        final parts = trimmed.substring(0, 10).split('-');
+        return DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
+      }
+      return DateTime.parse(trimmed);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Map<String, dynamic>? _evaluateClientStatus(Map<String, dynamic> client) {
+    final List<Map<String, dynamic>> allMemberships = [];
+
+    final rawList = client['memberships'] ?? client['all_memberships'];
+    if (rawList is List) {
+      for (var item in rawList) {
+        if (item is Map) {
+          allMemberships.add(Map<String, dynamic>.from(item));
+        }
+      }
+    }
+
+    if (client['membership_details'] is Map) {
+      allMemberships.add(
+        Map<String, dynamic>.from(client['membership_details'] as Map),
+      );
+    }
+
+    if (client['active_membership'] is Map) {
+      allMemberships.add(
+        Map<String, dynamic>.from(client['active_membership'] as Map),
+      );
+    }
+
+    if (client['customer_membership'] is Map) {
+      allMemberships.add(
+        Map<String, dynamic>.from(client['customer_membership'] as Map),
+      );
+    }
+
+    final bool? isActiveMember =
+        client['is_active_member'] as bool? ??
+        client['is_membership_active'] as bool?;
+    final bool? isUserActive = client['is_active'] as bool?;
+
+    DateTime? latestEndDate;
+    String? latestStatus;
+
+    final rootEndStr = (client['membership_end_date'] ??
+            client['end_date'] ??
+            client['expiry_date'] ??
+            client['expire_date'] ??
+            client['valid_to'])
+        ?.toString();
+    final parsedRootEnd = _parseAnyDate(rootEndStr);
+    if (parsedRootEnd != null) {
+      latestEndDate = parsedRootEnd;
+    }
+
+    final rootStatus = (client['membership_status'] ?? client['status'])
+        ?.toString()
+        .toLowerCase();
+    if (rootStatus != null && rootStatus.isNotEmpty && rootStatus != 'null') {
+      latestStatus = rootStatus;
+    }
+
+    for (var mem in allMemberships) {
+      final endStr = (mem['end_date'] ??
+              mem['membership_end_date'] ??
+              mem['expiry_date'] ??
+              mem['expire_date'] ??
+              mem['valid_to'])
+          ?.toString();
+      final parsedEnd = _parseAnyDate(endStr);
+      if (parsedEnd != null) {
+        if (latestEndDate == null || parsedEnd.isAfter(latestEndDate)) {
+          latestEndDate = parsedEnd;
+        }
+      }
+      final status = (mem['status'] ?? mem['membership_status'])
+          ?.toString()
+          .toLowerCase();
+      if (status != null && status.isNotEmpty && status != 'null') {
+        latestStatus = status;
+      }
+    }
+
+    final String resolvedStatus = (client['resolved_status'] ?? client['status'])
+        ?.toString()
+        .toLowerCase()
+        .trim() ?? '';
+
+    if (resolvedStatus == 'frozen' ||
+        resolvedStatus == 'paused' ||
+        resolvedStatus == 'hold' ||
+        latestStatus == 'frozen' ||
+        latestStatus == 'paused' ||
+        latestStatus == 'hold') {
+      return {
+        'text': 'Frozen',
+        'color': const Color(0xff0288D1),
+        'bgColor': const Color(0xffE1F5FE),
+        'isExpired': false,
+      };
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    if (resolvedStatus == 'expired' ||
+        latestStatus == 'expired' ||
+        latestStatus == 'inactive' ||
+        latestStatus == 'completed' ||
+        isActiveMember == false ||
+        isUserActive == false) {
+      return {
+        'text': 'Expired',
+        'color': const Color(0xffD32F2F),
+        'bgColor': const Color(0xffFFEBEE),
+        'isExpired': true,
+      };
+    }
+
+    if (latestEndDate != null) {
+      final endDay = DateTime(
+        latestEndDate.year,
+        latestEndDate.month,
+        latestEndDate.day,
+      );
+      if (endDay.isBefore(today)) {
+        return {
+          'text': 'Expired',
+          'color': const Color(0xffD32F2F),
+          'bgColor': const Color(0xffFFEBEE),
+          'isExpired': true,
+        };
+      }
+    }
+
+    if (isActiveMember == true ||
+        resolvedStatus == 'active' ||
+        latestStatus == 'active' ||
+        latestEndDate != null) {
+      return {
+        'text': 'Active',
+        'color': const Color(0xff2E7D32),
+        'bgColor': const Color(0xffE8F5E9),
+        'isExpired': false,
+      };
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -424,6 +586,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                               customer['is_assigned'] as bool? ?? false;
                           final bool isToggling =
                               _assigningMap[customerId] ?? false;
+                          final statusInfo = _evaluateClientStatus(customer);
 
                           return Container(
                             padding: const EdgeInsets.all(16),
@@ -444,6 +607,8 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                   child: ProfileImage(
                                     isEdit: false,
+                                    canViewFullImage: true,
+                                    name: name,
                                     url: pic ?? '',
                                     radius: 20,
                                   ),
@@ -454,14 +619,48 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        name,
-                                        style:
-                                            AppStyles
-                                                .text14Px
-                                                .poppins
-                                                .w500
-                                                .dark,
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              name,
+                                              style: AppStyles
+                                                  .text14Px
+                                                  .poppins
+                                                  .w500
+                                                  .dark,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (statusInfo != null) ...[
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                                vertical: 2,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: statusInfo['bgColor']
+                                                    as Color,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                statusInfo['text'] as String,
+                                                style: AppStyles
+                                                    .text10Px
+                                                    .poppins
+                                                    .w600
+                                                    .copyWith(
+                                                  color: statusInfo['color']
+                                                      as Color,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                       if (mobile != null &&
                                           mobile.isNotEmpty) ...[

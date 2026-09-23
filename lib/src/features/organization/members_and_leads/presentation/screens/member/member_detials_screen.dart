@@ -213,6 +213,8 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
               children: [
                 ProfileImage(
                   isEdit: false,
+                  canViewFullImage: true,
+                  name: '${data.firstName ?? ''} ${data.lastName ?? ''}'.trim(),
                   radius: 80.w,
                   url: data.profilePicture ?? '',
                 ),

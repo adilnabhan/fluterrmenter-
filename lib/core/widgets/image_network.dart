@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+
 //
 // ///
 // class ImageNetwork extends StatelessWidget {
@@ -79,20 +80,18 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 //   );
 // }
 
-
-
 ///
 class ImageNetwork extends StatelessWidget {
   ///
   const ImageNetwork(
-      this.imageUrl, {
-        super.key,
-        this.placeholderWidget,
-        this.errorWidget,
-        this.width,
-        this.height,
-        this.fit = BoxFit.cover,
-      });
+    this.imageUrl, {
+    super.key,
+    this.placeholderWidget,
+    this.errorWidget,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+  });
 
   /// image url
   final String? imageUrl;

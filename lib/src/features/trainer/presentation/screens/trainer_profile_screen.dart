@@ -124,7 +124,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         final data = res.data;
         List<dynamic> rawResults = [];
         if (data is Map) {
-          rawResults = data['transformation_images'] as List? ??
+          rawResults =
+              data['transformation_images'] as List? ??
               data['transformations'] as List? ??
               data['results'] as List? ??
               data['data'] as List? ??
@@ -144,9 +145,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           final otherItems = <Map<String, dynamic>>[];
 
           for (final item in rawResults) {
-            final map = item is Map<String, dynamic>
-                ? item
-                : Map<String, dynamic>.from(item as Map);
+            final map =
+                item is Map<String, dynamic>
+                    ? item
+                    : Map<String, dynamic>.from(item as Map);
             final type = (map['image_type'] ?? '').toString().toLowerCase();
             if (type == 'before') {
               beforeItems.add(map);
@@ -167,7 +169,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             final String afterUrl =
                 (after?['image'] ?? after?['image_url'] ?? '').toString();
             final String desc =
-                (after?['description'] ?? before?['description'] ?? '').toString();
+                (after?['description'] ?? before?['description'] ?? '')
+                    .toString();
 
             parsedTransformations.add({
               'id': after?['id'] ?? before?['id'],
@@ -337,28 +340,28 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             }).toList();
 
         final int? parsedClientsCount = int.tryParse(
-              (data['clients_count'] ??
-                      data['client_count'] ??
-                      data['clients'] ??
-                      data['total_clients'] ??
-                      mentorData?['clients_count'] ??
-                      mentorData?['client_count'] ??
-                      mentorData?['clients'] ??
-                      '')
-                  .toString(),
-            );
+          (data['clients_count'] ??
+                  data['client_count'] ??
+                  data['clients'] ??
+                  data['total_clients'] ??
+                  mentorData?['clients_count'] ??
+                  mentorData?['client_count'] ??
+                  mentorData?['clients'] ??
+                  '')
+              .toString(),
+        );
 
         final int? parsedVerifiedWorkoutsCount = int.tryParse(
-              (data['verified_workouts_count'] ??
-                      data['verified_workout_count'] ??
-                      data['verified_workouts'] ??
-                      data['total_verified_workouts'] ??
-                      mentorData?['verified_workouts_count'] ??
-                      mentorData?['verified_workout_count'] ??
-                      mentorData?['verified_workouts'] ??
-                      '')
-                  .toString(),
-            );
+          (data['verified_workouts_count'] ??
+                  data['verified_workout_count'] ??
+                  data['verified_workouts'] ??
+                  data['total_verified_workouts'] ??
+                  mentorData?['verified_workouts_count'] ??
+                  mentorData?['verified_workout_count'] ??
+                  mentorData?['verified_workouts'] ??
+                  '')
+              .toString(),
+        );
 
         final fetched = LoginSuccessModel(
           id: data['id'] as int?,
@@ -444,18 +447,20 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
 
     final appCubit = context.read<AppCubit>();
     final currentUser = appCubit.state.currentUser;
-    final trainerId = currentUser?.trainer?.id?.toString();
-
-    if (trainerId == null) {
-      // Fallback: If trainer ID is missing, just finish refresh.
-      return;
-    }
+    if (currentUser == null) return;
 
     try {
-      // Use the trainer's own basic details endpoint instead of the mentor endpoint
-      final res = await DioClient().dio.get(ApiUris.editTrainerBasicDetails);
-      if (res.statusCode == 200) {
-        final data = res.data as Map<String, dynamic>;
+      // Fetch the trainer's latest basic details
+      final res = await DioClient().dio.get(
+        ApiUris.editTrainerBasicDetails,
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        final responseMap = res.data is Map ? res.data as Map : {};
+        final data =
+            responseMap['data'] is Map
+                ? responseMap['data'] as Map
+                : responseMap;
 
         final portfolioRaw =
             data['portfolio_images'] is List
@@ -470,41 +475,75 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             }).toList();
 
         final int? refreshedClientsCount = int.tryParse(
-              (data['clients_count'] ??
-                      data['client_count'] ??
-                      data['clients'] ??
-                      data['total_clients'] ??
-                      '')
-                  .toString(),
-            );
+          (data['clients_count'] ??
+                  data['client_count'] ??
+                  data['clients'] ??
+                  data['total_clients'] ??
+                  '')
+              .toString(),
+        );
 
         final int? refreshedVerifiedWorkoutsCount = int.tryParse(
-              (data['verified_workouts_count'] ??
-                      data['verified_workout_count'] ??
-                      data['verified_workouts'] ??
-                      data['total_verified_workouts'] ??
-                      '')
-                  .toString(),
-            );
+          (data['verified_workouts_count'] ??
+                  data['verified_workout_count'] ??
+                  data['verified_workouts'] ??
+                  data['total_verified_workouts'] ??
+                  '')
+              .toString(),
+        );
 
-        final updatedUser = currentUser!.copyWith(
+        final rawProfilePic = data['profile_picture'] ??
+            data['profile_pic'] ??
+            data['profile_image'] ??
+            data['image'] ??
+            data['avatar'] ??
+            data['photo'];
+        final String? freshProfilePic = (rawProfilePic != null &&
+                rawProfilePic.toString().isNotEmpty &&
+                rawProfilePic.toString() != 'null')
+            ? rawProfilePic.toString()
+            : null;
+
+        // Evict cached images from memory & disk so updated pictures reflect immediately
+        if (currentUser.profilePicture != null &&
+            currentUser.profilePicture.toString().isNotEmpty) {
+          CachedNetworkImage.evictFromCache(currentUser.profilePicture.toString());
+        }
+        if (freshProfilePic != null && freshProfilePic.isNotEmpty) {
+          CachedNetworkImage.evictFromCache(freshProfilePic);
+        }
+
+        final updatedUser = currentUser.copyWith(
           firstName: data['first_name']?.toString() ?? currentUser.firstName,
           lastName: data['last_name']?.toString() ?? currentUser.lastName,
-          profilePicture:
-              data['profile_picture']?.toString() ?? currentUser.profilePicture,
+          profilePicture: freshProfilePic ?? currentUser.profilePicture,
           bio: data['bio']?.toString() ?? currentUser.bio,
           location: data['location']?.toString() ?? currentUser.location,
           gender: data['gender']?.toString() ?? currentUser.gender,
-          dateOfBirth: (data['date_of_birth'] ?? data['dob'] ?? data['dateOfBirth'])?.toString() ?? currentUser.dateOfBirth,
-          experienceYears: int.tryParse((data['experience_years'] ?? data['experience_year'] ?? data['experience'])?.toString() ?? '') ?? currentUser.experienceYears,
+          dateOfBirth:
+              (data['date_of_birth'] ?? data['dob'] ?? data['dateOfBirth'])
+                  ?.toString() ??
+              currentUser.dateOfBirth,
+          experienceYears:
+              int.tryParse(
+                (data['experience_years'] ??
+                            data['experience_year'] ??
+                            data['experience'])
+                        ?.toString() ??
+                    '',
+              ) ??
+              currentUser.experienceYears,
           instagram: data['instagram']?.toString() ?? currentUser.instagram,
           facebook: data['facebook']?.toString() ?? currentUser.facebook,
           youtube: data['youtube']?.toString() ?? currentUser.youtube,
           whatsapp: data['whatsapp']?.toString() ?? currentUser.whatsapp,
           trainer:
               currentUser.trainer?.copyWith(
-                clientsCount: refreshedClientsCount ?? currentUser.trainer?.clientsCount,
-                verifiedWorkoutsCount: refreshedVerifiedWorkoutsCount ?? currentUser.trainer?.verifiedWorkoutsCount,
+                clientsCount:
+                    refreshedClientsCount ?? currentUser.trainer?.clientsCount,
+                verifiedWorkoutsCount:
+                    refreshedVerifiedWorkoutsCount ??
+                    currentUser.trainer?.verifiedWorkoutsCount,
                 portfolioImages: mappedPortfolio,
               ) ??
               TrainerModel(
@@ -704,8 +743,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                     children: List.generate(
                                       heroCarousel.length,
                                       (i) {
-                                        final isActive =
-                                            i == _heroCurrentIndex;
+                                        final isActive = i == _heroCurrentIndex;
                                         return AnimatedContainer(
                                           duration: const Duration(
                                             milliseconds: 250,
@@ -756,9 +794,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: OutlinedButton.icon(
                                           style: OutlinedButton.styleFrom(
-                                            backgroundColor: context
-                                                .colors
-                                                .card
+                                            backgroundColor: context.colors.card
                                                 .withOpacity(0.9),
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 12,
@@ -908,9 +944,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
 
   Widget _buildCoverBackdrop(dynamic user) {
     final profilePic = user?.profilePicture?.toString();
-    final hasProfilePic = profilePic != null &&
-        profilePic.isNotEmpty &&
-        profilePic != 'null';
+    final hasProfilePic =
+        profilePic != null && profilePic.isNotEmpty && profilePic != 'null';
 
     return Stack(
       fit: StackFit.expand,
@@ -931,9 +966,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           ),
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              color: Colors.black.withOpacity(0.45),
-            ),
+            child: Container(color: Colors.black.withOpacity(0.45)),
           ),
         ] else ...[
           Container(
@@ -966,9 +999,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.45),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                  ),
+                  border: Border.all(color: Colors.white.withOpacity(0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1014,36 +1045,45 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         children: [
           Row(
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: ClipOval(
-                  child:
-                      user?.profilePicture?.toString().isNotEmpty == true
-                          ? ImageNetwork(
-                            user!.profilePicture!.toString(),
-                            fit: BoxFit.cover,
-                            errorWidget: const Icon(
+              GestureDetector(
+                onTap: () {
+                  Dialogs.showEnlargedProfilePhoto(
+                    context,
+                    user?.profilePicture?.toString(),
+                    name: '\ '.trim(),
+                  );
+                },
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child:
+                        user?.profilePicture?.toString().isNotEmpty == true
+                            ? ImageNetwork(
+                              user!.profilePicture!.toString(),
+                              fit: BoxFit.cover,
+                              errorWidget: const Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Colors.grey,
+                              ),
+                            )
+                            : const Icon(
                               Icons.person,
                               size: 40,
                               color: Colors.grey,
                             ),
-                          )
-                          : const Icon(
-                            Icons.person,
-                            size: 40,
-                            color: Colors.grey,
-                          ),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -1105,11 +1145,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                     shape: BoxShape.circle,
                     border: Border.all(color: context.colors.border),
                   ),
-                  child: Icon(
-                    Icons.edit,
-                    size: 14,
-                    color: context.colors.icon,
-                  ),
+                  child: Icon(Icons.edit, size: 14, color: context.colors.icon),
                 ),
               ),
             ),
@@ -1397,9 +1433,21 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         if (_isLoadingTransformations)
           Row(
             children: const [
-              Expanded(child: KShimmer(width: double.infinity, height: 160, radius: 16)),
+              Expanded(
+                child: KShimmer(
+                  width: double.infinity,
+                  height: 160,
+                  radius: 16,
+                ),
+              ),
               SizedBox(width: 12),
-              Expanded(child: KShimmer(width: double.infinity, height: 160, radius: 16)),
+              Expanded(
+                child: KShimmer(
+                  width: double.infinity,
+                  height: 160,
+                  radius: 16,
+                ),
+              ),
             ],
           )
         else if (itemCount == 0)
@@ -1667,8 +1715,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                           top: 12,
                           right: 12,
                           child: InkWell(
-                            onTap:
-                                () => _deleteTransformation(trans),
+                            onTap: () => _deleteTransformation(trans),
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: const BoxDecoration(
@@ -1900,7 +1947,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                 onTap: () => _showAllReviewsSheet(context),
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 4,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1970,22 +2020,24 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: _reviews.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No reviews yet',
-                          style: AppStyles.text14Px.poppins.w500.copyWith(
-                            color: AppColors.textGrey,
+                child:
+                    _reviews.isEmpty
+                        ? Center(
+                          child: Text(
+                            'No reviews yet',
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: AppColors.textGrey,
+                            ),
                           ),
+                        )
+                        : ListView.separated(
+                          itemCount: _reviews.length,
+                          separatorBuilder:
+                              (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            return _buildReviewItem(_reviews[index]);
+                          },
                         ),
-                      )
-                    : ListView.separated(
-                        itemCount: _reviews.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          return _buildReviewItem(_reviews[index]);
-                        },
-                      ),
               ),
             ],
           ),
@@ -2052,11 +2104,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                         : null,
                 child:
                     avatar == null || avatar.isEmpty
-                        ? const Icon(
-                            Icons.person,
-                            size: 18,
-                            color: Colors.grey,
-                          )
+                        ? const Icon(Icons.person, size: 18, color: Colors.grey)
                         : null,
               ),
               const SizedBox(width: 12),
@@ -2222,16 +2270,28 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                   Row(
                     children: const [
                       Expanded(
-                        child: KShimmer(width: double.infinity, height: 160, radius: 16),
+                        child: KShimmer(
+                          width: double.infinity,
+                          height: 160,
+                          radius: 16,
+                        ),
                       ),
                       SizedBox(width: 12),
                       Expanded(
-                        child: KShimmer(width: double.infinity, height: 160, radius: 16),
+                        child: KShimmer(
+                          width: double.infinity,
+                          height: 160,
+                          radius: 16,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const KShimmer(width: double.infinity, height: 54, radius: 16),
+                  const KShimmer(
+                    width: double.infinity,
+                    height: 54,
+                    radius: 16,
+                  ),
                 ],
               ),
             ),
@@ -2269,7 +2329,8 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
           currentUser?.organizationId ??
           currentUser?.trainer?.organizationId ??
           currentUser?.mentor?.org?.id;
-      final trainerId = widget.trainerId ??
+      final trainerId =
+          widget.trainerId ??
           currentUser?.trainer?.id?.toString() ??
           currentUser?.mentor?.id?.toString() ??
           currentUser?.id?.toString();

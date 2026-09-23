@@ -728,33 +728,33 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                   Row(
                                     children: [
                                       // Profile picture
-                                      Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: AppColors.iconBackground,
-                                        ),
-                                        child: ClipOval(
-                                          child:
-                                              pic != null
-                                                  ? Image.network(
-                                                    pic,
-                                                    fit: BoxFit.cover,
-                                                    errorBuilder:
-                                                        (_, __, ___) =>
-                                                            const Icon(
-                                                              Icons.person,
-                                                              color:
-                                                                  AppColors
-                                                                      .primary,
-                                                            ),
-                                                  )
-                                                  : const Icon(
-                                                    Icons.person,
-                                                    color: AppColors.primary,
-                                                  ),
-                                        ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (pic != null && pic.trim().isNotEmpty) {
+                                            _showEnlargedProfilePhoto(
+                                              context,
+                                              pic.trim(),
+                                            );
+                                          } else {
+                                            unawaited(Dialogs.showSnack(
+                                              msg: 'No profile photo uploaded for $name',
+                                            ));
+                                          }
+                                        },
+                                        child: (pic != null &&
+                                                pic.trim().isNotEmpty &&
+                                                pic.trim() != 'null')
+                                            ? ClipOval(
+                                                child: ImageNetwork(
+                                                  pic.trim(),
+                                                  width: 40,
+                                                  height: 40,
+                                                  fit: BoxFit.cover,
+                                                  errorWidget:
+                                                      _buildInitialAvatar(name),
+                                                ),
+                                              )
+                                            : _buildInitialAvatar(name),
                                       ),
                                       const SizedBox(width: 12),
                                       // Name and Category
@@ -912,7 +912,42 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     );
   }
 
-  Widget _buildClientsShimmer() {
+  void _showEnlargedProfilePhoto(
+    BuildContext context,
+    String imageUrl,
+  ) {
+    Dialogs.showEnlargedProfilePhoto(context, imageUrl);
+  }
+
+  Widget _buildInitialAvatar(String name) {
+    final trimmed = name.trim();
+    String initial = 'C';
+    for (final rune in trimmed.runes) {
+      final char = String.fromCharCode(rune);
+      if (RegExp(r'[a-zA-Z0-9]').hasMatch(char)) {
+        initial = char.toUpperCase();
+        break;
+      }
+    }
+
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primary.withValues(alpha: 0.1),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: AppStyles.text16Px.poppins.w600.copyWith(
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+
+    Widget _buildClientsShimmer() {
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),

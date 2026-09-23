@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/trainer/domain/models/bulk_workout_verification_model.dart';
 
 class WorkoutsFetchResult {
   const WorkoutsFetchResult({
@@ -298,5 +299,39 @@ class TrainerRepository {
     } catch (_) {}
 
     return false;
+  }
+
+  Future<BulkWorkoutVerificationResponse> bulkVerifyWorkoutSessions({
+    required List<int> sessionIds,
+    String verificationStatus = 'verified',
+    String? remarks,
+  }) async {
+    final payload = <String, dynamic>{
+      'session_ids': sessionIds,
+      'verification_status': verificationStatus,
+      if (remarks != null && remarks.trim().isNotEmpty)
+        'remarks': remarks.trim()
+      else
+        'remarks': 'Batch verified by trainer',
+    };
+
+    final response = await _dio.post<dynamic>(
+      ApiUris.bulkVerifyWorkoutSessions,
+      data: payload,
+      options: Options(headers: {'X-Platform': platformSource}),
+    );
+
+    if (response.data is Map) {
+      return BulkWorkoutVerificationResponse.fromJson(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    }
+
+    return BulkWorkoutVerificationResponse(
+      message: 'Verified ${sessionIds.length} workout session(s)',
+      successCount: sessionIds.length,
+      failureCount: 0,
+      totalCount: sessionIds.length,
+    );
   }
 }

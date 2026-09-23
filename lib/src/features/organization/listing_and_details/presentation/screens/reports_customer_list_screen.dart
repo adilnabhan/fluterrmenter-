@@ -258,11 +258,25 @@ class _ReportsCustomerListScreenState extends State<ReportsCustomerListScreen> {
                               child: Row(
                                 children: [
                                   // Avatar
-                                  ClipOval(
-                                    child: ProfileImage(
-                                      isEdit: false,
-                                      url: image,
-                                      radius: 44,
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (image.isNotEmpty) {
+                                        _showEnlargedProfilePhoto(
+                                          context,
+                                          image,
+                                        );
+                                      } else {
+                                        unawaited(Dialogs.showSnack(
+                                          msg: 'No profile photo uploaded for $name',
+                                        ));
+                                      }
+                                    },
+                                    child: ClipOval(
+                                      child: ProfileImage(
+                                        isEdit: false,
+                                        url: image,
+                                        radius: 44,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 14),
@@ -344,5 +358,12 @@ class _ReportsCustomerListScreenState extends State<ReportsCustomerListScreen> {
         ],
       ),
     );
+  }
+
+  void _showEnlargedProfilePhoto(
+    BuildContext context,
+    String imageUrl,
+  ) {
+    Dialogs.showEnlargedProfilePhoto(context, imageUrl);
   }
 }

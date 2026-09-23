@@ -77,4 +77,83 @@ abstract class Dialogs {
       },
     );
   }
+
+  /// Show enlarged circular profile photo dialog (Instagram style)
+  static void showEnlargedProfilePhoto(
+    BuildContext context,
+    String? imageUrl, {
+    String? name,
+  }) {
+    final url = imageUrl?.trim() ?? '';
+    if (url.isEmpty || url == 'null') {
+      unawaited(showSnack(
+        msg: name != null && name.trim().isNotEmpty
+            ? 'No profile photo uploaded for ${name.trim()}'
+            : 'No profile photo uploaded',
+      ));
+      return;
+    }
+
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.65),
+      barrierDismissible: true,
+      builder: (ctx) {
+        final diameter =
+            (MediaQuery.of(ctx).size.width * 0.58).clamp(200.0, 240.0);
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.of(ctx).pop(),
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: EdgeInsets.zero,
+            child: Center(
+              child: Container(
+                width: diameter,
+                height: diameter,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.iconBackground,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 28,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: Image.network(
+                    url,
+                    width: diameter,
+                    height: diameter,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                          strokeWidth: 2.5,
+                        ),
+                      );
+                    },
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(
+                        Icons.person,
+                        size: 80,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

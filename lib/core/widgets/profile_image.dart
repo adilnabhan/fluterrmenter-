@@ -7,6 +7,9 @@ class ProfileImage extends StatefulWidget {
     this.url,
     this.onChanged,
     this.radius,
+    this.canViewFullImage = false,
+    this.name,
+    this.onTap,
     super.key,
   });
 
@@ -15,6 +18,9 @@ class ProfileImage extends StatefulWidget {
   final BoxFit fit;
   final void Function(XFile? image)? onChanged;
   final bool isEdit;
+  final bool canViewFullImage;
+  final String? name;
+  final VoidCallback? onTap;
 
   @override
   State<ProfileImage> createState() => _ProfileImageState();
@@ -23,31 +29,43 @@ class ProfileImage extends StatefulWidget {
 class _ProfileImageState extends State<ProfileImage> {
   XFile? _localImage;
 
-
-
   @override
   Widget build(BuildContext context) {
     final radius = widget.radius ?? 111.r;
     final iconSize = widget.radius != null ? widget.radius! * .4 : 42.w;
+
+    VoidCallback? resolvedOnTap;
+    if (widget.onTap != null) {
+      resolvedOnTap = widget.onTap;
+    } else if (widget.isEdit) {
+      resolvedOnTap = () {
+        ImagePickerDialog(
+          needRemove: _localImage?.path.isNotEmpty ?? false,
+          onPickedImage: (image) {
+            if (image != null) {
+              _localImage = image;
+              widget.onChanged?.call(_localImage);
+            } else {
+              _localImage = XFile('');
+            }
+            if (!mounted) return;
+            setState(() {});
+          },
+        ).show(context);
+      };
+    } else if (widget.canViewFullImage) {
+      resolvedOnTap = () {
+        Dialogs.showEnlargedProfilePhoto(
+          context,
+          widget.url,
+          name: widget.name,
+        );
+      };
+    }
+
     return InkWell(
       overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-      onTap:
-          () =>
-              widget.isEdit
-                  ? ImagePickerDialog(
-                    needRemove: _localImage?.path.isNotEmpty ?? false,
-                    onPickedImage: (image) {
-                      if (image != null) {
-                        _localImage = image;
-                        widget.onChanged?.call(_localImage);
-                      } else {
-                        _localImage = XFile('');
-                      }
-                      if (!mounted) return;
-                      setState(() {});
-                    },
-                  ).show(context)
-                  : null,
+      onTap: resolvedOnTap,
       child: SizedBox.square(
         dimension: radius,
         child: Stack(
@@ -102,6 +120,33 @@ class _ProfileImageState extends State<ProfileImage> {
   }
 
   Widget isEmpty(double radius) {
+    if (widget.name != null && widget.name!.trim().isNotEmpty) {
+      final trimmed = widget.name!.trim();
+      String initial = trimmed[0].toUpperCase();
+      for (final rune in trimmed.runes) {
+        final char = String.fromCharCode(rune);
+        if (RegExp(r'[a-zA-Z0-9]').hasMatch(char)) {
+          initial = char.toUpperCase();
+          break;
+        }
+      }
+      return Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.primary.withValues(alpha: 0.1),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          initial,
+          style: TextStyle(
+            fontSize: radius * 0.45,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
+            color: AppColors.primary,
+          ),
+        ),
+      );
+    }
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,

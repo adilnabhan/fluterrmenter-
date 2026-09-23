@@ -422,30 +422,38 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Container(
-                                        width: 48,
-                                        height: 48,
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: AppColors.iconBackground,
-                                        ),
-                                        child: ClipOval(
-                                          child:
-                                              profilePic != null &&
-                                                      profilePic.isNotEmpty
-                                                  ? Image.network(
-                                                    profilePic,
-                                                    fit: BoxFit.cover,
-                                                    errorBuilder:
-                                                        (_, __, ___) => const Icon(
-                                                          Icons.person,
-                                                          color: AppColors.primary,
-                                                        ),
-                                                  )
-                                                  : const Icon(
-                                                    Icons.person,
-                                                    color: AppColors.primary,
-                                                  ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          Dialogs.showEnlargedProfilePhoto(
+                                            context,
+                                            profilePic,
+                                            name: name,
+                                          );
+                                        },
+                                        child: Container(
+                                          width: 48,
+                                          height: 48,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: AppColors.iconBackground,
+                                          ),
+                                          child: ClipOval(
+                                            child:
+                                                profilePic != null &&
+                                                        profilePic.isNotEmpty
+                                                    ? ImageNetwork(
+                                                      profilePic,
+                                                      fit: BoxFit.cover,
+                                                      errorWidget: const Icon(
+                                                            Icons.person,
+                                                            color: AppColors.primary,
+                                                          ),
+                                                    )
+                                                    : const Icon(
+                                                      Icons.person,
+                                                      color: AppColors.primary,
+                                                    ),
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 12),

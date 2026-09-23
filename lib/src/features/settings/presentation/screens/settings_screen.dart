@@ -199,11 +199,10 @@ class SettingsScreen extends StatelessWidget {
                     clipBehavior: Clip.antiAlias,
                     child:
                         logoUrl != null && logoUrl!.isNotEmpty
-                            ? Image.network(
+                            ? ImageNetwork(
                               logoUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder:
-                                  (_, __, ___) => const Icon(
+                              errorWidget: const Icon(
                                     Icons.fitness_center,
                                     color: AppColors.primary,
                                     size: 40,

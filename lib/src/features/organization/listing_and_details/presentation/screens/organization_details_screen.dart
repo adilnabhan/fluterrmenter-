@@ -158,19 +158,10 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                                 ),
                               );
                             },
-                            child: Image.network(
+                            child: ImageNetwork(
                               heroImages[index],
                               fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (_, child, progress) =>
-                                      progress == null
-                                          ? child
-                                          : Container(
-                                            color: Colors.grey.shade200,
-                                          ),
-                              errorBuilder:
-                                  (_, __, ___) =>
-                                      Container(color: Colors.grey.shade300),
+                              errorWidget: Container(color: Colors.grey.shade300),
                             ),
                           );
                         },
@@ -442,10 +433,10 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
             ),
             clipBehavior: Clip.antiAlias,
             child: orgDetails.logo != null && orgDetails.logo!.isNotEmpty
-                ? Image.network(
+                ? ImageNetwork(
                     orgDetails.logo!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(
+                    errorWidget: const Icon(
                       Icons.fitness_center,
                       color: AppColors.primary,
                       size: 40,

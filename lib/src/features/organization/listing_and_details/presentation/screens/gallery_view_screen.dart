@@ -169,10 +169,10 @@ class _GalleryViewScreenState extends State<GalleryViewScreen> {
           children: [
             // Background Image (Blurred)
             if (photos.isNotEmpty && _currentIndex < photos.length)
-              Image.network(
+              ImageNetwork(
                 photos[_currentIndex].image ?? '',
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox(),
+                errorWidget: const SizedBox(),
               ),
             
             BackdropFilter(
@@ -231,10 +231,10 @@ class _GalleryViewScreenState extends State<GalleryViewScreen> {
                                           aspectRatio: 1,
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(24),
-                                            child: Image.network(
+                                            child: ImageNetwork(
                                               photos[index].image ?? '',
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) => Container(
+                                              errorWidget: Container(
                                                 color: Colors.grey.shade800,
                                                 child: const Center(
                                                   child: Icon(Icons.broken_image, color: Colors.grey, size: 48),
@@ -317,10 +317,10 @@ class _GalleryViewScreenState extends State<GalleryViewScreen> {
                                     ),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(10),
-                                      child: Image.network(
+                                      child: ImageNetwork(
                                         photos[index].image ?? '',
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade800),
+                                        errorWidget: Container(color: Colors.grey.shade800),
                                       ),
                                     ),
                                   ),
