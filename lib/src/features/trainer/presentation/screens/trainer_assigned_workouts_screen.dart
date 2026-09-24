@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/trainer/cubit/assigned_workouts/assigned_workouts_cubit.dart';
 import 'package:mentor_mobile_app/src/features/trainer/cubit/assigned_workouts/assigned_workouts_state.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 
 class TrainerAssignedWorkoutsScreen extends StatelessWidget {
@@ -206,6 +207,22 @@ class _TrainerAssignedWorkoutsViewState
             ),
             centerTitle: true,
             actions: [
+              IconButton(
+                icon: const Icon(Icons.add_rounded, color: AppColors.dark),
+                tooltip: 'Assign Workout',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (context) => const WorkoutGroupsScreen(),
+                    ),
+                  ).then((_) {
+                    context
+                        .read<AssignedWorkoutsCubit>()
+                        .loadAssignedWorkouts(reset: true);
+                  });
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.refresh, color: AppColors.dark),
                 onPressed: () => context

@@ -2,7 +2,6 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:intl/intl.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/trainer_client_workout_history_calendar.dart';
-import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
 
 class TrainerClientDetailScreen extends StatefulWidget {
@@ -20,31 +19,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   Map<String, dynamic>? _bodyMatrixData;
   List<Map<String, dynamic>> _workoutHistory = [];
   List<Map<String, dynamic>> _assignedWorkouts = [];
-  bool _isAssignedWorkoutsExpanded = false;
   bool _isLoading = true;
-
-  List<Map<String, dynamic>> get _todayAssignedWorkouts {
-    final now = DateTime.now();
-    final todayStr = DateFormat('yyyy-MM-dd').format(now);
-
-    return _assignedWorkouts.where((workout) {
-      final String? rawDate =
-          workout['start_date']?.toString() ??
-          workout['assigned_date']?.toString() ??
-          workout['date']?.toString() ??
-          workout['created_at']?.toString();
-
-      if (rawDate == null || rawDate.isEmpty) return false;
-      try {
-        final parsed = DateTime.tryParse(rawDate);
-        if (parsed != null) {
-          final workoutDateStr = DateFormat('yyyy-MM-dd').format(parsed);
-          return workoutDateStr == todayStr;
-        }
-      } catch (_) {}
-      return rawDate.contains(todayStr);
-    }).toList();
-  }
 
   @override
   void initState() {
@@ -131,100 +106,6 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
       setState(() {
         _assignedWorkouts = workoutsList;
       });
-    }
-  }
-
-  Future<void> _deleteAssignedWorkout(Map<String, dynamic> workout) async {
-    final assignmentId = (workout['customer_workout_plan_id'] is int)
-        ? workout['customer_workout_plan_id'] as int
-        : (workout['customer_workout_plan'] is int)
-            ? workout['customer_workout_plan'] as int
-            : (workout['customer_workout_plan'] is Map &&
-                    workout['customer_workout_plan']['id'] is int)
-                ? workout['customer_workout_plan']['id'] as int
-                : (workout['assignment_id'] is int)
-                    ? workout['assignment_id'] as int
-                    : (workout['id'] is int)
-                        ? workout['id'] as int
-                        : 0;
-
-    if (assignmentId <= 0) {
-      Dialogs.showSnack(msg: 'Unable to identify assigned workout ID.');
-      return;
-    }
-
-    final title = (workout['plan_name'] ??
-            workout['title'] ??
-            workout['name'] ??
-            workout['workout_plan_name'] ??
-            'Workout Plan')
-        .toString();
-
-    final clientName = (_clientData['name'] ??
-            _clientData['first_name'] ??
-            _clientData['user']?['name'] ??
-            'Client')
-        .toString();
-
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Assigned Workout'),
-        content: Text(
-          'Are you sure you want to delete "$title" for $clientName?\n\nThis will remove the assignment and uncompleted future workout sessions.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xffE53E3E),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    try {
-      final response = await DioClient().dio.delete<dynamic>(
-        ApiUris.trainerDeleteAssignedWorkout(assignmentId),
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        String successMsg = 'Assigned workout deleted successfully.';
-        if (response.data is Map && response.data['message'] != null) {
-          successMsg = response.data['message'].toString();
-        }
-        Dialogs.showSnack(msg: successMsg);
-        _fetchAssignedWorkouts();
-      } else {
-        Dialogs.showSnack(msg: 'Failed to delete assigned workout.');
-      }
-    } on DioException catch (e) {
-      String errorMsg = 'Error deleting assigned workout.';
-      if (e.response?.data is Map) {
-        final data = e.response!.data as Map;
-        errorMsg = data['detail']?.toString() ??
-            data['message']?.toString() ??
-            errorMsg;
-      }
-      Dialogs.showSnack(msg: errorMsg);
-    } catch (e) {
-      Dialogs.showSnack(msg: 'Error: ${e.toString()}');
     }
   }
 
@@ -409,6 +290,822 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
           value,
           style: AppStyles.text14Px.poppins.w500.copyWith(
             color: context.colors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Map<String, dynamic>> _getPrRecords() {
+    final List<Map<String, dynamic>> results = [];
+    final Set<String> seenExercises = {};
+
+    // 1. Direct PR records from client profile / API
+    final rawPrs = _clientData['pr_records'] ??
+        _clientData['personal_records'] ??
+        _clientData['prs'] ??
+        _clientData['profile']?['pr_records'];
+    if (rawPrs is List) {
+      for (final item in rawPrs) {
+        if (item is Map) {
+          final map = Map<String, dynamic>.from(item);
+          final name = (map['workout_name'] ??
+                  map['exercise_name'] ??
+                  map['name'] ??
+                  map['exercise'])
+              ?.toString()
+              .trim();
+          if (name != null && name.isNotEmpty) {
+            seenExercises.add(name.toLowerCase());
+            results.add({
+              'exercise_name': name,
+              'value':
+                  map['value'] ?? map['weight'] ?? map['max_weight'] ?? 'N/A',
+              'unit': map['unit'] ?? 'kg',
+              'reps': map['reps'],
+              'date': map['date'] ?? map['achieved_at'] ?? map['created_at'],
+            });
+          }
+        }
+      }
+    }
+
+    // 2. Scan workout history for max weight & reps achieved per exercise
+    final Map<String, ({double maxWeight, int reps, String date})> exerciseBests = {};
+    for (final dayEntry in _workoutHistory) {
+      final dateStr = (dayEntry['date'] ?? '').toString();
+      final logs = (dayEntry['logs'] ??
+              dayEntry['exercises'] ??
+              dayEntry['workout_logs']) as List<dynamic>? ??
+          [];
+      for (final log in logs) {
+        if (log is! Map) continue;
+        final exName = (log['exercise_name'] ??
+                log['workout_name'] ??
+                log['name'])
+            ?.toString()
+            .trim();
+        if (exName == null || exName.isEmpty) continue;
+
+        final setLogs = (log['set_logs'] ?? log['sets'] ?? log['logs'])
+                as List<dynamic>? ??
+            [];
+        for (final setItem in setLogs) {
+          if (setItem is! Map) continue;
+          final dynamic rawWeight =
+              setItem['weight_kg'] ?? setItem['weight'] ?? setItem['load'];
+          final dynamic rawReps =
+              setItem['reps'] ?? setItem['rep_count'] ?? 0;
+
+          final double weight =
+              double.tryParse(rawWeight?.toString() ?? '') ?? 0.0;
+          final int reps = int.tryParse(rawReps?.toString() ?? '') ?? 0;
+
+          if (weight > 0) {
+            final key = exName.toLowerCase();
+            final currentBest = exerciseBests[key];
+            if (currentBest == null ||
+                weight > currentBest.maxWeight ||
+                (weight == currentBest.maxWeight && reps > currentBest.reps)) {
+              exerciseBests[key] = (maxWeight: weight, reps: reps, date: dateStr);
+            }
+          }
+        }
+      }
+    }
+
+    // Merge history-derived PRs that aren't already listed
+    exerciseBests.forEach((key, best) {
+      if (!seenExercises.contains(key)) {
+        final titleName = key
+            .split(' ')
+            .map((word) => word.isNotEmpty
+                ? '${word[0].toUpperCase()}${word.substring(1)}'
+                : '')
+            .join(' ');
+        results.add({
+          'exercise_name': titleName,
+          'value': best.maxWeight % 1 == 0
+              ? best.maxWeight.toInt().toString()
+              : best.maxWeight.toStringAsFixed(1),
+          'unit': 'kg',
+          'reps': best.reps > 0 ? best.reps : null,
+          'date': best.date,
+        });
+      }
+    });
+
+    return results;
+  }
+
+  void _showWorkoutRecordsSheet(BuildContext context) {
+    final prList = _getPrRecords();
+    final clientName = (_clientData['profile']?['name'] ??
+            _clientData['name'] ??
+            'Client')
+        .toString();
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.75,
+          ),
+          decoration: BoxDecoration(
+            color: context.colors.card,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.emoji_events_rounded,
+                        color: AppColors.primary,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Workout Records',
+                            style: AppStyles.text16Px.poppins.w600.copyWith(
+                              color: context.colors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'Personal bests (PR) for $clientName',
+                            style: AppStyles.text12Px.poppins.w400.copyWith(
+                              color: context.colors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: context.colors.icon),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Divider(color: context.colors.border, height: 1),
+              Expanded(
+                child: prList.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: context.colors.fieldFill,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.fitness_center_outlined,
+                                  color: context.colors.icon,
+                                  size: 30,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No PR Records Yet',
+                                style: AppStyles.text16Px.poppins.w600.copyWith(
+                                  color: context.colors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Personal records will automatically appear here as the client logs workout sessions.',
+                                textAlign: TextAlign.center,
+                                style: AppStyles.text13Px.poppins.w400.copyWith(
+                                  color: context.colors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: prList.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (ctx, index) {
+                          final item = prList[index];
+                          final exerciseName =
+                              item['exercise_name'] as String? ?? 'Exercise';
+                          final val = item['value']?.toString() ?? 'N/A';
+                          final unit = item['unit']?.toString() ?? '';
+                          final reps = item['reps'];
+                          final dateStr = item['date']?.toString();
+
+                          String subText = '';
+                          if (reps != null && reps.toString().isNotEmpty) {
+                            subText = '$reps reps';
+                          }
+                          if (dateStr != null &&
+                              dateStr.isNotEmpty &&
+                              dateStr != 'null') {
+                            final formattedDate = _formatDate(dateStr);
+                            if (formattedDate != 'N/A') {
+                              subText = subText.isNotEmpty
+                                  ? '$subText • $formattedDate'
+                                  : formattedDate;
+                            }
+                          }
+
+                          return Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: context.colors.fieldFill,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: context.colors.border),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.fitness_center_rounded,
+                                    color: AppColors.primary,
+                                    size: 22,
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        exerciseName,
+                                        style: AppStyles.text14Px.poppins.w600
+                                            .copyWith(
+                                          color: context.colors.textPrimary,
+                                        ),
+                                      ),
+                                      if (subText.isNotEmpty) ...[
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          subText,
+                                          style: AppStyles.text12Px.poppins.w400
+                                              .copyWith(
+                                            color:
+                                                context.colors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.star_rounded,
+                                        color: AppColors.primary,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        unit.isNotEmpty ? '$val $unit' : val,
+                                        style: AppStyles.text13Px.poppins.w600
+                                            .copyWith(
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAssignedWorkoutsCard(BuildContext context) {
+    final clientName = (_clientData['profile']?['name'] ??
+            _clientData['name'] ??
+            _clientData['first_name'] ??
+            _clientData['user']?['name'] ??
+            'Client')
+        .toString();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: context.isDarkMode ? 0.2 : 0.04,
+            ),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (context) => TrainerAssignedWorkoutsScreen(
+                  customerId: widget.customerId,
+                  customerName: clientName,
+                ),
+              ),
+            ).then((_) {
+              _fetchAssignedWorkouts();
+              _fetchWorkoutHistory();
+            });
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                // Left Icon Circle
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: context.colors.fieldFill,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.fitness_center_rounded,
+                    color: context.colors.textPrimary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 14),
+
+                // Center Title
+                Expanded(
+                  child: Text(
+                    'Assigned Workouts',
+                    style: AppStyles.text15Px.poppins.w600.copyWith(
+                      color: context.colors.textPrimary,
+                    ),
+                  ),
+                ),
+
+                if (_assignedWorkouts.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_assignedWorkouts.length}',
+                      style: AppStyles.text12Px.poppins.w600.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+
+                // Right Chevron Circle
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: context.colors.fieldFill,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: context.colors.icon,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkoutRecordsCard(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: context.isDarkMode ? 0.2 : 0.04,
+            ),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => _showWorkoutRecordsSheet(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                // Left Icon Circle
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: context.colors.fieldFill,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.history_rounded,
+                    color: context.colors.textPrimary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 14),
+
+                // Center Title
+                Expanded(
+                  child: Text(
+                    'Workout Records',
+                    style: AppStyles.text15Px.poppins.w600.copyWith(
+                      color: context.colors.textPrimary,
+                    ),
+                  ),
+                ),
+
+                // Right Chevron Circle
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: context.colors.fieldFill,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: context.colors.icon,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHealthMatrixSection({
+    required BuildContext context,
+    required String bmi,
+    required String bmiLabel,
+    required String? bodyFatPct,
+    required String? bodyFatCategory,
+    required String displayHeight,
+    required String displayWeight,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Health Matrix',
+          style: AppStyles.text16Px.poppins.w600.copyWith(
+            color: context.colors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTap: () => _showBodyMatrixSheet(context),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: context.colors.card,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: context.colors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(
+                    context.isDarkMode ? 0.2 : 0.04,
+                  ),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Top Split View: BMI & Body Fat with Center Divider and Heart Icon
+                Stack(
+                  children: [
+                    Row(
+                      children: [
+                        // BMI Column
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'BMI',
+                                style: AppStyles.text12Px.poppins.w600.copyWith(
+                                  color: context.colors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                bmi,
+                                style: AppStyles.text22Px.poppins.w700.copyWith(
+                                  color: context.colors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    bmiLabel.isNotEmpty ? bmiLabel : 'Normal',
+                                    style: AppStyles.text12Px.poppins.w500.copyWith(
+                                      color: context.colors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Body Fat Column
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Body Fat',
+                                style: AppStyles.text12Px.poppins.w600.copyWith(
+                                  color: context.colors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                bodyFatPct ?? '16.8',
+                                style: AppStyles.text22Px.poppins.w700.copyWith(
+                                  color: context.colors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    bodyFatCategory != null && bodyFatCategory.isNotEmpty
+                                        ? bodyFatCategory
+                                        : 'Fitness',
+                                    style: AppStyles.text12Px.poppins.w500.copyWith(
+                                      color: context.colors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Center Vertical Line with Heart Badge
+                    Positioned.fill(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: 32,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 1,
+                                height: 55,
+                                color: context.colors.border,
+                              ),
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: context.colors.card,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: context.colors.border,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.favorite,
+                                    color: Colors.red,
+                                    size: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Top Right Chevron Icon
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: context.colors.fieldFill,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: context.colors.icon,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Embedded Height & Weight Box
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.colors.card,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: context.colors.border),
+                  ),
+                  child: Column(
+                    children: [
+                      // Height Row
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.swap_vert,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Height',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: context.colors.textPrimary,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              displayHeight,
+                              style: AppStyles.text14Px.poppins.w600.copyWith(
+                                color: context.colors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        color: context.colors.border.withOpacity(0.6),
+                        height: 1,
+                      ),
+                      // Weight Row
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.monitor_weight_outlined,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Weight',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: context.colors.textPrimary,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              displayWeight,
+                              style: AppStyles.text14Px.poppins.w600.copyWith(
+                                color: context.colors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -1001,293 +1698,6 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               const SizedBox(height: 12),
             ],
 
-            // Health Matrix Section Header
-            Text(
-              'Health Matrix',
-              style: AppStyles.text16Px.poppins.w600.copyWith(
-                color: context.colors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => _showBodyMatrixSheet(context),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: context.colors.card,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: context.colors.border),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(
-                        context.isDarkMode ? 0.2 : 0.04,
-                      ),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Top Split View: BMI & Body Fat with Center Divider and Heart Icon
-                    Stack(
-                      children: [
-                        Row(
-                          children: [
-                            // BMI Column
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'BMI',
-                                    style: AppStyles.text12Px.poppins.w600
-                                        .copyWith(
-                                          color: context.colors.textSecondary,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    bmi,
-                                    style: AppStyles.text22Px.poppins.w700
-                                        .copyWith(
-                                          color: context.colors.textPrimary,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 6,
-                                        height: 6,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.green,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        bmiLabel.isNotEmpty
-                                            ? bmiLabel
-                                            : 'Normal',
-                                        style: AppStyles.text12Px.poppins.w500
-                                            .copyWith(
-                                              color:
-                                                  context.colors.textSecondary,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Body Fat Column
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Body Fat',
-                                    style: AppStyles.text12Px.poppins.w600
-                                        .copyWith(
-                                          color: context.colors.textSecondary,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    bodyFatPct ?? '16.8',
-                                    style: AppStyles.text22Px.poppins.w700
-                                        .copyWith(
-                                          color: context.colors.textPrimary,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 6,
-                                        height: 6,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.green,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        bodyFatCategory != null &&
-                                                bodyFatCategory.isNotEmpty
-                                            ? bodyFatCategory
-                                            : 'Fitness',
-                                        style: AppStyles.text12Px.poppins.w500
-                                            .copyWith(
-                                              color:
-                                                  context.colors.textSecondary,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        // Center Vertical Line with Heart Badge
-                        Positioned.fill(
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: SizedBox(
-                              width: 32,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Container(
-                                    width: 1,
-                                    height: 55,
-                                    color: context.colors.border,
-                                  ),
-                                  Container(
-                                    width: 28,
-                                    height: 28,
-                                    decoration: BoxDecoration(
-                                      color: context.colors.card,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: context.colors.border,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.04),
-                                          blurRadius: 4,
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.favorite,
-                                        color: Colors.red,
-                                        size: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // Top Right Chevron Icon
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: context.colors.fieldFill,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.chevron_right,
-                              size: 18,
-                              color: context.colors.icon,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Embedded Height & Weight Box
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.colors.card,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: context.colors.border),
-                      ),
-                      child: Column(
-                        children: [
-                          // Height Row
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.swap_vert,
-                                  color: Colors.red,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'Height',
-                                  style: AppStyles.text14Px.poppins.w500
-                                      .copyWith(
-                                        color: context.colors.textPrimary,
-                                      ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  displayHeight,
-                                  style: AppStyles.text14Px.poppins.w600
-                                      .copyWith(
-                                        color: context.colors.textPrimary,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Divider(
-                            color: context.colors.border.withOpacity(0.6),
-                            height: 1,
-                          ),
-                          // Weight Row
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.monitor_weight_outlined,
-                                  color: Colors.red,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'Weight',
-                                  style: AppStyles.text14Px.poppins.w500
-                                      .copyWith(
-                                        color: context.colors.textPrimary,
-                                      ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  displayWeight,
-                                  style: AppStyles.text14Px.poppins.w600
-                                      .copyWith(
-                                        color: context.colors.textPrimary,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
             // Membership
             Builder(
               builder: (context) {
@@ -1560,291 +1970,6 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Assigned Workouts
-            if (_assignedWorkouts.isNotEmpty) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Assigned Workouts',
-                    style: AppStyles.text16Px.poppins.w600.copyWith(
-                      color: context.colors.textPrimary,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      final clientName =
-                          (_clientData['name'] ??
-                                  _clientData['first_name'] ??
-                                  _clientData['user']?['name'] ??
-                                  'Client')
-                              .toString();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder:
-                              (context) => TrainerAssignedWorkoutsScreen(
-                                customerId: widget.customerId,
-                                customerName: clientName,
-                              ),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'View All (${_assignedWorkouts.length})',
-                            style: AppStyles.text12Px.poppins.w600.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right,
-                            size: 16,
-                            color: AppColors.primary,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (_todayAssignedWorkouts.isEmpty) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 20,
-                    horizontal: 16,
-                  ),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: context.colors.card,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: context.colors.border),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.event_available_outlined,
-                        size: 32,
-                        color: context.colors.textSecondary,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'No workout assigned for today',
-                        style: AppStyles.text14Px.poppins.w500.copyWith(
-                          color: context.colors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ] else ...[
-                ..._todayAssignedWorkouts.map((workout) {
-                  final planId =
-                      workout['plan_id'] as int? ??
-                      workout['customer_workout_plan_id'] as int? ??
-                      workout['workout_plan_id'] as int? ??
-                      workout['id'] as int? ??
-                      0;
-                  final title =
-                      (workout['plan_name'] ??
-                              workout['title'] ??
-                              workout['name'] ??
-                              workout['workout_plan_name'] ??
-                              'Workout Plan')
-                          .toString();
-                  final rawStatus =
-                      (workout['status'] ??
-                              workout['assignment_status'] ??
-                              'Active')
-                          .toString()
-                          .toLowerCase();
-                  final bool isCompleted =
-                      workout['is_completed'] == true ||
-                      workout['completed'] == true ||
-                      rawStatus == 'completed' ||
-                      rawStatus == 'done' ||
-                      rawStatus == 'verified';
-                  final String? rawDate =
-                      workout['start_date']?.toString() ??
-                      workout['assigned_date']?.toString() ??
-                      workout['date']?.toString() ??
-                      workout['created_at']?.toString();
-                  final String formattedDate =
-                      rawDate != null && rawDate.isNotEmpty
-                          ? _formatDate(rawDate)
-                          : '';
-
-                  DateTime? workoutDate;
-                  if (rawDate != null && rawDate.isNotEmpty) {
-                    workoutDate = DateTime.tryParse(rawDate);
-                  }
-
-                  final now = DateTime.now();
-                  final today = DateTime(now.year, now.month, now.day);
-
-                  final bool isMissed =
-                      !isCompleted &&
-                      (rawStatus == 'missed' ||
-                          (workoutDate != null &&
-                              DateTime(
-                                workoutDate.year,
-                                workoutDate.month,
-                                workoutDate.day,
-                              ).isBefore(today)));
-
-                  Color statusColor;
-                  IconData statusIcon;
-                  String statusLabel;
-
-                  if (isCompleted) {
-                    statusColor = Colors.green;
-                    statusIcon = Icons.check_circle_rounded;
-                    statusLabel = 'Completed';
-                  } else if (isMissed) {
-                    statusColor = Colors.red;
-                    statusIcon = Icons.cancel_rounded;
-                    statusLabel = 'Missed';
-                  } else {
-                    statusColor = AppColors.primary;
-                    statusIcon = Icons.fitness_center;
-                    statusLabel = 'Pending';
-                  }
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: context.colors.border),
-                    ),
-                    child: Material(
-                      color: context.colors.card,
-                      borderRadius: BorderRadius.circular(16),
-                      clipBehavior: Clip.antiAlias,
-                      child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 4,
-                      ),
-                      leading: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(statusIcon, color: statusColor, size: 24),
-                      ),
-                      title: Text(
-                        title,
-                        style: AppStyles.text16Px.poppins.w600.copyWith(
-                          color: context.colors.textPrimary,
-                        ),
-                      ),
-                      subtitle: Row(
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: statusColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            statusLabel,
-                            style: AppStyles.text12Px.poppins.w500.copyWith(
-                              color: statusColor,
-                            ),
-                          ),
-                          if (formattedDate.isNotEmpty &&
-                              formattedDate != 'N/A') ...[
-                            Text(
-                              '  •  $formattedDate',
-                              style: AppStyles.text12Px.poppins.w400.copyWith(
-                                color: context.colors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (!isCompleted)
-                            PopupMenuButton<String>(
-                              icon: Icon(
-                                Icons.more_vert_rounded,
-                                size: 20,
-                                color: context.colors.icon,
-                              ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              onSelected: (val) {
-                                if (val == 'delete') {
-                                  _deleteAssignedWorkout(workout);
-                                }
-                              },
-                              itemBuilder:
-                                  (context) => [
-                                    PopupMenuItem<String>(
-                                      value: 'delete',
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: const [
-                                          Icon(
-                                            Icons.delete_outline_rounded,
-                                            color: Color(0xffE53E3E),
-                                            size: 18,
-                                          ),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            'Delete Assignment',
-                                            style: TextStyle(
-                                              color: Color(0xffE53E3E),
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                            ),
-                          Icon(
-                            Icons.chevron_right,
-                            color: context.colors.icon,
-                          ),
-                        ],
-                      ),
-                      onTap:
-                          planId > 0
-                              ? () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute<void>(
-                                      builder:
-                                          (context) => WorkoutPlanDetailsScreen(
-                                            planId: planId,
-                                            planTitle: title,
-                                          ),
-                                    ),
-                                  );
-                                }
-                              : null,
-                    ),
-                  ),
-                );
-              }),
-              ],
-              const SizedBox(height: 24),
-            ],
-
             // Workout Journey Calendar
             if (membership.isNotEmpty) ...[
               TrainerClientWorkoutHistoryCalendar(
@@ -1857,6 +1982,26 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
               ),
               const SizedBox(height: 24),
             ],
+
+            // Assigned Workouts Card
+            _buildAssignedWorkoutsCard(context),
+            const SizedBox(height: 24),
+
+            // Workout Records Card (PR Records)
+            _buildWorkoutRecordsCard(context),
+            const SizedBox(height: 24),
+
+            // Health Matrix Section
+            _buildHealthMatrixSection(
+              context: context,
+              bmi: bmi,
+              bmiLabel: bmiLabel,
+              bodyFatPct: bodyFatPct,
+              bodyFatCategory: bodyFatCategory,
+              displayHeight: displayHeight,
+              displayWeight: displayWeight,
+            ),
+            const SizedBox(height: 24),
 
             // Other Details
             Row(
@@ -1905,7 +2050,176 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 70),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: _buildFloatingActions(context, profile),
+    );
+  }
+
+  Future<void> _handleSendMessage(Map<dynamic, dynamic> profile) async {
+    final waLink = profile['whatsapp_link']?.toString();
+    final rawWa = profile['whatsapp']?.toString();
+    final mobile =
+        profile['mobile']?.toString() ??
+        profile['phone']?.toString() ??
+        _clientData['mobile']?.toString() ??
+        _clientData['phone']?.toString();
+
+    var targetUrl = '';
+    if (waLink != null && waLink.isNotEmpty && waLink != 'null') {
+      targetUrl = waLink.trim();
+      if (!targetUrl.startsWith('http')) {
+        final clean = targetUrl.replaceAll(RegExp(r'[^\d+]'), '');
+        targetUrl = 'https://wa.me/$clean';
+      }
+    } else if (rawWa != null && rawWa.isNotEmpty && rawWa != 'null') {
+      final clean = rawWa.replaceAll(RegExp(r'[^\d+]'), '');
+      targetUrl = 'https://wa.me/$clean';
+    } else if (mobile != null &&
+        mobile.isNotEmpty &&
+        mobile != 'null' &&
+        mobile != 'N/A') {
+      final clean = mobile.replaceAll(RegExp(r'[^\d+]'), '');
+      targetUrl = 'https://wa.me/$clean';
+    }
+
+    if (targetUrl.isNotEmpty) {
+      try {
+        final uri = Uri.parse(targetUrl);
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        unawaited(Dialogs.showSnack(msg: 'Could not open WhatsApp: $e'));
+      }
+    } else {
+      unawaited(Dialogs.showSnack(msg: 'No WhatsApp number available for this client'));
+    }
+  }
+
+  Future<void> _handleCallNow(Map<dynamic, dynamic> profile) async {
+    final mobile =
+        profile['mobile']?.toString() ??
+        profile['phone']?.toString() ??
+        _clientData['mobile']?.toString() ??
+        _clientData['phone']?.toString();
+
+    if (mobile != null &&
+        mobile.isNotEmpty &&
+        mobile != 'null' &&
+        mobile != 'N/A') {
+      final cleanNum = mobile.replaceAll(RegExp(r'[^\d+]'), '');
+      try {
+        final callUri = Uri.parse('tel:$cleanNum');
+        if (await canLaunchUrl(callUri)) {
+          await launchUrl(callUri);
+        } else {
+          await launchUrl(callUri, mode: LaunchMode.externalApplication);
+        }
+      } catch (e) {
+        unawaited(Dialogs.showSnack(msg: 'Could not initiate call: $e'));
+      }
+    } else {
+      unawaited(Dialogs.showSnack(msg: 'No phone number available for this client'));
+    }
+  }
+
+  Widget _buildFloatingActions(
+    BuildContext context,
+    Map<dynamic, dynamic> profile,
+  ) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Row(
+          children: [
+            // Send Message (WhatsApp)
+            Expanded(
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: Colors.black.withValues(alpha: 0.08),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(30),
+                    onTap: () => _handleSendMessage(profile),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/svg/icons/whatsapp.svg',
+                          width: 20,
+                          height: 20,
+                        ),
+                        const SizedBox(width: 7),
+                        Text(
+                          'Send Message',
+                          style: AppStyles.text13Px.poppins.w600.copyWith(
+                            color: const Color(0xFF2D3748),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Call Now
+            Expanded(
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00A859),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00A859).withValues(alpha: 0.30),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(30),
+                    onTap: () => _handleCallNow(profile),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.call,
+                          color: Colors.white,
+                          size: 19,
+                        ),
+                        const SizedBox(width: 7),
+                        Text(
+                          'Call Now',
+                          style: AppStyles.text13Px.poppins.w600.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

@@ -322,7 +322,95 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   bool get _shouldHideFilter =>
       widget.hideStatusFilter || widget.initialStatusFilter == 'active';
 
-  List<Map<String, dynamic>> get _filteredClients => _clients;
+  List<Map<String, dynamic>> get _filteredClients {
+    final q = _searchQuery.trim().toLowerCase();
+    if (q.isEmpty) return _clients;
+
+    // Filter to items matching search query in name or phone
+    final list = _clients.where((c) {
+      final name = (c['name'] ??
+              '${c['first_name'] ?? ''} ${c['last_name'] ?? ''}')
+          .toString()
+          .toLowerCase()
+          .trim();
+      final phone = (c['phone_number'] ??
+              c['phone'] ??
+              c['mobile'] ??
+              c['mobile_number'] ??
+              '')
+          .toString()
+          .toLowerCase()
+          .trim();
+      return name.contains(q) || phone.contains(q);
+    }).toList();
+
+    // If an explicit alphabetical sort was chosen by user in the filter sheet, respect it
+    if (_selectedSort != null) {
+      if (_selectedSort!.value == 'a_z') {
+        list.sort((a, b) {
+          final nameA = (a['name'] ?? '').toString().toLowerCase();
+          final nameB = (b['name'] ?? '').toString().toLowerCase();
+          return nameA.compareTo(nameB);
+        });
+        return list;
+      } else if (_selectedSort!.value == 'z_a') {
+        list.sort((a, b) {
+          final nameA = (a['name'] ?? '').toString().toLowerCase();
+          final nameB = (b['name'] ?? '').toString().toLowerCase();
+          return nameB.compareTo(nameA);
+        });
+        return list;
+      }
+    }
+
+    // Rank by relevance score:
+    // 0: Exact match
+    // 1: Name starts directly with the query (e.g. "adil vc" when typing "ad")
+    // 2: Any word in the name starts with the query (e.g. "Mohamed Adil")
+    // 3: Phone number starts with the query
+    // 4: Substring match inside the name (e.g. "Shahim badi")
+    // 5: Substring match inside phone number
+    int getRelevanceScore(Map<String, dynamic> c) {
+      final name = (c['name'] ??
+              '${c['first_name'] ?? ''} ${c['last_name'] ?? ''}')
+          .toString()
+          .toLowerCase()
+          .trim();
+      final phone = (c['phone_number'] ??
+              c['phone'] ??
+              c['mobile'] ??
+              c['mobile_number'] ??
+              '')
+          .toString()
+          .toLowerCase()
+          .trim();
+
+      if (name == q) return 0;
+      if (name.startsWith(q)) return 1;
+
+      final words = name.split(RegExp(r'\s+'));
+      if (words.any((w) => w.startsWith(q))) return 2;
+
+      if (phone.startsWith(q)) return 3;
+      if (name.contains(q)) return 4;
+      if (phone.contains(q)) return 5;
+
+      return 6;
+    }
+
+    list.sort((a, b) {
+      final scoreA = getRelevanceScore(a);
+      final scoreB = getRelevanceScore(b);
+      if (scoreA != scoreB) {
+        return scoreA.compareTo(scoreB);
+      }
+      final nameA = (a['name'] ?? '').toString().toLowerCase();
+      final nameB = (b['name'] ?? '').toString().toLowerCase();
+      return nameA.compareTo(nameB);
+    });
+
+    return list;
+  }
 
   DateTime? _parseAnyDate(dynamic val) {
     if (val == null) return null;
