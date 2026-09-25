@@ -3,6 +3,7 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:intl/intl.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/trainer_client_workout_history_calendar.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_body_matrix_screen.dart';
 
 class TrainerClientDetailScreen extends StatefulWidget {
   const TrainerClientDetailScreen({required this.customerId, super.key});
@@ -847,7 +848,23 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         ),
         const SizedBox(height: 12),
         GestureDetector(
-          onTap: () => _showBodyMatrixSheet(context),
+          onTap: () {
+            final profile =
+                _clientData['profile'] as Map<dynamic, dynamic>? ?? {};
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (context) => TrainerBodyMatrixScreen(
+                  customerId: widget.customerId,
+                  clientName:
+                      (profile['name'] ?? _clientData['name'] ?? 'Client')
+                          .toString(),
+                  initialBodyMatrixData: _bodyMatrixData,
+                  initialProfile: profile,
+                ),
+              ),
+            );
+          },
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

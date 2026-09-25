@@ -15,11 +15,16 @@ class WorkoutGroupsScreen extends StatefulWidget {
   State<WorkoutGroupsScreen> createState() => _WorkoutGroupsScreenState();
 }
 
-class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
+class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   int _selectedTabIndex = 0;
   final _formKey = GlobalKey<FormState>();
   late final FieldData<dynamic> _groupName;
 
+  static List<Map<String, dynamic>>? _cachedGroups;
   List<Map<String, dynamic>> _groups = [];
   bool _isLoading = true;
   String _searchQuery = '';
@@ -28,7 +33,13 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchGroups();
+    if (_cachedGroups != null && _cachedGroups!.isNotEmpty) {
+      _groups = List<Map<String, dynamic>>.from(_cachedGroups!);
+      _isLoading = false;
+      _fetchGroups(silent: true);
+    } else {
+      _fetchGroups();
+    }
     _groupName = FieldData(
       type: FieldType.word,
       textInputAction: TextInputAction.done,
@@ -71,12 +82,13 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchGroups() async {
+  Future<void> _fetchGroups({bool silent = false}) async {
     if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-      _groups = [];
-    });
+    if (!silent && _groups.isEmpty) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     final user = context.read<AppCubit>().state.currentUser;
     final isTrainer = user?.userRole == 35;
@@ -102,10 +114,16 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                 ? (response.data['results'] as List<dynamic>? ?? [])
                 : (response.data as List<dynamic>);
         if (!mounted) return;
+        final newGroups =
+            data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        newGroups.sort((a, b) => (b['id'] as int).compareTo(a['id'] as int));
+
+        if (_searchQuery.trim().isEmpty) {
+          _cachedGroups = newGroups;
+        }
+
         setState(() {
-          _groups =
-              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-          _groups.sort((a, b) => (b['id'] as int).compareTo(a['id'] as int));
+          _groups = newGroups;
           _isLoading = false;
         });
       } else {
@@ -113,28 +131,34 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
         setState(() {
           _isLoading = false;
         });
-        Dialogs.showSnack(msg: 'Failed to load workout groups');
+        if (_groups.isEmpty) {
+          Dialogs.showSnack(msg: 'Failed to load workout groups');
+        }
       }
     } on DioException catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
-      String errorMsg = 'Failed to load workout groups';
-      if (e.response?.data is Map) {
-        final map = e.response!.data as Map;
-        errorMsg = map['detail']?.toString() ??
-            map['message']?.toString() ??
-            map['error']?.toString() ??
-            errorMsg;
+      if (_groups.isEmpty) {
+        String errorMsg = 'Failed to load workout groups';
+        if (e.response?.data is Map) {
+          final map = e.response!.data as Map;
+          errorMsg = map['detail']?.toString() ??
+              map['message']?.toString() ??
+              map['error']?.toString() ??
+              errorMsg;
+        }
+        Dialogs.showSnack(msg: 'Error loading groups: $errorMsg');
       }
-      Dialogs.showSnack(msg: 'Error loading groups: $errorMsg');
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
-      Dialogs.showSnack(msg: 'Error loading groups: ${e.toString()}');
+      if (_groups.isEmpty) {
+        Dialogs.showSnack(msg: 'Error loading groups: ${e.toString()}');
+      }
     }
   }
 
@@ -164,6 +188,35 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
         filtered = filtered.where((g) => g['source'] == 'trainer').toList();
       }
     }
+
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      filtered.sort((a, b) {
+        final nameA = (a['name'] ?? '').toString().toLowerCase();
+        final nameB = (b['name'] ?? '').toString().toLowerCase();
+
+        int score(String name) {
+          if (name == query) return 0; // Exact match
+          if (name.startsWith(query)) return 1; // Starts with search term (e.g. "Chest Strength")
+          final words = name.split(RegExp(r'\s+'));
+          if (words.any((w) => w.startsWith(query))) return 2; // Word starts with search term (e.g. "Advanced Chest...")
+          if (name.contains(query)) return 3; // Contains search term elsewhere
+          return 4; // Matched via exercise or description
+        }
+
+        final scoreA = score(nameA);
+        final scoreB = score(nameB);
+        if (scoreA != scoreB) {
+          return scoreA.compareTo(scoreB);
+        }
+
+        // Tie-breaker: newest ID first
+        final idA = a['id'] as int? ?? 0;
+        final idB = b['id'] as int? ?? 0;
+        return idB.compareTo(idA);
+      });
+    }
+
     return filtered;
   }
 
@@ -289,6 +342,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
         if (response.data is Map && response.data['id'] != null) {
           final int groupId = response.data['id'] as int;
           final String createdName = response.data['name'] as String? ?? name;
+          _fetchGroups(silent: false);
           Navigator.push(
             context,
             MaterialPageRoute<void>(
@@ -300,11 +354,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                     groupType: groupType,
                   ),
             ),
-          ).then((_) {
-            _fetchGroups();
-          });
+          );
         } else {
-          _fetchGroups();
+          _fetchGroups(silent: false);
         }
       } else {
         if (!mounted) return;
@@ -324,6 +376,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final user = context.watch<AppCubit>().state.currentUser;
     final isTrainer = user?.userRole == 35;
 
@@ -375,10 +428,15 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen> {
                         child: TextField(
                           onChanged: (val) {
                             _searchQuery = val;
+                            if (val.trim().isEmpty && _cachedGroups != null) {
+                              setState(() {
+                                _groups = List<Map<String, dynamic>>.from(_cachedGroups!);
+                              });
+                            }
                             EasyDebounce.debounce(
                               'groups-search',
                               const Duration(milliseconds: 400),
-                              () => _fetchGroups(),
+                              () => _fetchGroups(silent: _groups.isNotEmpty),
                             );
                           },
                           decoration: InputDecoration(
@@ -741,9 +799,9 @@ class _WorkoutGroupCard extends StatelessWidget {
 
     return InkWell(
       onTap: () async {
-        await Navigator.push(
+        final result = await Navigator.push<dynamic>(
           context,
-          MaterialPageRoute<void>(
+          MaterialPageRoute<dynamic>(
             builder:
                 (context) => WorkoutGroupDetailsScreen(
                   groupId: groupId,
@@ -753,7 +811,9 @@ class _WorkoutGroupCard extends StatelessWidget {
                 ),
           ),
         );
-        onReturn();
+        if (result == true) {
+          onReturn();
+        }
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -1074,9 +1134,9 @@ class _MultiDayWorkoutGroupCard extends StatelessWidget {
 
     return InkWell(
       onTap: () async {
-        await Navigator.push(
+        final result = await Navigator.push<dynamic>(
           context,
-          MaterialPageRoute<void>(
+          MaterialPageRoute<dynamic>(
             builder:
                 (context) => WorkoutGroupDetailsScreen(
                   groupId: groupId,
@@ -1086,7 +1146,9 @@ class _MultiDayWorkoutGroupCard extends StatelessWidget {
                 ),
           ),
         );
-        onReturn();
+        if (result == true) {
+          onReturn();
+        }
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
