@@ -1,6 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
-import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/account_switcher_sheet.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/edit_trainer_profile_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_certificates_screen.dart';
@@ -639,11 +638,6 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             ? _fetchedUser
             : context.watch<AppCubit>().state.currentUser;
 
-    final trainerName =
-        '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim();
-    final displayName =
-        trainerName.isNotEmpty ? trainerName : 'Trainer Profile';
-
     final portfolioImages = user?.trainer?.portfolioImages ?? [];
     final List<String> heroCarousel =
         portfolioImages
@@ -775,11 +769,10 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                         ] else ...[
                           _buildCoverBackdrop(user),
                         ],
-                        // Top bar (Account switcher + Settings)
+                        // Top bar (Settings)
                         if (!widget.isViewOnly)
                           Positioned(
                             top: 0,
-                            left: 0,
                             right: 0,
                             child: SafeArea(
                               child: Padding(
@@ -787,76 +780,26 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                                   horizontal: 16,
                                   vertical: 8,
                                 ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: OutlinedButton.icon(
-                                          style: OutlinedButton.styleFrom(
-                                            backgroundColor: context.colors.card
-                                                .withOpacity(0.9),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 6,
-                                            ),
-                                            side: BorderSide(
-                                              color: context.colors.border,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            const AccountSwitcherSheet().show(
-                                              context,
-                                            );
-                                          },
-                                          label: Icon(
-                                            Icons.keyboard_arrow_down_sharp,
-                                            color: context.colors.icon,
-                                            size: 20,
-                                          ),
-                                          icon: Text(
-                                            '$displayName (Trainer)',
-                                            style: AppStyles
-                                                .text14Px
-                                                .poppins
-                                                .w600
-                                                .copyWith(
-                                                  color:
-                                                      context
-                                                          .colors
-                                                          .textPrimary,
-                                                ),
-                                          ),
-                                        ),
-                                      ),
+                                child: CircleAvatar(
+                                  backgroundColor: context.colors.card
+                                      .withOpacity(0.9),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.settings,
+                                      color: context.colors.icon,
+                                      size: 20,
                                     ),
-
-                                    CircleAvatar(
-                                      backgroundColor: context.colors.card
-                                          .withOpacity(0.9),
-                                      child: IconButton(
-                                        icon: Icon(
-                                          Icons.settings,
-                                          color: context.colors.icon,
-                                          size: 20,
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  const TrainerProfileSettingsScreen(),
                                         ),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) =>
-                                                      const TrainerProfileSettingsScreen(),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             ),

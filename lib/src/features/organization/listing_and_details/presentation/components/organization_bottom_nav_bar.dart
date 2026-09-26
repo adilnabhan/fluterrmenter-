@@ -1,7 +1,4 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
-
-import 'dart:ui';
 
 class OrganizationBottomNavBar extends StatelessWidget {
   const OrganizationBottomNavBar({
@@ -93,6 +90,10 @@ class OrganizationBottomNavBar extends StatelessWidget {
                   label: 'Profile',
                   isSelected: currentIndex == 4,
                   onTap: () => onTap(4),
+                  onLongPress: () {
+                    HapticFeedback.lightImpact();
+                    const AccountSwitcherSheet().show(context);
+                  },
                   profileImageUrl: profileImageUrl,
                 ),
               ] else ...[
@@ -146,6 +147,10 @@ class OrganizationBottomNavBar extends StatelessWidget {
                   label: 'Profile',
                   isSelected: currentIndex == 4,
                   onTap: () => onTap(4),
+                  onLongPress: () {
+                    HapticFeedback.lightImpact();
+                    const AccountSwitcherSheet().show(context);
+                  },
                   profileImageUrl: profileImageUrl,
                 ),
               ],
@@ -163,12 +168,14 @@ class _NavBarItem extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onTap,
+    this.onLongPress,
     this.profileImageUrl,
   });
   final Widget icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   final String? profileImageUrl;
 
@@ -176,6 +183,7 @@ class _NavBarItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
