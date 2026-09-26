@@ -41,8 +41,13 @@ class OrganizationListingAndDetailsCubit
 
         /// Check if the selected organization is null
         if (orgs.isNotEmpty && state.selectedOrganization == null) {
+          final currentOrgId = Feggy.navKey.currentContext?.read<AppCubit>().state.currentUser?.organizationId ??
+              Feggy.navKey.currentContext?.read<AppCubit>().state.currentUser?.mentor?.org?.id;
+          final match = (currentOrgId != null)
+              ? orgs.firstWhere((o) => o.id == currentOrgId, orElse: () => orgs.first)
+              : orgs.first;
           if (isClosed) return;
-          emit(state.copyWith(selectedOrganization: orgs.first));
+          emit(state.copyWith(selectedOrganization: match));
           return;
         }
 

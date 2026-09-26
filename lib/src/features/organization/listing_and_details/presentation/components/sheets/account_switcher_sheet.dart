@@ -178,62 +178,90 @@ class _AccountSwitcherSheetState extends State<AccountSwitcherSheet> {
                     : (data is Map && data['data'] is List ? data['data'] as List : []));
 
             if (result.isNotEmpty) {
-              // Find matching org or default to first
-              Map? matchedOrg;
               for (final org in result) {
-                if (org is Map) {
-                  final oId = org['id'] as int?;
-                  if (oId != null &&
-                      (account.organizationId == oId ||
-                          account.mentor?.org?.id == oId)) {
-                    matchedOrg = org;
-                    break;
-                  }
-                }
-              }
-              matchedOrg ??= result.first as Map;
+                if (org is! Map) continue;
+                final orgId = (org['id'] is int)
+                    ? org['id'] as int
+                    : int.tryParse(org['id']?.toString() ?? '');
+                final orgName = org['name']?.toString() ?? org['organization_name']?.toString();
+                final orgLogo = org['logo']?.toString() ?? org['organization_logo']?.toString();
 
-              final orgId = matchedOrg['id'] as int?;
-              final orgName = matchedOrg['name']?.toString() ?? matchedOrg['organization_name']?.toString();
-              final orgLogo = matchedOrg['logo']?.toString() ?? matchedOrg['organization_logo']?.toString();
+                if (orgId == null || orgName == null || orgName.trim().isEmpty) continue;
 
-              print('🏢 Found organization: id=$orgId, name="$orgName", logo="$orgLogo"');
-
-              if (orgName != null && orgName.isNotEmpty) {
-                _ownerOrgNames['${account.mobileNumber}_${account.userRole}'] = orgName;
-                _ownerOrgNames['${account.id}_${account.userRole}'] = orgName;
-                _ownerOrgNames['${account.id}'] = orgName;
-                if (account.mobileNumber != null) {
-                  _ownerOrgNames[account.mobileNumber!] = orgName;
-                }
+                _ownerOrgNames['org_$orgId'] = orgName.trim();
+                _ownerOrgNames['${account.id}_$orgId'] = orgName.trim();
                 hasChanges = true;
 
-                // Re-read the latest account state
                 if (mounted) {
                   final latestAccounts = appCubit.state.accounts;
-                  final latestAccount = latestAccounts.firstWhere(
-                    (a) => a.id == account.id && a.userRole == account.userRole,
-                    orElse: () => account,
-                  );
+                  final existingIndex = latestAccounts.indexWhere((a) =>
+                      (a.userRole == 34 || a.userRole == 20 || a.userRole != 35) &&
+                      a.mobileNumber == account.mobileNumber &&
+                      ((a.organizationId == orgId) || (a.mentor?.org?.id == orgId)));
 
-                  final updatedUser = latestAccount.copyWith(
-                    organizationId: orgId ?? latestAccount.organizationId,
-                    organizationName: orgName,
-                    profilePicture: (orgLogo != null && orgLogo.isNotEmpty)
-                        ? orgLogo
-                        : latestAccount.profilePicture,
-                    mentor: latestAccount.mentor?.copyWith(
-                      org: Org(
-                        id: orgId ?? latestAccount.mentor?.org?.id,
-                        name: orgName,
+                  if (existingIndex != -1) {
+                    final existing = latestAccounts[existingIndex];
+                    final updatedUser = existing.copyWith(
+                      organizationId: orgId,
+                      organizationName: orgName.trim(),
+                      profilePicture: (orgLogo != null && orgLogo.isNotEmpty)
+                          ? orgLogo
+                          : existing.profilePicture,
+                      mentor: existing.mentor?.copyWith(
+                        org: Org(id: orgId, name: orgName.trim()),
+                      ) ?? Mentor(
+                        id: orgId,
+                        name: orgName.trim(),
+                        org: Org(id: orgId, name: orgName.trim()),
                       ),
-                    ) ?? Mentor(
-                      id: orgId,
-                      name: orgName,
-                      org: Org(id: orgId, name: orgName),
-                    ),
-                  );
-                  appCubit.updateAccount(updatedUser);
+                    );
+                    appCubit.updateAccount(updatedUser);
+                  } else {
+                    final hasUnassigned = latestAccounts.any((a) =>
+                        (a.userRole == 34 || a.userRole == 20 || a.userRole != 35) &&
+                        a.mobileNumber == account.mobileNumber &&
+                        a.organizationId == null &&
+                        a.mentor?.org?.id == null);
+
+                    if (hasUnassigned) {
+                      final unassigned = latestAccounts.firstWhere((a) =>
+                          (a.userRole == 34 || a.userRole == 20 || a.userRole != 35) &&
+                          a.mobileNumber == account.mobileNumber &&
+                          a.organizationId == null &&
+                          a.mentor?.org?.id == null);
+                      final updatedUser = unassigned.copyWith(
+                        organizationId: orgId,
+                        organizationName: orgName.trim(),
+                        profilePicture: (orgLogo != null && orgLogo.isNotEmpty)
+                            ? orgLogo
+                            : unassigned.profilePicture,
+                        mentor: unassigned.mentor?.copyWith(
+                          org: Org(id: orgId, name: orgName.trim()),
+                        ) ?? Mentor(
+                          id: orgId,
+                          name: orgName.trim(),
+                          org: Org(id: orgId, name: orgName.trim()),
+                        ),
+                      );
+                      appCubit.updateAccount(updatedUser);
+                    } else {
+                      final newOrgAccount = account.copyWith(
+                        organizationId: orgId,
+                        organizationName: orgName.trim(),
+                        profilePicture: (orgLogo != null && orgLogo.isNotEmpty)
+                            ? orgLogo
+                            : account.profilePicture,
+                        mentor: account.mentor?.copyWith(
+                          org: Org(id: orgId, name: orgName.trim()),
+                        ) ?? Mentor(
+                          id: orgId,
+                          name: orgName.trim(),
+                          org: Org(id: orgId, name: orgName.trim()),
+                        ),
+                      );
+                      appCubit.updateAccount(newOrgAccount);
+                    }
+                  }
                 }
               }
             }
@@ -256,17 +284,17 @@ class _AccountSwitcherSheetState extends State<AccountSwitcherSheet> {
     final rawAccounts = appCubit.state.accounts;
     final accounts = rawAccounts.fold<List<LoginSuccessModel>>([], (prev, acc) {
       final isOwner = acc.userRole == 34 || acc.userRole == 20 || acc.userRole != 35;
-      final orgKey = isOwner
-          ? (acc.mentor?.org?.id?.toString() ?? acc.organizationId?.toString() ?? acc.mentor?.org?.name ?? '')
-          : '';
+      final orgId = acc.organizationId ?? acc.mentor?.org?.id;
+      final key = isOwner
+          ? '${acc.mobileNumber}_${acc.userRole}_$orgId'
+          : '${acc.mobileNumber}_${acc.userRole}';
       if (!prev.any((a) {
         final aIsOwner = a.userRole == 34 || a.userRole == 20 || a.userRole != 35;
-        final aOrgKey = aIsOwner
-            ? (a.mentor?.org?.id?.toString() ?? a.organizationId?.toString() ?? a.mentor?.org?.name ?? '')
-            : '';
-        return a.mobileNumber == acc.mobileNumber &&
-            a.userRole == acc.userRole &&
-            (!isOwner || aOrgKey == orgKey);
+        final aOrgId = a.organizationId ?? a.mentor?.org?.id;
+        final aKey = aIsOwner
+            ? '${a.mobileNumber}_${a.userRole}_$aOrgId'
+            : '${a.mobileNumber}_${a.userRole}';
+        return aKey == key;
       })) {
         prev.add(acc);
       }
@@ -323,27 +351,23 @@ class _AccountSwitcherSheetState extends State<AccountSwitcherSheet> {
                     final index = entry.key;
                     final account = entry.value;
                     final isOwner = account.userRole == 34 || account.userRole == 20 || account.userRole != 35;
+                    final currentOrgId = currentUser?.organizationId ?? currentUser?.mentor?.org?.id;
+                    final accountOrgId = account.organizationId ?? account.mentor?.org?.id;
                     final isActive = currentUser != null &&
                         account.id == currentUser.id &&
                         account.userRole == currentUser.userRole &&
-                        (!isOwner ||
-                            (account.mentor?.org?.id ?? account.organizationId) ==
-                                (currentUser.mentor?.org?.id ?? currentUser.organizationId));
+                        (!isOwner || (accountOrgId != null && accountOrgId == currentOrgId));
 
-                    final key = '${account.mobileNumber}_${account.userRole}';
-                    final idKey = '${account.id}_${account.userRole}';
-                    final cachedOrgName = _ownerOrgNames[key] ??
-                        _ownerOrgNames[idKey] ??
-                        _ownerOrgNames['${account.id}'] ??
-                        _ownerOrgNames[account.mobileNumber ?? ''];
+                    final cachedOrgName = _ownerOrgNames['org_$accountOrgId'] ??
+                        _ownerOrgNames['${account.id}_$accountOrgId'];
 
                     final String name = isOwner
-                        ? ((cachedOrgName != null && cachedOrgName.isNotEmpty)
-                            ? cachedOrgName
-                            : ((account.organizationName != null &&
-                                    account.organizationName!.isNotEmpty &&
-                                    account.organizationName != 'null')
-                                ? account.organizationName!
+                        ? ((account.organizationName != null &&
+                                account.organizationName!.isNotEmpty &&
+                                account.organizationName != 'null')
+                            ? account.organizationName!
+                            : ((cachedOrgName != null && cachedOrgName.isNotEmpty)
+                                ? cachedOrgName
                                 : ((account.mentor?.org?.name != null &&
                                         account.mentor!.org!.name!.isNotEmpty &&
                                         account.mentor!.org!.name != 'null')
@@ -355,8 +379,8 @@ class _AccountSwitcherSheetState extends State<AccountSwitcherSheet> {
                         ? 'Trainer'
                         : 'Fitness Center Owner';
 
-                    final activeUserPic = (isActive && currentUser?.profilePicture != null)
-                        ? currentUser!.profilePicture.toString()
+                    final activeUserPic = (isActive && currentUser.profilePicture != null)
+                        ? currentUser.profilePicture.toString()
                         : null;
                     final accountPic = account.profilePicture?.toString();
 

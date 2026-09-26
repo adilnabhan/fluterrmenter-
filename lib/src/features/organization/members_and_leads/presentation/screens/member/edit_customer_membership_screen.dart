@@ -399,7 +399,7 @@ class _EditCustomerMembershipScreenState
             ),
             const SizedBox(height: 4),
             Text(
-              '${widget.currentMembership.startDate?.format('dd MMM yyyy') ?? 'N/A'} — ${widget.currentMembership.endDate?.format('dd MMM yyyy') ?? 'N/A'}',
+              '${widget.currentMembership.startDate?.format('dd MMM yyyy') ?? 'N/A'} — ${widget.currentMembership.inclusiveEndDate?.format('dd MMM yyyy') ?? 'N/A'}',
               style: AppStyles.text12Px.poppins.w400.textGrey,
             ),
           ],

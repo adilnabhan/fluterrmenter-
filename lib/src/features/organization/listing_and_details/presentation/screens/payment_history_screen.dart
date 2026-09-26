@@ -362,51 +362,53 @@ class _AllPaymentsTab extends StatelessWidget {
     final dateLabel = _getDateLabel();
     final countText = dateLabel.isNotEmpty ? '$baseLabel $dateLabel' : baseLabel;
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: allPayment?.results.length ?? 0,
-      itemBuilder: (context, index) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (index == 0) const SizedBox(height: 16),
-            if (index == 0)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    countText,
-                    style: AppStyles.text14Px.poppins.copyWith(
-                      color: Colors.grey,
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      text: 'Total: ',
-                      style: AppStyles.text14Px.poppins.copyWith(
-                        color: Colors.black,
-                      ),
-                      children: [
-                        TextSpan(
-                          text:
-                              '₹${_formatAmount(allPayment?.totalAmount, allPayment?.totalPaidToday ?? 0)}',
-                          style: AppStyles.text16Px.poppins.w700.copyWith(
-                            color: Colors.green,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                countText,
+                style: AppStyles.text14Px.poppins.copyWith(
+                  color: Colors.grey,
+                ),
               ),
-            if (index == 0) const SizedBox(height: 16),
-            paymentCard(
-              isAllPayments: isAllPayment,
-              data: allPayment?.results[index],
-            ),
-          ],
-        );
-      },
+              RichText(
+                text: TextSpan(
+                  text: 'Total: ',
+                  style: AppStyles.text14Px.poppins.copyWith(
+                    color: Colors.black,
+                  ),
+                  children: [
+                    TextSpan(
+                      text:
+                          '₹${_formatAmount(allPayment?.totalAmount, allPayment?.totalPaidToday ?? 0)}',
+                      style: AppStyles.text16Px.poppins.w700.copyWith(
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            itemCount: allPayment?.results.length ?? 0,
+            itemBuilder: (context, index) {
+              return paymentCard(
+                isAllPayments: isAllPayment,
+                data: allPayment?.results[index],
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -845,7 +845,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                         icon: Icons.event_busy,
                         label: 'End Date',
                         value:
-                            membership.endDate?.format('dd MMM yyyy') ?? 'N/A',
+                            membership.inclusiveEndDate?.format('dd MMM yyyy') ?? 'N/A',
                         color: Colors.red,
                       ),
                     ),
@@ -1030,6 +1030,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
     final elapsedDays = now.difference(startDate).inDays;
     final progress = elapsedDays / totalDays;
     final remainingDays = endDate.difference(now).inDays;
+    final isLastDay = remainingDays == 0 && endDate.isAfter(now);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1060,9 +1061,13 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
         Text(
           remainingDays > 0
               ? '🕒 $remainingDays days remaining'
-              : '✅ Membership completed',
+              : isLastDay
+                  ? '🕒 Last day today'
+                  : '✅ Membership completed',
           style: AppStyles.text12Px.poppins.w500.copyWith(
-            color: remainingDays > 0 ? Colors.orange.shade700 : Colors.green,
+            color: (remainingDays > 0 || isLastDay)
+                ? Colors.orange.shade700
+                : Colors.green,
           ),
         ),
       ],
@@ -2761,7 +2766,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
     DateTime? calcStartDate;
     if (membership.endDate != null &&
         membership.endDate!.isAfter(DateTime.now())) {
-      calcStartDate = membership.endDate!.add(const Duration(days: 1));
+      calcStartDate = membership.endDate;
     } else {
       calcStartDate = DateTime.now();
     }

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "113964156128",
-    "project_id": "push-notification-2f69f",
-    "storage_bucket": "push-notification-2f69f.appspot.com"
+    "project_number": "182234593850",
+    "project_id": "discipl-459c5",
+    "storage_bucket": "discipl-459c5.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:113964156128:android:65bec2ba4b1e9a9d3afc85",
+        "mobilesdk_app_id": "1:182234593850:android:74f9e1e5aabdbf893a5303",
         "android_client_info": {
           "package_name": "com.discipl.mentor_mobile_app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDjKl1dPxUfKtp3KEIC9WOdNltzr0k74a0"
+          "current_key": "AIzaSyDZzZpfjFaHEdnk6Rusrco_H1gv38ps6vo"
         }
       ],
       "services": {

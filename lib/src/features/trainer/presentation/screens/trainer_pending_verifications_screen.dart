@@ -28,6 +28,24 @@ class _TrainerPendingVerificationsScreenState
   List<Map<String, dynamic>> _pendingVerifications = [];
   List<Map<String, dynamic>> _verificationHistory = [];
 
+  // Scroll controllers for pagination
+  final ScrollController _pendingScrollController = ScrollController();
+  final ScrollController _historyScrollController = ScrollController();
+
+  // Pending pagination state
+  int _pendingPage = 1;
+  bool _hasMorePending = true;
+  bool _isFetchingMorePending = false;
+  String? _pendingNextUrl;
+  int? _pendingTotalCount;
+
+  // History pagination state
+  int _historyPage = 1;
+  bool _hasMoreHistory = true;
+  bool _isFetchingMoreHistory = false;
+  String? _historyNextUrl;
+  int? _historyTotalCount;
+
   final Set<int> _selectedSessionIds = {};
   bool _isBulkVerifying = false;
   bool _isSelectionMode = false;
@@ -134,6 +152,23 @@ class _TrainerPendingVerificationsScreenState
       initialIndex: widget.initialTabIndex,
     );
     _tabController.addListener(_handleTabSelection);
+
+    _pendingScrollController.addListener(() {
+      if (_pendingScrollController.hasClients &&
+          _pendingScrollController.position.pixels >=
+              _pendingScrollController.position.maxScrollExtent - 200) {
+        _fetchMorePendingVerifications();
+      }
+    });
+
+    _historyScrollController.addListener(() {
+      if (_historyScrollController.hasClients &&
+          _historyScrollController.position.pixels >=
+              _historyScrollController.position.maxScrollExtent - 200) {
+        _fetchMoreVerificationHistory();
+      }
+    });
+
     if (widget.initialTabIndex == 1) {
       _fetchVerificationHistory();
     } else {
@@ -159,6 +194,8 @@ class _TrainerPendingVerificationsScreenState
 
   @override
   void dispose() {
+    _pendingScrollController.dispose();
+    _historyScrollController.dispose();
     _searchController.dispose();
     _historySearchController.dispose();
     _tabController.dispose();
@@ -167,16 +204,29 @@ class _TrainerPendingVerificationsScreenState
 
   final Map<int, bool> _sessionAssignmentMap = {};
 
-  Future<void> _fetchPendingVerifications() async {
+  Future<void> _fetchPendingVerifications({bool isRefresh = false}) async {
     if (!mounted) return;
-    setState(() {
-      _isLoadingPending = true;
-      _pendingVerifications = [];
-      _selectedSessionIds.clear();
-      _isSelectionMode = false;
-    });
+    if (isRefresh) {
+      _pendingPage = 1;
+      _hasMorePending = true;
+      _pendingNextUrl = null;
+    } else {
+      setState(() {
+        _isLoadingPending = true;
+        _pendingVerifications = [];
+        _selectedSessionIds.clear();
+        _isSelectionMode = false;
+        _pendingPage = 1;
+        _hasMorePending = true;
+        _pendingNextUrl = null;
+        _pendingTotalCount = null;
+      });
+    }
 
-    final Map<String, dynamic> queryParams = {};
+    final Map<String, dynamic> queryParams = {
+      'page': 1,
+      'page_size': 20,
+    };
     if (_searchQuery.trim().isNotEmpty) {
       queryParams['search'] = _searchQuery.trim();
     }
@@ -193,14 +243,36 @@ class _TrainerPendingVerificationsScreenState
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
-      if (response.statusCode == 200 && response.data is Map) {
-        final data = response.data as Map;
-        final pendingList =
-            data['pending_verifications'] as List<dynamic>? ?? [];
+      if (response.statusCode == 200) {
+        final data = response.data;
+        List<dynamic> pendingList = [];
+        String? nextUrl;
+        int? count;
+
+        if (data is Map) {
+          pendingList = List<dynamic>.from(
+            data['results'] as List? ??
+                data['pending_verifications'] as List? ??
+                data['data'] as List? ??
+                [],
+          );
+          nextUrl = data['next']?.toString();
+          if (data['count'] != null) {
+            count = int.tryParse(data['count'].toString());
+          } else if (data['total'] != null) {
+            count = int.tryParse(data['total'].toString());
+          }
+        } else if (data is List) {
+          pendingList = data;
+          nextUrl = null;
+          count = data.length;
+        }
+
         final parsedPending =
             pendingList
                 .map((e) => Map<String, dynamic>.from(e as Map))
                 .toList();
+
         for (final item in parsedPending) {
           final sId = item['session_id'] as int? ?? item['id'] as int?;
           if (sId != null && sId > 0) {
@@ -211,6 +283,18 @@ class _TrainerPendingVerificationsScreenState
         if (mounted) {
           setState(() {
             _pendingVerifications = parsedPending;
+            _pendingNextUrl = nextUrl;
+            _pendingTotalCount = count;
+            _pendingPage = 1;
+            if (nextUrl != null) {
+              _hasMorePending = true;
+            } else if (data is Map && data['total_pages'] != null) {
+              final totalPages =
+                  int.tryParse(data['total_pages'].toString()) ?? 1;
+              _hasMorePending = _pendingPage < totalPages;
+            } else {
+              _hasMorePending = parsedPending.length >= 20;
+            }
             _isLoadingPending = false;
             _hasFetchedPending = true;
           });
@@ -221,6 +305,96 @@ class _TrainerPendingVerificationsScreenState
     } catch (e) {
       if (mounted) setState(() => _isLoadingPending = false);
       Dialogs.showSnack(msg: 'Failed to load pending verifications');
+    }
+  }
+
+  Future<void> _fetchMorePendingVerifications() async {
+    if (_isFetchingMorePending ||
+        !_hasMorePending ||
+        _isLoadingPending ||
+        !mounted) {
+      return;
+    }
+
+    setState(() {
+      _isFetchingMorePending = true;
+    });
+
+    final nextPage = _pendingPage + 1;
+    final Map<String, dynamic> queryParams = {
+      'page': nextPage,
+      'page_size': 20,
+    };
+    if (_searchQuery.trim().isNotEmpty) {
+      queryParams['search'] = _searchQuery.trim();
+    }
+    if (_selectedDate != null) {
+      final dateStr =
+          '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
+      queryParams['date'] = dateStr;
+    }
+
+    try {
+      final String requestUri =
+          _pendingNextUrl ?? ApiUris.pendingVerifications;
+      final response = await DioClient().dio.get<dynamic>(
+        requestUri,
+        queryParameters: _pendingNextUrl == null ? queryParams : null,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        List<dynamic> pendingList = [];
+        String? nextUrl;
+
+        if (data is Map) {
+          pendingList = List<dynamic>.from(
+            data['results'] as List? ??
+                data['pending_verifications'] as List? ??
+                data['data'] as List? ??
+                [],
+          );
+          nextUrl = data['next']?.toString();
+        } else if (data is List) {
+          pendingList = data;
+          nextUrl = null;
+        }
+
+        final parsedMore =
+            pendingList
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList();
+
+        for (final item in parsedMore) {
+          final sId = item['session_id'] as int? ?? item['id'] as int?;
+          if (sId != null && sId > 0) {
+            _sessionAssignmentMap[sId] = _isAssignedWorkout(item);
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            _pendingVerifications.addAll(parsedMore);
+            _pendingPage = nextPage;
+            _pendingNextUrl = nextUrl;
+            if (nextUrl != null) {
+              _hasMorePending = true;
+            } else if (data is Map && data['total_pages'] != null) {
+              final totalPages =
+                  int.tryParse(data['total_pages'].toString()) ?? 1;
+              _hasMorePending = _pendingPage < totalPages;
+            } else {
+              _hasMorePending = parsedMore.length >= 20;
+            }
+            _isFetchingMorePending = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isFetchingMorePending = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isFetchingMorePending = false);
     }
   }
 
@@ -282,14 +456,27 @@ class _TrainerPendingVerificationsScreenState
     }
   }
 
-  Future<void> _fetchVerificationHistory() async {
+  Future<void> _fetchVerificationHistory({bool isRefresh = false}) async {
     if (!mounted) return;
-    setState(() {
-      _isLoadingHistory = true;
-      _verificationHistory = [];
-    });
+    if (isRefresh) {
+      _historyPage = 1;
+      _hasMoreHistory = true;
+      _historyNextUrl = null;
+    } else {
+      setState(() {
+        _isLoadingHistory = true;
+        _verificationHistory = [];
+        _historyPage = 1;
+        _hasMoreHistory = true;
+        _historyNextUrl = null;
+        _historyTotalCount = null;
+      });
+    }
 
-    final Map<String, dynamic> queryParams = {};
+    final Map<String, dynamic> queryParams = {
+      'page': 1,
+      'page_size': 20,
+    };
     if (_historySearchQuery.trim().isNotEmpty) {
       queryParams['search'] = _historySearchQuery.trim();
     }
@@ -306,10 +493,34 @@ class _TrainerPendingVerificationsScreenState
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
-      if (response.statusCode == 200 && response.data is List) {
-        final data = response.data as List<dynamic>;
+      if (response.statusCode == 200) {
+        final data = response.data;
+        List<dynamic> results = [];
+        String? nextUrl;
+        int? count;
+
+        if (data is Map) {
+          results = List<dynamic>.from(
+            data['results'] as List? ??
+                data['verification_history'] as List? ??
+                data['history'] as List? ??
+                data['data'] as List? ??
+                [],
+          );
+          nextUrl = data['next']?.toString();
+          if (data['count'] != null) {
+            count = int.tryParse(data['count'].toString());
+          } else if (data['total'] != null) {
+            count = int.tryParse(data['total'].toString());
+          }
+        } else if (data is List) {
+          results = data;
+          nextUrl = null;
+          count = data.length;
+        }
+
         final parsedHistory =
-            data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+            results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
         for (final item in parsedHistory) {
           final sId = item['session_id'] as int? ?? item['id'] as int?;
@@ -323,6 +534,18 @@ class _TrainerPendingVerificationsScreenState
         if (mounted) {
           setState(() {
             _verificationHistory = parsedHistory;
+            _historyNextUrl = nextUrl;
+            _historyTotalCount = count;
+            _historyPage = 1;
+            if (nextUrl != null) {
+              _hasMoreHistory = true;
+            } else if (data is Map && data['total_pages'] != null) {
+              final totalPages =
+                  int.tryParse(data['total_pages'].toString()) ?? 1;
+              _hasMoreHistory = _historyPage < totalPages;
+            } else {
+              _hasMoreHistory = parsedHistory.length >= 20;
+            }
             _isLoadingHistory = false;
             _hasFetchedHistory = true;
           });
@@ -333,6 +556,97 @@ class _TrainerPendingVerificationsScreenState
     } catch (e) {
       if (mounted) setState(() => _isLoadingHistory = false);
       Dialogs.showSnack(msg: 'Failed to load verification history');
+    }
+  }
+
+  Future<void> _fetchMoreVerificationHistory() async {
+    if (_isFetchingMoreHistory ||
+        !_hasMoreHistory ||
+        _isLoadingHistory ||
+        !mounted) {
+      return;
+    }
+
+    setState(() {
+      _isFetchingMoreHistory = true;
+    });
+
+    final nextPage = _historyPage + 1;
+    final Map<String, dynamic> queryParams = {
+      'page': nextPage,
+      'page_size': 20,
+    };
+    if (_historySearchQuery.trim().isNotEmpty) {
+      queryParams['search'] = _historySearchQuery.trim();
+    }
+    if (_historySelectedDate != null) {
+      final dateStr =
+          '${_historySelectedDate!.year}-${_historySelectedDate!.month.toString().padLeft(2, '0')}-${_historySelectedDate!.day.toString().padLeft(2, '0')}';
+      queryParams['date'] = dateStr;
+    }
+
+    try {
+      final String requestUri =
+          _historyNextUrl ?? ApiUris.verificationHistory;
+      final response = await DioClient().dio.get<dynamic>(
+        requestUri,
+        queryParameters: _historyNextUrl == null ? queryParams : null,
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        List<dynamic> results = [];
+        String? nextUrl;
+
+        if (data is Map) {
+          results = List<dynamic>.from(
+            data['results'] as List? ??
+                data['verification_history'] as List? ??
+                data['history'] as List? ??
+                data['data'] as List? ??
+                [],
+          );
+          nextUrl = data['next']?.toString();
+        } else if (data is List) {
+          results = data;
+          nextUrl = null;
+        }
+
+        final parsedMore =
+            results.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+
+        for (final item in parsedMore) {
+          final sId = item['session_id'] as int? ?? item['id'] as int?;
+          if (sId != null &&
+              sId > 0 &&
+              _sessionAssignmentMap.containsKey(sId)) {
+            item['is_assigned'] = _sessionAssignmentMap[sId];
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            _verificationHistory.addAll(parsedMore);
+            _historyPage = nextPage;
+            _historyNextUrl = nextUrl;
+            if (nextUrl != null) {
+              _hasMoreHistory = true;
+            } else if (data is Map && data['total_pages'] != null) {
+              final totalPages =
+                  int.tryParse(data['total_pages'].toString()) ?? 1;
+              _hasMoreHistory = _historyPage < totalPages;
+            } else {
+              _hasMoreHistory = parsedMore.length >= 20;
+            }
+            _isFetchingMoreHistory = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isFetchingMoreHistory = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isFetchingMoreHistory = false);
     }
   }
 
@@ -1053,24 +1367,47 @@ class _TrainerPendingVerificationsScreenState
         if (_isSelectionMode && pendingList.isNotEmpty)
           _buildSelectAllBar(pendingList),
         Expanded(
-          child:
-              _isLoadingPending
-                  ? const Center(child: CircularProgressIndicator())
-                  : pendingList.isEmpty
-                  ? _buildEmptyState(
-                    hasActiveFilter
-                        ? 'No Matching Verifications'
-                        : 'No Pending Verifications',
-                    hasActiveFilter
-                        ? 'Try adjusting your search or date filter.'
-                        : 'You have caught up with all client workouts.',
-                    Icons.verified_outlined,
-                  )
-                  : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: pendingList.length,
-                    itemBuilder: (context, index) {
-                      final item = pendingList[index];
+          child: RefreshIndicator(
+            onRefresh: () => _fetchPendingVerifications(isRefresh: true),
+            child: _isLoadingPending
+                ? const Center(child: CircularProgressIndicator())
+                : pendingList.isEmpty
+                    ? SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          child: _buildEmptyState(
+                            hasActiveFilter
+                                ? 'No Matching Verifications'
+                                : 'No Pending Verifications',
+                            hasActiveFilter
+                                ? 'Try adjusting your search or date filter.'
+                                : 'You have caught up with all client workouts.',
+                            Icons.verified_outlined,
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: _pendingScrollController,
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: pendingList.length + (_isFetchingMorePending ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == pendingList.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                                ),
+                              ),
+                            );
+                          }
+                          final item = pendingList[index];
                       final sessionId = item['session_id'] as int? ?? 0;
                       final customerName =
                           item['customer_name'] as String? ?? 'Client';
@@ -1362,6 +1699,7 @@ class _TrainerPendingVerificationsScreenState
                       );
                     },
                   ),
+          ),
         ),
         if (_selectedSessionIds.isNotEmpty) _buildBulkActionBar(),
       ],
@@ -1776,24 +2114,47 @@ class _TrainerPendingVerificationsScreenState
           ),
         ),
         Expanded(
-          child:
-              _isLoadingHistory
-                  ? const Center(child: CircularProgressIndicator())
-                  : historyList.isEmpty
-                  ? _buildEmptyState(
-                    hasActiveFilter
-                        ? 'No Matching Verifications'
-                        : 'No History',
-                    hasActiveFilter
-                        ? 'Try adjusting your search or date filter.'
-                        : 'You have not verified any workouts yet.',
-                    Icons.history,
-                  )
-                  : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: historyList.length,
-                    itemBuilder: (context, index) {
-                      final item = historyList[index];
+          child: RefreshIndicator(
+            onRefresh: () => _fetchVerificationHistory(isRefresh: true),
+            child: _isLoadingHistory
+                ? const Center(child: CircularProgressIndicator())
+                : historyList.isEmpty
+                    ? SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          child: _buildEmptyState(
+                            hasActiveFilter
+                                ? 'No Matching Verifications'
+                                : 'No History',
+                            hasActiveFilter
+                                ? 'Try adjusting your search or date filter.'
+                                : 'You have not verified any workouts yet.',
+                            Icons.history,
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: _historyScrollController,
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: historyList.length + (_isFetchingMoreHistory ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == historyList.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                                ),
+                              ),
+                            );
+                          }
+                          final item = historyList[index];
                       final customerName =
                           item['customer_name'] as String? ?? 'Client';
                       final customerId = item['customer_id'] as int? ??
@@ -2000,6 +2361,7 @@ class _TrainerPendingVerificationsScreenState
                       );
                     },
                   ),
+          ),
         ),
       ],
     );

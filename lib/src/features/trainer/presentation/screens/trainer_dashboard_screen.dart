@@ -462,153 +462,162 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                             ),
                           ),
                           const SizedBox(height: 14),
-                          SizedBox(
-                            height: 100,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Container(
+                              width: double.infinity,
+                              clipBehavior: Clip.hardEdge,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE3D4B6),
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              itemCount: upcomingBirthdays.length,
-                              separatorBuilder:
-                                  (context, index) => const SizedBox(width: 12),
-                              itemBuilder: (context, index) {
-                                final bday = upcomingBirthdays[index];
-                                final String name =
-                                    bday['name'] as String? ?? 'N/A';
-                                final String dateStr =
-                                    bday['date_of_birth'] as String? ?? '';
-                                final imgUrl = bday['profile_picture'];
-                                final adNo =
-                                    bday['admission_no']?.toString() ??
-                                    bday['id']?.toString() ??
-                                    '';
-                                final textColor = const Color(0xFF64542B);
-
-                                return Container(
-                                  width: MediaQuery.of(context).size.width - 70,
-                                  clipBehavior: Clip.hardEdge,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE3D4B6),
-                                    borderRadius: BorderRadius.circular(16),
+                              child: Stack(
+                                children: [
+                                  Positioned(
+                                    top: -5,
+                                    right: 0,
+                                    child: Image.asset(
+                                      'assets/images/png/icons/hat.png',
+                                      width: 65,
+                                      height: 65,
+                                      fit: BoxFit.contain,
+                                    ),
                                   ),
-                                  child: Stack(
-                                    children: [
-                                      Positioned(
-                                        top: -5,
-                                        right: 0,
-                                        child: Image.asset(
-                                          'assets/images/png/icons/hat.png',
-                                          width: 65,
-                                          height: 65,
-                                          fit: BoxFit.contain,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(16),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Row(
                                           children: [
                                             Text(
                                               'BIRTHDAY',
-                                              style: AppStyles
-                                                  .text13Px
-                                                  .poppins
-                                                  .w700
-                                                  .copyWith(color: textColor),
+                                              style: AppStyles.text13Px.poppins.w700.copyWith(
+                                                color: const Color(0xFF64542B),
+                                                letterSpacing: 0.8,
+                                              ),
                                             ),
-                                            const Spacer(),
-                                            Row(
-                                              children: [
-                                                Container(
-                                                  width: 42,
-                                                  height: 42,
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                        shape: BoxShape.circle,
-                                                        color: Colors.white,
-                                                      ),
-                                                  child: ClipOval(
-                                                    child:
-                                                        imgUrl != null
-                                                            ? Image.network(
-                                                              imgUrl as String,
-                                                              fit: BoxFit.cover,
-                                                              errorBuilder:
-                                                                  (
-                                                                    _,
-                                                                    __,
-                                                                    ___,
-                                                                  ) => Icon(
-                                                                    Icons
-                                                                        .person,
-                                                                    size: 24,
-                                                                    color:
-                                                                        textColor,
-                                                                  ),
-                                                            )
-                                                            : Icon(
-                                                              Icons.person,
-                                                              size: 24,
-                                                              color: textColor,
-                                                            ),
+                                            if (upcomingBirthdays.length > 1) ...[
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 7,
+                                                  vertical: 1.5,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFF64542B).withValues(alpha: 0.15),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                child: Text(
+                                                  '${upcomingBirthdays.length}',
+                                                  style: AppStyles.text10Px.poppins.w600.copyWith(
+                                                    color: const Color(0xFF64542B),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        name,
-                                                        style: AppStyles
-                                                            .text14Px
-                                                            .poppins
-                                                            .w700
-                                                            .copyWith(
-                                                              color: textColor,
-                                                            ),
-                                                        maxLines: 1,
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
-                                                      ),
-                                                      Text(
-                                                        'On $dateStr',
-                                                        style: AppStyles
-                                                            .text12Px
-                                                            .poppins
-                                                            .w500
-                                                            .copyWith(
-                                                              color: textColor,
-                                                            ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                if (adNo.isNotEmpty)
-                                                  Text(
-                                                    'Ad No - $adNo',
-                                                    style: AppStyles
-                                                        .text12Px
-                                                        .poppins
-                                                        .w600
-                                                        .copyWith(
-                                                          color: textColor,
-                                                        ),
-                                                  ),
-                                              ],
-                                            ),
+                                              ),
+                                            ],
                                           ],
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 12),
+                                        SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          physics: const BouncingScrollPhysics(),
+                                          child: Row(
+                                            children: List.generate(upcomingBirthdays.length, (index) {
+                                              final bday = upcomingBirthdays[index];
+                                              final String name =
+                                                  bday['name'] as String? ?? 'N/A';
+                                              final String dateStr =
+                                                  bday['date_of_birth'] as String? ?? '';
+                                              final imgUrl = bday['profile_picture'];
+                                              final adNo =
+                                                  bday['admission_no']?.toString() ??
+                                                  bday['id']?.toString() ??
+                                                  '';
+                                              const textColor = Color(0xFF64542B);
+
+                                              return Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  if (index > 0)
+                                                    Container(
+                                                      height: 32,
+                                                      width: 1.2,
+                                                      margin: const EdgeInsets.symmetric(horizontal: 14),
+                                                      color: textColor.withValues(alpha: 0.25),
+                                                    ),
+                                                  Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Container(
+                                                        width: 42,
+                                                        height: 42,
+                                                        decoration: const BoxDecoration(
+                                                          shape: BoxShape.circle,
+                                                          color: Colors.white,
+                                                        ),
+                                                        child: ClipOval(
+                                                          child: imgUrl != null &&
+                                                                  (imgUrl as String).isNotEmpty
+                                                              ? Image.network(
+                                                                  imgUrl as String,
+                                                                  fit: BoxFit.cover,
+                                                                  errorBuilder: (_, __, ___) => const Icon(
+                                                                    Icons.person,
+                                                                    size: 24,
+                                                                    color: textColor,
+                                                                  ),
+                                                                )
+                                                              : const Icon(
+                                                                  Icons.person,
+                                                                  size: 24,
+                                                                  color: textColor,
+                                                                ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 10),
+                                                      Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Text(
+                                                            name,
+                                                            style: AppStyles.text14Px.poppins.w700.copyWith(
+                                                              color: textColor,
+                                                            ),
+                                                            maxLines: 1,
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                          Text(
+                                                            'On $dateStr',
+                                                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                                                              color: textColor,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      if (adNo.isNotEmpty && upcomingBirthdays.length == 1) ...[
+                                                        const SizedBox(width: 12),
+                                                        Text(
+                                                          'Ad No - $adNo',
+                                                          style: AppStyles.text12Px.poppins.w600.copyWith(
+                                                            color: textColor,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ],
+                                                  ),
+                                                ],
+                                              );
+                                            }),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                );
-                              },
+                                ],
+                              ),
                             ),
                           ),
                         ],

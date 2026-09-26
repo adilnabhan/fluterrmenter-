@@ -77,3 +77,18 @@ class MembershipDataModel with _$MembershipDataModel {
   factory MembershipDataModel.fromJson(Map<String, dynamic> json) =>
       _$MembershipDataModelFromJson(json);
 }
+
+extension MembershipDataModelX on MembershipDataModel {
+  /// The inclusive end date of the membership (the last active day for the member).
+  ///
+  /// Since the system/backend stores [endDate] as an exclusive expiry boundary
+  /// (e.g. startDate + 30 days = 17 Oct 00:00:00), the actual last day the member
+  /// can use the gym is [endDate] - 1 day (e.g. 16 Oct).
+  DateTime? get inclusiveEndDate {
+    if (endDate == null) return null;
+    if (startDate != null && endDate!.isAfter(startDate!)) {
+      return endDate!.subtract(const Duration(days: 1));
+    }
+    return endDate;
+  }
+}

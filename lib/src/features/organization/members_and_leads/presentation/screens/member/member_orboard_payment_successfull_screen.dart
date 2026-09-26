@@ -87,11 +87,18 @@ class _MemberOnboardPaymentSuccessScreenState
   }
 
   DateTime? get _resolvedEndDate {
-    if (widget.endDate != null) return widget.endDate;
-    if (widget.memberDetails?.memberships?.isNotEmpty == true) {
-      return widget.memberDetails!.memberships!.first.endDate;
+    DateTime? rawEnd;
+    if (widget.endDate != null) {
+      rawEnd = widget.endDate;
+    } else if (widget.memberDetails?.memberships?.isNotEmpty == true) {
+      rawEnd = widget.memberDetails!.memberships!.first.endDate;
     }
-    return null;
+    if (rawEnd == null) return null;
+    final start = _resolvedStartDate;
+    if (start != null && rawEnd.isAfter(start)) {
+      return rawEnd.subtract(const Duration(days: 1));
+    }
+    return rawEnd;
   }
 
   double get _resolvedPlanAmount {

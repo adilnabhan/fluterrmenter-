@@ -113,38 +113,7 @@ class __UpcomingRenewalsListingScreenState
                         if (memebersDataum.results?.isEmpty ?? true) {
                           return ErrorUi.empty().center;
                         }
-                        return Column(
-                          spacing: 16,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '${memebersDataum.count ?? memebersDataum.results?.length ?? 0} members',
-                                  style: AppStyles.text14Px.poppins.w400.dark,
-                                ),
-                                OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    side: const BorderSide(
-                                      color: Color(0xffDDDDDD),
-                                    ),
-                                  ),
-                                  onPressed: () {},
-                                  child: Text(
-                                    'Sort by',
-                                    style: AppStyles.text12Px.poppins.copyWith(
-                                      color: const Color(0xff222222),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Expanded(
-                              child: RefreshIndicator.adaptive(
+                        return RefreshIndicator.adaptive(
                                 onRefresh: _fetch,
                                 child: ListView.separated(
                                   controller: _scrollController,
@@ -295,11 +264,8 @@ class __UpcomingRenewalsListingScreenState
                                     );
                                   },
                                 ),
-                              ),
-                            ),
-                          ],
-                        ).pad(16);
-                      },
+                              );
+                            },
                     ),
                   );
                 },

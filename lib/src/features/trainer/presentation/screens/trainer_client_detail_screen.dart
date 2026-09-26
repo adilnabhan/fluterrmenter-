@@ -277,6 +277,25 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
     }
   }
 
+  String _formatInclusiveEndDate(String? startIsoString, String? endIsoString) {
+    if (endIsoString == null || endIsoString.isEmpty) return 'N/A';
+    try {
+      final endDateOnly = endIsoString.split('T').first.trim();
+      final end = DateTime.tryParse(endDateOnly) ?? DateTime.parse(endIsoString);
+      if (startIsoString != null && startIsoString.isNotEmpty) {
+        final startDateOnly = startIsoString.split('T').first.trim();
+        final start = DateTime.tryParse(startDateOnly) ?? DateTime.parse(startIsoString);
+        if (end.isAfter(start)) {
+          final inclusiveEnd = end.subtract(const Duration(days: 1));
+          return DateFormat('dd MMM yyyy').format(inclusiveEnd);
+        }
+      }
+      return DateFormat('dd MMM yyyy').format(end);
+    } catch (_) {
+      return _formatDate(endIsoString);
+    }
+  }
+
   Widget _buildOtherDetailRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1940,7 +1959,8 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                       child: _buildDetailItem(
                                         icon: Icons.event_busy,
                                         label: 'End Date',
-                                        value: _formatDate(
+                                        value: _formatInclusiveEndDate(
+                                          membership['start_date'] as String?,
                                           membership['end_date'] as String?,
                                         ),
                                         color: Colors.red,

@@ -30,6 +30,26 @@ class _TrainerNotificationsScreenState
   String _selectedFilter = 'all'; // 'all' | 'unread'
   int _unreadCount = 0;
 
+  String get _listUri => widget.isTrainer
+      ? ApiUris.mentorNotifications
+      : ApiUris.fitnessCenterNotifications;
+
+  String get _unreadCountUri => widget.isTrainer
+      ? ApiUris.mentorNotificationsUnreadCount
+      : ApiUris.fitnessCenterNotificationsUnreadCount;
+
+  String _readUri(dynamic id) => widget.isTrainer
+      ? ApiUris.mentorNotificationRead(id)
+      : ApiUris.fitnessCenterNotificationRead(id);
+
+  String get _readAllUri => widget.isTrainer
+      ? ApiUris.mentorNotificationsReadAll
+      : ApiUris.fitnessCenterNotificationsReadAll;
+
+  String _deleteUri(dynamic id) => widget.isTrainer
+      ? ApiUris.deleteMentorNotification(id)
+      : ApiUris.deleteFitnessCenterNotification(id);
+
   @override
   void initState() {
     super.initState();
@@ -39,12 +59,22 @@ class _TrainerNotificationsScreenState
 
   Future<void> _fetchUnreadCount() async {
     try {
-      final response = await DioClient().dio.get<dynamic>(
-        ApiUris.mentorNotificationsUnreadCount,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+      Response<dynamic>? response;
+      try {
+        response = await DioClient().dio.get<dynamic>(
+          _unreadCountUri,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      } catch (_) {
+        response = await DioClient().dio.get<dynamic>(
+          ApiUris.mentorNotificationsUnreadCount,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      }
       if (response.statusCode == 200 && response.data is Map) {
-        final count = response.data['unread_count'] as int? ?? 0;
+        final count = response.data['unread_count'] as int? ??
+            response.data['count'] as int? ??
+            0;
         if (mounted) setState(() => _unreadCount = count);
       }
     } catch (_) {}
@@ -57,14 +87,12 @@ class _TrainerNotificationsScreenState
     try {
       Response<dynamic>? response;
 
-      // Primary: /api/v1/mentor/notifications/
-      String uri = ApiUris.mentorNotifications;
+      String uri = _listUri;
       final queryParams = <String>[];
       if (_selectedFilter == 'unread') {
         queryParams.add('is_read=false');
-      }
-      if (widget.orgId != null) {
-        queryParams.add('organization_id=${widget.orgId}');
+      } else if (_selectedFilter == 'read') {
+        queryParams.add('is_read=true');
       }
       if (queryParams.isNotEmpty) {
         uri += '?${queryParams.join('&')}';
@@ -76,11 +104,12 @@ class _TrainerNotificationsScreenState
           options: Options(headers: {'X-Platform': platformSource}),
         );
       } catch (_) {
-        // Fallback for trainer endpoint or generic notifications
+        // Fallback to mentor notifications if needed
         try {
-          final fallbackUri = widget.isTrainer
-              ? ApiUris.trainerNotifications
-              : ApiUris.notifications;
+          String fallbackUri = ApiUris.mentorNotifications;
+          if (queryParams.isNotEmpty) {
+            fallbackUri += '?${queryParams.join('&')}';
+          }
           response = await DioClient().dio.get<dynamic>(
             fallbackUri,
             options: Options(headers: {'X-Platform': platformSource}),
@@ -134,10 +163,17 @@ class _TrainerNotificationsScreenState
     });
     try {
       await DioClient().dio.patch<dynamic>(
-        ApiUris.mentorNotificationRead(id),
+        _readUri(id),
         options: Options(headers: {'X-Platform': platformSource}),
       );
-    } catch (_) {}
+    } catch (_) {
+      try {
+        await DioClient().dio.patch<dynamic>(
+          ApiUris.mentorNotificationRead(id),
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      } catch (_) {}
+    }
   }
 
   Future<void> _markAllAsRead() async {
@@ -157,11 +193,19 @@ class _TrainerNotificationsScreenState
 
     try {
       await DioClient().dio.patch<dynamic>(
-        ApiUris.mentorNotificationsReadAll,
+        _readAllUri,
         options: Options(headers: {'X-Platform': platformSource}),
       );
       Dialogs.showSnack(msg: 'All notifications marked as read');
-    } catch (_) {}
+    } catch (_) {
+      try {
+        await DioClient().dio.patch<dynamic>(
+          ApiUris.mentorNotificationsReadAll,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+        Dialogs.showSnack(msg: 'All notifications marked as read');
+      } catch (_) {}
+    }
   }
 
   Future<void> _deleteNotification(dynamic id, int index) async {
@@ -176,16 +220,23 @@ class _TrainerNotificationsScreenState
 
     try {
       await DioClient().dio.delete<dynamic>(
-        ApiUris.deleteMentorNotification(id),
+        _deleteUri(id),
         options: Options(headers: {'X-Platform': platformSource}),
       );
     } catch (_) {
-      if (mounted) {
-        setState(() {
-          _notifications.insert(index, item);
-          if (wasUnread) _unreadCount++;
-        });
-        Dialogs.showSnack(msg: 'Failed to delete notification');
+      try {
+        await DioClient().dio.delete<dynamic>(
+          ApiUris.deleteMentorNotification(id),
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      } catch (_) {
+        if (mounted) {
+          setState(() {
+            _notifications.insert(index, item);
+            if (wasUnread) _unreadCount++;
+          });
+          Dialogs.showSnack(msg: 'Failed to delete notification');
+        }
       }
     }
   }
@@ -268,7 +319,10 @@ class _TrainerNotificationsScreenState
         ? Map<String, dynamic>.from(item['action'] as Map)
         : <String, dynamic>{};
 
-    final customerIdRaw = action['customer_id'] ?? item['customer_id'];
+    final customerIdRaw = action['customer_id'] ??
+        action['client_id'] ??
+        item['customer_id'] ??
+        item['client_id'];
     final customerId =
         customerIdRaw != null ? int.tryParse(customerIdRaw.toString()) : null;
 
@@ -770,26 +824,17 @@ class _NotificationBellButtonState extends State<NotificationBellButton> {
           ),
           if (_unreadCount > 0)
             Positioned(
-              right: -2,
-              top: -2,
+              right: 1,
+              top: 1,
               child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: const BoxDecoration(
-                  color: Color(0xffE74C3C),
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: const Color(0xffE74C3C),
                   shape: BoxShape.circle,
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
-                child: Center(
-                  child: Text(
-                    _unreadCount > 99 ? '99+' : '$_unreadCount',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 1.5,
                   ),
                 ),
               ),

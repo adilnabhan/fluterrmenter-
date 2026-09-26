@@ -114,6 +114,7 @@ final class ApiUris {
   static final revenues = '${_v1}fitnesscenter/revenues/';
   static String revenueDetail(int id) => '${_v1}fitnesscenter/revenues/$id/';
   static final revenueReports = '${_v1}fitnesscenter/revenue-reports/';
+  static final expenseReports = '${_v1}fitnesscenter/expense-reports/';
   static final revenueTargets = '${_v1}fitnesscenter/revenue-targets/';
   static final budget = '${_v1}fitnesscenter/budget/';
   static final trainerAttendance = '${_v1}fitnesscenter/trainer-attendance/';
@@ -289,4 +290,16 @@ final class ApiUris {
       '${_v1}mentor/notifications/read-all/';
   static String deleteMentorNotification(dynamic id) =>
       '${_v1}mentor/notifications/$id/';
+
+  // Fitness Center Notifications
+  static final fitnessCenterNotifications =
+      '${_v1}fitnesscenter/notifications/';
+  static final fitnessCenterNotificationsUnreadCount =
+      '${_v1}fitnesscenter/notifications/unread-count/';
+  static String fitnessCenterNotificationRead(dynamic id) =>
+      '${_v1}fitnesscenter/notifications/$id/read/';
+  static final fitnessCenterNotificationsReadAll =
+      '${_v1}fitnesscenter/notifications/read-all/';
+  static String deleteFitnessCenterNotification(dynamic id) =>
+      '${_v1}fitnesscenter/notifications/$id/';
 }

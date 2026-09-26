@@ -165,22 +165,57 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                             final rawAccounts = appState.accounts;
                             
                             final accounts = rawAccounts.fold<List<LoginSuccessModel>>([], (prev, acc) {
-                              if (acc.userRole == 35 && !prev.any((a) => a.mobileNumber == acc.mobileNumber && a.userRole == acc.userRole)) {
-                                prev.add(acc);
+                              final isTrainer = acc.userRole == 35;
+                              final orgId = acc.organizationId ?? acc.mentor?.org?.id;
+                              final isAlreadyInCurrentOrgs = !isTrainer &&
+                                  (orgsList.result?.any((org) => org.id == orgId) ?? false);
+
+                              if (!isAlreadyInCurrentOrgs) {
+                                final key = isTrainer
+                                    ? '${acc.mobileNumber}_${acc.userRole}'
+                                    : '${acc.mobileNumber}_${acc.userRole}_$orgId';
+                                if (!prev.any((a) {
+                                  final aOrgId = a.organizationId ?? a.mentor?.org?.id;
+                                  final aKey = a.userRole == 35
+                                      ? '${a.mobileNumber}_${a.userRole}'
+                                      : '${a.mobileNumber}_${a.userRole}_$aOrgId';
+                                  return aKey == key;
+                                })) {
+                                  prev.add(acc);
+                                }
                               }
                               return prev;
                             });
 
                             return accounts.map((account) {
-                              final roleLabel =
-                                  account.userRole == 35
-                                      ? 'Trainer'
-                                      : 'Fitness Center Owner';
+                              final isOwnerAccount = account.userRole == 34 ||
+                                  account.userRole == 20 ||
+                                  account.userRole != 35;
+                              final roleLabel = account.userRole == 35
+                                  ? 'Trainer'
+                                  : 'Fitness Center Owner';
+
                               final String profilePic = (account.profilePicture != null &&
                                       account.profilePicture.toString().trim().isNotEmpty &&
                                       account.profilePicture.toString().trim() != 'null')
                                   ? account.profilePicture.toString().trim()
                                   : '';
+
+                              final String displayName = isOwnerAccount
+                                  ? ((account.organizationName != null &&
+                                          account.organizationName!.isNotEmpty &&
+                                          account.organizationName != 'null')
+                                      ? account.organizationName!
+                                      : ((account.mentor?.org?.name != null &&
+                                              account.mentor!.org!.name!.isNotEmpty &&
+                                              account.mentor!.org!.name != 'null')
+                                          ? account.mentor!.org!.name!
+                                          : ('${account.firstName ?? ""} ${account.lastName ?? ""}'.trim().isNotEmpty
+                                              ? '${account.firstName ?? ""} ${account.lastName ?? ""}'.trim()
+                                              : (account.mobileNumber ?? 'User'))))
+                                  : ('${account.firstName ?? ""} ${account.lastName ?? ""}'.trim().isNotEmpty
+                                      ? '${account.firstName ?? ""} ${account.lastName ?? ""}'.trim()
+                                      : (account.mobileNumber ?? 'User'));
 
                               return Column(
                                 children: [
@@ -221,13 +256,7 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  '${account.firstName ?? ""} ${account.lastName ?? ""}'
-                                                          .trim()
-                                                          .isNotEmpty
-                                                      ? '${account.firstName ?? ""} ${account.lastName ?? ""}'
-                                                          .trim()
-                                                      : (account.mobileNumber ??
-                                                          'User'),
+                                                  displayName,
                                                   style: AppStyles.text14Px.dark,
                                                 ),
                                                 const SizedBox(height: 2),
