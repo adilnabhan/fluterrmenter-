@@ -225,9 +225,11 @@ class _TrainerAssignedWorkoutsViewState
               ),
               IconButton(
                 icon: const Icon(Icons.refresh, color: AppColors.dark),
-                onPressed: () => context
-                    .read<AssignedWorkoutsCubit>()
-                    .loadAssignedWorkouts(reset: true),
+                onPressed: () {
+                  final cubit = context.read<AssignedWorkoutsCubit>();
+                  cubit.invalidateCaches();
+                  cubit.loadAssignedWorkouts(reset: true);
+                },
               ),
             ],
           ),

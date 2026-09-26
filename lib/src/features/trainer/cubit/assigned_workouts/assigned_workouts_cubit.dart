@@ -94,6 +94,9 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
           isLoadingMore: false,
         ));
       }
+
+      // Save to tab cache after successful load
+      _saveCurrentTabCache();
     } catch (e) {
       if (isClosed) return;
       emit(state.copyWith(
@@ -108,17 +111,38 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
 
   void selectDate(DateTime? date) {
     if (isClosed) return;
+    // Invalidate tab caches when date changes
     emit(state.copyWith(
       selectedDate: date,
       clearSelectedDate: date == null,
+      tabCaches: const {},
     ));
     loadAssignedWorkouts(dateOverride: date);
   }
 
   void selectPlanType(String planType) {
     if (isClosed || state.selectedPlanType == planType) return;
-    emit(state.copyWith(selectedPlanType: planType));
-    loadAssignedWorkouts(reset: true, planTypeOverride: planType);
+
+    // Save current tab data to cache before switching
+    _saveCurrentTabCache();
+
+    // Check if the target tab has cached data
+    final cached = state.tabCaches[planType];
+    if (cached != null) {
+      // Restore from cache — no API call needed
+      emit(state.copyWith(
+        selectedPlanType: planType,
+        status: AssignedWorkoutsStatus.success,
+        workouts: cached.workouts,
+        hasMore: cached.hasMore,
+        currentPage: cached.currentPage,
+        isLoadingMore: false,
+      ));
+    } else {
+      // No cache — fetch from API
+      emit(state.copyWith(selectedPlanType: planType));
+      loadAssignedWorkouts(reset: true, planTypeOverride: planType);
+    }
   }
 
   void setSearchQuery(String query) {
@@ -174,6 +198,9 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
         workouts: updatedList,
         actionMessage: 'Assigned workout deleted successfully',
       ));
+
+      // Update cache after deletion
+      _saveCurrentTabCache();
       return true;
     } else {
       emit(state.copyWith(
@@ -182,5 +209,24 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
       ));
       return false;
     }
+  }
+
+  /// Saves the current tab's workouts/hasMore/currentPage into the tabCaches map.
+  void _saveCurrentTabCache() {
+    if (isClosed || state.status != AssignedWorkoutsStatus.success) return;
+
+    final updatedCaches = Map<String, TabCache>.from(state.tabCaches);
+    updatedCaches[state.selectedPlanType] = TabCache(
+      workouts: state.workouts,
+      hasMore: state.hasMore,
+      currentPage: state.currentPage,
+    );
+    emit(state.copyWith(tabCaches: updatedCaches));
+  }
+
+  /// Invalidates all tab caches (e.g. on manual refresh).
+  void invalidateCaches() {
+    if (isClosed) return;
+    emit(state.copyWith(tabCaches: const {}));
   }
 }

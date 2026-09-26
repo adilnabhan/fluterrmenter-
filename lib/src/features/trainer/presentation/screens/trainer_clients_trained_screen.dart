@@ -47,6 +47,7 @@ class _TrainerClientsTrainedScreenState
       final Map<String, dynamic> queryParams = {
         'range_type': widget.rangeType,
         'date': widget.date ?? todayStr,
+        'page_size': 500,
       };
 
       final response = await DioClient().dio.get<dynamic>(

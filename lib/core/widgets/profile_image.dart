@@ -122,18 +122,12 @@ class _ProfileImageState extends State<ProfileImage> {
   Widget isEmpty(double radius) {
     if (widget.name != null && widget.name!.trim().isNotEmpty) {
       final trimmed = widget.name!.trim();
-      String initial = trimmed[0].toUpperCase();
-      for (final rune in trimmed.runes) {
-        final char = String.fromCharCode(rune);
-        if (RegExp(r'[a-zA-Z0-9]').hasMatch(char)) {
-          initial = char.toUpperCase();
-          break;
-        }
-      }
+      final initial = AvatarColorHelper.getInitial(trimmed);
+      final colors = AvatarColorHelper.getColorPair(trimmed);
       return Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.primary.withValues(alpha: 0.1),
+          color: colors.background,
         ),
         alignment: Alignment.center,
         child: Text(
@@ -142,7 +136,7 @@ class _ProfileImageState extends State<ProfileImage> {
             fontSize: radius * 0.45,
             fontWeight: FontWeight.w600,
             fontFamily: 'Poppins',
-            color: AppColors.primary,
+            color: colors.text,
           ),
         ),
       );

@@ -8,6 +8,20 @@ enum AssignedWorkoutsStatus {
   failure,
 }
 
+/// Holds cached data for a specific plan type tab.
+@immutable
+class TabCache {
+  const TabCache({
+    this.workouts = const [],
+    this.hasMore = true,
+    this.currentPage = 1,
+  });
+
+  final List<Map<String, dynamic>> workouts;
+  final bool hasMore;
+  final int currentPage;
+}
+
 @immutable
 class AssignedWorkoutsState {
   const AssignedWorkoutsState({
@@ -23,6 +37,7 @@ class AssignedWorkoutsState {
     this.errorMessage,
     this.isDeleting = false,
     this.actionMessage,
+    this.tabCaches = const {},
   });
 
   final AssignedWorkoutsStatus status;
@@ -38,6 +53,9 @@ class AssignedWorkoutsState {
   final bool isDeleting;
   final String? actionMessage;
 
+  /// Cached data per plan type tab (e.g. 'single_day', 'multi_day').
+  final Map<String, TabCache> tabCaches;
+
   AssignedWorkoutsState copyWith({
     AssignedWorkoutsStatus? status,
     List<Map<String, dynamic>>? workouts,
@@ -52,6 +70,7 @@ class AssignedWorkoutsState {
     String? errorMessage,
     bool? isDeleting,
     String? actionMessage,
+    Map<String, TabCache>? tabCaches,
   }) {
     return AssignedWorkoutsState(
       status: status ?? this.status,
@@ -66,6 +85,8 @@ class AssignedWorkoutsState {
       errorMessage: errorMessage,
       isDeleting: isDeleting ?? this.isDeleting,
       actionMessage: actionMessage,
+      // ignore: unnecessary_null_comparison
+      tabCaches: tabCaches ?? (this.tabCaches ?? const {}),
     );
   }
 

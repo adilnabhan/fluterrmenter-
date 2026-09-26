@@ -1007,29 +1007,22 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     Dialogs.showEnlargedProfilePhoto(context, imageUrl);
   }
 
-  Widget _buildInitialAvatar(String name) {
-    final trimmed = name.trim();
-    String initial = 'C';
-    for (final rune in trimmed.runes) {
-      final char = String.fromCharCode(rune);
-      if (RegExp(r'[a-zA-Z0-9]').hasMatch(char)) {
-        initial = char.toUpperCase();
-        break;
-      }
-    }
+  Widget _buildInitialAvatar(String name, {double size = 40}) {
+    final initial = AvatarColorHelper.getInitial(name);
+    final colors = AvatarColorHelper.getColorPair(name);
 
     return Container(
-      width: 40,
-      height: 40,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: colors.background,
       ),
       alignment: Alignment.center,
       child: Text(
         initial,
         style: AppStyles.text16Px.poppins.w600.copyWith(
-          color: AppColors.primary,
+          color: colors.text,
         ),
       ),
     );
