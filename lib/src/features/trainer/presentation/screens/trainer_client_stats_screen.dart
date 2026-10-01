@@ -577,6 +577,116 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
     );
   }
 
+  String? _resolvePlanName(
+    Map<String, dynamic> entry,
+    List<dynamic> logs,
+    List<dynamic> assignedPlans,
+  ) {
+    // 1. Try entry-level fields
+    final entryPlan =
+        entry['plan_name'] ??
+        entry['workout_plan_name'] ??
+        (entry['plan'] is Map
+            ? (entry['plan']['name'] ?? entry['plan']['plan_name'])
+            : entry['plan']) ??
+        (entry['workout_plan'] is Map
+            ? (entry['workout_plan']['name'] ??
+                entry['workout_plan']['plan_name'])
+            : entry['workout_plan']) ??
+        entry['routine_name'];
+    if (entryPlan != null &&
+        entryPlan.toString().trim().isNotEmpty &&
+        entryPlan.toString() != 'null') {
+      return entryPlan.toString().trim();
+    }
+
+    // 2. Try log-level fields
+    for (final l in logs) {
+      if (l is Map) {
+        final logPlan =
+            l['plan_name'] ??
+            l['workout_plan_name'] ??
+            (l['plan'] is Map
+                ? (l['plan']['name'] ?? l['plan']['plan_name'])
+                : l['plan']) ??
+            (l['workout_plan'] is Map
+                ? (l['workout_plan']['name'] ??
+                    l['workout_plan']['plan_name'])
+                : l['workout_plan']) ??
+            l['routine_name'];
+        if (logPlan != null &&
+            logPlan.toString().trim().isNotEmpty &&
+            logPlan.toString() != 'null') {
+          return logPlan.toString().trim();
+        }
+      }
+    }
+
+    // 3. Try matching with assigned plans by date
+    if (assignedPlans.isNotEmpty) {
+      final dateStr = (entry['date'] ?? '').toString();
+      final entryDate = DateTime.tryParse(dateStr);
+      if (entryDate != null) {
+        for (final p in assignedPlans) {
+          if (p is Map) {
+            final startStr =
+                (p['start_date'] ?? p['assigned_date'] ?? p['created_at'])
+                    ?.toString();
+            final endStr = (p['end_date'] ?? p['expiry_date'])?.toString();
+            final startDate =
+                startStr != null ? DateTime.tryParse(startStr) : null;
+            final endDate = endStr != null ? DateTime.tryParse(endStr) : null;
+
+            if (startDate != null && endDate != null) {
+              if (!entryDate.isBefore(startDate) &&
+                  !entryDate.isAfter(endDate)) {
+                final name = p['plan_name'] ?? p['name'] ?? p['title'];
+                if (name != null) return name.toString().trim();
+              }
+            } else if (startDate != null) {
+              final days = (p['total_days'] as num?)?.toInt() ?? 30;
+              final calcEnd = startDate.add(Duration(days: days));
+              if (!entryDate.isBefore(startDate) &&
+                  !entryDate.isAfter(calcEnd)) {
+                final name = p['plan_name'] ?? p['name'] ?? p['title'];
+                if (name != null) return name.toString().trim();
+              }
+            }
+          }
+        }
+      }
+
+      // If only one assigned plan exists, fallback to it
+      if (assignedPlans.length == 1 && assignedPlans.first is Map) {
+        final singlePlan = assignedPlans.first as Map;
+        final name =
+            singlePlan['plan_name'] ??
+            singlePlan['name'] ??
+            singlePlan['title'];
+        if (name != null && name.toString().isNotEmpty) {
+          return name.toString().trim();
+        }
+      }
+
+      // Otherwise if there is an active plan, fallback to that active plan
+      final activePlan = assignedPlans.firstWhere(
+        (p) => p is Map && (p['status'] == 'active' || p['is_active'] == true),
+        orElse: () => null,
+      );
+      if (activePlan is Map) {
+        final name =
+            activePlan['plan_name'] ??
+            activePlan['name'] ??
+            activePlan['title'];
+        if (name != null && name.toString().isNotEmpty) {
+          return name.toString().trim();
+        }
+      }
+    }
+
+    return null;
+  }
+
   Widget _buildWorkoutHistoryTab() {
     if (_isLoadingHistory) {
       return const Center(
@@ -600,9 +710,12 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
       );
     }
 
+    final assignedPlans =
+        _clientData['assigned_plans'] as List<dynamic>? ?? [];
+
     // Group history by month: e.g. "October 2025"
     final Map<String, List<Map<String, dynamic>>> groupedByMonth = {};
-    for (var entry in _workoutHistory) {
+    for (final entry in _workoutHistory) {
       final dateStr = entry['date'] as String? ?? '';
       if (dateStr.isEmpty) continue;
       final date = DateTime.tryParse(dateStr);
@@ -650,6 +763,7 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
                   final date = DateTime.parse(dateRaw);
                   final formattedDate = DateFormat('MMMM d, yyyy').format(date);
                   final logs = entry['logs'] as List<dynamic>? ?? [];
+                  final planName = _resolvePlanName(entry, logs, assignedPlans);
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -663,14 +777,59 @@ class _TrainerClientStatsScreenState extends State<TrainerClientStatsScreen> {
                         context,
                       ).copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
-                        title: Text(
-                          formattedDate,
-                          style: AppStyles.text14Px.poppins.w600.dark,
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              formattedDate,
+                              style: AppStyles.text14Px.poppins.w600.dark,
+                            ),
+                            if (planName != null && planName.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.08,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.fitness_center_rounded,
+                                      size: 12,
+                                      color: AppColors.primary,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        planName,
+                                        style: AppStyles.text10Px.poppins.w600
+                                            .copyWith(
+                                              color: AppColors.primary,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
-                        subtitle: Text(
-                          '${logs.length} exercises logged',
-                          style: AppStyles.text12Px.poppins.w400.copyWith(
-                            color: AppColors.textGrey,
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            '${logs.length} exercises logged',
+                            style: AppStyles.text12Px.poppins.w400.copyWith(
+                              color: AppColors.textGrey,
+                            ),
                           ),
                         ),
                         children: [

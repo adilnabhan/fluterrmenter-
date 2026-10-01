@@ -30,12 +30,14 @@ class OrganizationBottomNavBar extends StatelessWidget {
                   currentIndex == 0
                       ? 'assets/images/svg/icons/home_filled.svg'
                       : 'assets/images/svg/icons/homeicon.svg',
-                  colorFilter: ColorFilter.mode(
-                    currentIndex == 0
-                        ? AppColors.primary
-                        : context.colors.textSecondary,
-                    BlendMode.srcIn,
-                  ),
+                  width: 24,
+                  height: 24,
+                  colorFilter: currentIndex == 0
+                      ? null
+                      : ColorFilter.mode(
+                          context.colors.textSecondary,
+                          BlendMode.srcIn,
+                        ),
                 ),
                 label: 'Home',
                 isSelected: currentIndex == 0,
@@ -45,10 +47,12 @@ class OrganizationBottomNavBar extends StatelessWidget {
                 _NavBarItem(
                   icon: SvgPicture.asset(
                     'assets/images/svg/icons/trainers.svg',
-                    color:
-                        currentIndex == 1
-                            ? AppColors.primary
-                            : context.colors.textSecondary,
+                    colorFilter: ColorFilter.mode(
+                      currentIndex == 1
+                          ? AppColors.primary
+                          : context.colors.textSecondary,
+                      BlendMode.srcIn,
+                    ),
                   ),
                   label: 'Trainers',
                   isSelected: currentIndex == 1,
@@ -57,10 +61,12 @@ class OrganizationBottomNavBar extends StatelessWidget {
                 _NavBarItem(
                   icon: SvgPicture.asset(
                     'assets/images/svg/icons/payments.svg',
-                    color:
-                        currentIndex == 2
-                            ? AppColors.primary
-                            : context.colors.textSecondary,
+                    colorFilter: ColorFilter.mode(
+                      currentIndex == 2
+                          ? AppColors.primary
+                          : context.colors.textSecondary,
+                      BlendMode.srcIn,
+                    ),
                   ),
                   label: 'Payments',
                   isSelected: currentIndex == 2,

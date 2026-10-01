@@ -6,6 +6,34 @@ import 'package:mentor_mobile_app/src/features/organization/listing_and_details/
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/monthly_expense_detail_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/client_workout_calendar_widget.dart';
 
+double _safeDouble(dynamic val, [double fallback = 0.0]) {
+  if (val == null) return fallback;
+  if (val is double) return val;
+  if (val is num) return val.toDouble();
+  final s = val.toString().replaceAll('%', '').replaceAll(',', '').trim();
+  return double.tryParse(s) ?? fallback;
+}
+
+int _safeInt(dynamic val, [int fallback = 0]) {
+  if (val == null) return fallback;
+  if (val is int) return val;
+  if (val is num) return val.toInt();
+  final s = val.toString().replaceAll(RegExp(r'[^0-9\-]'), '').trim();
+  return int.tryParse(s) ?? fallback;
+}
+
+num _safeNum(dynamic val, [num fallback = 0]) {
+  if (val == null) return fallback;
+  if (val is num) return val;
+  final s = val.toString().replaceAll('%', '').replaceAll(',', '').trim();
+  return num.tryParse(s) ?? fallback;
+}
+
+String _safeString(dynamic val, [String fallback = '']) {
+  if (val == null) return fallback;
+  return val.toString();
+}
+
 class OrganizationReportsScreen extends StatefulWidget {
   final int orgId;
   const OrganizationReportsScreen({super.key, required this.orgId});
@@ -27,6 +55,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   ];
 
   bool _isLoading = true;
+  String? _errorMessage;
   bool _isCategoryBreakdownExpanded = false;
   bool _isRevenueTargetBreakdownExpanded = false;
   Map<String, dynamic> _reportsData = {};
@@ -91,6 +120,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     if (!silent) {
       setState(() {
         _isLoading = true;
+        _errorMessage = null;
       });
     }
 
@@ -103,6 +133,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       final endStr = DateFormat('yyyy-MM-dd').format(_endDate!);
       queryParams += '&start_date=$startStr&end_date=$endStr';
     }
+
+    bool mainReportsFailed = false;
+    String? failedReason;
 
     try {
       // 1. Fetch reports
@@ -119,9 +152,20 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             );
           });
         }
+      } else {
+        mainReportsFailed = true;
+        failedReason = 'Server error (${reportsResponse.statusCode})';
       }
+    } on DioException catch (e) {
+      mainReportsFailed = true;
+      failedReason = e.response?.statusCode != null
+          ? 'Server error (${e.response?.statusCode})'
+          : 'Failed to connect to reports service';
+      debugPrint('Reports API DioException: $e');
     } catch (e) {
-      // ignore/handle reports error quietly
+      mainReportsFailed = true;
+      failedReason = 'Failed to load reports';
+      debugPrint('Reports API error: $e');
     }
 
     try {
@@ -251,6 +295,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     if (mounted && !silent) {
       setState(() {
         _isLoading = false;
+        if (mainReportsFailed && _reportsData.isEmpty) {
+          _errorMessage = failedReason ?? 'Server error occurred while loading reports.';
+        }
       });
     }
   }
@@ -1941,138 +1988,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Parsing variables
-    final financial =
-        _reportsData['financial_metrics'] as Map<dynamic, dynamic>?;
-    final totalRevenue = financial?['total_revenue'] ?? 0.0;
-    final totalExpense = financial?['total_expense'] ?? 0.0;
-    final netProfit = financial?['net_profit'] ?? 0.0;
-    final planRevenueBreakdown =
-        financial?['plan_revenue_breakdown'] as List<dynamic>? ?? [];
-
-    // Parse payment mode breakdown
-    final paymentModeData = financial?['payment_mode_breakdown']
-        ?? financial?['payment_modes']
-        ?? _reportsData['payment_mode_breakdown']
-        ?? _reportsData['payment_modes'];
-
-    final List<dynamic> paymentModes = [];
-    if (paymentModeData is Map) {
-      paymentModeData.forEach((key, value) {
-        final amt = double.tryParse(value.toString()) ?? 0.0;
-        if (amt > 0) {
-          paymentModes.add({
-            'mode': key.toString(),
-            'amount': amt,
-          });
-        }
-      });
-    } else if (paymentModeData is List) {
-      for (final item in paymentModeData) {
-        if (item is Map) {
-          final mode = item['payment_mode'] ?? item['mode'] ?? 'Unknown';
-          final amt = double.tryParse((item['amount'] ?? item['total'] ?? 0.0).toString()) ?? 0.0;
-          if (amt > 0) {
-            paymentModes.add({
-              'mode': mode.toString(),
-              'amount': amt,
-            });
-          }
-        }
-      }
-    }
-    paymentModes.sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
-
-    final revGrowth = financial?['revenue_growth'] as Map<dynamic, dynamic>?;
-    final expGrowth = financial?['expense_growth'] as Map<dynamic, dynamic>?;
-    final profitGrowth = financial?['net_profit_growth'] as Map<dynamic, dynamic>?;
-    final recentActivityRaw = financial?['recent_activity'] ?? _reportsData['recent_activity'];
-    final halfYearOverviewRaw = financial?['half_year_overview'] ??
-        _reportsData['half_year_overview'] ??
-        (_reportsData['data'] is Map ? (_reportsData['data'] as Map)['half_year_overview'] : null);
-
-    final demographics =
-        _reportsData['client_demographics'] as Map<dynamic, dynamic>?;
-    final totalClients = demographics?['total_clients'] ?? 0;
-    final genderDistribution =
-        demographics?['gender_distribution'] as Map<dynamic, dynamic>? ?? {};
-    final ageDistribution =
-        demographics?['age_distribution'] as Map<dynamic, dynamic>? ?? {};
-
-    final professionDistribution = demographics?['profession_distribution']
-        ?? _reportsData['profession_distribution']
-        ?? [];
-    final sleepHoursDistribution = demographics?['sleep_hours_distribution']
-        ?? _reportsData['sleep_hours_distribution']
-        ?? [];
-    final workingHoursDistribution = demographics?['working_hours_distribution']
-        ?? _reportsData['working_hours_distribution']
-        ?? [];
-
-    // Parse target goal distribution (nested under goals_insights)
-    final goalInsightsRaw = _reportsData['goals_insights'];
-    Map<dynamic, dynamic>? goalInsights;
-    if (goalInsightsRaw is Map) {
-      goalInsights = goalInsightsRaw;
-    }
-    final goalDistribution = goalInsights?['goal_distribution']
-        ?? goalInsights?['target_goal_distribution']
-        ?? demographics?['goal_distribution']
-        ?? demographics?['target_goal_distribution']
-        ?? [];
-
-    final attendance =
-        _reportsData['attendance_patterns'] as Map<dynamic, dynamic>?;
-    final totalCompletedSessions = attendance?['total_completed_sessions'] ?? 0;
-    final peakWorkoutHours =
-        attendance?['peak_workout_hours'] as Map<dynamic, dynamic>? ?? {};
-
-    final trainersPerformance =
-        _reportsData['trainers_performance'] as List<dynamic>? ?? [];
-    final trainerDemographics =
-        _reportsData['trainer_demographics'] as Map<dynamic, dynamic>? ?? {};
-    final trainerGenderDist =
-        trainerDemographics['gender_distribution'] as Map<dynamic, dynamic>? ?? {};
-    final trainerAgeDist =
-        trainerDemographics['age_distribution'] as Map<dynamic, dynamic>? ?? {};
-    final totalTrainers =
-        trainerDemographics['total_trainers'] ?? trainersPerformance.length;
-
-    final budgetSummary =
-        _reportsData['budget_summary'] as Map<dynamic, dynamic>?;
-
-    final double budget = double.tryParse((_budgetData['monthly_budget'] ??
-            _budgetData['total_budget'] ??
-            _budgetData['budget'] ??
-            budgetSummary?['budget'] ??
-            0.0)
-        .toString()) ?? 0.0;
-
-    final double budgetUsedAmount = double.tryParse((_budgetData['amount_used'] ??
-            budgetSummary?['budget_used_amount'] ??
-            0.0)
-        .toString()) ?? 0.0;
-
-    final double budgetRemaining = double.tryParse((_budgetData['remaining_budget'] ??
-            budgetSummary?['budget_remaining'] ??
-            0.0)
-        .toString()) ?? 0.0;
-
-    String budgetUsedPercentage = "0%";
-    if (_budgetData['utilization_percentage'] != null) {
-      budgetUsedPercentage = "${_budgetData['utilization_percentage']}%";
-    } else if (budgetSummary?['budget_used_percentage'] != null) {
-      budgetUsedPercentage = budgetSummary!['budget_used_percentage'].toString();
-    }
-
-    final List<dynamic> categoryBreakdown =
-        (_budgetData['categories'] as List<dynamic>?) ??
-        (budgetSummary?['categories'] as List<dynamic>?) ??
-        [];
-
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
+    if (_errorMessage != null && _reportsData.isEmpty) {
+      return Scaffold(
         backgroundColor: const Color(0xffF7F7F7),
         appBar: AppBar(
           backgroundColor: Colors.white,
@@ -2082,169 +1999,415 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             'Gym Analytics & Reports',
             style: AppStyles.text18Px.poppins.w600.dark,
           ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                _startDate != null && _endDate != null
-                    ? Icons.calendar_month
-                    : Icons.calendar_today,
-                color: AppColors.primary,
-              ),
-              tooltip: 'Filter by date range',
-              onPressed: _selectDateRange,
-            ),
-            if (_startDate != null || _endDate != null)
-              IconButton(
-                icon: const Icon(Icons.clear, color: Colors.red),
-                tooltip: 'Clear filter',
-                onPressed: () {
-                  setState(() {
-                    _startDate = null;
-                    _endDate = null;
-                    _selectedYear = DateTime.now().year;
-                    _selectedMonth = DateTime.now().month;
-                  });
-                  _fetchReports();
-                },
-              ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(56),
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: const Color(0xffE8ECEF),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: TabBar(
-                dividerColor: Colors.transparent,
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicator: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(25),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                    color: Color(0xffFEE2E2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.cloud_off_rounded,
+                    size: 40,
+                    color: Color(0xffDC2626),
+                  ),
                 ),
-                splashFactory: NoSplash.splashFactory,
-                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-                labelColor: Colors.white,
-                unselectedLabelColor: const Color(0xff2D3139),
-                labelStyle: AppStyles.text14Px.poppins.w600,
-                unselectedLabelStyle: AppStyles.text14Px.poppins.w500,
-                tabs: const [
-                  Tab(height: 36, text: 'Finance'),
-                  Tab(height: 36, text: 'Trainers'),
-                  Tab(height: 36, text: 'Clients'),
-                ],
-              ),
+                const SizedBox(height: 20),
+                Text(
+                  'Server Error',
+                  style: AppStyles.text18Px.poppins.w600.dark,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: AppStyles.text14Px.poppins.textGrey,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    _fetchReports();
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 20, color: Colors.white),
+                  label: const Text('Try Again', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        body: Column(
-          children: [
-            if (_startDate != null && _endDate != null)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(color: Color(0xffEEEEEE)),
-                  ),
+      );
+    }
+
+    try {
+      // Parsing variables
+      final financial =
+          _reportsData['financial_metrics'] as Map<dynamic, dynamic>?;
+      final totalRevenue = financial?['total_revenue'] ?? 0.0;
+      final totalExpense = financial?['total_expense'] ?? 0.0;
+      final netProfit = financial?['net_profit'] ?? 0.0;
+      final planRevenueBreakdown =
+          financial?['plan_revenue_breakdown'] as List<dynamic>? ?? [];
+
+      // Parse payment mode breakdown
+      final paymentModeData = financial?['payment_mode_breakdown']
+          ?? financial?['payment_modes']
+          ?? _reportsData['payment_mode_breakdown']
+          ?? _reportsData['payment_modes'];
+
+      final List<dynamic> paymentModes = [];
+      if (paymentModeData is Map) {
+        paymentModeData.forEach((key, value) {
+          final amt = double.tryParse(value.toString()) ?? 0.0;
+          if (amt > 0) {
+            paymentModes.add({
+              'mode': key.toString(),
+              'amount': amt,
+            });
+          }
+        });
+      } else if (paymentModeData is List) {
+        for (final item in paymentModeData) {
+          if (item is Map) {
+            final mode = item['payment_mode'] ?? item['mode'] ?? 'Unknown';
+            final amt = double.tryParse((item['amount'] ?? item['total'] ?? 0.0).toString()) ?? 0.0;
+            if (amt > 0) {
+              paymentModes.add({
+                'mode': mode.toString(),
+                'amount': amt,
+              });
+            }
+          }
+        }
+      }
+      paymentModes.sort((a, b) => _safeDouble(b['amount']).compareTo(_safeDouble(a['amount'])));
+
+      final revGrowth = financial?['revenue_growth'] as Map<dynamic, dynamic>?;
+      final expGrowth = financial?['expense_growth'] as Map<dynamic, dynamic>?;
+      final profitGrowth = financial?['net_profit_growth'] as Map<dynamic, dynamic>?;
+      final recentActivityRaw = financial?['recent_activity'] ?? _reportsData['recent_activity'];
+      final halfYearOverviewRaw = financial?['half_year_overview'] ??
+          _reportsData['half_year_overview'] ??
+          (_reportsData['data'] is Map ? (_reportsData['data'] as Map)['half_year_overview'] : null);
+
+      final demographics =
+          _reportsData['client_demographics'] as Map<dynamic, dynamic>?;
+      final totalClients = demographics?['total_clients'] ?? 0;
+      final genderDistribution =
+          demographics?['gender_distribution'] as Map<dynamic, dynamic>? ?? {};
+      final ageDistribution =
+          demographics?['age_distribution'] as Map<dynamic, dynamic>? ?? {};
+
+      final professionDistribution = demographics?['profession_distribution']
+          ?? _reportsData['profession_distribution']
+          ?? [];
+      final sleepHoursDistribution = demographics?['sleep_hours_distribution']
+          ?? _reportsData['sleep_hours_distribution']
+          ?? [];
+      final workingHoursDistribution = demographics?['working_hours_distribution']
+          ?? _reportsData['working_hours_distribution']
+          ?? [];
+
+      // Parse target goal distribution (nested under goals_insights)
+      final goalInsightsRaw = _reportsData['goals_insights'];
+      Map<dynamic, dynamic>? goalInsights;
+      if (goalInsightsRaw is Map) {
+        goalInsights = goalInsightsRaw;
+      }
+      final goalDistribution = goalInsights?['goal_distribution']
+          ?? goalInsights?['target_goal_distribution']
+          ?? demographics?['goal_distribution']
+          ?? demographics?['target_goal_distribution']
+          ?? [];
+
+      final attendance =
+          _reportsData['attendance_patterns'] as Map<dynamic, dynamic>?;
+      final totalCompletedSessions = attendance?['total_completed_sessions'] ?? 0;
+      final peakWorkoutHours =
+          attendance?['peak_workout_hours'] as Map<dynamic, dynamic>? ?? {};
+
+      final trainersPerformance =
+          _reportsData['trainers_performance'] as List<dynamic>? ?? [];
+      final trainerDemographics =
+          _reportsData['trainer_demographics'] as Map<dynamic, dynamic>? ?? {};
+      final trainerGenderDist =
+          trainerDemographics['gender_distribution'] as Map<dynamic, dynamic>? ?? {};
+      final trainerAgeDist =
+          trainerDemographics['age_distribution'] as Map<dynamic, dynamic>? ?? {};
+      final totalTrainers =
+          trainerDemographics['total_trainers'] ?? trainersPerformance.length;
+
+      final budgetSummary =
+          _reportsData['budget_summary'] as Map<dynamic, dynamic>?;
+
+      final double budget = double.tryParse((_budgetData['monthly_budget'] ??
+              _budgetData['total_budget'] ??
+              _budgetData['budget'] ??
+              budgetSummary?['budget'] ??
+              0.0)
+          .toString()) ?? 0.0;
+
+      final double budgetUsedAmount = double.tryParse((_budgetData['amount_used'] ??
+              budgetSummary?['budget_used_amount'] ??
+              0.0)
+          .toString()) ?? 0.0;
+
+      final double budgetRemaining = double.tryParse((_budgetData['remaining_budget'] ??
+              budgetSummary?['budget_remaining'] ??
+              0.0)
+          .toString()) ?? 0.0;
+
+      String budgetUsedPercentage = "0%";
+      if (_budgetData['utilization_percentage'] != null) {
+        budgetUsedPercentage = "${_budgetData['utilization_percentage']}%";
+      } else if (budgetSummary?['budget_used_percentage'] != null) {
+        budgetUsedPercentage = budgetSummary!['budget_used_percentage'].toString();
+      }
+
+      final List<dynamic> categoryBreakdown =
+          (_budgetData['categories'] as List<dynamic>?) ??
+          (budgetSummary?['categories'] as List<dynamic>?) ??
+          [];
+
+      return DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          backgroundColor: const Color(0xffF7F7F7),
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: const PopButton().center,
+            title: Text(
+              'Gym Analytics & Reports',
+              style: AppStyles.text18Px.poppins.w600.dark,
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  _startDate != null && _endDate != null
+                      ? Icons.calendar_month
+                      : Icons.calendar_today,
+                  color: AppColors.primary,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.date_range,
-                          size: 16,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Filtered: ${DateFormat('MMM dd, yyyy').format(_startDate!)} - ${DateFormat('MMM dd, yyyy').format(_endDate!)}',
-                          style: AppStyles.text12Px.poppins.w500.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _startDate = null;
-                          _endDate = null;
-                          _selectedYear = DateTime.now().year;
-                          _selectedMonth = DateTime.now().month;
-                        });
-                        _fetchReports();
-                      },
-                      child: Text(
-                        'Clear',
-                        style: AppStyles.text12Px.poppins.w600.copyWith(
-                          color: Colors.red,
-                        ),
-                      ),
-                    ),
+                tooltip: 'Filter by date range',
+                onPressed: _selectDateRange,
+              ),
+              if (_startDate != null || _endDate != null)
+                IconButton(
+                  icon: const Icon(Icons.clear, color: Colors.red),
+                  tooltip: 'Clear filter',
+                  onPressed: () {
+                    setState(() {
+                      _startDate = null;
+                      _endDate = null;
+                      _selectedYear = DateTime.now().year;
+                      _selectedMonth = DateTime.now().month;
+                    });
+                    _fetchReports();
+                  },
+                ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(56),
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xffE8ECEF),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: TabBar(
+                  dividerColor: Colors.transparent,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  splashFactory: NoSplash.splashFactory,
+                  overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: const Color(0xff2D3139),
+                  labelStyle: AppStyles.text14Px.poppins.w600,
+                  unselectedLabelStyle: AppStyles.text14Px.poppins.w500,
+                  tabs: const [
+                    Tab(height: 36, text: 'Finance'),
+                    Tab(height: 36, text: 'Trainers'),
+                    Tab(height: 36, text: 'Clients'),
                   ],
                 ),
               ),
-            Expanded(
-              child: _isLoading
-                  ? _buildReportsShimmer()
-                  : TabBarView(
-                      children: [
-                    _buildFinanceTab(
-                      monthlyRevenue:
-                          totalRevenue is double
-                              ? totalRevenue
-                              : double.tryParse(totalRevenue.toString()) ?? 0.0,
-                      totalExpense:
-                          totalExpense is double
-                              ? totalExpense
-                              : double.tryParse(totalExpense.toString()) ?? 0.0,
-                      netProfit:
-                          netProfit is double
-                              ? netProfit
-                              : double.tryParse(netProfit.toString()) ?? 0.0,
-                      revenueGrowth: revGrowth,
-                      expenseGrowth: expGrowth,
-                      netProfitGrowth: profitGrowth,
-                      recentActivity: recentActivityRaw,
-                      halfYearOverview: halfYearOverviewRaw,
-                      budget: budget,
-                      budgetUsedAmount: budgetUsedAmount,
-                      budgetUsedPercentage: budgetUsedPercentage,
-                      budgetRemaining: budgetRemaining,
-                      planRevenueBreakdown: planRevenueBreakdown,
-                      paymentModes: paymentModes,
-                      categoryBreakdown: categoryBreakdown,
-                    ),
-                    _buildTrainersTab(
-                      trainersPerformance: trainersPerformance,
-                      trainerGenderDist: trainerGenderDist,
-                      trainerAgeDist: trainerAgeDist,
-                      totalTrainers: totalTrainers.toString(),
-                    ),
-                    _buildClientsTab(
-                      totalClients: totalClients.toString(),
-                      completedSessions: totalCompletedSessions.toString(),
-                      retentionRate: financial?['retention_rate']?.toString() ?? "0%",
-                      genderDistribution: genderDistribution,
-                      ageDistribution: ageDistribution,
-                      goalDistribution: goalDistribution,
-                      professionDistribution: professionDistribution,
-                      sleepHoursDistribution: sleepHoursDistribution,
-                      workingHoursDistribution: workingHoursDistribution,
-                      peakWorkoutHours: peakWorkoutHours,
-                    ),
-                  ],
-                ),
             ),
-          ],
+          ),
+          body: Column(
+            children: [
+              if (_startDate != null && _endDate != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xffEEEEEE)),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.date_range,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Filtered: ${DateFormat('MMM dd, yyyy').format(_startDate!)} - ${DateFormat('MMM dd, yyyy').format(_endDate!)}',
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _startDate = null;
+                            _endDate = null;
+                            _selectedYear = DateTime.now().year;
+                            _selectedMonth = DateTime.now().month;
+                          });
+                          _fetchReports();
+                        },
+                        child: Text(
+                          'Clear',
+                          style: AppStyles.text12Px.poppins.w600.copyWith(
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: _isLoading
+                    ? _buildReportsShimmer()
+                    : TabBarView(
+                        children: [
+                      _buildFinanceTab(
+                        monthlyRevenue:
+                            totalRevenue is double
+                                ? totalRevenue
+                                : double.tryParse(totalRevenue.toString()) ?? 0.0,
+                        totalExpense:
+                            totalExpense is double
+                                ? totalExpense
+                                : double.tryParse(totalExpense.toString()) ?? 0.0,
+                        netProfit:
+                            netProfit is double
+                                ? netProfit
+                                : double.tryParse(netProfit.toString()) ?? 0.0,
+                        revenueGrowth: revGrowth,
+                        expenseGrowth: expGrowth,
+                        netProfitGrowth: profitGrowth,
+                        recentActivity: recentActivityRaw,
+                        halfYearOverview: halfYearOverviewRaw,
+                        budget: budget,
+                        budgetUsedAmount: budgetUsedAmount,
+                        budgetUsedPercentage: budgetUsedPercentage,
+                        budgetRemaining: budgetRemaining,
+                        planRevenueBreakdown: planRevenueBreakdown,
+                        paymentModes: paymentModes,
+                        categoryBreakdown: categoryBreakdown,
+                      ),
+                      _buildTrainersTab(
+                        trainersPerformance: trainersPerformance,
+                        trainerGenderDist: trainerGenderDist,
+                        trainerAgeDist: trainerAgeDist,
+                        totalTrainers: totalTrainers.toString(),
+                      ),
+                      _buildClientsTab(
+                        totalClients: totalClients.toString(),
+                        completedSessions: totalCompletedSessions.toString(),
+                        retentionRate: financial?['retention_rate']?.toString() ?? "0%",
+                        genderDistribution: genderDistribution,
+                        ageDistribution: ageDistribution,
+                        goalDistribution: goalDistribution,
+                        professionDistribution: professionDistribution,
+                        sleepHoursDistribution: sleepHoursDistribution,
+                        workingHoursDistribution: workingHoursDistribution,
+                        peakWorkoutHours: peakWorkoutHours,
+                      ),
+                    ],
+                  ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e, stack) {
+      debugPrint('Error building OrganizationReportsScreen: $e\n$stack');
+      return Scaffold(
+        backgroundColor: const Color(0xffF7F7F7),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: const PopButton().center,
+          title: Text(
+            'Gym Analytics & Reports',
+            style: AppStyles.text18Px.poppins.w600.dark,
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.analytics_outlined, size: 48, color: AppColors.primary),
+                const SizedBox(height: 16),
+                Text(
+                  'Unable to display reports',
+                  style: AppStyles.text16Px.poppins.w600.dark,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'There was an unexpected error processing report data.',
+                  textAlign: TextAlign.center,
+                  style: AppStyles.text14Px.poppins.textGrey,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    _fetchReports();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildClientsTab({
@@ -2974,7 +3137,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     // Parse growth indicators
     final String profitComparisonText = netProfitGrowth?['comparison_text']?.toString() ??
         (netProfitGrowth?['percentage'] != null
-            ? '${(netProfitGrowth!['percentage'] as num) >= 0 ? '+' : ''}${netProfitGrowth['percentage']}% vs last month'
+            ? '${_safeNum(netProfitGrowth!['percentage']) >= 0 ? '+' : ''}${netProfitGrowth['percentage']}% vs last month'
             : '+18% vs Aug');
     final bool isProfitPositive = netProfitGrowth?['is_positive'] as bool? ?? (netProfit >= 0);
 
@@ -3017,13 +3180,13 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
 
     final String revGrowthText = revenueGrowth?['comparison_text']?.toString() ??
         (revenueGrowth?['percentage'] != null
-            ? '${(revenueGrowth!['percentage'] as num) >= 0 ? '+' : ''}${revenueGrowth['percentage']}% vs last month'
+            ? '${_safeNum(revenueGrowth!['percentage']) >= 0 ? '+' : ''}${revenueGrowth['percentage']}% vs last month'
             : '+12% vs last month');
     final bool isRevPositive = revenueGrowth?['is_positive'] as bool? ?? true;
 
     final String expGrowthText = expenseGrowth?['comparison_text']?.toString() ??
         (expenseGrowth?['percentage'] != null
-            ? '${(expenseGrowth!['percentage'] as num) >= 0 ? '+' : ''}${expenseGrowth['percentage']}% vs last month'
+            ? '${_safeNum(expenseGrowth!['percentage']) >= 0 ? '+' : ''}${expenseGrowth['percentage']}% vs last month'
             : '-8% vs last month');
     final bool isExpPositive = expenseGrowth?['is_positive'] as bool? ?? false;
 
@@ -3037,8 +3200,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             'type': (item['type'] ?? 'revenue').toString().toLowerCase(),
             'title': (item['title'] ?? item['name'] ?? 'Transaction').toString(),
             'subtitle': (item['subtitle'] ?? item['date'] ?? '').toString(),
-            'amount': (item['amount'] as num?)?.toDouble() ??
-                double.tryParse(item['amount']?.toString() ?? '0') ?? 0.0,
+            'amount': _safeDouble(item['amount']),
             'user_avatar': item['user_avatar']?.toString(),
             'date': item['date']?.toString() ?? '',
           });
@@ -3051,8 +3213,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           'type': 'revenue',
           'title': (r['title'] ?? r['client_name'] ?? 'Revenue').toString(),
           'subtitle': (r['category'] ?? r['payment_mode'] ?? 'Income').toString(),
-          'amount': (r['amount'] as num?)?.toDouble() ??
-              double.tryParse(r['amount']?.toString() ?? '0') ?? 0.0,
+          'amount': _safeDouble(r['amount']),
           'user_avatar': r['client_avatar']?.toString(),
           'date': (r['revenue_date'] ?? r['created_at'] ?? '').toString(),
         });
@@ -3063,8 +3224,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           'type': 'expense',
           'title': (e['title'] ?? e['category'] ?? 'Expense').toString(),
           'subtitle': (e['category'] ?? 'Expense').toString(),
-          'amount': (e['amount'] as num?)?.toDouble() ??
-              double.tryParse(e['amount']?.toString() ?? '0') ?? 0.0,
+          'amount': _safeDouble(e['amount']),
           'user_avatar': null,
           'date': (e['expense_date'] ?? e['created_at'] ?? '').toString(),
         });
@@ -3094,10 +3254,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       for (final m in monthsList) {
         if (m is Map) {
           final rawMonth = (m['month'] ?? '').toString().trim();
-          final rev = (m['revenue'] as num?)?.toDouble() ??
-              double.tryParse(m['revenue']?.toString() ?? '0') ?? 0.0;
-          final exp = (m['expense'] as num?)?.toDouble() ??
-              double.tryParse(m['expense']?.toString() ?? '0') ?? 0.0;
+          final rev = _safeDouble(m['revenue']);
+          final exp = _safeDouble(m['expense']);
           if (rawMonth.isNotEmpty) {
             monthMap[rawMonth.toLowerCase()] = (revenue: rev, expense: exp);
           }
@@ -3121,10 +3279,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           if (m is Map) {
             overviewData.add((
               month: (m['month'] ?? '').toString(),
-              revenue: (m['revenue'] as num?)?.toDouble() ??
-                  double.tryParse(m['revenue']?.toString() ?? '0') ?? 0.0,
-              expense: (m['expense'] as num?)?.toDouble() ??
-                  double.tryParse(m['expense']?.toString() ?? '0') ?? 0.0,
+              revenue: _safeDouble(m['revenue']),
+              expense: _safeDouble(m['expense']),
             ));
           }
         }
@@ -3149,10 +3305,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           if (history is List) {
             for (final h in history) {
               if (h is Map && (h['month'] == mName || h['month_number'] == monthNum)) {
-                rev = (h['revenue'] as num?)?.toDouble() ??
-                    double.tryParse(h['revenue']?.toString() ?? '0') ?? 0.0;
-                exp = (h['expense'] as num?)?.toDouble() ??
-                    double.tryParse(h['expense']?.toString() ?? '0') ?? 0.0;
+                rev = _safeDouble(h['revenue']);
+                exp = _safeDouble(h['expense']);
               }
             }
           }
@@ -4187,7 +4341,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
               children: List.generate(displayedItems.length, (index) {
                 final item = displayedItems[index];
                 final isRev = (item['type'] ?? 'revenue') == 'revenue';
-                final amount = (item['amount'] as num?)?.toDouble() ?? 0.0;
+                final amount = _safeDouble(item['amount']);
                 final isLast = index == displayedItems.length - 1;
 
                 return Column(
@@ -5001,9 +5155,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ...normalizedGoals.map((e) {
-            final key = e['goal'] as String;
-            final pctStr = e['percentage'] as String;
-            final count = e['count'] as int;
+            final key = _safeString(e['goal'], 'Unknown');
+            final pctStr = _safeString(e['percentage'], '0%');
+            final count = _safeInt(e['count']);
 
             double parsedPct = 0.0;
             try {
@@ -5146,10 +5300,10 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ...visibleItems.map((item) {
-                  final String title = item['title'] as String;
-                  final String label = item['label'] as String;
-                  final String pctStr = item['percentage'] as String;
-                  final int count = item['count'] as int;
+                  final String title = _safeString(item['title']);
+                  final String label = _safeString(item['label']);
+                  final String pctStr = _safeString(item['percentage'], '0%');
+                  final int count = _safeInt(item['count']);
 
                   double parsedPct = 0.0;
                   try {
@@ -5267,7 +5421,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   Widget _buildPeakHours(Map<dynamic, dynamic> peakHours) {
     final sortedEntries =
         peakHours.entries.toList()..sort(
-          (a, b) => ((b.value as int?) ?? 0).compareTo((a.value as int?) ?? 0),
+          (a, b) => _safeInt(b.value).compareTo(_safeInt(a.value)),
         );
 
     final topEntries = sortedEntries.take(5).toList();
@@ -5321,6 +5475,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       itemCount: trainers.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
+        if (trainers[index] is! Map) return const SizedBox.shrink();
         final trainer = trainers[index] as Map<dynamic, dynamic>;
         final name = trainer['name']?.toString() ?? 'Unknown Trainer';
         final exp = trainer['experience_years'] ?? 0;
@@ -5681,6 +5836,7 @@ class _PlanRevenuePieChart extends StatelessWidget {
     final List<({String label, double percentage, String subtext, Color color})> slices = [];
 
     for (int i = 0; i < plans.length; i++) {
+      if (plans[i] is! Map) continue;
       final plan = plans[i] as Map<dynamic, dynamic>;
       final name = plan['plan_name']?.toString() ?? 'Unknown Plan';
       final type = plan['package_type']?.toString() ?? '';

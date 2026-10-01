@@ -1,5 +1,4 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
-import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/account_switcher_sheet.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -208,53 +207,44 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              // Left: Title + Dropdown (Glassmorphism Pill)
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(30),
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                  child: Material(
-                                    color: Colors.white.withValues(alpha: 0.65),
-                                    child: InkWell(
-                                      onTap: () {
-                                        const AccountSwitcherSheet().show(context);
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 8,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Colors.white.withValues(alpha: 0.5),
-                                            width: 1,
-                                          ),
-                                          borderRadius: BorderRadius.circular(30),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              orgDetails.name ?? displayName,
-                                              style: const TextStyle(
-                                                color: Colors.black87,
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 15,
+                              if (Navigator.canPop(context))
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 10,
+                                      sigmaY: 10,
+                                    ),
+                                    child: Material(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.65,
+                                      ),
+                                      child: InkWell(
+                                        onTap: () => Navigator.pop(context),
+                                        child: Container(
+                                          width: 36,
+                                          height: 36,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.5,
                                               ),
+                                              width: 1,
                                             ),
-                                            const SizedBox(width: 4),
-                                            const Icon(
-                                              Icons.keyboard_arrow_down,
-                                              color: Colors.black87,
-                                              size: 20,
-                                            ),
-                                          ],
+                                          ),
+                                          child: const Icon(
+                                            Icons.arrow_back_ios_new,
+                                            color: Colors.black87,
+                                            size: 18,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
+                                )
+                              else
+                                const SizedBox.shrink(),
                               // Right: Share & Settings (Glassmorphism Circles)
                               Row(
                                 mainAxisSize: MainAxisSize.min,

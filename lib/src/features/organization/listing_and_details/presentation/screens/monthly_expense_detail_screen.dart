@@ -84,19 +84,149 @@ class _MonthlyExpenseDetailScreenState
         ? List<Map<String, dynamic>>.from(widget.initialExpenses!)
         : [];
 
-    _fetchData();
+    _fetchData().then((_) {
+      if (mounted) {
+        _prefetchOtherPeriods();
+      }
+    });
   }
 
-  Future<void> _fetchData() async {
-    setState(() => _isLoading = true);
+  final Map<String, _ExpensePeriodCache> _periodCache = {};
+
+  void _applyCachedData(_ExpensePeriodCache cached) {
+    _totalExpense = cached.totalExpense;
+    _percentageChange = cached.percentageChange;
+    _isIncrease = cached.isIncrease;
+    _comparisonMonth = cached.comparisonMonth;
+    _quickInsight = cached.quickInsight;
+    _trendData = cached.trendData;
+    if (cached.expenses.isNotEmpty) _expenses = cached.expenses;
+    if (cached.expenseBreakdown.isNotEmpty) {
+      _expenseBreakdown = cached.expenseBreakdown;
+    }
+  }
+
+  void _onPeriodChanged(String newPeriod) {
+    if (_selectedPeriod == newPeriod) return;
+
+    final cached = _periodCache[newPeriod];
+    if (cached != null) {
+      setState(() {
+        _selectedPeriod = newPeriod;
+        _applyCachedData(cached);
+      });
+      _fetchData(silent: true);
+    } else {
+      setState(() {
+        _selectedPeriod = newPeriod;
+      });
+      _fetchData();
+    }
+  }
+
+  void _prefetchOtherPeriods() {
+    for (final p in ['3m', '6m', '1y']) {
+      if (p != _selectedPeriod && !_periodCache.containsKey(p)) {
+        _fetchBackgroundPeriod(p);
+      }
+    }
+  }
+
+  Future<void> _fetchBackgroundPeriod(String period) async {
+    try {
+      var queryParams =
+          'organization_id=${widget.orgId}&year=$_selectedYear&month=$_selectedMonth&period=$period';
+      if (widget.startDate != null && widget.endDate != null) {
+        final startStr = DateFormat('yyyy-MM-dd').format(widget.startDate!);
+        final endStr = DateFormat('yyyy-MM-dd').format(widget.endDate!);
+        queryParams += '&start_date=$startStr&end_date=$endStr';
+      }
+
+      final expReportResponse = await DioClient().dio.get<dynamic>(
+        '${ApiUris.expenseReports}?$queryParams',
+        options: Options(headers: {'X-Platform': platformSource}).token,
+      );
+
+      if (expReportResponse.statusCode == 200 &&
+          expReportResponse.data is Map) {
+        final data = Map<String, dynamic>.from(expReportResponse.data as Map);
+        final exp = (data['total_expense'] as num?)?.toDouble() ??
+            (data['expense'] as num?)?.toDouble() ??
+            0.0;
+        final pctChange =
+            (data['percentage_change'] as num?)?.toDouble() ?? -18.0;
+        final isInc = data['is_increase'] as bool? ?? (pctChange >= 0);
+        final compMonth =
+            data['comparison_month']?.toString() ?? _comparisonMonth;
+        final qkInsight = data['quick_insight']?.toString() ?? '';
+
+        final parsedTrend = <({String label, double value})>[];
+        if (data['trend'] is List) {
+          for (final item in data['trend'] as List) {
+            if (item is Map) {
+              final label = (item['month'] ?? item['name'] ?? '').toString();
+              final val = (item['expense'] ??
+                      item['amount'] ??
+                      item['value'] ??
+                      0.0) as num;
+              parsedTrend.add((label: label, value: val.toDouble()));
+            }
+          }
+        }
+
+        final recentExp = data['recent_expenses'] is List
+            ? List<Map<String, dynamic>>.from(
+                (data['recent_expenses'] as List)
+                    .map((e) => Map<String, dynamic>.from(e as Map)),
+              )
+            : <Map<String, dynamic>>[];
+
+        final expBreakdown = data['expense_breakdown'] is List
+            ? List<Map<String, dynamic>>.from(
+                (data['expense_breakdown'] as List)
+                    .map((e) => Map<String, dynamic>.from(e as Map)),
+              )
+            : <Map<String, dynamic>>[];
+
+        _periodCache[period] = _ExpensePeriodCache(
+          totalExpense: exp > 0 ? exp : _totalExpense,
+          percentageChange: pctChange,
+          isIncrease: isInc,
+          comparisonMonth: compMonth,
+          quickInsight: qkInsight,
+          trendData: parsedTrend,
+          expenseBreakdown: expBreakdown,
+          expenses: recentExp,
+        );
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _fetchData({bool silent = false}) async {
+    final targetPeriod = _selectedPeriod;
+
+    if (!silent) {
+      setState(() => _isLoading = true);
+    }
 
     var queryParams =
-        'organization_id=${widget.orgId}&year=$_selectedYear&month=$_selectedMonth&period=$_selectedPeriod';
+        'organization_id=${widget.orgId}&year=$_selectedYear&month=$_selectedMonth&period=$targetPeriod';
     if (widget.startDate != null && widget.endDate != null) {
       final startStr = DateFormat('yyyy-MM-dd').format(widget.startDate!);
       final endStr = DateFormat('yyyy-MM-dd').format(widget.endDate!);
       queryParams += '&start_date=$startStr&end_date=$endStr';
     }
+
+    var totalExp = _totalExpense;
+    var pctChange = _percentageChange;
+    var isInc = _isIncrease;
+    var compMonth = _comparisonMonth;
+    var qkInsight = _quickInsight;
+    var trend = <({String label, double value})>[];
+    var recentExp = <Map<String, dynamic>>[];
+    var expBreakdown = <Map<String, dynamic>>[];
+
+    var successFromPrimary = false;
 
     // 1. Fetch from dedicated expense reports endpoint
     try {
@@ -110,22 +240,20 @@ class _MonthlyExpenseDetailScreenState
         final data =
             Map<String, dynamic>.from(expReportResponse.data as Map);
 
-        final totalExp = (data['total_expense'] as num?)?.toDouble() ??
+        final exp = (data['total_expense'] as num?)?.toDouble() ??
             (data['expense'] as num?)?.toDouble() ??
             0.0;
-        if (totalExp > 0) _totalExpense = totalExp;
+        if (exp > 0) totalExp = exp;
 
         if (data['percentage_change'] != null) {
-          _percentageChange =
-              (data['percentage_change'] as num).toDouble();
-          _isIncrease = data['is_increase'] as bool? ??
-              (_percentageChange >= 0);
+          pctChange = (data['percentage_change'] as num).toDouble();
+          isInc = data['is_increase'] as bool? ?? (pctChange >= 0);
         }
         if (data['comparison_month'] != null) {
-          _comparisonMonth = data['comparison_month'].toString();
+          compMonth = data['comparison_month'].toString();
         }
         if (data['quick_insight'] != null) {
-          _quickInsight = data['quick_insight'].toString();
+          qkInsight = data['quick_insight'].toString();
         }
 
         if (data['trend'] is List) {
@@ -142,29 +270,30 @@ class _MonthlyExpenseDetailScreenState
             }
           }
           if (parsedTrend.isNotEmpty) {
-            _trendData = parsedTrend;
+            trend = parsedTrend;
           }
         }
 
         if (data['recent_expenses'] is List &&
             (data['recent_expenses'] as List).isNotEmpty) {
-          _expenses = List<Map<String, dynamic>>.from(
+          recentExp = List<Map<String, dynamic>>.from(
             (data['recent_expenses'] as List)
                 .map((e) => Map<String, dynamic>.from(e as Map)),
           );
         }
 
         if (data['expense_breakdown'] is List) {
-          _expenseBreakdown = List<Map<String, dynamic>>.from(
+          expBreakdown = List<Map<String, dynamic>>.from(
             (data['expense_breakdown'] as List)
                 .map((e) => Map<String, dynamic>.from(e as Map)),
           );
         }
+        successFromPrimary = true;
       }
     } catch (_) {}
 
     // 2. Fetch raw expenses if empty
-    if (_expenses.isEmpty) {
+    if (recentExp.isEmpty && _expenses.isEmpty) {
       try {
         final expensesResponse = await DioClient().dio.get<dynamic>(
           '${ApiUris.expenses}?$queryParams',
@@ -181,64 +310,86 @@ class _MonthlyExpenseDetailScreenState
           } else if (data is Map && data['expenses'] is List) {
             list = data['expenses'] as List;
           }
-          _expenses = list
+          recentExp = list
               .map((e) => Map<String, dynamic>.from(e as Map))
               .toList();
         }
       } catch (_) {}
     }
 
-    // 3. Fallback to reports financial metrics for total_expense & percentage
-    try {
-      final reportsResponse = await DioClient().dio.get<dynamic>(
-        '${ApiUris.reports}?$queryParams',
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+    // 3. Fallback to reports ONLY IF primary failed or total is 0
+    if (!successFromPrimary || totalExp == 0.0) {
+      try {
+        final reportsResponse = await DioClient().dio.get<dynamic>(
+          '${ApiUris.reports}?$queryParams',
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
 
-      if (reportsResponse.statusCode == 200 &&
-          reportsResponse.data is Map) {
-        final reportsData =
-            reportsResponse.data as Map<dynamic, dynamic>;
-        final financial =
-            reportsData['financial_metrics'] as Map<dynamic, dynamic>?;
+        if (reportsResponse.statusCode == 200 &&
+            reportsResponse.data is Map) {
+          final reportsData =
+              reportsResponse.data as Map<dynamic, dynamic>;
+          final financial =
+              reportsData['financial_metrics'] as Map<dynamic, dynamic>?;
 
-        final expNum = (financial?['total_expense'] as num?)?.toDouble();
-        if (expNum != null && expNum > 0 && _totalExpense == 0.0) {
-          _totalExpense = expNum;
-        }
-
-        final expGrowth =
-            financial?['expense_growth'] as Map<dynamic, dynamic>?;
-        if (expGrowth != null) {
-          if (expGrowth['percentage_change'] != null) {
-            _percentageChange =
-                (expGrowth['percentage_change'] as num).toDouble();
-            _isIncrease = expGrowth['is_increase'] as bool? ??
-                (_percentageChange >= 0);
+          final expNum = (financial?['total_expense'] as num?)?.toDouble();
+          if (expNum != null && expNum > 0 && totalExp == 0.0) {
+            totalExp = expNum;
           }
-          if (expGrowth['comparison_month'] != null) {
-            _comparisonMonth = expGrowth['comparison_month'].toString();
+
+          final expGrowth =
+              financial?['expense_growth'] as Map<dynamic, dynamic>?;
+          if (expGrowth != null) {
+            if (expGrowth['percentage_change'] != null) {
+              pctChange =
+                  (expGrowth['percentage_change'] as num).toDouble();
+              isInc = expGrowth['is_increase'] as bool? ??
+                  (pctChange >= 0);
+            }
+            if (expGrowth['comparison_month'] != null) {
+              compMonth = expGrowth['comparison_month'].toString();
+            }
           }
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+    }
 
     // Calculate total from expenses if still 0
-    if (_totalExpense == 0.0 && _expenses.isNotEmpty) {
+    if (totalExp == 0.0 && recentExp.isNotEmpty) {
       var sum = 0.0;
-      for (final e in _expenses) {
+      for (final e in recentExp) {
         sum += (e['amount'] as num?)?.toDouble() ??
             double.tryParse(e['amount']?.toString() ?? '0') ??
             0.0;
       }
-      _totalExpense = sum;
+      totalExp = sum;
     }
 
-    if (_trendData.isEmpty) {
-      _trendData = _getFallbackTrend();
-    }
+    // Cache the result for this period
+    _periodCache[targetPeriod] = _ExpensePeriodCache(
+      totalExpense: totalExp,
+      percentageChange: pctChange,
+      isIncrease: isInc,
+      comparisonMonth: compMonth,
+      quickInsight: qkInsight,
+      trendData: trend,
+      expenseBreakdown: expBreakdown,
+      expenses: recentExp.isNotEmpty ? recentExp : _expenses,
+    );
 
-    if (mounted) {
+    if (mounted && _selectedPeriod == targetPeriod) {
+      setState(() {
+        _totalExpense = totalExp;
+        _percentageChange = pctChange;
+        _isIncrease = isInc;
+        _comparisonMonth = compMonth;
+        _quickInsight = qkInsight;
+        _trendData = trend;
+        if (recentExp.isNotEmpty) _expenses = recentExp;
+        if (expBreakdown.isNotEmpty) _expenseBreakdown = expBreakdown;
+        _isLoading = false;
+      });
+    } else if (mounted) {
       setState(() => _isLoading = false);
     }
   }
@@ -798,13 +949,19 @@ class _MonthlyExpenseDetailScreenState
           // Trend Line Chart
           SizedBox(
             height: 220,
-            child: _LineTrendChartWidget(
-              trendData: _trendData.isNotEmpty
-                  ? _trendData
-                  : _getFallbackTrend(),
-              lineColor: const Color(0xffE53935),
-              currencyPrefix: '₹',
-            ),
+            child: _isLoading && _trendData.isEmpty
+                ? _buildChartShimmer()
+                : AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: _isLoading ? 0.6 : 1.0,
+                    child: _LineTrendChartWidget(
+                      trendData: _trendData.isNotEmpty
+                          ? _trendData
+                          : (_isLoading ? const [] : _getFallbackTrend()),
+                      lineColor: const Color(0xffE53935),
+                      currencyPrefix: '₹',
+                    ),
+                  ),
           ),
           const SizedBox(height: 16),
 
@@ -815,6 +972,48 @@ class _MonthlyExpenseDetailScreenState
                 : 'Your expense is ${_isIncrease ? "up" : "down"} by ${_percentageChange.abs().toStringAsFixed(0)}% compared to last month. Great job!',
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildChartShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        height: 220,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(
+                _selectedPeriod == '3m' ? 3 : (_selectedPeriod == '1y' ? 6 : 6),
+                (i) => Container(
+                  width: 32,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -838,10 +1037,7 @@ class _MonthlyExpenseDetailScreenState
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                if (_selectedPeriod != opt.$2) {
-                  setState(() => _selectedPeriod = opt.$2);
-                  _fetchData();
-                }
+                _onPeriodChanged(opt.$2);
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -1904,4 +2100,26 @@ class _LineTrendChartPainter extends CustomPainter {
         oldDelegate.selectedIndex != selectedIndex ||
         oldDelegate.lineColor != lineColor;
   }
+}
+
+class _ExpensePeriodCache {
+  const _ExpensePeriodCache({
+    required this.totalExpense,
+    required this.percentageChange,
+    required this.isIncrease,
+    required this.comparisonMonth,
+    required this.quickInsight,
+    required this.trendData,
+    required this.expenseBreakdown,
+    required this.expenses,
+  });
+
+  final double totalExpense;
+  final double percentageChange;
+  final bool isIncrease;
+  final String comparisonMonth;
+  final String quickInsight;
+  final List<({String label, double value})> trendData;
+  final List<Map<String, dynamic>> expenseBreakdown;
+  final List<Map<String, dynamic>> expenses;
 }

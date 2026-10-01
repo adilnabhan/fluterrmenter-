@@ -2,7 +2,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reports_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
-
+import 'package:mentor_mobile_app/core/services/holiday/gym_holiday_service.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_stats_screen.dart';
 
 class AssignToClientBottomSheet extends StatefulWidget {
@@ -372,9 +372,17 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
     String customerName,
     bool isAssignedToMe,
   ) async {
+    final client = _clients.firstWhere(
+      (c) => c['customer_id'] == customerId || c['id'] == customerId,
+      orElse: () => <String, dynamic>{},
+    );
+    final int? clientOrgId =
+        client['organization_id'] as int? ?? client['gym_id'] as int?;
+
     final titleController = TextEditingController(text: widget.planTitle);
     final notesController = TextEditingController();
     DateTime? selectedDate = widget.isMultiDayGroup ? DateTime.now() : null;
+    String? holidayWarning;
     final action = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
@@ -485,9 +493,20 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
                       if (picked != null) {
+                        final hol = await GymHolidayService.getHolidayName(
+                          picked,
+                          orgId: clientOrgId,
+                        );
                         setStateDialog(() {
                           selectedDate = picked;
+                          holidayWarning = hol;
                         });
+                        if (hol != null) {
+                          Dialogs.showSnack(
+                            msg:
+                                'Selected date is a gym holiday ($hol). Workouts cannot be assigned on holidays.',
+                          );
+                        }
                       }
                     },
                     child: Container(
@@ -496,7 +515,12 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
+                        border: Border.all(
+                          color:
+                              holidayWarning != null
+                                  ? const Color(0xffD32F2F)
+                                  : Colors.grey.shade400,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -527,6 +551,40 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                       ),
                     ),
                   ),
+                  if (holidayWarning != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffFFEBEE),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xffEF5350).withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Color(0xffD32F2F),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Cannot assign workout: $holidayWarning is a gym holiday.',
+                              style: AppStyles.text12Px.poppins.w500.copyWith(
+                                color: const Color(0xffD32F2F),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
               actions: [
@@ -550,10 +608,25 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                     ),
                   ),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (widget.isMultiDayGroup && selectedDate == null) {
                       Dialogs.showSnack(
                         msg: 'Please select a start date for multi-day workout',
+                      );
+                      return;
+                    }
+                    final targetDate = selectedDate ?? DateTime.now();
+                    final hol = await GymHolidayService.getHolidayName(
+                      targetDate,
+                      orgId: clientOrgId,
+                    );
+                    if (hol != null) {
+                      setStateDialog(() {
+                        holidayWarning = hol;
+                      });
+                      Dialogs.showSnack(
+                        msg:
+                            'Cannot assign workout on a holiday: $hol. Please select another date.',
                       );
                       return;
                     }
@@ -631,6 +704,21 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
 
       // 2. Assign workout plan
       final DateTime startDate = selectedDate ?? DateTime.now();
+      final holCheck = await GymHolidayService.getHolidayName(
+        startDate,
+        orgId: clientOrgId,
+      );
+      if (holCheck != null) {
+        if (!mounted) return;
+        setState(() {
+          _submittingMap[customerId] = false;
+        });
+        Dialogs.showSnack(
+          msg:
+              'Cannot assign workout on a holiday: $holCheck. Please choose another date.',
+        );
+        return;
+      }
       List<Map<String, dynamic>> assignDays = [];
       DateTime calculatedEndDate = startDate.add(const Duration(days: 6));
       int? foundMasterPlanId;
@@ -828,14 +916,35 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
           }
         });
       } else {
-        Dialogs.showSnack(msg: 'Failed to assign plan');
+        final errorMsg =
+            response.data is Map
+                ? (response.data['error'] ??
+                        response.data['message'] ??
+                        response.data['detail'] ??
+                        'Failed to assign plan')
+                    .toString()
+                : 'Failed to assign plan';
+        Dialogs.showSnack(msg: errorMsg);
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _submittingMap[customerId] = false;
       });
-      Dialogs.showSnack(msg: 'Error assigning plan: ${e.toString()}');
+      String errorMsg = 'Failed to assign plan';
+      if (e is DioException && e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map) {
+          errorMsg =
+              (data['error'] ?? data['message'] ?? data['detail'] ?? errorMsg)
+                  .toString();
+        } else if (data is String && data.isNotEmpty) {
+          errorMsg = data;
+        }
+      } else {
+        errorMsg = e.toString();
+      }
+      Dialogs.showSnack(msg: errorMsg);
     }
   }
 

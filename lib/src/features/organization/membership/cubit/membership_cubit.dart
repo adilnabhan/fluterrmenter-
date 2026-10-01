@@ -1,5 +1,3 @@
-import 'dart:developer' as dev;
-
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/membership/domain/models/emi_options_model.dart';
 import 'package:mentor_mobile_app/src/features/organization/membership/domain/models/package_group_model.dart';
@@ -12,10 +10,22 @@ class MembershipCubit extends Cubit<MembershipState> {
 
   final String orgId;
 
+  int _currentPage = 1;
+  String? _nextPageUrl;
+  bool _hasMore = false;
+  bool _isLoadingMore = false;
+
+  bool get hasMore => _hasMore;
+  bool get isLoadingMore => _isLoadingMore;
+
   Future<void> fetchMembershipPackages({dynamic groupId}) async {
     if (isClosed) return;
+    _currentPage = 1;
+    _nextPageUrl = null;
+    _hasMore = false;
+    _isLoadingMore = false;
     emit(state.copyWith(membershipPackages: none()));
-    final queryParams = <String, dynamic>{'organization_id': orgId};
+    final queryParams = <String, dynamic>{'organization_id': orgId, 'page': 1};
     if (groupId != null) {
       queryParams['group_id'] = groupId.toString();
     }
@@ -23,7 +33,77 @@ class MembershipCubit extends Cubit<MembershipState> {
       queryParameters: queryParams,
     );
     if (isClosed) return;
+    res.fold(
+      (err) {
+        _hasMore = false;
+      },
+      (data) {
+        _nextPageUrl = data.next?.toString();
+        _hasMore = _nextPageUrl != null && _nextPageUrl!.isNotEmpty;
+      },
+    );
     emit(state.copyWith(membershipPackages: some(res)));
+  }
+
+  Future<void> fetchMoreMembershipPackages({dynamic groupId}) async {
+    if (isClosed || _isLoadingMore || !_hasMore) return;
+
+    final currentOption = state.membershipPackages;
+    final currentData = currentOption.fold(
+      () => null,
+      (either) => either.fold((l) => null, (r) => r),
+    );
+    if (currentData == null) return;
+
+    _isLoadingMore = true;
+    emit(state.copyWith(isLoading: true));
+
+    final nextPage = _currentPage + 1;
+    final Either<ApiException, ListMembershipPackagesModel> res;
+
+    if (_nextPageUrl != null && _nextPageUrl!.isNotEmpty) {
+      res = await MembershipRepository().listByUrl(url: _nextPageUrl!);
+    } else {
+      final queryParams = <String, dynamic>{
+        'organization_id': orgId,
+        'page': nextPage,
+      };
+      if (groupId != null) {
+        queryParams['group_id'] = groupId.toString();
+      }
+      res = await MembershipRepository().list(queryParameters: queryParams);
+    }
+
+    if (isClosed) return;
+    _isLoadingMore = false;
+
+    res.fold(
+      (err) {
+        _hasMore = false;
+        emit(state.copyWith(isLoading: false));
+      },
+      (newData) {
+        _currentPage = nextPage;
+        _nextPageUrl = newData.next?.toString();
+        _hasMore = _nextPageUrl != null && _nextPageUrl!.isNotEmpty;
+
+        final existingResults = currentData.results ?? [];
+        final newResults = newData.results ?? [];
+        final combinedResults = [...existingResults, ...newResults];
+
+        final updatedModel = currentData.copyWith(
+          results: combinedResults,
+          next: newData.next,
+          previous: newData.previous,
+          count: newData.count ?? combinedResults.length,
+        );
+
+        emit(state.copyWith(
+          membershipPackages: some(right(updatedModel)),
+          isLoading: false,
+        ));
+      },
+    );
   }
 
   Future<GroupedMembershipPackagesModel?> fetchGroupedPackages() async {

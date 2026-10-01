@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/trainer_client_workout_history_calendar.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_body_matrix_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_customers_screen.dart';
 
 class TrainerClientDetailScreen extends StatefulWidget {
   const TrainerClientDetailScreen({required this.customerId, super.key});
@@ -46,25 +47,53 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         final sessions = data['assigned_sessions'] is List
             ? (data['assigned_sessions'] as List)
             : [];
-        final workouts = data['assigned_workouts'] is List
-            ? (data['assigned_workouts'] as List)
-            : [];
-        final genericPlans =
-            data['plans'] is List ? (data['plans'] as List) : [];
-        final dataItems =
-            data['data'] is List ? (data['data'] as List) : [];
-
-        final combined = [
-          ...plans,
-          ...sessions,
-          ...workouts,
-          ...genericPlans,
-          ...dataItems,
+        final candidates = [
+          data['assigned_workouts'],
+          data['assigned_plans'],
+          data['data'],
+          data['plans'],
+          data['assigned_sessions'],
         ];
-        if (combined.isNotEmpty) {
-          return combined
-              .map((e) => Map<String, dynamic>.from(e as Map))
-              .toList();
+        List<dynamic>? matchedList;
+        for (final c in candidates) {
+          if (c is List && c.isNotEmpty) {
+            matchedList = c;
+            break;
+          }
+        }
+        if (matchedList != null) {
+          final seenKeys = <String>{};
+          final unique = <Map<String, dynamic>>[];
+          for (final raw in matchedList) {
+            if (raw is Map) {
+              final map = Map<String, dynamic>.from(raw);
+              final id = map['id'] ??
+                  map['customer_workout_plan_id'] ??
+                  map['session_id'];
+              final title = (map['plan_name'] ??
+                      map['title'] ??
+                      map['name'] ??
+                      '')
+                  .toString()
+                  .toLowerCase();
+              final date = (map['start_date'] ??
+                      map['scheduled_date'] ??
+                      map['date'] ??
+                      '')
+                  .toString();
+              final normDate = date.length >= 10 ? date.substring(0, 10) : date;
+              final key = title.isNotEmpty && normDate.isNotEmpty
+                  ? '${map['customer_id']}_${title}_$normDate'
+                  : (title.isNotEmpty
+                      ? '${map['customer_id']}_$title'
+                      : (id != null ? 'id_$id' : '${map.hashCode}'));
+              if (!seenKeys.contains(key)) {
+                seenKeys.add(key);
+                unique.add(map);
+              }
+            }
+          }
+          return unique;
         }
       }
     }
@@ -2087,12 +2116,40 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 70),
+            const SizedBox(height: 140),
           ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _buildFloatingActions(context, profile),
+    );
+  }
+
+  void _handleAssignWorkout(BuildContext context) {
+    final clientName = (_clientData['profile']?['name'] ??
+            _clientData['name'] ??
+            _clientData['first_name'] ??
+            _clientData['user']?['name'] ??
+            'Client')
+        .toString();
+    final int? orgId = _clientData['organization_id'] as int? ??
+        _clientData['gym_id'] as int? ??
+        _clientData['mentor_profile']?['organization']?['id'] as int? ??
+        _clientData['organization']?['id'] as int?;
+    final bool isAssignedToMe =
+        _clientData['is_assigned_to_me'] as bool? ?? true;
+
+    showAssignPlanBottomSheet(
+      context: context,
+      customerId: widget.customerId,
+      customerName: clientName,
+      isAssignedToMe: isAssignedToMe,
+      organizationId: orgId,
+      onSuccess: () {
+        _fetchClientDetails();
+        _fetchAssignedWorkouts();
+        _fetchWorkoutHistory();
+      },
     );
   }
 
@@ -2168,94 +2225,131 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
   ) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Send Message (WhatsApp)
-            Expanded(
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(
-                    color: Colors.black.withValues(alpha: 0.08),
+            // Assign Workout Button
+            Container(
+              height: 48,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(30),
-                    onTap: () => _handleSendMessage(profile),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/images/svg/icons/whatsapp.svg',
-                          width: 20,
-                          height: 20,
-                        ),
-                        const SizedBox(width: 7),
-                        Text(
-                          'Send Message',
-                          style: AppStyles.text13Px.poppins.w600.copyWith(
-                            color: const Color(0xFF2D3748),
-                          ),
-                        ),
-                      ],
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(30),
+                  onTap: () => _handleAssignWorkout(context),
+                  child: Center(
+                    child: Text(
+                      'Assign Workout',
+                      style: AppStyles.text15Px.poppins.w600.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            // Call Now
-            Expanded(
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00A859),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF00A859).withValues(alpha: 0.30),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(30),
-                    onTap: () => _handleCallNow(profile),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.call,
-                          color: Colors.white,
-                          size: 19,
-                        ),
-                        const SizedBox(width: 7),
-                        Text(
-                          'Call Now',
-                          style: AppStyles.text13Px.poppins.w600.copyWith(
-                            color: Colors.white,
-                          ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                // Send Message (WhatsApp)
+                Expanded(
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: Colors.black.withValues(alpha: 0.08),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(30),
+                        onTap: () => _handleSendMessage(profile),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              'assets/images/svg/icons/whatsapp.svg',
+                              width: 20,
+                              height: 20,
+                            ),
+                            const SizedBox(width: 7),
+                            Text(
+                              'Send Message',
+                              style: AppStyles.text13Px.poppins.w600.copyWith(
+                                color: const Color(0xFF2D3748),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                // Call Now
+                Expanded(
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00A859),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00A859).withValues(alpha: 0.30),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(30),
+                        onTap: () => _handleCallNow(profile),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.call,
+                              color: Colors.white,
+                              size: 19,
+                            ),
+                            const SizedBox(width: 7),
+                            Text(
+                              'Call Now',
+                              style: AppStyles.text13Px.poppins.w600.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -85,13 +85,19 @@ class AssignedWorkoutsState {
       errorMessage: errorMessage,
       isDeleting: isDeleting ?? this.isDeleting,
       actionMessage: actionMessage,
-      // ignore: unnecessary_null_comparison
-      tabCaches: tabCaches ?? (this.tabCaches ?? const {}),
+      tabCaches: tabCaches ?? this.tabCaches,
     );
   }
 
   List<Map<String, dynamic>> get filteredWorkouts {
     var list = List<Map<String, dynamic>>.from(workouts);
+
+    // Filter by plan type tab: 'single_day' vs 'multi_day'
+    final isMultiDayTab = selectedPlanType == 'multi_day';
+    list = list.where((item) {
+      final isMulti = _isMultiDay(item);
+      return isMultiDayTab ? isMulti : !isMulti;
+    }).toList();
 
     // Filter strictly by exact selected date (Option A)
     if (selectedDate != null) {
@@ -128,7 +134,131 @@ class AssignedWorkoutsState {
       return sortNewestFirst ? -cmp : cmp;
     });
 
-    return list;
+    // Deduplicate by Client + Title + Date so the exact same workout never shows twice
+    final uniqueList = <Map<String, dynamic>>[];
+    final seen = <String>{};
+    for (final item in list) {
+      final title = (item['plan_name'] ??
+              item['title'] ??
+              item['name'] ??
+              item['workout_plan_name'] ??
+              '')
+          .toString()
+          .trim()
+          .toLowerCase();
+      final date = _extractDate(item);
+      final normDate = date.length >= 10 ? date.substring(0, 10) : date;
+      final client = (item['client_name'] ??
+              item['customer_name'] ??
+              item['customer']?['name'] ??
+              item['client']?['name'] ??
+              item['customer_id'] ??
+              '')
+          .toString()
+          .trim()
+          .toLowerCase();
+
+      final rawId = item['id'] ??
+          item['customer_workout_plan_id'] ??
+          item['assignment_id'] ??
+          item['session_id'];
+
+      // Primary key: client + title + date. (If same client has same workout on same day, it's a duplicate!)
+      final key = title.isNotEmpty && normDate.isNotEmpty
+          ? '${client}_${title}_$normDate'
+          : (title.isNotEmpty
+              ? '${client}_$title'
+              : (rawId != null && rawId != 0 ? 'id_$rawId' : '${item.hashCode}'));
+
+      if (!seen.contains(key)) {
+        seen.add(key);
+        uniqueList.add(item);
+      }
+    }
+
+    return uniqueList;
+  }
+
+  static bool _isMultiDay(Map<String, dynamic> item) {
+    // 1. Explicit boolean indicators
+    if (item['is_multi_day'] == true ||
+        item['is_multiday'] == true ||
+        item['is_multiday_workout'] == true) {
+      return true;
+    }
+    if (item['is_single_day'] == true ||
+        item['is_singleday'] == true ||
+        item['is_single_day_workout'] == true) {
+      return false;
+    }
+
+    // 2. Explicit plan_type / group_type strings
+    final planType = (item['plan_type'] ?? item['group_type'] ?? '')
+        .toString()
+        .toLowerCase();
+    if (planType == 'multi_day' || planType == 'custom_range') {
+      return true;
+    }
+    if (planType == 'single_day' || planType == 'single') {
+      return false;
+    }
+
+    // 3. Nested group object type
+    final groupObj = item['group'];
+    if (groupObj is Map) {
+      final gType = (groupObj['type'] ?? groupObj['group_type'] ?? '')
+          .toString()
+          .toLowerCase();
+      if (gType == 'multi_day') return true;
+      if (gType == 'single_day') return false;
+    }
+
+    // 4. Nested workout_plan or plan object type
+    final planObj = item['workout_plan'] ?? item['plan'];
+    if (planObj is Map) {
+      final pType = (planObj['group_type'] ??
+              planObj['type'] ??
+              planObj['plan_type'] ??
+              '')
+          .toString()
+          .toLowerCase();
+      if (pType == 'multi_day' || pType == 'custom_range') return true;
+      if (pType == 'single_day' || pType == 'single') return false;
+      if (planObj['is_multi_day'] == true || planObj['is_multiday'] == true) {
+        return true;
+      }
+    }
+
+    // 5. Explicit multi-day container ID
+    if (item['multi_day_container_id'] != null ||
+        item['container_id'] != null) {
+      return true;
+    }
+
+    // 6. Days / Routines count > 1
+    final totalDays = (item['total_days'] as num?)?.toInt() ??
+        (item['days_count'] as num?)?.toInt() ??
+        (item['days'] as List?)?.length ??
+        (item['routines'] as List?)?.length ??
+        (item['workout_days'] as List?)?.length ??
+        0;
+    if (totalDays > 1) {
+      return true;
+    }
+
+    // 7. Nested customer_workout_plan check
+    final cwp = item['customer_workout_plan'];
+    if (cwp is Map) {
+      final cwpType = (cwp['plan_type'] ?? cwp['type'] ?? cwp['group_type'] ?? '')
+          .toString()
+          .toLowerCase();
+      if (cwpType == 'multi_day' || cwpType == 'custom_range') return true;
+      if (cwpType == 'single_day' || cwpType == 'single') return false;
+      if (cwp['is_multi_day'] == true || cwp['is_multiday'] == true) return true;
+      if (cwp['total_days'] is num && (cwp['total_days'] as num) > 1) return true;
+    }
+
+    return false;
   }
 
   static String _extractDate(Map<String, dynamic> item) {

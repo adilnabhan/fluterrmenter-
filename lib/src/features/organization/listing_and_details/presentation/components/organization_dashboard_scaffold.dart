@@ -55,32 +55,26 @@ class _OrganizationDashboardScaffoldState
   Widget build(BuildContext context) {
     if (_initialized == null || _initialized!.length != widget.pages.length) {
       final oldList = _initialized;
-      _initialized = List<bool>.generate(
-        widget.pages.length,
-        (index) {
-          if (index == _currentIndex) return true;
-          if (oldList != null && index < oldList.length) {
-            return oldList[index];
-          }
-          return false;
-        },
-      );
+      _initialized = List<bool>.generate(widget.pages.length, (index) {
+        if (index == _currentIndex) return true;
+        if (oldList != null && index < oldList.length) {
+          return oldList[index];
+        }
+        return false;
+      });
     }
 
     return Scaffold(
       extendBody: false,
       body: IndexedStack(
         index: _currentIndex,
-        children: List<Widget>.generate(
-          widget.pages.length,
-          (index) {
-            if (index < _initialized!.length && _initialized![index]) {
-              return widget.pages[index];
-            } else {
-              return const SizedBox.shrink();
-            }
-          },
-        ),
+        children: List<Widget>.generate(widget.pages.length, (index) {
+          if (index < _initialized!.length && _initialized![index]) {
+            return widget.pages[index];
+          } else {
+            return const SizedBox.shrink();
+          }
+        }),
       ),
       floatingActionButton:
           widget.floatingActionButtons != null &&

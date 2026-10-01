@@ -41,6 +41,8 @@ class _ProfileImageState extends State<ProfileImage> {
       resolvedOnTap = () {
         ImagePickerDialog(
           needRemove: _localImage?.path.isNotEmpty ?? false,
+          maxWidth: 512,
+          maxHeight: 512,
           onPickedImage: (image) {
             if (image != null) {
               _localImage = image;

@@ -32,6 +32,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
 
   String _selectedGender = 'male';
   File? _selectedImage;
+  bool _isImageRemoved = false;
   bool _isLoading = false;
 
   @override
@@ -39,6 +40,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     super.initState();
     final user = context.read<AppCubit>().state.currentUser;
     _firstNameController = TextEditingController(text: user?.firstName ?? '');
+    _firstNameController.addListener(_onNameChanged);
     _lastNameController = TextEditingController(text: user?.lastName ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     _dobController = TextEditingController(text: user?.dateOfBirth ?? '');
@@ -149,6 +151,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
 
   @override
   void dispose() {
+    _firstNameController.removeListener(_onNameChanged);
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
@@ -163,13 +166,41 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     super.dispose();
   }
 
+  void _onNameChanged() {
+    if (_selectedImage == null) {
+      final user = context.read<AppCubit>().state.currentUser;
+      final hasExistingPhoto = !_isImageRemoved &&
+          user?.profilePicture != null &&
+          user!.profilePicture.toString().trim().isNotEmpty &&
+          user.profilePicture.toString().trim() != 'null';
+      if (!hasExistingPhoto && mounted) {
+        setState(() {});
+      }
+    }
+  }
+
   Future<void> _pickImage() async {
+    final user = context.read<AppCubit>().state.currentUser;
+    final hasExistingPhoto = !_isImageRemoved &&
+        user?.profilePicture != null &&
+        user!.profilePicture.toString().trim().isNotEmpty &&
+        user.profilePicture.toString().trim() != 'null';
+    final hasPhoto = _selectedImage != null || hasExistingPhoto;
+
     await ImagePickerDialog(
-      needRemove: _selectedImage != null,
+      needRemove: hasPhoto,
+      maxWidth: 512,
+      maxHeight: 512,
       onPickedImage: (file) {
         if (file != null) {
           setState(() {
             _selectedImage = File(file.path);
+            _isImageRemoved = false;
+          });
+        } else {
+          setState(() {
+            _selectedImage = null;
+            _isImageRemoved = true;
           });
         }
       },
@@ -184,7 +215,7 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
     });
 
     try {
-      final formData = FormData.fromMap({
+      final Map<String, dynamic> dataMap = {
         'first_name': _firstNameController.text.trim(),
         'last_name': _lastNameController.text.trim(),
         'email': _emailController.text.trim(),
@@ -199,9 +230,16 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
         'youtube': _youtubeController.text.trim(),
         'whatsapp': _whatsappController.text.trim(),
         'user_type': 'trainer',
-      });
+      };
 
-      if (_selectedImage != null) {
+      if (_isImageRemoved) {
+        dataMap['profile_image'] = '';
+        dataMap['remove_profile_image'] = 'true';
+      }
+
+      final formData = FormData.fromMap(dataMap);
+
+      if (_selectedImage != null && !_isImageRemoved) {
         formData.files.add(
           MapEntry(
             'profile_image',
@@ -221,15 +259,23 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
         if (mounted) {
           final responseData = response.data as Map<String, dynamic>;
           final updatedUser = LoginSuccessModel.fromJson(responseData);
-          final String? newProfilePic =
-              (responseData['profile_picture']?.toString() ??
-              responseData['profile_image']?.toString() ??
-              responseData['data']?['profile_picture']?.toString() ??
-              responseData['data']?['profile_image']?.toString() ??
-              updatedUser.profilePicture) as String?;
+          final String? newProfilePic = _isImageRemoved
+              ? ''
+              : ((responseData['profile_picture']?.toString() ??
+                  responseData['profile_image']?.toString() ??
+                  responseData['data']?['profile_picture']?.toString() ??
+                  responseData['data']?['profile_image']?.toString() ??
+                  updatedUser.profilePicture) as String?);
 
           final currentUser = context.read<AppCubit>().state.currentUser;
           if (currentUser != null) {
+            if (_isImageRemoved &&
+                currentUser.profilePicture != null &&
+                currentUser.profilePicture.toString().isNotEmpty) {
+              CachedNetworkImage.evictFromCache(
+                currentUser.profilePicture.toString(),
+              );
+            }
             final mergedUser = currentUser.copyWith(
               firstName:
                   _firstNameController.text.trim().isNotEmpty
@@ -277,11 +323,17 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
                   _whatsappController.text.trim().isNotEmpty
                       ? _whatsappController.text.trim()
                       : currentUser.whatsapp,
-              profilePicture: newProfilePic ?? currentUser.profilePicture,
+              profilePicture:
+                  _isImageRemoved
+                      ? ''
+                      : (newProfilePic ?? currentUser.profilePicture),
             );
             context.read<AppCubit>().addUser(mergedUser);
           } else {
-            context.read<AppCubit>().addUser(updatedUser);
+            final userToSave = _isImageRemoved
+                ? updatedUser.copyWith(profilePicture: '')
+                : updatedUser;
+            context.read<AppCubit>().addUser(userToSave);
           }
 
           Fluttertoast.showToast(msg: 'Profile updated successfully');
@@ -340,44 +392,65 @@ class _EditTrainerProfileScreenState extends State<EditTrainerProfileScreen> {
                   onTap: _pickImage,
                   child: Stack(
                     children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey[200],
-                          border: Border.all(
-                            color: Colors.grey[300]!,
-                            width: 2,
-                          ),
-                          image:
-                              _selectedImage != null
+                      Builder(
+                        builder: (context) {
+                          final hasExistingPhoto = !_isImageRemoved &&
+                              user?.profilePicture != null &&
+                              user!.profilePicture.toString().trim().isNotEmpty &&
+                              user.profilePicture.toString().trim() != 'null';
+                          final hasImage =
+                              _selectedImage != null || hasExistingPhoto;
+
+                          final name = _firstNameController.text.trim().isNotEmpty
+                              ? _firstNameController.text.trim()
+                              : (user?.firstName?.trim().isNotEmpty == true
+                                  ? user!.firstName!.trim()
+                                  : 'Trainer');
+                          final initial =
+                              AvatarColorHelper.getInitial(name, fallback: 'T');
+                          final colors = AvatarColorHelper.getColorPair(name);
+
+                          return Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: hasImage
+                                  ? Colors.grey[200]
+                                  : colors.background,
+                              border: Border.all(
+                                color: Colors.grey[300]!,
+                                width: 2,
+                              ),
+                              image: _selectedImage != null
                                   ? DecorationImage(
-                                    image: FileImage(_selectedImage!),
-                                    fit: BoxFit.cover,
-                                  )
-                                  : (user?.profilePicture != null &&
-                                      user!.profilePicture
-                                          .toString()
-                                          .isNotEmpty)
-                                  ? DecorationImage(
-                                    image: NetworkImage(
-                                      user.profilePicture.toString(),
+                                      image: FileImage(_selectedImage!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : hasExistingPhoto
+                                      ? DecorationImage(
+                                          image: NetworkImage(
+                                            user!.profilePicture.toString(),
+                                          ),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                            ),
+                            child: !hasImage
+                                ? Center(
+                                    child: Text(
+                                      initial,
+                                      style: TextStyle(
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Poppins',
+                                        color: colors.text,
+                                      ),
                                     ),
-                                    fit: BoxFit.cover,
                                   )
-                                  : null,
-                        ),
-                        child:
-                            _selectedImage == null &&
-                                    (user?.profilePicture == null ||
-                                        user!.profilePicture.toString().isEmpty)
-                                ? const Icon(
-                                  Icons.person,
-                                  size: 50,
-                                  color: Colors.grey,
-                                )
                                 : null,
+                          );
+                        },
                       ),
                       Positioned(
                         bottom: 0,

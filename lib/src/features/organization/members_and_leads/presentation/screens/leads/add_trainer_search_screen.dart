@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/leads/add_or_edit_lead_screen.dart';
+import 'package:mentor_mobile_app/src/features/organization/members_and_leads/cubit/members_and_leads_cubit.dart';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -57,8 +58,9 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
       );
 
       if (res.statusCode == 200 && res.data is Map) {
-        final data = res.data as Map<String, dynamic>;
-        if (data['found'] == true) {
+        final Map<String, dynamic> data =
+            Map<String, dynamic>.from(res.data as Map);
+        if (data['found'] == true && data['trainer'] is Map) {
           setState(() {
             _foundTrainer = Map<String, dynamic>.from(data['trainer'] as Map);
             _isSearching = false;
@@ -97,7 +99,16 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final trainerId = _foundTrainer!['id'];
+      final dynamic rawTrainerId = _foundTrainer!['id'] ??
+          _foundTrainer!['trainer_id'] ??
+          _foundTrainer!['user_id'];
+      final int? trainerId = rawTrainerId is num
+          ? rawTrainerId.toInt()
+          : int.tryParse(rawTrainerId?.toString() ?? '');
+      if (trainerId == null) {
+        Dialogs.showSnack(msg: 'Unable to identify trainer ID.');
+        return;
+      }
       final res = await DioClient().dio.post<dynamic>(
         ApiUris.addExistingTrainer,
         data: {'trainer_id': trainerId, 'organization_id': widget.orgId},
@@ -131,21 +142,72 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
   }
 
   Widget _buildTrainerCard(Map<String, dynamic> trainer) {
-    final name =
-        trainer['full_name']?.toString() ??
-        '${trainer['first_name'] ?? ''} ${trainer['last_name'] ?? ''}'.trim();
-    final mobile = trainer['mobile']?.toString() ?? '';
+    final String fullName = trainer['full_name']?.toString().trim() ?? '';
+    final String first = trainer['first_name']?.toString().trim() ?? '';
+    final String last = trainer['last_name']?.toString().trim() ?? '';
+    final String combined = '$first $last'.trim();
+    final String name = fullName.isNotEmpty
+        ? fullName
+        : (combined.isNotEmpty
+            ? combined
+            : (trainer['name']?.toString().trim().isNotEmpty ?? false
+                ? trainer['name'].toString().trim()
+                : 'Unknown Trainer'));
+
+    final mobile = trainer['mobile']?.toString() ??
+        trainer['mobile_number']?.toString() ??
+        trainer['phone']?.toString() ??
+        '';
     final email = trainer['email']?.toString() ?? '';
     final bio = trainer['bio']?.toString() ?? '';
-    final int experience =
-        trainer['experience_years'] is num
-            ? (trainer['experience_years'] as num).toInt()
-            : int.tryParse(trainer['experience_years']?.toString() ?? '') ?? 0;
-    final specRaw = trainer['specializations'] as List? ?? [];
-    final specs = specRaw.map((e) => e.toString()).toList();
-    final profileImg = trainer['profile_image']?.toString();
-    final alreadyLinked =
-        trainer['already_linked_to_this_gym'] as bool? ?? false;
+
+    final dynamic rawExp =
+        trainer['experience_years'] ?? trainer['experience'];
+    final int experience = rawExp is num
+        ? rawExp.toInt()
+        : int.tryParse(rawExp?.toString() ?? '') ?? 0;
+
+    final List<String> specs = [];
+    final dynamic specRaw =
+        trainer['specializations'] ?? trainer['specialization'];
+    if (specRaw is List) {
+      for (final s in specRaw) {
+        if (s is Map) {
+          final str =
+              (s['name'] ?? s['title'] ?? s['specialization'])?.toString().trim() ??
+                  '';
+          if (str.isNotEmpty) specs.add(str);
+        } else if (s != null) {
+          final str = s.toString().trim();
+          if (str.isNotEmpty) specs.add(str);
+        }
+      }
+    } else if (specRaw is String && specRaw.trim().isNotEmpty) {
+      specs.addAll(
+        specRaw
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty),
+      );
+    }
+
+    final rawImg = (trainer['profile_image'] ??
+            trainer['profile_picture'] ??
+            trainer['image_url'])
+        ?.toString()
+        .trim();
+    final bool hasValidImage = rawImg != null &&
+        rawImg.isNotEmpty &&
+        rawImg != 'null' &&
+        (rawImg.startsWith('http://') || rawImg.startsWith('https://'));
+
+    final dynamic rawLinked = trainer['already_linked_to_this_gym'] ??
+        trainer['is_linked'] ??
+        trainer['already_linked'];
+    final bool alreadyLinked = rawLinked == true ||
+        rawLinked == 1 ||
+        rawLinked == '1' ||
+        rawLinked.toString().toLowerCase() == 'true';
 
     return Container(
       margin: const EdgeInsets.only(top: 20),
@@ -173,25 +235,28 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
                   width: 60,
                   height: 60,
                   color: Colors.grey.shade100,
-                  child:
-                      profileImg != null && profileImg.isNotEmpty
-                          ? CachedNetworkImage(
-                            imageUrl: profileImg,
-                            fit: BoxFit.cover,
-                            placeholder:
-                                (_, __) => const CircularProgressIndicator(),
-                            errorWidget:
-                                (_, __, ___) => const Icon(
-                                  Icons.person,
-                                  size: 30,
-                                  color: Colors.grey,
-                                ),
-                          )
-                          : const Icon(
+                  child: hasValidImage
+                      ? CachedNetworkImage(
+                          imageUrl: rawImg!,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorWidget: (_, __, ___) => const Icon(
                             Icons.person,
                             size: 30,
                             color: Colors.grey,
                           ),
+                        )
+                      : const Icon(
+                          Icons.person,
+                          size: 30,
+                          color: Colors.grey,
+                        ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -371,14 +436,30 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
                 ),
                 InkWell(
                   onTap: () async {
+                    MembersAndLeadsCubit? cubit;
+                    try {
+                      cubit = context.read<MembersAndLeadsCubit>();
+                    } catch (_) {
+                      cubit = null;
+                    }
+
                     final res = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder:
-                            (context) => BlocProvider.value(
-                              value: context.read<MembersAndLeadsCubit>(),
-                              child: const AddOrEditLeadScreen(),
-                            ),
+                            (_) =>
+                                cubit != null
+                                    ? BlocProvider.value(
+                                      value: cubit,
+                                      child: const AddOrEditLeadScreen(),
+                                    )
+                                    : BlocProvider(
+                                      create:
+                                          (_) => MembersAndLeadsCubit(
+                                            orgId: widget.orgId,
+                                          ),
+                                      child: const AddOrEditLeadScreen(),
+                                    ),
                       ),
                     );
                     if (res != null && res == true) {
@@ -421,17 +502,23 @@ class _AddTrainerSearchScreenState extends State<AddTrainerSearchScreen> {
                         SizedBox(
                           height: 32,
                           child: OutlinedButton.icon(
-                            onPressed: () {
+                            onPressed: () async {
                               final number = _searchController.text.trim();
                               final message = Uri.encodeComponent(
                                 "Hi! Please download the Discipl Trainer app to register your profile.",
                               );
-                              launchUrl(
-                                Uri.parse(
-                                  'https://wa.me/$number?text=$message',
-                                ),
-                                mode: LaunchMode.externalApplication,
-                              );
+                              try {
+                                await launchUrl(
+                                  Uri.parse(
+                                    'https://wa.me/$number?text=$message',
+                                  ),
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              } catch (_) {
+                                Dialogs.showSnack(
+                                  msg: 'Could not open WhatsApp.',
+                                );
+                              }
                             },
                             icon: const Icon(
                               Icons.share,

@@ -63,7 +63,53 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
   }
 
   void _onDiscountChanged() {
-    setState(() {}); // Trigger rebuild to update computed values
+    setState(_syncPaymentSplitsWithTotalPayable);
+  }
+
+  String _formatAmount(double amount) {
+    if (amount <= 0) return '0';
+    if (amount == amount.toInt()) {
+      return amount.toInt().toString();
+    }
+    return amount.toStringAsFixed(2);
+  }
+
+  double _calculateRemainingForCash() {
+    double otherMethodsTotal = 0;
+    for (final split in _paymentSplits) {
+      if (split.method != 'Cash') {
+        otherMethodsTotal +=
+            double.tryParse(split.amountController.text.trim()) ?? 0;
+      }
+    }
+    return (_totalPayable - otherMethodsTotal).clamp(0.0, double.infinity);
+  }
+
+  void _autoAdjustCashAmount() {
+    final cashIndex = _paymentSplits.indexWhere((s) => s.method == 'Cash');
+    if (cashIndex == -1) return;
+
+    final remainingCash = _calculateRemainingForCash();
+    final newCashText = _formatAmount(remainingCash);
+
+    if (_paymentSplits[cashIndex].amountController.text != newCashText) {
+      _paymentSplits[cashIndex].amountController.text = newCashText;
+    }
+  }
+
+  void _syncPaymentSplitsWithTotalPayable() {
+    if (_totalPayable <= 0 && _selectedPlan == null) return;
+
+    final cashIndex = _paymentSplits.indexWhere((s) => s.method == 'Cash');
+    if (cashIndex == -1) {
+      if (_paymentSplits.isEmpty && _totalPayable > 0) {
+        final cashSplit = _PaymentSplit(method: 'Cash');
+        cashSplit.amountController.text = _formatAmount(_totalPayable);
+        _paymentSplits.add(cashSplit);
+      }
+    } else {
+      _autoAdjustCashAmount();
+    }
   }
 
   double get _planAmount {
@@ -96,7 +142,14 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
 
   void _addPaymentSplit(String method) {
     setState(() {
-      _paymentSplits.add(_PaymentSplit(method: method));
+      final split = _PaymentSplit(method: method);
+      if (method == 'Cash') {
+        final remaining = _calculateRemainingForCash();
+        if (remaining > 0) {
+          split.amountController.text = _formatAmount(remaining);
+        }
+      }
+      _paymentSplits.add(split);
     });
   }
 
@@ -105,6 +158,7 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
       _paymentSplits[index].amountController.dispose();
       _paymentSplits[index].referenceController.dispose();
       _paymentSplits.removeAt(index);
+      _autoAdjustCashAmount();
     });
   }
 
@@ -152,18 +206,21 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
 
     double? discount = double.tryParse(_discountController.text);
 
-    // Build payments list from splits
-    final payments = _paymentSplits.map((s) {
-      final map = <String, dynamic>{
-        'payment_method': s.method,
-        'amount': double.tryParse(s.amountController.text.trim()) ?? 0,
-      };
-      final ref = s.referenceController.text.trim();
-      if (ref.isNotEmpty) {
-        map['reference'] = ref;
-      }
-      return map;
-    }).toList();
+    // Build payments list from splits (excluding 0 amount splits)
+    final payments = _paymentSplits
+        .where((s) => (double.tryParse(s.amountController.text.trim()) ?? 0) > 0)
+        .map((s) {
+          final map = <String, dynamic>{
+            'payment_method': s.method,
+            'amount': double.tryParse(s.amountController.text.trim()) ?? 0,
+          };
+          final ref = s.referenceController.text.trim();
+          if (ref.isNotEmpty) {
+            map['reference'] = ref;
+          }
+          return map;
+        })
+        .toList();
 
     _cubit.cerateOrUpdateMemberDetails(
       memeberDetails: customerToAdd!,
@@ -453,18 +510,24 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                                   SizedBox(
                                     height: 32,
                                     child: OutlinedButton.icon(
-                                      onPressed: () {
+                                      onPressed: () async {
                                         final number =
                                             _searchController.text.trim();
                                         final message = Uri.encodeComponent(
                                           "Hi! Please download the Discipl Customer app to proceed.",
                                         );
-                                        launchUrl(
-                                          Uri.parse(
-                                            'https://wa.me/$number?text=$message',
-                                          ),
-                                          mode: LaunchMode.externalApplication,
-                                        );
+                                        try {
+                                          await launchUrl(
+                                            Uri.parse(
+                                              'https://wa.me/$number?text=$message',
+                                            ),
+                                            mode: LaunchMode.externalApplication,
+                                          );
+                                        } catch (_) {
+                                          Dialogs.showSnack(
+                                            msg: 'Could not open WhatsApp.',
+                                          );
+                                        }
                                       },
                                       icon: SvgPicture.asset(
                                         'assets/images/svg/icons/whatsapp.svg',
@@ -874,7 +937,12 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                         TextField(
                           controller: split.amountController,
                           keyboardType: TextInputType.number,
-                          onChanged: (_) => setState(() {}),
+                          onChanged: (_) {
+                            if (split.method != 'Cash') {
+                              _autoAdjustCashAmount();
+                            }
+                            setState(() {});
+                          },
                           style: AppStyles.text14Px.poppins.w500.copyWith(
                             color: Colors.black87,
                           ),
@@ -1199,6 +1267,8 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                         } else {
                           _discountController.text = '0';
                         }
+
+                        _syncPaymentSplitsWithTotalPayable();
                       });
                     },
                     child: Padding(

@@ -186,17 +186,19 @@ class _TrainerProfileSettingsScreenState
                         }
                       }
                       final hasImage = profileUrl != null && profileUrl.isNotEmpty && profileUrl != 'null';
+                      final initial = AvatarColorHelper.getInitial(trainerName, fallback: 'T');
+                      final colors = AvatarColorHelper.getColorPair(trainerName);
                       return Container(
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: context.colors.fieldFill,
+                          color: hasImage ? context.colors.fieldFill : colors.background,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: hasImage
                             ? Image.network(
-                                profileUrl!,
+                                profileUrl,
                                 fit: BoxFit.cover,
                                 loadingBuilder: (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
@@ -209,17 +211,29 @@ class _TrainerProfileSettingsScreenState
                                 },
                                 errorBuilder: (_, error, ___) {
                                   debugPrint('=== Image load error: $error');
-                                  return const Icon(
-                                    Icons.person,
-                                    color: AppColors.primary,
-                                    size: 40,
+                                  return Center(
+                                    child: Text(
+                                      initial,
+                                      style: TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Poppins',
+                                        color: colors.text,
+                                      ),
+                                    ),
                                   );
                                 },
                               )
-                            : const Icon(
-                                Icons.person,
-                                color: AppColors.primary,
-                                size: 40,
+                            : Center(
+                                child: Text(
+                                  initial,
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Poppins',
+                                    color: colors.text,
+                                  ),
+                                ),
                               ),
                       );
                     },

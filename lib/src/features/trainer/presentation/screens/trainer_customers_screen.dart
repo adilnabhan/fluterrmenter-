@@ -8,6 +8,7 @@ import 'package:mentor_mobile_app/src/features/organization/members_and_leads/pr
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/components/sheets/filter_selection_sheet.dart';
+import 'package:mentor_mobile_app/core/services/holiday/gym_holiday_service.dart';
 
 class TrainerCustomersScreen extends StatefulWidget {
   final bool isPushed;
@@ -64,11 +65,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
   ];
 
   List<FilterCategory> get _sortAndFilterCategories => [
-    FilterCategory(
-      title: 'Sort by',
-      isSingleSelect: true,
-      items: _sortOptions,
-    ),
+    FilterCategory(title: 'Sort by', isSingleSelect: true, items: _sortOptions),
     ..._filterCategories,
   ];
 
@@ -107,9 +104,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
         _selectedSort != null || (_selectedFilters?.isNotEmpty ?? false);
 
     return Material(
-      color: hasActiveFilter
-          ? AppColors.primary.withValues(alpha: 0.08)
-          : context.colors.card,
+      color:
+          hasActiveFilter
+              ? AppColors.primary.withValues(alpha: 0.08)
+              : context.colors.card,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: _openSortAndFilterSheet,
@@ -120,9 +118,8 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: hasActiveFilter
-                  ? AppColors.primary
-                  : context.colors.border,
+              color:
+                  hasActiveFilter ? AppColors.primary : context.colors.border,
               width: hasActiveFilter ? 1.5 : 1.0,
             ),
           ),
@@ -132,9 +129,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
               Icon(
                 Icons.tune_rounded,
                 size: 22,
-                color: hasActiveFilter
-                    ? AppColors.primary
-                    : context.colors.textSecondary,
+                color:
+                    hasActiveFilter
+                        ? AppColors.primary
+                        : context.colors.textSecondary,
               ),
               if (hasActiveFilter)
                 Positioned(
@@ -166,13 +164,14 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     super.initState();
     _statusFilter = widget.initialStatusFilter;
     if (widget.initialStatusFilter != 'all') {
-      final label = widget.initialStatusFilter == 'active'
-          ? 'Active'
-          : widget.initialStatusFilter == 'paused'
+      final label =
+          widget.initialStatusFilter == 'active'
+              ? 'Active'
+              : widget.initialStatusFilter == 'paused'
               ? 'Frozen / Paused'
               : widget.initialStatusFilter == 'expired'
-                  ? 'Expired'
-                  : widget.initialStatusFilter;
+              ? 'Expired'
+              : widget.initialStatusFilter;
       _selectedFilters = [(label: label, value: widget.initialStatusFilter)];
     }
     _fetchClients();
@@ -327,22 +326,24 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     if (q.isEmpty) return _clients;
 
     // Filter to items matching search query in name or phone
-    final list = _clients.where((c) {
-      final name = (c['name'] ??
-              '${c['first_name'] ?? ''} ${c['last_name'] ?? ''}')
-          .toString()
-          .toLowerCase()
-          .trim();
-      final phone = (c['phone_number'] ??
-              c['phone'] ??
-              c['mobile'] ??
-              c['mobile_number'] ??
-              '')
-          .toString()
-          .toLowerCase()
-          .trim();
-      return name.contains(q) || phone.contains(q);
-    }).toList();
+    final list =
+        _clients.where((c) {
+          final name =
+              (c['name'] ?? '${c['first_name'] ?? ''} ${c['last_name'] ?? ''}')
+                  .toString()
+                  .toLowerCase()
+                  .trim();
+          final phone =
+              (c['phone_number'] ??
+                      c['phone'] ??
+                      c['mobile'] ??
+                      c['mobile_number'] ??
+                      '')
+                  .toString()
+                  .toLowerCase()
+                  .trim();
+          return name.contains(q) || phone.contains(q);
+        }).toList();
 
     // If an explicit alphabetical sort was chosen by user in the filter sheet, respect it
     if (_selectedSort != null) {
@@ -371,19 +372,20 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     // 4: Substring match inside the name (e.g. "Shahim badi")
     // 5: Substring match inside phone number
     int getRelevanceScore(Map<String, dynamic> c) {
-      final name = (c['name'] ??
-              '${c['first_name'] ?? ''} ${c['last_name'] ?? ''}')
-          .toString()
-          .toLowerCase()
-          .trim();
-      final phone = (c['phone_number'] ??
-              c['phone'] ??
-              c['mobile'] ??
-              c['mobile_number'] ??
-              '')
-          .toString()
-          .toLowerCase()
-          .trim();
+      final name =
+          (c['name'] ?? '${c['first_name'] ?? ''} ${c['last_name'] ?? ''}')
+              .toString()
+              .toLowerCase()
+              .trim();
+      final phone =
+          (c['phone_number'] ??
+                  c['phone'] ??
+                  c['mobile'] ??
+                  c['mobile_number'] ??
+                  '')
+              .toString()
+              .toLowerCase()
+              .trim();
 
       if (name == q) return 0;
       if (name.startsWith(q)) return 1;
@@ -443,7 +445,9 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     final List<Map<String, dynamic>> allMemberships = [];
 
     if (client['membership'] is Map) {
-      allMemberships.add(Map<String, dynamic>.from(client['membership'] as Map));
+      allMemberships.add(
+        Map<String, dynamic>.from(client['membership'] as Map),
+      );
     } else if (client['membership'] is List) {
       for (var m in client['membership'] as List) {
         if (m is Map) allMemberships.add(Map<String, dynamic>.from(m as Map));
@@ -484,49 +488,53 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     String? latestStatus;
 
     // Check root client fields
-    final rootEndStr = (client['membership_end_date'] ??
-            client['end_date'] ??
-            client['expiry_date'] ??
-            client['expire_date'] ??
-            client['valid_to'])
-        ?.toString();
+    final rootEndStr =
+        (client['membership_end_date'] ??
+                client['end_date'] ??
+                client['expiry_date'] ??
+                client['expire_date'] ??
+                client['valid_to'])
+            ?.toString();
     final parsedRootEnd = _parseAnyDate(rootEndStr);
     if (parsedRootEnd != null) {
       latestEndDate = parsedRootEnd;
     }
 
-    final rootStatus = (client['membership_status'] ?? client['status'])
-        ?.toString()
-        .toLowerCase();
+    final rootStatus =
+        (client['membership_status'] ?? client['status'])
+            ?.toString()
+            .toLowerCase();
     if (rootStatus != null && rootStatus.isNotEmpty && rootStatus != 'null') {
       latestStatus = rootStatus;
     }
 
     for (var mem in allMemberships) {
-      final endStr = (mem['end_date'] ??
-              mem['membership_end_date'] ??
-              mem['expiry_date'] ??
-              mem['expire_date'] ??
-              mem['valid_to'])
-          ?.toString();
+      final endStr =
+          (mem['end_date'] ??
+                  mem['membership_end_date'] ??
+                  mem['expiry_date'] ??
+                  mem['expire_date'] ??
+                  mem['valid_to'])
+              ?.toString();
       final parsedEnd = _parseAnyDate(endStr);
       if (parsedEnd != null) {
         if (latestEndDate == null || parsedEnd.isAfter(latestEndDate)) {
           latestEndDate = parsedEnd;
         }
       }
-      final status = (mem['status'] ?? mem['membership_status'])
-          ?.toString()
-          .toLowerCase();
+      final status =
+          (mem['status'] ?? mem['membership_status'])?.toString().toLowerCase();
       if (status != null && status.isNotEmpty && status != 'null') {
         latestStatus = status;
       }
     }
 
-    final String resolvedStatus = (client['resolved_status'] ?? client['status'])
-        ?.toString()
-        .toLowerCase()
-        .trim() ?? '';
+    final String resolvedStatus =
+        (client['resolved_status'] ?? client['status'])
+            ?.toString()
+            .toLowerCase()
+            .trim() ??
+        '';
 
     // Check frozen / paused / hold
     if (resolvedStatus == 'frozen' ||
@@ -661,10 +669,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                 ),
               );
             },
-            icon: Icon(
-              Icons.settings_outlined,
-              color: context.colors.icon,
-            ),
+            icon: Icon(Icons.settings_outlined, color: context.colors.icon),
           ),
           const SizedBox(width: 8),
         ],
@@ -695,7 +700,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                         );
                       },
                       decoration: InputDecoration(
-                        icon: Icon(Icons.search, color: context.colors.textSecondary),
+                        icon: Icon(
+                          Icons.search,
+                          color: context.colors.textSecondary,
+                        ),
                         hintText: 'Search for name or phone number',
                         fillColor: context.colors.card,
                         hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
@@ -775,9 +783,12 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                               'General Fitness';
 
                           final statusInfo = _evaluateClientStatus(client);
-                          final String statusText = statusInfo['text'] as String;
-                          final Color statusColor = statusInfo['color'] as Color;
-                          final Color statusBgColor = statusInfo['bgColor'] as Color;
+                          final String statusText =
+                              statusInfo['text'] as String;
+                          final Color statusColor =
+                              statusInfo['color'] as Color;
+                          final Color statusBgColor =
+                              statusInfo['bgColor'] as Color;
 
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
@@ -788,7 +799,9 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                               border: Border.all(color: context.colors.border),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : .02),
+                                  color: Colors.black.withValues(
+                                    alpha: context.isDarkMode ? 0.2 : .02,
+                                  ),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -818,31 +831,38 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                       // Profile picture
                                       GestureDetector(
                                         onTap: () {
-                                          if (pic != null && pic.trim().isNotEmpty) {
+                                          if (pic != null &&
+                                              pic.trim().isNotEmpty) {
                                             _showEnlargedProfilePhoto(
                                               context,
                                               pic.trim(),
                                             );
                                           } else {
-                                            unawaited(Dialogs.showSnack(
-                                              msg: 'No profile photo uploaded for $name',
-                                            ));
+                                            unawaited(
+                                              Dialogs.showSnack(
+                                                msg:
+                                                    'No profile photo uploaded for $name',
+                                              ),
+                                            );
                                           }
                                         },
-                                        child: (pic != null &&
-                                                pic.trim().isNotEmpty &&
-                                                pic.trim() != 'null')
-                                            ? ClipOval(
-                                                child: ImageNetwork(
-                                                  pic.trim(),
-                                                  width: 40,
-                                                  height: 40,
-                                                  fit: BoxFit.cover,
-                                                  errorWidget:
-                                                      _buildInitialAvatar(name),
-                                                ),
-                                              )
-                                            : _buildInitialAvatar(name),
+                                        child:
+                                            (pic != null &&
+                                                    pic.trim().isNotEmpty &&
+                                                    pic.trim() != 'null')
+                                                ? ClipOval(
+                                                  child: ImageNetwork(
+                                                    pic.trim(),
+                                                    width: 40,
+                                                    height: 40,
+                                                    fit: BoxFit.cover,
+                                                    errorWidget:
+                                                        _buildInitialAvatar(
+                                                          name,
+                                                        ),
+                                                  ),
+                                                )
+                                                : _buildInitialAvatar(name),
                                       ),
                                       const SizedBox(width: 12),
                                       // Name and Category
@@ -858,7 +878,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                                   .poppins
                                                   .w600
                                                   .copyWith(
-                                                    color: context.colors.textPrimary,
+                                                    color:
+                                                        context
+                                                            .colors
+                                                            .textPrimary,
                                                   ),
                                             ),
                                             const SizedBox(height: 2),
@@ -869,7 +892,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                                   .poppins
                                                   .w500
                                                   .copyWith(
-                                                    color: context.colors.textSecondary,
+                                                    color:
+                                                        context
+                                                            .colors
+                                                            .textSecondary,
                                                   ),
                                             ),
                                           ],
@@ -902,7 +928,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                                   .poppins
                                                   .w500
                                                   .copyWith(
-                                                    color: context.colors.textSecondary,
+                                                    color:
+                                                        context
+                                                            .colors
+                                                            .textSecondary,
                                                   ),
                                             ),
                                             const SizedBox(height: 4),
@@ -913,7 +942,10 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                                   .poppins
                                                   .w500
                                                   .copyWith(
-                                                    color: context.colors.textSecondary,
+                                                    color:
+                                                        context
+                                                            .colors
+                                                            .textSecondary,
                                                   ),
                                             ),
                                           ],
@@ -982,28 +1014,22 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
     final int customerId = client['customer_id'] as int;
     final String name = client['name'] as String? ?? 'N/A';
     final bool isAssignedToMe = client['is_assigned_to_me'] as bool? ?? false;
+    final int? orgId =
+        client['organization_id'] as int? ?? client['gym_id'] as int?;
 
-    showModalBottomSheet<void>(
+    showAssignPlanBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return _AssignPlanBottomSheetContent(
-          customerId: customerId,
-          customerName: name,
-          isAssignedToMe: isAssignedToMe,
-          onSuccess: () {
-            _fetchClients(forceRefresh: true);
-          },
-        );
+      customerId: customerId,
+      customerName: name,
+      isAssignedToMe: isAssignedToMe,
+      organizationId: orgId,
+      onSuccess: () {
+        _fetchClients(forceRefresh: true);
       },
     );
   }
 
-  void _showEnlargedProfilePhoto(
-    BuildContext context,
-    String imageUrl,
-  ) {
+  void _showEnlargedProfilePhoto(BuildContext context, String imageUrl) {
     Dialogs.showEnlargedProfilePhoto(context, imageUrl);
   }
 
@@ -1021,14 +1047,12 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
       alignment: Alignment.center,
       child: Text(
         initial,
-        style: AppStyles.text16Px.poppins.w600.copyWith(
-          color: colors.text,
-        ),
+        style: AppStyles.text16Px.poppins.w600.copyWith(color: colors.text),
       ),
     );
   }
 
-    Widget _buildClientsShimmer() {
+  Widget _buildClientsShimmer() {
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
@@ -1250,26 +1274,52 @@ class _ActionCard extends StatelessWidget {
   }
 }
 
-class _AssignPlanBottomSheetContent extends StatefulWidget {
+void showAssignPlanBottomSheet({
+  required BuildContext context,
+  required int customerId,
+  required String customerName,
+  bool isAssignedToMe = true,
+  int? organizationId,
+  VoidCallback? onSuccess,
+}) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return AssignPlanBottomSheetContent(
+        customerId: customerId,
+        customerName: customerName,
+        isAssignedToMe: isAssignedToMe,
+        organizationId: organizationId,
+        onSuccess: onSuccess ?? () {},
+      );
+    },
+  );
+}
+
+class AssignPlanBottomSheetContent extends StatefulWidget {
   final int customerId;
   final String customerName;
   final bool isAssignedToMe;
+  final int? organizationId;
   final VoidCallback onSuccess;
 
-  const _AssignPlanBottomSheetContent({
+  const AssignPlanBottomSheetContent({
     required this.customerId,
     required this.customerName,
     required this.isAssignedToMe,
+    this.organizationId,
     required this.onSuccess,
   });
 
   @override
-  State<_AssignPlanBottomSheetContent> createState() =>
+  State<AssignPlanBottomSheetContent> createState() =>
       _AssignPlanBottomSheetContentState();
 }
 
 class _AssignPlanBottomSheetContentState
-    extends State<_AssignPlanBottomSheetContent> {
+    extends State<AssignPlanBottomSheetContent> {
   List<Map<String, dynamic>> _plans = [];
   List<Map<String, dynamic>> _groups = [];
   bool _isLoading = true;
@@ -1390,6 +1440,7 @@ class _AssignPlanBottomSheetContentState
     final titleController = TextEditingController(text: planName);
     final notesController = TextEditingController();
     DateTime? selectedDate;
+    String? holidayWarning;
     final action = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
@@ -1462,9 +1513,20 @@ class _AssignPlanBottomSheetContentState
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
                       if (picked != null) {
+                        final hol = await GymHolidayService.getHolidayName(
+                          picked,
+                          orgId: widget.organizationId,
+                        );
                         setStateDialog(() {
                           selectedDate = picked;
+                          holidayWarning = hol;
                         });
+                        if (hol != null) {
+                          Dialogs.showSnack(
+                            msg:
+                                'Selected date is a gym holiday ($hol). Workouts cannot be assigned on holidays.',
+                          );
+                        }
                       }
                     },
                     child: Container(
@@ -1473,7 +1535,12 @@ class _AssignPlanBottomSheetContentState
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
+                        border: Border.all(
+                          color:
+                              holidayWarning != null
+                                  ? const Color(0xffD32F2F)
+                                  : Colors.grey.shade400,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -1502,6 +1569,40 @@ class _AssignPlanBottomSheetContentState
                       ),
                     ),
                   ),
+                  if (holidayWarning != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffFFEBEE),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xffEF5350).withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Color(0xffD32F2F),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Cannot assign workout: $holidayWarning is a gym holiday.',
+                              style: AppStyles.text12Px.poppins.w500.copyWith(
+                                color: const Color(0xffD32F2F),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
               actions: [
@@ -1524,7 +1625,24 @@ class _AssignPlanBottomSheetContentState
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () => Navigator.pop(dialogContext, 'assign'),
+                  onPressed: () async {
+                    final targetDate = selectedDate ?? DateTime.now();
+                    final hol = await GymHolidayService.getHolidayName(
+                      targetDate,
+                      orgId: widget.organizationId,
+                    );
+                    if (hol != null) {
+                      setStateDialog(() {
+                        holidayWarning = hol;
+                      });
+                      Dialogs.showSnack(
+                        msg:
+                            'Cannot assign workout on a holiday: $hol. Please select another date.',
+                      );
+                      return;
+                    }
+                    Navigator.pop(dialogContext, 'assign');
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
@@ -1546,6 +1664,20 @@ class _AssignPlanBottomSheetContentState
     );
 
     if (action == null || action == 'cancel') return;
+
+    if (action == 'assign') {
+      final targetDate = selectedDate ?? DateTime.now();
+      final isHol = await GymHolidayService.isHoliday(
+        targetDate,
+        orgId: widget.organizationId,
+      );
+      if (isHol) {
+        Dialogs.showSnack(
+          msg: 'Cannot assign workout: The selected date is a gym holiday.',
+        );
+        return;
+      }
+    }
 
     final enteredTitle = titleController.text.trim();
     final String finalTitle = enteredTitle.isNotEmpty ? enteredTitle : planName;
@@ -1628,16 +1760,22 @@ class _AssignPlanBottomSheetContentState
       if (!mounted) return;
       setState(() {
         _submittingMap[planId] = false;
+        _assigningMap[widget.customerId] = false;
       });
       String errorMsg = 'Error assigning plan';
       if (e.response?.data is Map) {
-        errorMsg = (e.response!.data as Map)['error']?.toString() ?? errorMsg;
+        errorMsg =
+            (e.response!.data as Map)['error']?.toString() ??
+            (e.response!.data as Map)['message']?.toString() ??
+            (e.response!.data as Map)['detail']?.toString() ??
+            errorMsg;
       }
       Dialogs.showSnack(msg: errorMsg);
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _submittingMap[planId] = false;
+        _assigningMap[widget.customerId] = false;
       });
       Dialogs.showSnack(msg: 'Error assigning plan: ${e.toString()}');
     }
@@ -2029,8 +2167,9 @@ class _AssignPlanBottomSheetContentState
                                 : ListView.separated(
                                   padding: const EdgeInsets.only(bottom: 80),
                                   itemCount: _plans.length,
-                                  separatorBuilder: (context, index) =>
-                                      const SizedBox(height: 12),
+                                  separatorBuilder:
+                                      (context, index) =>
+                                          const SizedBox(height: 12),
                                   itemBuilder: (context, index) {
                                     final plan = _plans[index];
                                     final int planId = plan['id'] as int;
@@ -2046,13 +2185,14 @@ class _AssignPlanBottomSheetContentState
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute<void>(
-                                            builder: (context) =>
-                                                WorkoutPlanDetailsScreen(
-                                                  planId: planId,
-                                                  planTitle: planName,
-                                                  assignToCustomerId:
-                                                      widget.customerId,
-                                                ),
+                                            builder:
+                                                (context) =>
+                                                    WorkoutPlanDetailsScreen(
+                                                      planId: planId,
+                                                      planTitle: planName,
+                                                      assignToCustomerId:
+                                                          widget.customerId,
+                                                    ),
                                           ),
                                         );
                                       },
@@ -2060,8 +2200,9 @@ class _AssignPlanBottomSheetContentState
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                           border: Border.all(
                                             color: AppColors.borderGrey,
                                           ),
@@ -2075,18 +2216,25 @@ class _AssignPlanBottomSheetContentState
                                                 children: [
                                                   Text(
                                                     planName,
-                                                    style: AppStyles.text14Px
-                                                        .poppins.w600.dark,
+                                                    style:
+                                                        AppStyles
+                                                            .text14Px
+                                                            .poppins
+                                                            .w600
+                                                            .dark,
                                                   ),
                                                   const SizedBox(height: 4),
                                                   Text(
                                                     'Exercises: $exerciseCount',
-                                                    style: AppStyles.text12Px
-                                                        .poppins.w400
+                                                    style: AppStyles
+                                                        .text12Px
+                                                        .poppins
+                                                        .w400
                                                         .copyWith(
-                                                      color:
-                                                          AppColors.textGrey,
-                                                    ),
+                                                          color:
+                                                              AppColors
+                                                                  .textGrey,
+                                                        ),
                                                   ),
                                                 ],
                                               ),
@@ -2094,48 +2242,46 @@ class _AssignPlanBottomSheetContentState
                                             const SizedBox(width: 8),
                                             isSubmitting
                                                 ? const SizedBox(
-                                                    width: 24,
-                                                    height: 24,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                    ),
-                                                  )
+                                                  width: 24,
+                                                  height: 24,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ),
+                                                )
                                                 : ElevatedButton(
-                                                    onPressed: () =>
-                                                        _assignPlan(
-                                                      planId,
-                                                      planName,
-                                                    ),
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          const Color(
-                                                        0xFF2E7D32,
+                                                  onPressed:
+                                                      () => _assignPlan(
+                                                        planId,
+                                                        planName,
                                                       ),
-                                                      foregroundColor:
-                                                          Colors.white,
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(20),
-                                                      ),
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 8,
-                                                      ),
-                                                      elevation: 0,
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        const Color(0xFF2E7D32),
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            20,
+                                                          ),
                                                     ),
-                                                    child: Text(
-                                                      'Assign',
-                                                      style: AppStyles
-                                                          .text12Px
-                                                          .poppins
-                                                          .w600,
-                                                    ),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 8,
+                                                        ),
+                                                    elevation: 0,
                                                   ),
+                                                  child: Text(
+                                                    'Assign',
+                                                    style:
+                                                        AppStyles
+                                                            .text12Px
+                                                            .poppins
+                                                            .w600,
+                                                  ),
+                                                ),
                                           ],
                                         ),
                                       ),

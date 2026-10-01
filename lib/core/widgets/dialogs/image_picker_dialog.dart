@@ -132,10 +132,20 @@ class ImagePickerDialog extends StatelessWidget {
     this.onPickedImages,
     this.onPickStart,
     this.onPickEnd,
+    this.maxWidth = 1024,
+    this.maxHeight = 1024,
+    this.imageQuality = 80,
   });
 
   final bool needRemove;
   final bool allowMultiple;
+
+  /// Maximum dimension constraints for performance and fast loading
+  final double? maxWidth;
+  final double? maxHeight;
+
+  /// Compression quality (0-100)
+  final int? imageQuality;
 
   /// Single image callback
   final void Function(XFile? image)? onPickedImage;
@@ -158,8 +168,12 @@ class ImagePickerDialog extends StatelessWidget {
   Future<void> _pickFromCamera(BuildContext context) async {
     onPickStart?.call();
 
-    final XFile? image =
-    await ImagePicker().pickImage(source: ImageSource.camera);
+    final image = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      imageQuality: imageQuality,
+    );
 
     onPickEnd?.call();
 
@@ -176,8 +190,11 @@ class ImagePickerDialog extends StatelessWidget {
     final picker = ImagePicker();
 
     if (allowMultiple) {
-      final List<XFile> images =
-      await picker.pickMultiImage(imageQuality: 80);
+      final images = await picker.pickMultiImage(
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+        imageQuality: imageQuality,
+      );
 
       onPickEnd?.call();
 
@@ -185,9 +202,11 @@ class ImagePickerDialog extends StatelessWidget {
 
       onPickedImages?.call(images);
     } else {
-      final XFile? image = await picker.pickImage(
+      final image = await picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 80,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+        imageQuality: imageQuality,
       );
 
       onPickEnd?.call();

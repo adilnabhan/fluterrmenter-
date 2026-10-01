@@ -50,12 +50,29 @@ class _GroupPackagesDetailScreen extends StatefulWidget {
 class __GroupPackagesDetailScreenState
     extends State<_GroupPackagesDetailScreen> {
   late final MembershipCubit _cubit;
+  late final ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     _cubit = context.read<MembershipCubit>();
+    _scrollController = ScrollController()..addListener(_onScroll);
     _fetch();
+  }
+
+  void _onScroll() {
+    if (_scrollController.hasClients &&
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200) {
+      final queryGroupId = widget.isUngrouped ? 'ungrouped' : widget.groupId;
+      _cubit.fetchMoreMembershipPackages(groupId: queryGroupId);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetch() async {
@@ -197,7 +214,9 @@ class __GroupPackagesDetailScreenState
       ),
       body: BlocBuilder<MembershipCubit, MembershipState>(
         bloc: _cubit,
-        buildWhen: (p, c) => p.membershipPackages != c.membershipPackages,
+        buildWhen: (p, c) =>
+            p.membershipPackages != c.membershipPackages ||
+            p.isLoading != c.isLoading,
         builder: (context, state) {
           return state.membershipPackages.fold(
             () => const Center(child: CircularProgressIndicator()),
@@ -277,13 +296,30 @@ class __GroupPackagesDetailScreenState
                   );
                 }
 
+                final isFetchingMore = _cubit.isLoadingMore;
                 return RefreshIndicator(
                   onRefresh: _fetch,
                   child: ListView.separated(
+                    controller: _scrollController,
                     padding: const EdgeInsets.all(16),
-                    itemCount: packages.length,
+                    itemCount: packages.length + (isFetchingMore ? 1 : 0),
                     separatorBuilder: (_, __) => const SizedBox(height: 16),
                     itemBuilder: (context, index) {
+                      if (index == packages.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
                       final membership = packages[index];
                       return Container(
                         padding: const EdgeInsets.all(16),

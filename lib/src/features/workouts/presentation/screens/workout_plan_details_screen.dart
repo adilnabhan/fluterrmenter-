@@ -2,6 +2,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/create_group_button.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_reorder_screen.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/core/services/holiday/gym_holiday_service.dart';
 
 class PlanDayItem {
   final int? id;
@@ -74,9 +75,10 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
         if (days.isNotEmpty) {
           List<dynamic> targetDays = days;
           if (widget.planDayId != null) {
-            final found = days.where(
-              (d) => (d as Map)['id'] == widget.planDayId,
-            ).toList();
+            final found =
+                days
+                    .where((d) => (d as Map)['id'] == widget.planDayId)
+                    .toList();
             if (found.isNotEmpty) {
               targetDays = found;
             }
@@ -84,8 +86,9 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
 
           final List<PlanDayItem> parsedPlanDays = [];
           for (int index = 0; index < targetDays.length; index++) {
-            final Map<String, dynamic> dayMap =
-                Map<String, dynamic>.from(targetDays[index] as Map);
+            final Map<String, dynamic> dayMap = Map<String, dynamic>.from(
+              targetDays[index] as Map,
+            );
             final int? dayId = int.tryParse(dayMap['id']?.toString() ?? '');
 
             int dayNum = index + 1;
@@ -321,8 +324,9 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                 res.data is Map) {
               final newId = res.data['id'];
               if (newId != null) {
-                day.exercises[i] =
-                    day.exercises[i].copyWith(id: newId.toString());
+                day.exercises[i] = day.exercises[i].copyWith(
+                  id: newId.toString(),
+                );
               }
             }
           } else {
@@ -404,6 +408,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
     final titleController = TextEditingController(text: widget.planTitle);
     final notesController = TextEditingController();
     DateTime? selectedDate;
+    String? holidayWarning;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -476,9 +481,19 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
                       if (picked != null) {
+                        final hol = await GymHolidayService.getHolidayName(
+                          picked,
+                        );
                         setStateDialog(() {
                           selectedDate = picked;
+                          holidayWarning = hol;
                         });
+                        if (hol != null) {
+                          Dialogs.showSnack(
+                            msg:
+                                'Selected date is a gym holiday ($hol). Workouts cannot be assigned on holidays.',
+                          );
+                        }
                       }
                     },
                     child: Container(
@@ -487,7 +502,12 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
+                        border: Border.all(
+                          color:
+                              holidayWarning != null
+                                  ? const Color(0xffD32F2F)
+                                  : Colors.grey.shade400,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -516,6 +536,40 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                       ),
                     ),
                   ),
+                  if (holidayWarning != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffFFEBEE),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xffEF5350).withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Color(0xffD32F2F),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Cannot assign workout: $holidayWarning is a gym holiday.',
+                              style: AppStyles.text12Px.poppins.w500.copyWith(
+                                color: const Color(0xffD32F2F),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
               actions: [
@@ -529,7 +583,23 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () => Navigator.pop(dialogContext, true),
+                  onPressed: () async {
+                    final targetDate = selectedDate ?? DateTime.now();
+                    final hol = await GymHolidayService.getHolidayName(
+                      targetDate,
+                    );
+                    if (hol != null) {
+                      setStateDialog(() {
+                        holidayWarning = hol;
+                      });
+                      Dialogs.showSnack(
+                        msg:
+                            'Cannot assign workout on a holiday: $hol. Please select another date.',
+                      );
+                      return;
+                    }
+                    Navigator.pop(dialogContext, true);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
@@ -551,6 +621,15 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
     );
 
     if (confirmed != true) return;
+
+    final targetDate = selectedDate ?? DateTime.now();
+    final isHol = await GymHolidayService.isHoliday(targetDate);
+    if (isHol) {
+      Dialogs.showSnack(
+        msg: 'Cannot assign workout: The selected date is a gym holiday.',
+      );
+      return;
+    }
 
     final enteredTitle = titleController.text.trim();
     final String finalTitle =
@@ -592,6 +671,20 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       } else {
         Dialogs.showSnack(msg: 'Failed to assign plan');
       }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+      });
+      String errorMsg = 'Error assigning plan';
+      if (e.response?.data is Map) {
+        errorMsg =
+            (e.response!.data as Map)['error']?.toString() ??
+            (e.response!.data as Map)['message']?.toString() ??
+            (e.response!.data as Map)['detail']?.toString() ??
+            errorMsg;
+      }
+      Dialogs.showSnack(msg: errorMsg);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -675,10 +768,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
       builder:
           (sheetCtx) => SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -884,11 +974,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                 color: Color(0xFFF5F5F5),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.add,
-                color: Color(0xFFD30000),
-                size: 20,
-              ),
+              child: const Icon(Icons.add, color: Color(0xFFD30000), size: 20),
             ),
           ),
         ],
@@ -955,16 +1041,10 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                           )
                           : _planDays.length == 1
                           ? ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(
-                              20,
-                              24,
-                              20,
-                              120,
-                            ),
+                            padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
                             itemCount: _planDays.first.exercises.length,
                             separatorBuilder:
-                                (context, index) =>
-                                    const SizedBox(height: 12),
+                                (context, index) => const SizedBox(height: 12),
                             itemBuilder: (context, index) {
                               final item = _planDays.first.exercises[index];
                               return _ExerciseCard(
@@ -979,16 +1059,10 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                             },
                           )
                           : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(
-                              20,
-                              16,
-                              20,
-                              120,
-                            ),
+                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
                             itemCount: _planDays.length,
                             separatorBuilder:
-                                (context, index) =>
-                                    const SizedBox(height: 20),
+                                (context, index) => const SizedBox(height: 20),
                             itemBuilder: (context, dayIndex) {
                               final day = _planDays[dayIndex];
                               return Column(
@@ -1086,22 +1160,23 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                             if (dayToReorder == null) return;
                           }
 
-                          final updatedExercises =
-                              await Navigator.push<List<WorkoutExercise>>(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => WorkoutPlanReorderScreen(
-                                        planTitle:
-                                            _planDays.length > 1
-                                                ? 'Day ${dayToReorder!.dayNumber}: ${dayToReorder.title}'
-                                                : widget.planTitle,
-                                        exercises: List.from(
-                                          dayToReorder!.exercises,
-                                        ),
-                                      ),
-                                ),
-                              );
+                          final updatedExercises = await Navigator.push<
+                            List<WorkoutExercise>
+                          >(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => WorkoutPlanReorderScreen(
+                                    planTitle:
+                                        _planDays.length > 1
+                                            ? 'Day ${dayToReorder!.dayNumber}: ${dayToReorder.title}'
+                                            : widget.planTitle,
+                                    exercises: List.from(
+                                      dayToReorder!.exercises,
+                                    ),
+                                  ),
+                            ),
+                          );
                           if (updatedExercises != null) {
                             if (!mounted) return;
                             setState(() {
@@ -1229,8 +1304,7 @@ class _SelectExerciseSheetContentState
   String _searchQuery = '';
 
   bool get _shouldShowAddButton =>
-      widget.showAddButton ??
-      (!widget.isPage && widget.onAddExercise != null);
+      widget.showAddButton ?? (!widget.isPage && widget.onAddExercise != null);
 
   bool get _shouldHideYouCreated {
     if (widget.hideYouCreated != null) return widget.hideYouCreated!;
@@ -1312,9 +1386,10 @@ class _SelectExerciseSheetContentState
           for (var item in majorList) {
             if (item is Map) {
               final name = item['name']?.toString() ?? '';
-              final subs = (item['sub_muscles'] as List? ?? [])
-                  .map((s) => Map<String, dynamic>.from(s as Map))
-                  .toList();
+              final subs =
+                  (item['sub_muscles'] as List? ?? [])
+                      .map((s) => Map<String, dynamic>.from(s as Map))
+                      .toList();
               if (name.isNotEmpty) {
                 subMap[name] = subs;
               }
@@ -1409,7 +1484,8 @@ class _SelectExerciseSheetContentState
       } catch (_) {}
 
       // If Gym Created tab is selected and trainer source=gym returned empty/null, try ApiUris.gymExercises
-      final bool isGymTabEmpty = data == null ||
+      final bool isGymTabEmpty =
+          data == null ||
           (data is Map && (data['results'] as List? ?? []).isEmpty) ||
           (data is List && data.isEmpty);
 
@@ -1418,7 +1494,8 @@ class _SelectExerciseSheetContentState
           final gymRes = await DioClient().dio.get<dynamic>(
             ApiUris.gymExercises,
             queryParameters: {
-              if (_selectedMajorMuscle != 'All') 'major_muscle': _selectedMajorMuscle,
+              if (_selectedMajorMuscle != 'All')
+                'major_muscle': _selectedMajorMuscle,
               if (_selectedSubMuscle != 'All' && _selectedSubMuscle.isNotEmpty)
                 'sub_muscle': _selectedSubMuscle,
               if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
@@ -1437,7 +1514,8 @@ class _SelectExerciseSheetContentState
 
         if (data is Map) {
           resultsList = List<dynamic>.from(data['results'] as List? ?? []);
-          final int currentPageVal = data['current_page'] as int? ?? _currentPage;
+          final int currentPageVal =
+              data['current_page'] as int? ?? _currentPage;
           final int totalPages = data['total_pages'] as int? ?? 1;
           hasMore = currentPageVal < totalPages;
         } else if (data is List) {
@@ -1447,9 +1525,10 @@ class _SelectExerciseSheetContentState
 
         if (!mounted) return;
         setState(() {
-          final newItems = resultsList
-              .map((e) => Map<String, dynamic>.from(e as Map))
-              .toList();
+          final newItems =
+              resultsList
+                  .map((e) => Map<String, dynamic>.from(e as Map))
+                  .toList();
 
           if (isRefresh) {
             _allExercises = newItems;
@@ -1525,9 +1604,10 @@ class _SelectExerciseSheetContentState
     setState(() => _isLoading = true);
 
     try {
-      final deleteUri = isGym
-          ? ApiUris.deleteGymExercise(id)
-          : ApiUris.workoutExerciseDetail(id);
+      final deleteUri =
+          isGym
+              ? ApiUris.deleteGymExercise(id)
+              : ApiUris.workoutExerciseDetail(id);
       await DioClient().dio.delete<dynamic>(
         deleteUri,
         options: Options(headers: {'X-Platform': platformSource}),
@@ -1550,10 +1630,11 @@ class _SelectExerciseSheetContentState
     BuildContext context, [
     Map<String, dynamic>? exercise,
   ]) {
-    final bool isGym = exercise != null
-        ? (exercise['source'] == 'gym' ||
-            (_shouldHideYouCreated && _currentTabSource == 'gym'))
-        : (_shouldHideYouCreated || _currentTabSource == 'gym');
+    final bool isGym =
+        exercise != null
+            ? (exercise['source'] == 'gym' ||
+                (_shouldHideYouCreated && _currentTabSource == 'gym'))
+            : (_shouldHideYouCreated || _currentTabSource == 'gym');
 
     showModalBottomSheet<void>(
       context: context,
@@ -1576,12 +1657,16 @@ class _SelectExerciseSheetContentState
     final displayList = _filteredExercises;
 
     return Container(
-      height: widget.isPage ? double.infinity : MediaQuery.of(context).size.height * 0.7,
+      height:
+          widget.isPage
+              ? double.infinity
+              : MediaQuery.of(context).size.height * 0.7,
       decoration: BoxDecoration(
         color: context.colors.background,
-        borderRadius: widget.isPage
-            ? BorderRadius.zero
-            : const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius:
+            widget.isPage
+                ? BorderRadius.zero
+                : const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
@@ -1716,11 +1801,13 @@ class _SelectExerciseSheetContentState
                 itemBuilder: (context, index) {
                   final majorName = _majorMuscles[index];
                   final isSelected =
-                      _selectedMajorMuscle.toLowerCase() == majorName.toLowerCase();
+                      _selectedMajorMuscle.toLowerCase() ==
+                      majorName.toLowerCase();
 
                   return GestureDetector(
                     onTap: () {
-                      if (_selectedMajorMuscle.toLowerCase() != majorName.toLowerCase()) {
+                      if (_selectedMajorMuscle.toLowerCase() !=
+                          majorName.toLowerCase()) {
                         setState(() {
                           _selectedMajorMuscle = majorName;
                           _selectedSubMuscle = 'All';
@@ -1736,14 +1823,18 @@ class _SelectExerciseSheetContentState
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary : const Color(0xFFF1F1F1),
+                        color:
+                            isSelected
+                                ? AppColors.primary
+                                : const Color(0xFFF1F1F1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Center(
                         child: Text(
                           majorName,
                           style: AppStyles.text13Px.poppins.w600.copyWith(
-                            color: isSelected ? Colors.white : AppColors.textDark,
+                            color:
+                                isSelected ? Colors.white : AppColors.textDark,
                           ),
                         ),
                       ),
@@ -1758,11 +1849,14 @@ class _SelectExerciseSheetContentState
           if (_selectedMajorMuscle != 'All') ...[
             Builder(
               builder: (context) {
-                final subList = _subMusclesMap[_selectedMajorMuscle] ??
+                final subList =
+                    _subMusclesMap[_selectedMajorMuscle] ??
                     _subMusclesMap[_majorMuscles.firstWhere(
-                      (m) => m.toLowerCase() == _selectedMajorMuscle.toLowerCase(),
+                      (m) =>
+                          m.toLowerCase() == _selectedMajorMuscle.toLowerCase(),
                       orElse: () => _selectedMajorMuscle,
-                    )] ?? [];
+                    )] ??
+                    [];
                 final List<Map<String, dynamic>> subPills = [
                   {
                     'name': 'All ${_selectedMajorMuscle}',
@@ -1800,7 +1894,8 @@ class _SelectExerciseSheetContentState
                         return GestureDetector(
                           onTap: () {
                             final targetSub = index == 0 ? 'All' : subName;
-                            if (_selectedSubMuscle.toLowerCase() != targetSub.toLowerCase()) {
+                            if (_selectedSubMuscle.toLowerCase() !=
+                                targetSub.toLowerCase()) {
                               setState(() {
                                 _selectedSubMuscle = targetSub;
                               });
@@ -1871,9 +1966,7 @@ class _SelectExerciseSheetContentState
                         if (index == displayList.length) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
+                            child: Center(child: CircularProgressIndicator()),
                           );
                         }
                         final item = displayList[index];
@@ -1882,33 +1975,48 @@ class _SelectExerciseSheetContentState
                           (e) => e.workoutId == idStr,
                         );
                         final showAdd = _shouldShowAddButton;
-                        final bool canEdit = _currentTabSource == 'you_created' ||
+                        final bool canEdit =
+                            _currentTabSource == 'you_created' ||
                             item['source'] == 'you_created' ||
-                            (_shouldHideYouCreated && _currentTabSource == 'gym');
+                            (_shouldHideYouCreated &&
+                                _currentTabSource == 'gym');
 
                         return InkWell(
                           onTap: () {
                             if (showAdd) {
-                              final exName = item['name'] as String? ?? 'Exercise';
+                              final exName =
+                                  item['name'] as String? ?? 'Exercise';
                               if (isAdded) {
                                 if (widget.onRemoveExercise != null) {
                                   widget.onRemoveExercise!(idStr);
                                 } else {
-                                  widget.existingExercises.removeWhere((e) => e.workoutId == idStr);
+                                  widget.existingExercises.removeWhere(
+                                    (e) => e.workoutId == idStr,
+                                  );
                                 }
                                 Dialogs.showSnack(
                                   msg: '$exName removed from plan',
                                 );
                               } else {
                                 final WorkoutExercise newEx = WorkoutExercise(
-                                  id: 'temp_${DateTime.now().millisecondsSinceEpoch}_$index',
+                                  id:
+                                      'temp_${DateTime.now().millisecondsSinceEpoch}_$index',
                                   workoutId: idStr,
                                   name: exName,
-                                  muscle: item['primary_muscle_group_name'] as String? ?? 'General',
-                                  equipment: item['equipment_name'] as String? ?? 'None',
+                                  muscle:
+                                      item['primary_muscle_group_name']
+                                          as String? ??
+                                      'General',
+                                  equipment:
+                                      item['equipment_name'] as String? ??
+                                      'None',
                                   type: item['type'] as String? ?? 'Other',
                                   videoLink: item['video_url'] as String? ?? '',
-                                  trackBy: item['track_by']?.toString().toLowerCase() ?? 'reps',
+                                  trackBy:
+                                      item['track_by']
+                                          ?.toString()
+                                          .toLowerCase() ??
+                                      'reps',
                                   sets: const [
                                     {'set_number': 1},
                                   ],
@@ -1944,20 +2052,25 @@ class _SelectExerciseSheetContentState
                             ),
                             isAdded: isAdded,
                             showAddButton: showAdd,
-                            onEdit: canEdit
-                                ? () => _showCreateExerciseSheet(context, item)
-                                : null,
-                            onDelete: canEdit
-                                ? () {
-                                    final exId = int.tryParse(idStr);
-                                    if (exId != null) {
-                                      _deleteExercise(
-                                        exId,
-                                        isGym: _shouldHideYouCreated || _currentTabSource == 'gym',
-                                      );
+                            onEdit:
+                                canEdit
+                                    ? () =>
+                                        _showCreateExerciseSheet(context, item)
+                                    : null,
+                            onDelete:
+                                canEdit
+                                    ? () {
+                                      final exId = int.tryParse(idStr);
+                                      if (exId != null) {
+                                        _deleteExercise(
+                                          exId,
+                                          isGym:
+                                              _shouldHideYouCreated ||
+                                              _currentTabSource == 'gym',
+                                        );
+                                      }
                                     }
-                                  }
-                                : null,
+                                    : null,
                           ),
                         );
                       },
@@ -2042,24 +2155,24 @@ class _CreateExerciseBottomSheetState
           ex['secondary_muscles'] ??
           ex['secondary_muscle_group_ids'];
       if (secondary is List) {
-        _selectedSecondaryMuscleIds = secondary
-            .map((m) {
-              if (m is Map) {
-                return int.tryParse(m['id']?.toString() ?? '') ?? 0;
-              }
-              return int.tryParse(m.toString()) ?? 0;
-            })
-            .where((id) => id > 0)
-            .toList();
+        _selectedSecondaryMuscleIds =
+            secondary
+                .map((m) {
+                  if (m is Map) {
+                    return int.tryParse(m['id']?.toString() ?? '') ?? 0;
+                  }
+                  return int.tryParse(m.toString()) ?? 0;
+                })
+                .where((id) => id > 0)
+                .toList();
       }
 
-      final equipment =
-          ex['equipment_id'] ??
-          ex['equipment'];
+      final equipment = ex['equipment_id'] ?? ex['equipment'];
       if (equipment != null) {
         if (equipment is Map) {
-          _selectedEquipmentId =
-              int.tryParse(equipment['id']?.toString() ?? '');
+          _selectedEquipmentId = int.tryParse(
+            equipment['id']?.toString() ?? '',
+          );
         } else {
           _selectedEquipmentId = int.tryParse(equipment.toString());
         }
@@ -2216,34 +2329,35 @@ class _CreateExerciseBottomSheetState
       final isEditing = widget.editExercise != null;
       final isEditingGym = isEditing && widget.isGymExercise;
 
-      final Map<String, dynamic> data = isEditingGym
-          ? {
-              'name': _nameController.text.trim(),
-              'primary_muscle_group': _selectedMuscleId,
-              'primary_muscle_group_id': _selectedMuscleId,
-              'muscle_group_id': _selectedMuscleId,
-              'secondary_muscle_group': _selectedSecondaryMuscleIds,
-              'equipment': _selectedEquipmentId,
-              'equipment_id': _selectedEquipmentId,
-              'exercise_type_id': _selectedType,
-              'type': _selectedType,
-              'track_by': _selectedTrackBy,
-              'video_url': _youtubeController.text.trim(),
-              'youtube_link': _youtubeController.text.trim(),
-              'instructions': '',
-              'status': true,
-            }
-          : {
-              'name': _nameController.text.trim(),
-              'primary_muscle_group': _selectedMuscleId,
-              'secondary_muscle_group': _selectedSecondaryMuscleIds,
-              'equipment': _selectedEquipmentId,
-              'type': _selectedType,
-              'track_by': _selectedTrackBy,
-              'video_url': _youtubeController.text.trim(),
-              'instructions': '',
-              'status': true,
-            };
+      final Map<String, dynamic> data =
+          isEditingGym
+              ? {
+                'name': _nameController.text.trim(),
+                'primary_muscle_group': _selectedMuscleId,
+                'primary_muscle_group_id': _selectedMuscleId,
+                'muscle_group_id': _selectedMuscleId,
+                'secondary_muscle_group': _selectedSecondaryMuscleIds,
+                'equipment': _selectedEquipmentId,
+                'equipment_id': _selectedEquipmentId,
+                'exercise_type_id': _selectedType,
+                'type': _selectedType,
+                'track_by': _selectedTrackBy,
+                'video_url': _youtubeController.text.trim(),
+                'youtube_link': _youtubeController.text.trim(),
+                'instructions': '',
+                'status': true,
+              }
+              : {
+                'name': _nameController.text.trim(),
+                'primary_muscle_group': _selectedMuscleId,
+                'secondary_muscle_group': _selectedSecondaryMuscleIds,
+                'equipment': _selectedEquipmentId,
+                'type': _selectedType,
+                'track_by': _selectedTrackBy,
+                'video_url': _youtubeController.text.trim(),
+                'instructions': '',
+                'status': true,
+              };
 
       final dynamic response;
       if (isEditing) {
@@ -2908,9 +3022,8 @@ class _ExerciseCard extends StatelessWidget {
                               Flexible(
                                 child: Text(
                                   exercise.name,
-                                  style: AppStyles.text16Px.poppins.w600.copyWith(
-                                    color: AppColors.textDark,
-                                  ),
+                                  style: AppStyles.text16Px.poppins.w600
+                                      .copyWith(color: AppColors.textDark),
                                 ),
                               ),
                               if (exercise.videoLink.trim().isNotEmpty &&
@@ -3117,7 +3230,10 @@ class _SelectExerciseItem extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: (showAddButton && isAdded) ? const Color(0xFFFF3434) : AppColors.borderGrey,
+          color:
+              (showAddButton && isAdded)
+                  ? const Color(0xFFFF3434)
+                  : AppColors.borderGrey,
         ),
       ),
       child: Row(
@@ -3144,23 +3260,17 @@ class _SelectExerciseItem extends StatelessWidget {
                         behavior: HitTestBehavior.opaque,
                         onTap: () async {
                           try {
-                            final uri = Uri.parse(
-                              exercise.videoLink.trim(),
-                            );
+                            final uri = Uri.parse(exercise.videoLink.trim());
                             if (await canLaunchUrl(uri)) {
                               await launchUrl(
                                 uri,
                                 mode: LaunchMode.externalApplication,
                               );
                             } else {
-                              Dialogs.showSnack(
-                                msg: 'Cannot open video URL',
-                              );
+                              Dialogs.showSnack(msg: 'Cannot open video URL');
                             }
                           } catch (_) {
-                            Dialogs.showSnack(
-                              msg: 'Invalid video URL',
-                            );
+                            Dialogs.showSnack(msg: 'Invalid video URL');
                           }
                         },
                         child: Padding(
@@ -3192,7 +3302,10 @@ class _SelectExerciseItem extends StatelessWidget {
             const SizedBox(width: 16),
             if (isAdded)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFEAEA),
                   borderRadius: BorderRadius.circular(20),
@@ -3207,7 +3320,10 @@ class _SelectExerciseItem extends StatelessWidget {
               )
             else
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFD30000),
                   borderRadius: BorderRadius.circular(20),
@@ -3583,7 +3699,8 @@ class _SaveTemplateBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<_SaveTemplateBottomSheet> createState() => _SaveTemplateBottomSheetState();
+  State<_SaveTemplateBottomSheet> createState() =>
+      _SaveTemplateBottomSheetState();
 }
 
 class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
@@ -3602,7 +3719,9 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _templateNameController = TextEditingController(text: widget.defaultTemplateName);
+    _templateNameController = TextEditingController(
+      text: widget.defaultTemplateName,
+    );
     _newGroupNameController = TextEditingController();
     _fetchGroups();
   }
@@ -3626,7 +3745,8 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                 ? (response.data['results'] as List<dynamic>? ?? [])
                 : (response.data as List<dynamic>);
         setState(() {
-          _groups = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _groups =
+              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           if (_groups.isNotEmpty) {
             _selectedGroupId = _groups.first['id'] as int;
           } else {
@@ -3753,8 +3873,9 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                     borderSide: const BorderSide(color: AppColors.primary),
                   ),
                 ),
-                validator: (val) =>
-                    val == null || val.trim().isEmpty ? 'Required' : null,
+                validator:
+                    (val) =>
+                        val == null || val.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 20),
               Text(
@@ -3770,18 +3891,20 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                     child: ChoiceChip(
                       label: const Text('Existing Group'),
                       selected: !_isNewGroup,
-                      onSelected: _groups.isEmpty
-                          ? null
-                          : (selected) {
-                              setState(() {
-                                _isNewGroup = false;
-                              });
-                            },
+                      onSelected:
+                          _groups.isEmpty
+                              ? null
+                              : (selected) {
+                                setState(() {
+                                  _isNewGroup = false;
+                                });
+                              },
                       selectedColor: AppColors.primary.withOpacity(0.1),
                       labelStyle: TextStyle(
-                        color: !_isNewGroup
-                            ? AppColors.primary
-                            : AppColors.textGrey,
+                        color:
+                            !_isNewGroup
+                                ? AppColors.primary
+                                : AppColors.textGrey,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -3798,9 +3921,10 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                       },
                       selectedColor: AppColors.primary.withOpacity(0.1),
                       labelStyle: TextStyle(
-                        color: _isNewGroup
-                            ? AppColors.primary
-                            : AppColors.textGrey,
+                        color:
+                            _isNewGroup
+                                ? AppColors.primary
+                                : AppColors.textGrey,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -3829,12 +3953,15 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                         borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
                     ),
-                    items: _groups.map((group) {
-                      return DropdownMenuItem<int>(
-                        value: group['id'] as int,
-                        child: Text(group['name'] as String? ?? 'Unnamed Group'),
-                      );
-                    }).toList(),
+                    items:
+                        _groups.map((group) {
+                          return DropdownMenuItem<int>(
+                            value: group['id'] as int,
+                            child: Text(
+                              group['name'] as String? ?? 'Unnamed Group',
+                            ),
+                          );
+                        }).toList(),
                     onChanged: (val) {
                       setState(() {
                         _selectedGroupId = val;
@@ -3866,8 +3993,9 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                       borderSide: const BorderSide(color: AppColors.primary),
                     ),
                   ),
-                  validator: (val) =>
-                      val == null || val.trim().isEmpty ? 'Required' : null,
+                  validator:
+                      (val) =>
+                          val == null || val.trim().isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -3914,24 +4042,25 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                child: _isSaving
-                    ? const Center(child: CircularProgressIndicator())
-                    : ElevatedButton(
-                        onPressed: _saveAsTemplate,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                child:
+                    _isSaving
+                        ? const Center(child: CircularProgressIndicator())
+                        : ElevatedButton(
+                          onPressed: _saveAsTemplate,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'Save Template',
+                            style: AppStyles.text14Px.poppins.w600.copyWith(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                        child: Text(
-                          'Save Template',
-                          style: AppStyles.text14Px.poppins.w600.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
               ),
             ],
           ),

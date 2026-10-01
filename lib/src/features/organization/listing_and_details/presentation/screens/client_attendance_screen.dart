@@ -5,6 +5,22 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/member_detials_screen.dart';
 
+class _AttendanceCacheEntry {
+  final List<Map<String, dynamic>> clients;
+  final Map<String, dynamic> dashboard;
+  final bool hasMore;
+  final int currentPage;
+  final DateTime timestamp;
+
+  _AttendanceCacheEntry({
+    required this.clients,
+    required this.dashboard,
+    required this.hasMore,
+    this.currentPage = 1,
+    required this.timestamp,
+  });
+}
+
 class ClientAttendanceScreen extends StatefulWidget {
   final int orgId;
   final bool isTrainer;
@@ -15,7 +31,17 @@ class ClientAttendanceScreen extends StatefulWidget {
     this.isTrainer = false,
   });
 
-  static void clearCache() {}
+  static int? _cachedUserId;
+  static int? _cachedUserRole;
+  static final Map<String, _AttendanceCacheEntry> _cache = {};
+  static final Map<String, Map<String, String>> _monthHolidaysCache = {};
+
+  static void clearCache() {
+    _cachedUserId = null;
+    _cachedUserRole = null;
+    _cache.clear();
+    _monthHolidaysCache.clear();
+  }
 
   @override
   State<ClientAttendanceScreen> createState() => _ClientAttendanceScreenState();
@@ -94,10 +120,64 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     }
   }
 
+  void _invalidateDateCache([String? dateStr]) {
+    if (dateStr == null) {
+      ClientAttendanceScreen._cache.clear();
+    } else {
+      ClientAttendanceScreen._cache.removeWhere((key, _) => key.contains(dateStr));
+    }
+  }
+
   Future<void> _fetchAttendance({
     bool silent = false,
     bool forceRefresh = false,
   }) async {
+    final currentUser = context.read<AppCubit>().state.currentUser;
+    final currentUserId = currentUser?.id;
+    final currentUserRole = currentUser?.userRole;
+
+    // Purge cache if switched account or role
+    if (ClientAttendanceScreen._cachedUserId != null &&
+        (ClientAttendanceScreen._cachedUserId != currentUserId ||
+            ClientAttendanceScreen._cachedUserRole != currentUserRole)) {
+      ClientAttendanceScreen.clearCache();
+    }
+    ClientAttendanceScreen._cachedUserId = currentUserId;
+    ClientAttendanceScreen._cachedUserRole = currentUserRole;
+
+    final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    final monthStr = DateFormat('yyyy-MM').format(_selectedDate);
+    final cacheKey =
+        '${widget.isTrainer ? 'trainer' : 'org_${widget.orgId}'}_u${currentUserId ?? 0}_${dateStr}_${_statusFilter}_${_searchQuery}';
+
+    // 1. Instant display from in-memory cache if available
+    if (!forceRefresh &&
+        _searchQuery.isEmpty &&
+        ClientAttendanceScreen._cache.containsKey(cacheKey)) {
+      final cached = ClientAttendanceScreen._cache[cacheKey]!;
+      _clients = List<Map<String, dynamic>>.from(cached.clients);
+      _dashboard = Map<String, dynamic>.from(cached.dashboard);
+      _hasMore = cached.hasMore;
+      _currentPage = cached.currentPage;
+      _isLoading = false;
+
+      if (ClientAttendanceScreen._monthHolidaysCache.containsKey(monthStr)) {
+        _monthHolidays = ClientAttendanceScreen._monthHolidaysCache[monthStr]!;
+        if (_monthHolidays.containsKey(dateStr)) {
+          _dashboard['is_holiday'] = true;
+          _dashboard['holiday_name'] = _monthHolidays[dateStr];
+        }
+      }
+
+      if (mounted) setState(() {});
+
+      // Silently re-validate in background if cache is older than 2 minutes
+      if (DateTime.now().difference(cached.timestamp).inMinutes >= 2) {
+        _fetchAttendance(silent: true, forceRefresh: true);
+      }
+      return;
+    }
+
     if (!silent) {
       setState(() {
         _isLoading = true;
@@ -109,7 +189,6 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     _hasMore = true;
 
     try {
-      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
       String url =
           widget.isTrainer
               ? '${ApiUris.trainerClientAttendance}?date=$dateStr&include_expired=true&page=1'
@@ -135,6 +214,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         url += '&search=${Uri.encodeComponent(_searchQuery)}';
       }
 
+      // Concurrently trigger holiday check in background
+      _fetchMonthHolidaysAsync(monthStr, dateStr, forceRefresh: forceRefresh);
+
       final response = await DioClient().dio.get<dynamic>(
         url,
         options: Options(headers: {'X-Platform': platformSource}),
@@ -143,7 +225,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       if (response.statusCode == 200) {
         if (response.data is Map) {
           final data = response.data as Map<String, dynamic>;
-          
+
           List<dynamic> rawClientsList = [];
           bool hasNext = false;
           int? totalCount;
@@ -152,20 +234,29 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           if (clientsRaw is List) {
             rawClientsList = clientsRaw;
             hasNext = data['next'] != null;
-            totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+            totalCount =
+                (data['count'] ?? data['total_clients_count']) as int?;
           } else if (clientsRaw is Map) {
             final clientsMap = Map<String, dynamic>.from(clientsRaw as Map);
-            rawClientsList = (clientsMap['results'] ?? clientsMap['data'] ?? []) as List<dynamic>;
+            rawClientsList =
+                (clientsMap['results'] ?? clientsMap['data'] ?? [])
+                    as List<dynamic>;
             hasNext = clientsMap['next'] != null || data['next'] != null;
-            totalCount = (clientsMap['count'] ?? data['count'] ?? data['total_clients_count']) as int?;
+            totalCount =
+                (clientsMap['count'] ??
+                        data['count'] ??
+                        data['total_clients_count'])
+                    as int?;
           } else if (data['results'] is List) {
             rawClientsList = data['results'] as List<dynamic>;
             hasNext = data['next'] != null;
-            totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+            totalCount =
+                (data['count'] ?? data['total_clients_count']) as int?;
           } else if (data['data'] is List) {
             rawClientsList = data['data'] as List<dynamic>;
             hasNext = data['next'] != null;
-            totalCount = (data['count'] ?? data['total_clients_count']) as int?;
+            totalCount =
+                (data['count'] ?? data['total_clients_count']) as int?;
           }
 
           final dashboard =
@@ -187,72 +278,55 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                 'Gym Holiday';
           }
 
-          final newClients = rawClientsList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          if (ClientAttendanceScreen._monthHolidaysCache.containsKey(monthStr)) {
+            final holMap = ClientAttendanceScreen._monthHolidaysCache[monthStr]!;
+            if (holMap.containsKey(dateStr)) {
+              dashboard['is_holiday'] = true;
+              dashboard['holiday_name'] = holMap[dateStr];
+            }
+          }
+
+          final newClients =
+              rawClientsList
+                  .map((e) => Map<String, dynamic>.from(e as Map))
+                  .toList();
+
+          final hasNextParsed =
+              hasNext ||
+              (totalCount != null
+                  ? newClients.length < totalCount
+                  : newClients.length >= 10);
+
+          if (_searchQuery.isEmpty) {
+            ClientAttendanceScreen._cache[cacheKey] = _AttendanceCacheEntry(
+              clients: newClients,
+              dashboard: Map<String, dynamic>.from(dashboard),
+              hasMore: hasNextParsed,
+              timestamp: DateTime.now(),
+            );
+          }
 
           if (mounted) {
             setState(() {
               _clients = newClients;
               _dashboard = Map<String, dynamic>.from(dashboard);
-              _hasMore =
-                  hasNext ||
-                  (totalCount != null
-                      ? newClients.length < totalCount
-                      : newClients.length >= 10);
+              _hasMore = hasNextParsed;
+              _isLoading = false; // Immediately unblock UI upon response
             });
           }
         } else if (response.data is List) {
           final newClients =
-              (response.data as List<dynamic>).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+              (response.data as List<dynamic>)
+                  .map((e) => Map<String, dynamic>.from(e as Map))
+                  .toList();
           if (mounted) {
             setState(() {
               _clients = newClients;
               _hasMore = false;
+              _isLoading = false; // Immediately unblock UI upon response
             });
           }
         }
-      }
-
-      if (_monthHolidays.isEmpty || forceRefresh) {
-        try {
-          final monthStr = DateFormat('yyyy-MM').format(_selectedDate);
-          final orgParam =
-              widget.orgId != 0 ? '&organization_id=${widget.orgId}' : '';
-          final holResp = await DioClient().dio.get<dynamic>(
-            '${ApiUris.gymHolidays}?month=$monthStr$orgParam',
-            options: Options(headers: {'X-Platform': platformSource}),
-          );
-          if (holResp.statusCode == 200) {
-            final holList =
-                holResp.data is List
-                    ? (holResp.data as List<dynamic>)
-                    : (holResp.data is Map && holResp.data['results'] is List)
-                    ? (holResp.data['results'] as List<dynamic>)
-                    : [];
-            final Map<String, String> monthHolMap = {};
-            for (final h in holList) {
-              if (h is Map && h['date'] != null) {
-                final d = h['date'].toString();
-                final name =
-                    (h['title'] ?? h['name'] ?? h['description'] ?? 'Gym Holiday')
-                        .toString();
-                monthHolMap[d] = name;
-              }
-            }
-
-            if (mounted) {
-              setState(() {
-                _monthHolidays = monthHolMap;
-                if (monthHolMap.containsKey(dateStr)) {
-                  _dashboard['is_holiday'] = true;
-                  _dashboard['holiday_name'] = monthHolMap[dateStr];
-                }
-              });
-            }
-          }
-        } catch (_) {}
-      } else if (_monthHolidays.containsKey(dateStr)) {
-        _dashboard['is_holiday'] = true;
-        _dashboard['holiday_name'] = _monthHolidays[dateStr];
       }
     } catch (e, stackTrace) {
       debugPrint('❌ _fetchAttendance error: $e');
@@ -263,6 +337,66 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _fetchMonthHolidaysAsync(
+    String monthStr,
+    String dateStr, {
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh &&
+        ClientAttendanceScreen._monthHolidaysCache.containsKey(monthStr)) {
+      final holMap = ClientAttendanceScreen._monthHolidaysCache[monthStr]!;
+      if (mounted) {
+        setState(() {
+          _monthHolidays = holMap;
+          if (holMap.containsKey(dateStr)) {
+            _dashboard['is_holiday'] = true;
+            _dashboard['holiday_name'] = holMap[dateStr];
+          }
+        });
+      }
+      return;
+    }
+
+    try {
+      final orgParam =
+          widget.orgId != 0 ? '&organization_id=${widget.orgId}' : '';
+      final holResp = await DioClient().dio.get<dynamic>(
+        '${ApiUris.gymHolidays}?month=$monthStr$orgParam',
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (holResp.statusCode == 200) {
+        final holList =
+            holResp.data is List
+                ? (holResp.data as List<dynamic>)
+                : (holResp.data is Map && holResp.data['results'] is List)
+                ? (holResp.data['results'] as List<dynamic>)
+                : [];
+        final Map<String, String> monthHolMap = {};
+        for (final h in holList) {
+          if (h is Map && h['date'] != null) {
+            final d = h['date'].toString();
+            final name =
+                (h['title'] ?? h['name'] ?? h['description'] ?? 'Gym Holiday')
+                    .toString();
+            monthHolMap[d] = name;
+          }
+        }
+
+        ClientAttendanceScreen._monthHolidaysCache[monthStr] = monthHolMap;
+
+        if (mounted) {
+          setState(() {
+            _monthHolidays = monthHolMap;
+            if (monthHolMap.containsKey(dateStr)) {
+              _dashboard['is_holiday'] = true;
+              _dashboard['holiday_name'] = monthHolMap[dateStr];
+            }
+          });
+        }
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadMoreAttendance() async {
@@ -337,6 +471,20 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                     : newClients.isNotEmpty);
             _isLoadingMore = false;
           });
+
+          final currentUserId = context.read<AppCubit>().state.currentUser?.id;
+          final cacheKey =
+              '${widget.isTrainer ? 'trainer' : 'org_${widget.orgId}'}_u${currentUserId ?? 0}_${DateFormat('yyyy-MM-dd').format(_selectedDate)}_${_statusFilter}_$_searchQuery';
+          if (ClientAttendanceScreen._cache.containsKey(cacheKey)) {
+            final old = ClientAttendanceScreen._cache[cacheKey]!;
+            ClientAttendanceScreen._cache[cacheKey] = _AttendanceCacheEntry(
+              clients: List<Map<String, dynamic>>.from(_clients),
+              dashboard: old.dashboard,
+              currentPage: _currentPage,
+              hasMore: _hasMore,
+              timestamp: old.timestamp,
+            );
+          }
         }
       } else {
         if (mounted) {
@@ -443,6 +591,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       }
 
       Dialogs.showSnack(msg: 'Attendance marked successfully!');
+      _invalidateDateCache(dateStr);
     } catch (e) {
       Dialogs.showSnack(msg: 'Failed to mark attendance.');
       _fetchAttendance(silent: true);
@@ -451,6 +600,8 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
   Future<void> _deleteAttendance(int attendanceId) async {
     try {
+      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      _invalidateDateCache(dateStr);
       await DioClient().dio.delete<dynamic>(
         ApiUris.clientAttendanceDetail(attendanceId),
         options: Options(headers: {'X-Platform': platformSource}),
@@ -541,6 +692,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
             ? '$count holidays saved successfully!'
             : 'Holiday saved successfully!',
       );
+      ClientAttendanceScreen.clearCache();
       _fetchAttendance();
     } catch (e) {
       Dialogs.showSnack(msg: 'Failed to save holiday.');
@@ -554,6 +706,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
         options: Options(headers: {'X-Platform': platformSource}),
       );
       Dialogs.showSnack(msg: 'Holiday deleted successfully.');
+      ClientAttendanceScreen.clearCache();
       _fetchAttendance();
     } catch (e) {
       Dialogs.showSnack(msg: 'Failed to delete holiday.');

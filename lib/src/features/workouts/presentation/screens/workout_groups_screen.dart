@@ -33,13 +33,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
   @override
   void initState() {
     super.initState();
-    if (_cachedGroups != null && _cachedGroups!.isNotEmpty) {
-      _groups = List<Map<String, dynamic>>.from(_cachedGroups!);
-      _isLoading = false;
-      _fetchGroups(silent: true);
-    } else {
-      _fetchGroups();
-    }
+    _isLoading = true;
+    _groups = [];
+    _fetchGroups();
     _groupName = FieldData(
       type: FieldType.word,
       textInputAction: TextInputAction.done,
@@ -144,7 +140,8 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
         String errorMsg = 'Failed to load workout groups';
         if (e.response?.data is Map) {
           final map = e.response!.data as Map;
-          errorMsg = map['detail']?.toString() ??
+          errorMsg =
+              map['detail']?.toString() ??
               map['message']?.toString() ??
               map['error']?.toString() ??
               errorMsg;
@@ -197,9 +194,11 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
 
         int score(String name) {
           if (name == query) return 0; // Exact match
-          if (name.startsWith(query)) return 1; // Starts with search term (e.g. "Chest Strength")
+          if (name.startsWith(query))
+            return 1; // Starts with search term (e.g. "Chest Strength")
           final words = name.split(RegExp(r'\s+'));
-          if (words.any((w) => w.startsWith(query))) return 2; // Word starts with search term (e.g. "Advanced Chest...")
+          if (words.any((w) => w.startsWith(query)))
+            return 2; // Word starts with search term (e.g. "Advanced Chest...")
           if (name.contains(query)) return 3; // Contains search term elsewhere
           return 4; // Matched via exercise or description
         }
@@ -390,7 +389,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
         centerTitle: false,
         title: Text(
           'Workouts',
-          style: AppStyles.text20Px.poppins.w500.copyWith(color: context.colors.textPrimary),
+          style: AppStyles.text20Px.poppins.w500.copyWith(
+            color: context.colors.textPrimary,
+          ),
         ),
         actions: [
           IconButton(
@@ -430,7 +431,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
                             _searchQuery = val;
                             if (val.trim().isEmpty && _cachedGroups != null) {
                               setState(() {
-                                _groups = List<Map<String, dynamic>>.from(_cachedGroups!);
+                                _groups = List<Map<String, dynamic>>.from(
+                                  _cachedGroups!,
+                                );
                               });
                             }
                             EasyDebounce.debounce(
@@ -485,42 +488,55 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        '${filtered.length} workout groups',
+                                        _isLoading
+                                            ? 'Loading workout groups...'
+                                            : '${filtered.length} workout groups',
                                         style: AppStyles.text14Px.poppins.w400
                                             .copyWith(
-                                              color: context.colors.textSecondary,
+                                              color:
+                                                  context.colors.textSecondary,
                                             ),
                                       ),
-                                       if (_selectedTabIndex == 0)
-                                         _buildFilterButton(isTrainer),
+                                      if (_selectedTabIndex == 0)
+                                        _buildFilterButton(isTrainer),
                                     ],
                                   ),
                                 ),
                                 Expanded(
                                   child: RefreshIndicator(
                                     onRefresh: _fetchGroups,
-                                    child: _isLoading
-                                        ? _buildShimmerGrid()
-                                        : filtered.isEmpty
-                                        ? SingleChildScrollView(
-                                            physics: const AlwaysScrollableScrollPhysics(),
-                                            child: SizedBox(
-                                              height: MediaQuery.of(context).size.height * 0.4,
-                                              child: Center(
-                                                child: Text(
-                                                  'No workout groups found.',
-                                                  style: TextStyle(
-                                                    color: context.colors.textPrimary,
+                                    child:
+                                        _isLoading
+                                            ? _buildShimmerGrid()
+                                            : filtered.isEmpty
+                                            ? SingleChildScrollView(
+                                              physics:
+                                                  const AlwaysScrollableScrollPhysics(),
+                                              child: SizedBox(
+                                                height:
+                                                    MediaQuery.of(
+                                                      context,
+                                                    ).size.height *
+                                                    0.4,
+                                                child: Center(
+                                                  child: Text(
+                                                    'No workout groups found.',
+                                                    style: TextStyle(
+                                                      color:
+                                                          context
+                                                              .colors
+                                                              .textPrimary,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
+                                            )
+                                            : WorkoutGroupsGrid(
+                                              groups: filtered,
+                                              onReturn: _fetchGroups,
+                                              isMultiDay:
+                                                  _selectedTabIndex == 1,
                                             ),
-                                          )
-                                        : WorkoutGroupsGrid(
-                                            groups: filtered,
-                                            onReturn: _fetchGroups,
-                                            isMultiDay: _selectedTabIndex == 1,
-                                          ),
                                   ),
                                 ),
                               ],
@@ -578,7 +594,8 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: isSelected ? context.colors.background : Colors.transparent,
+              color:
+                  isSelected ? context.colors.background : Colors.transparent,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
               ),
@@ -781,7 +798,8 @@ class _WorkoutGroupCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final int groupId = group['id'] as int;
     final String groupName = group['name'] as String? ?? '';
-    final int planCount = group['plan_count'] as int? ??
+    final int planCount =
+        group['plan_count'] as int? ??
         group['plans_count'] as int? ??
         group['total_plans'] as int? ??
         (group['plans'] is List ? (group['plans'] as List).length : null) ??
@@ -792,7 +810,8 @@ class _WorkoutGroupCard extends StatelessWidget {
 
     final user = context.read<AppCubit>().state.currentUser;
     final isTrainer = user?.userRole == 35;
-    final isOrgCreated = group['source'] == 'organization' ||
+    final isOrgCreated =
+        group['source'] == 'organization' ||
         group['source'] == 'gym' ||
         group['is_preset'] == true;
     final canEditOrDelete = !isTrainer || !isOrgCreated;
@@ -824,7 +843,9 @@ class _WorkoutGroupCard extends StatelessWidget {
           border: Border.all(color: context.colors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : .05),
+              color: Colors.black.withValues(
+                alpha: context.isDarkMode ? 0.2 : .05,
+              ),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -854,226 +875,226 @@ class _WorkoutGroupCard extends StatelessWidget {
                 ),
                 if (canEditOrDelete)
                   PopupMenuButton<String>(
-                  color: Colors.white,
-                  padding: EdgeInsets.zero,
-                  onSelected: (value) async {
-                    if (value == 'rename') {
-                      final nameController = TextEditingController(
-                        text: groupName,
-                      );
-                      final newName = await showDialog<String>(
-                        context: context,
-                        builder: (dialogContext) {
-                          return AlertDialog(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            title: Text(
-                              'Rename Workout Group',
-                              style: AppStyles.text16Px.poppins.w600,
-                            ),
-                            content: TextField(
-                              controller: nameController,
-                              decoration: InputDecoration(
-                                hintText: 'Enter new name',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                focusedBorder: const OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(8),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
+                    color: Colors.white,
+                    padding: EdgeInsets.zero,
+                    onSelected: (value) async {
+                      if (value == 'rename') {
+                        final nameController = TextEditingController(
+                          text: groupName,
+                        );
+                        final newName = await showDialog<String>(
+                          context: context,
+                          builder: (dialogContext) {
+                            return AlertDialog(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed:
-                                    () => Navigator.pop(dialogContext, null),
-                                child: Text(
-                                  'Cancel',
-                                  style: AppStyles.text14Px.poppins.w500
-                                      .copyWith(color: Colors.grey),
-                                ),
+                              title: Text(
+                                'Rename Workout Group',
+                                style: AppStyles.text16Px.poppins.w600,
                               ),
-                              ElevatedButton(
-                                onPressed:
-                                    () => Navigator.pop(
-                                      dialogContext,
-                                      nameController.text.trim(),
+                              content: TextField(
+                                controller: nameController,
+                                decoration: InputDecoration(
+                                  hintText: 'Enter new name',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  focusedBorder: const OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(8),
                                     ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: AppColors.primary,
+                                    ),
                                   ),
                                 ),
-                                child: Text(
-                                  'Save',
-                                  style: AppStyles.text14Px.poppins.w600
-                                      .copyWith(color: Colors.white),
-                                ),
                               ),
-                            ],
-                          );
-                        },
-                      );
-
-                      if (newName != null &&
-                          newName.isNotEmpty &&
-                          newName != groupName) {
-                        try {
-                          final response = await DioClient().dio.put<dynamic>(
-                            ApiUris.workoutGroupDetail(groupId),
-                            data: {'name': newName},
-                          );
-                          if (response.statusCode == 200 ||
-                              response.statusCode == 204) {
-                            Dialogs.showSnack(
-                              msg: 'Workout group renamed successfully',
-                            );
-                            onReturn();
-                          } else {
-                            Dialogs.showSnack(
-                              msg: 'Failed to rename workout group',
-                            );
-                          }
-                        } catch (e) {
-                          Dialogs.showSnack(
-                            msg:
-                                'Error renaming workout group: ${e.toString()}',
-                          );
-                        }
-                      }
-                    } else if (value == 'delete') {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (dialogContext) {
-                          return AlertDialog(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            title: Text(
-                              'Delete Workout Group',
-                              style: AppStyles.text16Px.poppins.w600,
-                            ),
-                            content: const Text(
-                              'Are you sure you want to delete this workout group?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed:
-                                    () => Navigator.pop(dialogContext, false),
-                                child: Text(
-                                  'Cancel',
-                                  style: AppStyles.text14Px.poppins.w500
-                                      .copyWith(color: Colors.grey),
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed:
-                                    () => Navigator.pop(dialogContext, true),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                              actions: [
+                                TextButton(
+                                  onPressed:
+                                      () => Navigator.pop(dialogContext, null),
+                                  child: Text(
+                                    'Cancel',
+                                    style: AppStyles.text14Px.poppins.w500
+                                        .copyWith(color: Colors.grey),
                                   ),
                                 ),
-                                child: Text(
-                                  'Delete',
-                                  style: AppStyles.text14Px.poppins.w600
-                                      .copyWith(color: Colors.white),
+                                ElevatedButton(
+                                  onPressed:
+                                      () => Navigator.pop(
+                                        dialogContext,
+                                        nameController.text.trim(),
+                                      ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Save',
+                                    style: AppStyles.text14Px.poppins.w600
+                                        .copyWith(color: Colors.white),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
-                      );
+                              ],
+                            );
+                          },
+                        );
 
-                      if (confirmed == true) {
-                        try {
-                          final response = await DioClient().dio
-                              .delete<dynamic>(
-                                ApiUris.workoutGroupDetail(groupId),
+                        if (newName != null &&
+                            newName.isNotEmpty &&
+                            newName != groupName) {
+                          try {
+                            final response = await DioClient().dio.put<dynamic>(
+                              ApiUris.workoutGroupDetail(groupId),
+                              data: {'name': newName},
+                            );
+                            if (response.statusCode == 200 ||
+                                response.statusCode == 204) {
+                              Dialogs.showSnack(
+                                msg: 'Workout group renamed successfully',
                               );
-                          if (response.statusCode == 200 ||
-                              response.statusCode == 204) {
+                              onReturn();
+                            } else {
+                              Dialogs.showSnack(
+                                msg: 'Failed to rename workout group',
+                              );
+                            }
+                          } catch (e) {
                             Dialogs.showSnack(
-                              msg: 'Workout group deleted successfully',
-                            );
-                            onReturn();
-                          } else {
-                            Dialogs.showSnack(
-                              msg: 'Failed to delete workout group',
+                              msg:
+                                  'Error renaming workout group: ${e.toString()}',
                             );
                           }
-                        } catch (e) {
-                          Dialogs.showSnack(
-                            msg:
-                                'Error deleting workout group: ${e.toString()}',
-                          );
+                        }
+                      } else if (value == 'delete') {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (dialogContext) {
+                            return AlertDialog(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              title: Text(
+                                'Delete Workout Group',
+                                style: AppStyles.text16Px.poppins.w600,
+                              ),
+                              content: const Text(
+                                'Are you sure you want to delete this workout group?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed:
+                                      () => Navigator.pop(dialogContext, false),
+                                  child: Text(
+                                    'Cancel',
+                                    style: AppStyles.text14Px.poppins.w500
+                                        .copyWith(color: Colors.grey),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed:
+                                      () => Navigator.pop(dialogContext, true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Delete',
+                                    style: AppStyles.text14Px.poppins.w600
+                                        .copyWith(color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirmed == true) {
+                          try {
+                            final response = await DioClient().dio
+                                .delete<dynamic>(
+                                  ApiUris.workoutGroupDetail(groupId),
+                                );
+                            if (response.statusCode == 200 ||
+                                response.statusCode == 204) {
+                              Dialogs.showSnack(
+                                msg: 'Workout group deleted successfully',
+                              );
+                              onReturn();
+                            } else {
+                              Dialogs.showSnack(
+                                msg: 'Failed to delete workout group',
+                              );
+                            }
+                          } catch (e) {
+                            Dialogs.showSnack(
+                              msg:
+                                  'Error deleting workout group: ${e.toString()}',
+                            );
+                          }
                         }
                       }
-                    }
-                  },
-                  itemBuilder:
-                      (context) => [
-                        PopupMenuItem<String>(
-                          height: 36,
-                          value: 'rename',
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.edit_outlined,
-                                color: AppColors.textDark,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Rename',
-                                style: AppStyles.text14Px.poppins.copyWith(
+                    },
+                    itemBuilder:
+                        (context) => [
+                          PopupMenuItem<String>(
+                            height: 36,
+                            value: 'rename',
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.edit_outlined,
                                   color: AppColors.textDark,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Rename',
+                                  style: AppStyles.text14Px.poppins.copyWith(
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        PopupMenuItem<String>(
-                          height: 36,
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Delete',
-                                style: AppStyles.text14Px.poppins.copyWith(
+                          PopupMenuItem<String>(
+                            height: 36,
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.delete_outline,
                                   color: Colors.red,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Delete',
+                                  style: AppStyles.text14Px.poppins.copyWith(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                  child: CircleAvatar(
-                    backgroundColor: Colors.grey.shade100,
-                    radius: 16,
-                    child: const Icon(
-                      Icons.more_vert,
-                      color: AppColors.textGrey,
-                      size: 20,
+                        ],
+                    child: CircleAvatar(
+                      backgroundColor: Colors.grey.shade100,
+                      radius: 16,
+                      child: const Icon(
+                        Icons.more_vert,
+                        color: AppColors.textGrey,
+                        size: 20,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -1116,7 +1137,8 @@ class _MultiDayWorkoutGroupCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final int groupId = group['id'] as int;
     final String groupName = group['name'] as String? ?? '';
-    final int planCount = group['plan_count'] as int? ??
+    final int planCount =
+        group['plan_count'] as int? ??
         group['plans_count'] as int? ??
         group['total_plans'] as int? ??
         (group['plans'] is List ? (group['plans'] as List).length : null) ??
@@ -1127,7 +1149,8 @@ class _MultiDayWorkoutGroupCard extends StatelessWidget {
 
     final user = context.read<AppCubit>().state.currentUser;
     final isTrainer = user?.userRole == 35;
-    final isOrgCreated = group['source'] == 'organization' ||
+    final isOrgCreated =
+        group['source'] == 'organization' ||
         group['source'] == 'gym' ||
         group['is_preset'] == true;
     final canEditOrDelete = !isTrainer || !isOrgCreated;

@@ -98,7 +98,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           );
           if (currentUser != null) {
             if (profileOrgId != null) orgId = profileOrgId;
-            final isPicChanged = profilePic != null &&
+            final isPicChanged =
+                profilePic != null &&
                 profilePic.isNotEmpty &&
                 profilePic != 'null' &&
                 profilePic != currentUser.profilePicture;
@@ -114,12 +115,17 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
             final updatedUser = currentUser.copyWith(
               organizationId: profileOrgId ?? currentUser.organizationId,
               organizationName: profileOrgName ?? currentUser.organizationName,
-              profilePicture: (profilePic != null && profilePic.isNotEmpty && profilePic != 'null')
-                  ? profilePic
-                  : currentUser.profilePicture,
+              profilePicture:
+                  (profilePic != null &&
+                          profilePic.isNotEmpty &&
+                          profilePic != 'null')
+                      ? profilePic
+                      : currentUser.profilePicture,
               trainer: currentUser.trainer?.copyWith(
-                organizationId: profileOrgId ?? currentUser.trainer?.organizationId,
-                organizationName: profileOrgName ?? currentUser.trainer?.organizationName,
+                organizationId:
+                    profileOrgId ?? currentUser.trainer?.organizationId,
+                organizationName:
+                    profileOrgName ?? currentUser.trainer?.organizationName,
               ),
             );
             if (mounted) {
@@ -225,7 +231,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   Widget build(BuildContext context) {
     final stats = _dashboardData['stats'] as Map<String, dynamic>? ?? {};
     final activeClients = stats['active_clients'] ?? 0;
-    final pendingVerifications = stats['pending_verifications_count'] ??
+    final pendingVerifications =
+        stats['pending_verifications_count'] ??
         stats['pending_verifications'] ??
         stats['pending_count'] ??
         _pendingVerificationsCount;
@@ -303,8 +310,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute<void>(
-                                        builder: (context) =>
-                                            const TrainerNotificationsScreen(),
+                                        builder:
+                                            (context) =>
+                                                const TrainerNotificationsScreen(),
                                       ),
                                     );
                                   },
@@ -340,113 +348,151 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         // Stats Grid
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: GridView.count(
-                            padding: EdgeInsets.zero,
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            childAspectRatio: 1.6,
+                          child: Column(
                             children: [
-                              _buildStatCard(
-                                title: 'Active\nClients',
-                                value: '$activeClients',
-                                valueColor: const Color(0xff15803D),
-                                titleColor: const Color(0xff15803D),
-                                circleArrowColor: const Color(0xff15803D),
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xffDCFCE7),
-                                    Color(0xffBBF7D0),
+                              IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        title: 'Active\nClients',
+                                        value: '$activeClients',
+                                        valueColor: const Color(0xff15803D),
+                                        titleColor: const Color(0xff15803D),
+                                        circleArrowColor:
+                                            const Color(0xff15803D),
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Color(0xffDCFCE7),
+                                            Color(0xffBBF7D0),
+                                          ],
+                                        ),
+                                        onTap: () {
+                                          context.push(
+                                            const TrainerCustomersScreen(
+                                              isPushed: true,
+                                              initialStatusFilter: 'active',
+                                              hideStatusFilter: true,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        title: 'Pending\nVerifications',
+                                        value: '$pendingVerifications',
+                                        valueColor: const Color(0xffC0392B),
+                                        titleColor: const Color(0xffC0392B),
+                                        circleArrowColor:
+                                            const Color(0xffC0392B),
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Color(0xffFFCDD2),
+                                            Color(0xffFFAB91),
+                                          ],
+                                        ),
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder:
+                                                  (context) =>
+                                                      const TrainerPendingVerificationsScreen(),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
-                                onTap: () {
-                                  context.push(
-                                    const TrainerCustomersScreen(
-                                      isPushed: true,
-                                      initialStatusFilter: 'active',
-                                      hideStatusFilter: true,
-                                    ),
-                                  );
-                                },
                               ),
-                              _buildStatCard(
-                                title: 'Pending\nVerifications',
-                                value: '$pendingVerifications',
-                                valueColor: const Color(0xffC0392B),
-                                titleColor: const Color(0xffC0392B),
-                                circleArrowColor: const Color(0xffC0392B),
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xffFFCDD2),
-                                    Color(0xffFFAB91),
+                              const SizedBox(height: 12),
+                              IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        title: 'Assigned\nWorkouts',
+                                        value:
+                                            '${stats['todays_assigned_workouts_count'] ?? stats['todays_assigned_workouts'] ?? stats['today_assigned_workouts_count'] ?? stats['assigned_workouts_count'] ?? stats['assigned_plans_count'] ?? 0}',
+                                        valueColor: const Color(0xFFD97706),
+                                        titleColor: context.colors.textPrimary,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder:
+                                                  (context) =>
+                                                      const TrainerAssignedWorkoutsScreen(),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        title: 'Average\nRating',
+                                        value: '$averageRating',
+                                        valueColor: const Color(0xFF16A34A),
+                                        titleColor: context.colors.textPrimary,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder:
+                                                  (context) =>
+                                                      const TrainerReviewsScreen(),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute<void>(
-                                      builder:
-                                          (context) =>
-                                              const TrainerPendingVerificationsScreen(),
-                                    ),
-                                  );
-                                },
                               ),
-                              _buildStatCard(
-                                title: 'Assigned\nWorkouts',
-                                value: '${stats['todays_assigned_workouts_count'] ?? stats['todays_assigned_workouts'] ?? stats['today_assigned_workouts_count'] ?? stats['assigned_workouts_count'] ?? stats['assigned_plans_count'] ?? 0}',
-                                valueColor: const Color(0xFFD97706),
-                                titleColor: context.colors.textPrimary,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute<void>(
-                                      builder:
-                                          (context) =>
-                                              const TrainerAssignedWorkoutsScreen(),
+                              const SizedBox(height: 12),
+                              IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        title: 'Client\nAttendance',
+                                        value:
+                                            '${stats['today_client_attendance_count'] ?? stats['today_present_count'] ?? stats['present_count'] ?? stats['client_attendance_count'] ?? stats['active_clients'] ?? activeClients}',
+                                        valueColor: const Color(0xFF3B66D4),
+                                        titleColor: context.colors.textPrimary,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder:
+                                                  (context) =>
+                                                      const ClientAttendanceScreen(
+                                                        orgId: 0,
+                                                        isTrainer: true,
+                                                      ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     ),
-                                  );
-                                },
-                              ),
-                              _buildStatCard(
-                                title: 'Average\nRating',
-                                value: '$averageRating',
-                                valueColor: const Color(0xFF16A34A),
-                                titleColor: context.colors.textPrimary,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute<void>(
-                                      builder:
-                                          (context) =>
-                                              const TrainerReviewsScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildStatCard(
-                                title: 'Client\nAttendance',
-                                value: '${stats['today_client_attendance_count'] ?? stats['today_present_count'] ?? stats['present_count'] ?? stats['client_attendance_count'] ?? stats['active_clients'] ?? activeClients}',
-                                valueColor: const Color(0xFF3B66D4),
-                                titleColor: context.colors.textPrimary,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute<void>(
-                                      builder:
-                                          (context) => const ClientAttendanceScreen(
-                                            orgId: 0,
-                                            isTrainer: true,
-                                          ),
-                                    ),
-                                  );
-                                },
+                                    const SizedBox(width: 12),
+                                    const Expanded(child: SizedBox.shrink()),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -484,36 +530,59 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      14,
+                                      16,
+                                      14,
+                                    ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Row(
                                           children: [
                                             Text(
                                               'BIRTHDAY',
-                                              style: AppStyles.text13Px.poppins.w700.copyWith(
-                                                color: const Color(0xFF64542B),
-                                                letterSpacing: 0.8,
-                                              ),
+                                              style: AppStyles
+                                                  .text13Px
+                                                  .poppins
+                                                  .w700
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xFF64542B,
+                                                    ),
+                                                    letterSpacing: 0.8,
+                                                  ),
                                             ),
-                                            if (upcomingBirthdays.length > 1) ...[
+                                            if (upcomingBirthdays.length >
+                                                1) ...[
                                               const SizedBox(width: 8),
                                               Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 7,
-                                                  vertical: 1.5,
-                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 7,
+                                                      vertical: 1.5,
+                                                    ),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFF64542B).withValues(alpha: 0.15),
-                                                  borderRadius: BorderRadius.circular(10),
+                                                  color: const Color(
+                                                    0xFF64542B,
+                                                  ).withValues(alpha: 0.15),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
                                                 ),
                                                 child: Text(
                                                   '${upcomingBirthdays.length}',
-                                                  style: AppStyles.text10Px.poppins.w600.copyWith(
-                                                    color: const Color(0xFF64542B),
-                                                  ),
+                                                  style: AppStyles
+                                                      .text10Px
+                                                      .poppins
+                                                      .w600
+                                                      .copyWith(
+                                                        color: const Color(
+                                                          0xFF64542B,
+                                                        ),
+                                                      ),
                                                 ),
                                               ),
                                             ],
@@ -522,20 +591,31 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                         const SizedBox(height: 12),
                                         SingleChildScrollView(
                                           scrollDirection: Axis.horizontal,
-                                          physics: const BouncingScrollPhysics(),
+                                          physics:
+                                              const BouncingScrollPhysics(),
                                           child: Row(
-                                            children: List.generate(upcomingBirthdays.length, (index) {
-                                              final bday = upcomingBirthdays[index];
+                                            children: List.generate(upcomingBirthdays.length, (
+                                              index,
+                                            ) {
+                                              final bday =
+                                                  upcomingBirthdays[index];
                                               final String name =
-                                                  bday['name'] as String? ?? 'N/A';
+                                                  bday['name'] as String? ??
+                                                  'N/A';
                                               final String dateStr =
-                                                  bday['date_of_birth'] as String? ?? '';
-                                              final imgUrl = bday['profile_picture'];
+                                                  bday['date_of_birth']
+                                                      as String? ??
+                                                  '';
+                                              final imgUrl =
+                                                  bday['profile_picture'];
                                               final adNo =
-                                                  bday['admission_no']?.toString() ??
+                                                  bday['admission_no']
+                                                      ?.toString() ??
                                                   bday['id']?.toString() ??
                                                   '';
-                                              const textColor = Color(0xFF64542B);
+                                              const textColor = Color(
+                                                0xFF64542B,
+                                              );
 
                                               return Row(
                                                 mainAxisSize: MainAxisSize.min,
@@ -544,66 +624,117 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                                     Container(
                                                       height: 32,
                                                       width: 1.2,
-                                                      margin: const EdgeInsets.symmetric(horizontal: 14),
-                                                      color: textColor.withValues(alpha: 0.25),
+                                                      margin:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 14,
+                                                          ),
+                                                      color: textColor
+                                                          .withValues(
+                                                            alpha: 0.25,
+                                                          ),
                                                     ),
                                                   Row(
-                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
                                                     children: [
                                                       Container(
                                                         width: 42,
                                                         height: 42,
-                                                        decoration: const BoxDecoration(
-                                                          shape: BoxShape.circle,
-                                                          color: Colors.white,
-                                                        ),
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                              shape:
+                                                                  BoxShape
+                                                                      .circle,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
                                                         child: ClipOval(
-                                                          child: imgUrl != null &&
-                                                                  (imgUrl as String).isNotEmpty
-                                                              ? Image.network(
-                                                                  imgUrl as String,
-                                                                  fit: BoxFit.cover,
-                                                                  errorBuilder: (_, __, ___) => const Icon(
-                                                                    Icons.person,
+                                                          child:
+                                                              imgUrl != null &&
+                                                                      (imgUrl as String)
+                                                                          .isNotEmpty
+                                                                  ? Image.network(
+                                                                    imgUrl
+                                                                        as String,
+                                                                    fit:
+                                                                        BoxFit
+                                                                            .cover,
+                                                                    errorBuilder:
+                                                                        (
+                                                                          _,
+                                                                          __,
+                                                                          ___,
+                                                                        ) => const Icon(
+                                                                          Icons
+                                                                              .person,
+                                                                          size:
+                                                                              24,
+                                                                          color:
+                                                                              textColor,
+                                                                        ),
+                                                                  )
+                                                                  : const Icon(
+                                                                    Icons
+                                                                        .person,
                                                                     size: 24,
-                                                                    color: textColor,
+                                                                    color:
+                                                                        textColor,
                                                                   ),
-                                                                )
-                                                              : const Icon(
-                                                                  Icons.person,
-                                                                  size: 24,
-                                                                  color: textColor,
-                                                                ),
                                                         ),
                                                       ),
                                                       const SizedBox(width: 10),
                                                       Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        mainAxisSize: MainAxisSize.min,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         children: [
                                                           Text(
                                                             name,
-                                                            style: AppStyles.text14Px.poppins.w700.copyWith(
-                                                              color: textColor,
-                                                            ),
+                                                            style: AppStyles
+                                                                .text14Px
+                                                                .poppins
+                                                                .w700
+                                                                .copyWith(
+                                                                  color:
+                                                                      textColor,
+                                                                ),
                                                             maxLines: 1,
-                                                            overflow: TextOverflow.ellipsis,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           ),
                                                           Text(
                                                             'On $dateStr',
-                                                            style: AppStyles.text12Px.poppins.w500.copyWith(
-                                                              color: textColor,
-                                                            ),
+                                                            style: AppStyles
+                                                                .text12Px
+                                                                .poppins
+                                                                .w500
+                                                                .copyWith(
+                                                                  color:
+                                                                      textColor,
+                                                                ),
                                                           ),
                                                         ],
                                                       ),
-                                                      if (adNo.isNotEmpty && upcomingBirthdays.length == 1) ...[
-                                                        const SizedBox(width: 12),
+                                                      if (adNo.isNotEmpty &&
+                                                          upcomingBirthdays
+                                                                  .length ==
+                                                              1) ...[
+                                                        const SizedBox(
+                                                          width: 12,
+                                                        ),
                                                         Text(
                                                           'Ad No - $adNo',
-                                                          style: AppStyles.text12Px.poppins.w600.copyWith(
-                                                            color: textColor,
-                                                          ),
+                                                          style: AppStyles
+                                                              .text12Px
+                                                              .poppins
+                                                              .w600
+                                                              .copyWith(
+                                                                color:
+                                                                    textColor,
+                                                              ),
                                                         ),
                                                       ],
                                                     ],
@@ -671,15 +802,41 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
             // Stats Grid Shimmer
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: GridView.count(
-                padding: EdgeInsets.zero,
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.6,
-                children: List.generate(5, (index) => _buildStatCardShimmer()),
+              child: Column(
+                children: [
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: _buildStatCardShimmer()),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildStatCardShimmer()),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: _buildStatCardShimmer()),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildStatCardShimmer()),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: _buildStatCardShimmer()),
+                        const SizedBox(width: 12),
+                        const Expanded(child: SizedBox.shrink()),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -802,8 +959,11 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                 imageUrl: imageUrl,
                 fit: BoxFit.cover,
                 placeholder:
-                    (context, url) =>
-                        const KShimmer(width: double.infinity, height: double.infinity, radius: 16),
+                    (context, url) => const KShimmer(
+                      width: double.infinity,
+                      height: double.infinity,
+                      radius: 16,
+                    ),
                 errorWidget: (context, url, error) => const Icon(Icons.error),
               )
             else
@@ -841,7 +1001,10 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                       const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () {
-                          final cleanNum = whatsappNumber.replaceAll(RegExp(r'[^\d+]'), '');
+                          final cleanNum = whatsappNumber.replaceAll(
+                            RegExp(r'[^\d+]'),
+                            '',
+                          );
                           launchUrl(
                             Uri.parse('https://wa.me/$cleanNum'),
                             mode: LaunchMode.externalApplication,
@@ -950,7 +1113,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: gradient == null ? context.colors.card : null,
           gradient: gradient,
@@ -958,19 +1121,21 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           boxShadow: [
             if (gradient == null)
               BoxShadow(
-                color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : 0.02),
+                color: Colors.black.withValues(
+                  alpha: context.isDarkMode ? 0.2 : 0.02,
+                ),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
           ],
           border: Border.all(
-            color: gradient == null ? context.colors.border : Colors.transparent,
-            width: 1,
+            color:
+                gradient == null ? context.colors.border : Colors.transparent,
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               value,
@@ -979,23 +1144,24 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                       : AppStyles.text22Px)
                   .poppins
                   .w600
-                  .copyWith(
-                    color: valueColor,
-                  ),
+                  .copyWith(color: valueColor),
             ),
+            const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Text(
-                    title,
-                    style: AppStyles.text13Px.poppins.w500.copyWith(
-                      color: titleColor,
-                      height: 1.2,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      title,
+                      style: AppStyles.text13Px.poppins.w500.copyWith(
+                        color: titleColor,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8),

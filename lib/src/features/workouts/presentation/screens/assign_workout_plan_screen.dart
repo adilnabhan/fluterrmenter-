@@ -2,6 +2,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reports_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
+import 'package:mentor_mobile_app/core/services/holiday/gym_holiday_service.dart';
 
 class AssignWorkoutPlanScreen extends StatefulWidget {
   final int planId;
@@ -82,9 +83,17 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
   }
 
   Future<void> _assignWorkout(int customerId) async {
+    final client = _customers.firstWhere(
+      (c) => c['customer_id'] == customerId || c['id'] == customerId,
+      orElse: () => <String, dynamic>{},
+    );
+    final int? clientOrgId =
+        client['organization_id'] as int? ?? client['gym_id'] as int?;
+
     final titleController = TextEditingController(text: widget.planTitle);
     final notesController = TextEditingController();
     DateTime? selectedDate;
+    String? holidayWarning;
     final action = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
@@ -157,9 +166,20 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
                       if (picked != null) {
+                        final hol = await GymHolidayService.getHolidayName(
+                          picked,
+                          orgId: clientOrgId,
+                        );
                         setStateDialog(() {
                           selectedDate = picked;
+                          holidayWarning = hol;
                         });
+                        if (hol != null) {
+                          Dialogs.showSnack(
+                            msg:
+                                'Selected date is a gym holiday ($hol). Workouts cannot be assigned on holidays.',
+                          );
+                        }
                       }
                     },
                     child: Container(
@@ -168,7 +188,12 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
+                        border: Border.all(
+                          color:
+                              holidayWarning != null
+                                  ? const Color(0xffD32F2F)
+                                  : Colors.grey.shade400,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -197,6 +222,40 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                       ),
                     ),
                   ),
+                  if (holidayWarning != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffFFEBEE),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xffEF5350).withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Color(0xffD32F2F),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Cannot assign workout: $holidayWarning is a gym holiday.',
+                              style: AppStyles.text12Px.poppins.w500.copyWith(
+                                color: const Color(0xffD32F2F),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
               actions: [
@@ -219,7 +278,24 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () => Navigator.pop(dialogContext, 'assign'),
+                  onPressed: () async {
+                    final targetDate = selectedDate ?? DateTime.now();
+                    final hol = await GymHolidayService.getHolidayName(
+                      targetDate,
+                      orgId: clientOrgId,
+                    );
+                    if (hol != null) {
+                      setStateDialog(() {
+                        holidayWarning = hol;
+                      });
+                      Dialogs.showSnack(
+                        msg:
+                            'Cannot assign workout on a holiday: $hol. Please select another date.',
+                      );
+                      return;
+                    }
+                    Navigator.pop(dialogContext, 'assign');
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
@@ -241,6 +317,20 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
     );
 
     if (action == null || action == 'cancel') return;
+
+    if (action == 'assign') {
+      final targetDate = selectedDate ?? DateTime.now();
+      final isHol = await GymHolidayService.isHoliday(
+        targetDate,
+        orgId: clientOrgId,
+      );
+      if (isHol) {
+        Dialogs.showSnack(
+          msg: 'Cannot assign workout: The selected date is a gym holiday.',
+        );
+        return;
+      }
+    }
 
     final enteredTitle = titleController.text.trim();
     final String finalTitle =
@@ -342,7 +432,10 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
       });
       String errorMsg = 'Error assigning plan';
       if (e.response?.data is Map) {
-        errorMsg = (e.response!.data as Map)['error']?.toString() ?? errorMsg;
+        errorMsg = (e.response!.data as Map)['error']?.toString() ??
+            (e.response!.data as Map)['message']?.toString() ??
+            (e.response!.data as Map)['detail']?.toString() ??
+            errorMsg;
       }
       Dialogs.showSnack(msg: errorMsg);
     } catch (e) {

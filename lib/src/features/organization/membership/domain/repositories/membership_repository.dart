@@ -158,6 +158,26 @@ final class MembershipRepository {
     }
   }
 
+  /// Fetch next page of membership packages using next URL
+  Future<Either<ApiException, ListMembershipPackagesModel>> listByUrl({
+    required String url,
+  }) async {
+    try {
+      return await Feggy.async(
+        call: _dio.get<dynamic>(
+          url,
+          options: Options(headers: {'X-Platform': platformSource}).token,
+        ),
+        onSuccess:
+            (res) => _handleResponse(res, ListMembershipPackagesModel.fromJson),
+      );
+    } on ApiException {
+      return left(const ApiException.unknown());
+    } catch (_) {
+      return left(const ApiException.unknown());
+    }
+  }
+
   /// List Package Groups
   Future<Either<ApiException, List<MembershipPackageGroupModel>>> listPackageGroups({
     required String orgId,

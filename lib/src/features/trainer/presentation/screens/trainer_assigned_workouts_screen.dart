@@ -65,8 +65,11 @@ class _TrainerAssignedWorkoutsViewState
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    // Only paginate when user has actually scrolled near the bottom of a sufficiently long list
+    if (maxScroll > 200 && currentScroll >= maxScroll - 150) {
       final cubit = context.read<AssignedWorkoutsCubit>();
       if (!cubit.state.isLoadingMore && cubit.state.hasMore) {
         cubit.loadAssignedWorkouts(reset: false);
@@ -530,14 +533,21 @@ class _TrainerAssignedWorkoutsViewState
                                     Color? cardBorderColor;
 
                                     switch (rawStatus) {
-                                      case 'completed':
-                                      case 'done':
-                                      case 'verified':
+                                      case 'active':
                                         statusBgColor = const Color(0xffC6F6D5); // Soft Green
                                         statusTextColor = const Color(0xff22543D); // Dark Green
                                         iconBgColor = const Color(0xffE6FFFA);
                                         iconColor = const Color(0xff234E52);
                                         cardBorderColor = const Color(0xff38A169);
+                                        break;
+                                      case 'completed':
+                                      case 'done':
+                                      case 'verified':
+                                        statusBgColor = const Color(0xffEBF8FF); // Soft Blue
+                                        statusTextColor = const Color(0xff2B6CB0); // Dark Blue
+                                        iconBgColor = const Color(0xffEBF8FF);
+                                        iconColor = const Color(0xff3182CE);
+                                        cardBorderColor = const Color(0xff4299E1);
                                         break;
                                       case 'pending':
                                         statusBgColor = const Color(0xffFEEBC8); // Soft Amber/Orange
@@ -547,11 +557,11 @@ class _TrainerAssignedWorkoutsViewState
                                         cardBorderColor = const Color(0xffED8936);
                                         break;
                                       case 'scheduled':
-                                        statusBgColor = const Color(0xffEBF8FF); // Soft Blue
-                                        statusTextColor = const Color(0xff2B6CB0); // Dark Blue
+                                        statusBgColor = const Color(0xffEDF2F7); // Soft Neutral
+                                        statusTextColor = const Color(0xff4A5568);
                                         iconBgColor = const Color(0xffF7FAFC);
-                                        iconColor = const Color(0xff3182CE);
-                                        cardBorderColor = const Color(0xff4299E1);
+                                        iconColor = const Color(0xff4A5568);
+                                        cardBorderColor = const Color(0xffA0AEC0);
                                         break;
                                       case 'skipped':
                                         statusBgColor = const Color(0xffFED7D7); // Soft Red
@@ -570,11 +580,11 @@ class _TrainerAssignedWorkoutsViewState
                                         break;
                                       default:
                                         // Active / Default
-                                        statusBgColor = const Color(0xffE2E8F0);
-                                        statusTextColor = const Color(0xff4A5568);
-                                        iconBgColor = const Color(0xffEDF2F7);
-                                        iconColor = const Color(0xff4A5568);
-                                        cardBorderColor = null;
+                                        statusBgColor = const Color(0xffC6F6D5); // Soft Green
+                                        statusTextColor = const Color(0xff22543D); // Dark Green
+                                        iconBgColor = const Color(0xffE6FFFA);
+                                        iconColor = const Color(0xff234E52);
+                                        cardBorderColor = const Color(0xff38A169);
                                     }
 
                                     return InkWell(
@@ -815,9 +825,11 @@ class _TrainerAssignedWorkoutsViewState
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          routinesCount > 0
-                                                              ? '$routinesCount Workout Routines / Days'
-                                                              : 'Workout Plan Details',
+                                                          state.selectedPlanType == 'multi_day'
+                                                              ? (routinesCount > 0
+                                                                  ? '$routinesCount Days Plan'
+                                                                  : 'Multi-Day Plan')
+                                                              : 'Single Day Workout',
                                                           style: AppStyles
                                                               .text12Px
                                                               .poppins

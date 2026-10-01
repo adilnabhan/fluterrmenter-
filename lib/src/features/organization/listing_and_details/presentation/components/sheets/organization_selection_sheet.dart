@@ -1,4 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/client_attendance_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_main_screen.dart';
 
 class OrganizationSelectionSheet extends StatefulWidget {
@@ -224,6 +226,8 @@ class _OrganizationSelectionSheetState extends State<OrganizationSelectionSheet>
                                       Colors.transparent,
                                     ),
                                     onTap: () {
+                                      ClientAttendanceScreen.clearCache();
+                                      TrainerAssignedWorkoutsScreen.clearCache();
                                       context.read<AppCubit>().switchAccount(
                                         account,
                                       );

@@ -114,9 +114,10 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       // If workoutPlans returned empty, query dedicated multi-day or single-day endpoints
       if (data.isEmpty) {
         try {
-          final dedicatedUrl = widget.groupType == 'multi_day'
-              ? ApiUris.multiDayWorkouts
-              : ApiUris.singleDayWorkouts;
+          final dedicatedUrl =
+              widget.groupType == 'multi_day'
+                  ? ApiUris.multiDayWorkouts
+                  : ApiUris.singleDayWorkouts;
           final fallbackRes = await dio.get<dynamic>(
             dedicatedUrl,
             queryParameters: {
@@ -126,7 +127,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
             options: Options(headers: {'X-Platform': platformSource}),
           );
           if (fallbackRes.statusCode == 200) {
-            if (fallbackRes.data is List && (fallbackRes.data as List).isNotEmpty) {
+            if (fallbackRes.data is List &&
+                (fallbackRes.data as List).isNotEmpty) {
               data = fallbackRes.data as List<dynamic>;
             } else if (fallbackRes.data is Map &&
                 fallbackRes.data['results'] is List &&
@@ -174,17 +176,27 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                         dayMap['exercises'] as List<dynamic>? ?? [];
                     int exCount = 0;
                     if (dayMap['exercise_count'] != null) {
-                      exCount = int.tryParse(dayMap['exercise_count'].toString()) ?? 0;
+                      exCount =
+                          int.tryParse(dayMap['exercise_count'].toString()) ??
+                          0;
                     } else if (dayMap['total_exercises'] != null) {
-                      exCount = int.tryParse(dayMap['total_exercises'].toString()) ?? 0;
+                      exCount =
+                          int.tryParse(dayMap['total_exercises'].toString()) ??
+                          0;
                     } else if (dayMap['child_plan_exercise_count'] != null) {
-                      exCount = int.tryParse(dayMap['child_plan_exercise_count'].toString()) ?? 0;
+                      exCount =
+                          int.tryParse(
+                            dayMap['child_plan_exercise_count'].toString(),
+                          ) ??
+                          0;
                     } else if (dayMap['child_plan'] is Map) {
                       final cp = dayMap['child_plan'] as Map;
                       if (cp['exercise_count'] != null) {
-                        exCount = int.tryParse(cp['exercise_count'].toString()) ?? 0;
+                        exCount =
+                            int.tryParse(cp['exercise_count'].toString()) ?? 0;
                       } else if (cp['total_exercises'] != null) {
-                        exCount = int.tryParse(cp['total_exercises'].toString()) ?? 0;
+                        exCount =
+                            int.tryParse(cp['total_exercises'].toString()) ?? 0;
                       } else if (cp['exercises'] is List) {
                         exCount = (cp['exercises'] as List).length;
                       }
@@ -194,15 +206,21 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
                     int targetPlanId = 0;
                     if (dayMap['child_plan_id'] != null) {
-                      targetPlanId = int.tryParse(dayMap['child_plan_id'].toString()) ?? 0;
-                    } else if (dayMap['child_plan'] is Map && dayMap['child_plan']['id'] != null) {
-                      targetPlanId = int.tryParse(dayMap['child_plan']['id'].toString()) ?? 0;
+                      targetPlanId =
+                          int.tryParse(dayMap['child_plan_id'].toString()) ?? 0;
+                    } else if (dayMap['child_plan'] is Map &&
+                        dayMap['child_plan']['id'] != null) {
+                      targetPlanId =
+                          int.tryParse(dayMap['child_plan']['id'].toString()) ??
+                          0;
                     } else if (dayMap['child_plan'] is int) {
                       targetPlanId = dayMap['child_plan'] as int;
                     } else if (dayMap['plan_id'] != null) {
-                      targetPlanId = int.tryParse(dayMap['plan_id'].toString()) ?? 0;
+                      targetPlanId =
+                          int.tryParse(dayMap['plan_id'].toString()) ?? 0;
                     } else if (dayMap['plan'] != null) {
-                      targetPlanId = int.tryParse(dayMap['plan'].toString()) ?? 0;
+                      targetPlanId =
+                          int.tryParse(dayMap['plan'].toString()) ?? 0;
                     } else if (dayMap['id'] != null) {
                       targetPlanId = int.tryParse(dayMap['id'].toString()) ?? 0;
                     }
@@ -223,7 +241,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
                     int dayNum = 1;
                     if (dayMap['day_number'] != null) {
-                      dayNum = int.tryParse(dayMap['day_number'].toString()) ?? 1;
+                      dayNum =
+                          int.tryParse(dayMap['day_number'].toString()) ?? 1;
                     } else if (dayMap['day'] != null) {
                       dayNum = int.tryParse(dayMap['day'].toString()) ?? 1;
                     } else if (dayMap['order'] != null) {
@@ -251,48 +270,70 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
               // Strictly sort days in ascending order (Day 1, Day 2, Day 3, ...)
               parsedDaysAsPlans.sort((a, b) {
-                final int aDay = (a['day_number'] is int)
-                    ? a['day_number'] as int
-                    : int.tryParse(a['day_number']?.toString() ?? '') ?? 0;
-                final int bDay = (b['day_number'] is int)
-                    ? b['day_number'] as int
-                    : int.tryParse(b['day_number']?.toString() ?? '') ?? 0;
+                final int aDay =
+                    (a['day_number'] is int)
+                        ? a['day_number'] as int
+                        : int.tryParse(a['day_number']?.toString() ?? '') ?? 0;
+                final int bDay =
+                    (b['day_number'] is int)
+                        ? b['day_number'] as int
+                        : int.tryParse(b['day_number']?.toString() ?? '') ?? 0;
                 return aDay.compareTo(bDay);
               });
 
               // Dynamically fetch exercise counts for any child plans showing 0 exercises
-              await Future.wait(parsedDaysAsPlans.map((p) async {
-                final int pId = (p['id'] as int?) ?? 0;
-                if ((p['exercise_count'] as int? ?? 0) == 0 && pId != 0 && pId != masterPlanId) {
-                  try {
-                    dynamic childRes;
+              await Future.wait(
+                parsedDaysAsPlans.map((p) async {
+                  final int pId = (p['id'] as int?) ?? 0;
+                  if ((p['exercise_count'] as int? ?? 0) == 0 &&
+                      pId != 0 &&
+                      pId != masterPlanId) {
                     try {
-                      childRes = await dio.get<dynamic>(
-                        ApiUris.singleDayWorkoutDetail(pId),
-                        options: Options(headers: {'X-Platform': platformSource}),
-                      );
-                    } catch (_) {
-                      childRes = await dio.get<dynamic>(
-                        ApiUris.workoutPlanDetail(pId),
-                        options: Options(headers: {'X-Platform': platformSource}),
-                      );
-                    }
-                    if (childRes != null && childRes.statusCode == 200 && childRes.data is Map) {
-                      final cData = childRes.data as Map;
-                      final cDays = cData['days'] as List<dynamic>? ?? [];
-                      int cCount = 0;
-                      if (cData['exercise_count'] != null) {
-                        cCount = int.tryParse(cData['exercise_count'].toString()) ?? 0;
-                      } else if (cData['total_exercises'] != null) {
-                        cCount = int.tryParse(cData['total_exercises'].toString()) ?? 0;
-                      } else if (cDays.isNotEmpty && cDays[0] is Map && cDays[0]['exercises'] is List) {
-                        cCount = (cDays[0]['exercises'] as List).length;
+                      dynamic childRes;
+                      try {
+                        childRes = await dio.get<dynamic>(
+                          ApiUris.singleDayWorkoutDetail(pId),
+                          options: Options(
+                            headers: {'X-Platform': platformSource},
+                          ),
+                        );
+                      } catch (_) {
+                        childRes = await dio.get<dynamic>(
+                          ApiUris.workoutPlanDetail(pId),
+                          options: Options(
+                            headers: {'X-Platform': platformSource},
+                          ),
+                        );
                       }
-                      p['exercise_count'] = cCount;
-                    }
-                  } catch (_) {}
-                }
-              }));
+                      if (childRes != null &&
+                          childRes.statusCode == 200 &&
+                          childRes.data is Map) {
+                        final cData = childRes.data as Map;
+                        final cDays = cData['days'] as List<dynamic>? ?? [];
+                        int cCount = 0;
+                        if (cData['exercise_count'] != null) {
+                          cCount =
+                              int.tryParse(
+                                cData['exercise_count'].toString(),
+                              ) ??
+                              0;
+                        } else if (cData['total_exercises'] != null) {
+                          cCount =
+                              int.tryParse(
+                                cData['total_exercises'].toString(),
+                              ) ??
+                              0;
+                        } else if (cDays.isNotEmpty &&
+                            cDays[0] is Map &&
+                            cDays[0]['exercises'] is List) {
+                          cCount = (cDays[0]['exercises'] as List).length;
+                        }
+                        p['exercise_count'] = cCount;
+                      }
+                    } catch (_) {}
+                  }
+                }),
+              );
 
               if (!mounted) return;
               setState(() {
@@ -353,11 +394,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       try {
         final response = await dio.post<dynamic>(
           ApiUris.multiDayWorkoutReorder(containerId),
-          data: {
-            'day_ids': dayIds,
-            'days': daysPayload,
-            'order': dayIds,
-          },
+          data: {'day_ids': dayIds, 'days': daysPayload, 'order': dayIds},
           options: Options(headers: {'X-Platform': platformSource}),
         );
         if (response.statusCode == 200 || response.statusCode == 204) {
@@ -392,12 +429,13 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
     final updatedPlans = await Navigator.push<List<Map<String, dynamic>>>(
       context,
       MaterialPageRoute(
-        builder: (context) => MultiDayPlanReorderScreen(
-          planTitle: widget.groupTitle,
-          plans: _plans,
-          masterPlanId: mId,
-          source: widget.source ?? 'trainer',
-        ),
+        builder:
+            (context) => MultiDayPlanReorderScreen(
+              planTitle: widget.groupTitle,
+              plans: _plans,
+              masterPlanId: mId,
+              source: widget.source ?? 'trainer',
+            ),
       ),
     );
 
@@ -498,7 +536,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                 color: AppColors.textGrey,
                               ),
                             ),
-                            if (widget.groupType == 'multi_day' && _plans.length > 1)
+                            if (widget.groupType == 'multi_day' &&
+                                _plans.length > 1)
                               InkWell(
                                 onTap: _openReorderScreen,
                                 borderRadius: BorderRadius.circular(20),
@@ -573,8 +612,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                         widget.source;
                                     final isOrgPlan =
                                         (planSource == 'organization' ||
-                                        planSource == 'gym' ||
-                                        plan['is_preset'] == true) &&
+                                            planSource == 'gym' ||
+                                            plan['is_preset'] == true) &&
                                         widget.source != 'trainer';
                                     final user =
                                         context
@@ -603,21 +642,27 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                       canEditOrDelete: canEditOrDelete,
                                       dayNumber: dayNum,
                                       onTap: () async {
-                                        final int childPlanId = (plan['id'] as int?) ?? 0;
+                                        final int childPlanId =
+                                            (plan['id'] as int?) ?? 0;
                                         final bool isChild =
                                             widget.groupType == 'multi_day' &&
                                             childPlanId != 0 &&
                                             childPlanId != _masterPlanId;
-                                        final int targetPlanId = isChild
-                                            ? childPlanId
-                                            : (widget.groupType == 'multi_day'
-                                                ? (_masterPlanId ?? planId)
-                                                : planId);
-                                        final int? targetPlanDayId = isChild
-                                            ? null
-                                            : (widget.groupType == 'multi_day'
-                                                ? (plan['plan_day_id'] as int?)
-                                                : null);
+                                        final int targetPlanId =
+                                            isChild
+                                                ? childPlanId
+                                                : (widget.groupType ==
+                                                        'multi_day'
+                                                    ? (_masterPlanId ?? planId)
+                                                    : planId);
+                                        final int? targetPlanDayId =
+                                            isChild
+                                                ? null
+                                                : (widget.groupType ==
+                                                        'multi_day'
+                                                    ? (plan['plan_day_id']
+                                                        as int?)
+                                                    : null);
 
                                         await Navigator.push(
                                           context,
@@ -875,7 +920,9 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         final dio = DioClient().dio;
         dynamic response;
 
-        if (widget.groupType == 'multi_day' && planDayId != null && _masterPlanId != null) {
+        if (widget.groupType == 'multi_day' &&
+            planDayId != null &&
+            _masterPlanId != null) {
           try {
             response = await dio.patch<dynamic>(
               '${ApiUris.multiDayWorkouts}$_masterPlanId/days/$planDayId/',
@@ -905,7 +952,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
           }
         }
 
-        if (response != null && (response.statusCode == 200 || response.statusCode == 204)) {
+        if (response != null &&
+            (response.statusCode == 200 || response.statusCode == 204)) {
           Dialogs.showSnack(msg: 'Workout plan renamed successfully');
           _fetchPlans();
         } else {
@@ -968,7 +1016,9 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         final dio = DioClient().dio;
         dynamic response;
 
-        if (widget.groupType == 'multi_day' && planDayId != null && _masterPlanId != null) {
+        if (widget.groupType == 'multi_day' &&
+            planDayId != null &&
+            _masterPlanId != null) {
           try {
             response = await dio.delete<dynamic>(
               '${ApiUris.multiDayWorkouts}$_masterPlanId/days/$planDayId/',
@@ -994,7 +1044,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
           }
         }
 
-        if (response != null && (response.statusCode == 200 || response.statusCode == 204)) {
+        if (response != null &&
+            (response.statusCode == 200 || response.statusCode == 204)) {
           final msg =
               (response.data is Map && response.data['message'] != null)
                   ? response.data['message'].toString()
@@ -1605,9 +1656,10 @@ class __SelectGroupForWorkoutSheetState
 
       void addGroups(dynamic rawData) {
         if (rawData == null) return;
-        final List<dynamic> list = (rawData is Map)
-            ? (rawData['results'] as List<dynamic>? ?? [])
-            : (rawData is List ? rawData : []);
+        final List<dynamic> list =
+            (rawData is Map)
+                ? (rawData['results'] as List<dynamic>? ?? [])
+                : (rawData is List ? rawData : []);
         for (final item in list) {
           if (item is Map) {
             final map = Map<String, dynamic>.from(item);
@@ -1645,10 +1697,11 @@ class __SelectGroupForWorkoutSheetState
       } catch (_) {}
 
       // 3. Filter for single-day groups (exclude multi_day groups)
-      final singleDayGroups = combined.where((g) {
-        final type = g['type']?.toString();
-        return type != 'multi_day';
-      }).toList();
+      final singleDayGroups =
+          combined.where((g) {
+            final type = g['type']?.toString();
+            return type != 'multi_day';
+          }).toList();
 
       singleDayGroups.sort((a, b) {
         final aId = a['id'] as int? ?? 0;
@@ -1730,14 +1783,15 @@ class __SelectGroupForWorkoutSheetState
   Widget build(BuildContext context) {
     final displayedGroups = _filteredGroups;
     final trainerCount = _groups.where((g) => g['source'] == 'trainer').length;
-    final orgCount = _groups
-        .where(
-          (g) =>
-              g['source'] == 'organization' ||
-              g['source'] == 'gym' ||
-              g['is_preset'] == true,
-        )
-        .length;
+    final orgCount =
+        _groups
+            .where(
+              (g) =>
+                  g['source'] == 'organization' ||
+                  g['source'] == 'gym' ||
+                  g['is_preset'] == true,
+            )
+            .length;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
@@ -1855,9 +1909,10 @@ class __SelectGroupForWorkoutSheetState
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: isTrainerCreated
-                                            ? const Color(0xFFFFF0F0)
-                                            : const Color(0xFFF2F4F7),
+                                        color:
+                                            isTrainerCreated
+                                                ? const Color(0xFFFFF0F0)
+                                                : const Color(0xFFF2F4F7),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
@@ -1866,9 +1921,10 @@ class __SelectGroupForWorkoutSheetState
                                             : 'Organization',
                                         style: AppStyles.text10Px.poppins.w500
                                             .copyWith(
-                                              color: isTrainerCreated
-                                                  ? const Color(0xFFD30000)
-                                                  : const Color(0xFF475467),
+                                              color:
+                                                  isTrainerCreated
+                                                      ? const Color(0xFFD30000)
+                                                      : const Color(0xFF475467),
                                             ),
                                       ),
                                     ),

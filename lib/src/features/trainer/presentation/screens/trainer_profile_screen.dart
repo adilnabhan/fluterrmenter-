@@ -1011,21 +1011,14 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                   ),
                   child: ClipOval(
                     child:
-                        user?.profilePicture?.toString().isNotEmpty == true
+                        (user?.profilePicture?.toString().isNotEmpty == true &&
+                                user!.profilePicture.toString() != 'null')
                             ? ImageNetwork(
                               user!.profilePicture!.toString(),
                               fit: BoxFit.cover,
-                              errorWidget: const Icon(
-                                Icons.person,
-                                size: 40,
-                                color: Colors.grey,
-                              ),
+                              errorWidget: _buildProfileAvatarInitial(user),
                             )
-                            : const Icon(
-                              Icons.person,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
+                            : _buildProfileAvatarInitial(user),
                   ),
                 ),
               ),
@@ -1093,6 +1086,27 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildProfileAvatarInitial(dynamic user) {
+    final firstName = user?.firstName?.toString() ?? '';
+    final lastName = user?.lastName?.toString() ?? '';
+    final name = '$firstName $lastName'.trim();
+    final initial = AvatarColorHelper.getInitial(name, fallback: 'T');
+    final colors = AvatarColorHelper.getColorPair(name);
+    return Container(
+      color: colors.background,
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Poppins',
+          color: colors.text,
+        ),
       ),
     );
   }

@@ -7,7 +7,7 @@ final class ApiUris {
   static const _baseUrlEnv = String.fromEnvironment('baseUrl');
   static final _baseUrl =
       _baseUrlEnv == ''
-          ? 'https://discipl-backend.onrender.com'
+          ? 'https://app.thediscipl.com'
           : (_baseUrlEnv.endsWith('/')
               ? _baseUrlEnv.substring(0, _baseUrlEnv.length - 1)
               : _baseUrlEnv);
@@ -302,4 +302,4 @@ final class ApiUris {
       '${_v1}fitnesscenter/notifications/read-all/';
   static String deleteFitnessCenterNotification(dynamic id) =>
       '${_v1}fitnesscenter/notifications/$id/';
-}
+}
