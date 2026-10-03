@@ -290,6 +290,107 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
     emit(state.copyWith(tabCaches: updatedCaches));
   }
 
+  /// Silently reloads the latest assigned workouts in the background without wiping the screen or showing a loading spinner.
+  Future<void> reloadSilently() async {
+    if (isClosed) return;
+
+    final date = state.selectedDate;
+    final dateStr =
+        date != null ? DateFormat('yyyy-MM-dd').format(date) : null;
+    final planType = state.selectedPlanType;
+
+    try {
+      WorkoutsFetchResult result;
+      if (customerId != null) {
+        result = await repository.fetchAssignedWorkoutsForClient(
+          customerId: customerId!,
+          clientName: customerName ?? 'Client',
+          dateStr: dateStr,
+          planType: planType,
+          page: 1,
+        );
+      } else {
+        result = await repository.fetchAllTrainerAssignedWorkouts(
+          dateStr: dateStr,
+          planType: planType,
+          page: 1,
+        );
+      }
+
+      if (isClosed) return;
+
+      String workoutKey(Map<String, dynamic> item) {
+        final title = (item['plan_name'] ??
+                item['title'] ??
+                item['name'] ??
+                item['workout_plan_name'] ??
+                '')
+            .toString()
+            .trim()
+            .toLowerCase();
+        final rawDate = (item['start_date'] ??
+                item['scheduled_date'] ??
+                item['session_date'] ??
+                item['assigned_date'] ??
+                item['date'] ??
+                item['created_at'] ??
+                '')
+            .toString()
+            .trim();
+        final normDate =
+            rawDate.length >= 10 ? rawDate.substring(0, 10) : rawDate;
+        final client = (item['client_name'] ??
+                item['customer_name'] ??
+                item['customer']?['name'] ??
+                item['client']?['name'] ??
+                item['customer_id'] ??
+                customerId ??
+                customerName ??
+                '')
+            .toString()
+            .trim()
+            .toLowerCase();
+        final rawId = item['id'] ??
+            item['customer_workout_plan_id'] ??
+            item['assignment_id'] ??
+            item['session_id'];
+
+        if (title.isNotEmpty && normDate.isNotEmpty) {
+          return '${client}_${title}_$normDate';
+        }
+        if (title.isNotEmpty) {
+          return '${client}_$title';
+        }
+        if (rawId != null && rawId != 0 && rawId != '0') {
+          return 'id_$rawId';
+        }
+        return '${item.hashCode}';
+      }
+
+      final seen = <String>{};
+      final uniqueList = <Map<String, dynamic>>[];
+      for (final w in result.workouts) {
+        final k = workoutKey(w);
+        if (!seen.contains(k)) {
+          seen.add(k);
+          uniqueList.add(w);
+        }
+      }
+
+      emit(state.copyWith(
+        status: AssignedWorkoutsStatus.success,
+        workouts: uniqueList,
+        hasMore: result.hasMore,
+        currentPage: 1,
+        isLoadingMore: false,
+      ));
+
+      _saveCurrentTabCache();
+    } catch (e) {
+      debugPrint('Silent refresh error: $e');
+    }
+  }
+
   /// Invalidates all tab caches (e.g. on manual refresh).
   void invalidateCaches() {
     if (isClosed) return;

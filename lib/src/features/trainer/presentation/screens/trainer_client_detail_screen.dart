@@ -717,12 +717,21 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
+            final int? orgId = _clientData['organization_id'] as int? ??
+                _clientData['gym_id'] as int? ??
+                _clientData['mentor_profile']?['organization']?['id'] as int? ??
+                _clientData['organization']?['id'] as int?;
+            final bool isAssignedToMe =
+                _clientData['is_assigned_to_me'] as bool? ?? true;
+
             Navigator.push(
               context,
               MaterialPageRoute<void>(
                 builder: (context) => TrainerAssignedWorkoutsScreen(
                   customerId: widget.customerId,
                   customerName: clientName,
+                  organizationId: orgId,
+                  isAssignedToMe: isAssignedToMe,
                 ),
               ),
             ).then((_) {

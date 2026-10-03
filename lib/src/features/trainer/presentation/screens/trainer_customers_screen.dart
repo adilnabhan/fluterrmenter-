@@ -1320,10 +1320,17 @@ class AssignPlanBottomSheetContent extends StatefulWidget {
 
 class _AssignPlanBottomSheetContentState
     extends State<AssignPlanBottomSheetContent> {
+  static List<Map<String, dynamic>>? _cachedAllGroups;
+  static DateTime? _groupsCacheTimestamp;
+  static final Map<int, List<Map<String, dynamic>>> _staticPlansByGroup = {};
+  static const Duration _cacheDuration = Duration(minutes: 5);
+
+  List<Map<String, dynamic>> _allGroups = [];
   List<Map<String, dynamic>> _plans = [];
   List<Map<String, dynamic>> _groups = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
   final Map<int, bool> _submittingMap = {};
   final Map<int, bool> _assigningMap = {};
   String _selectedSource = 'gym'; // 'gym' or 'trainer'
@@ -1334,22 +1341,50 @@ class _AssignPlanBottomSheetContentState
   @override
   void initState() {
     super.initState();
-    _fetchGroups();
+    final isCacheValid = _cachedAllGroups != null &&
+        _groupsCacheTimestamp != null &&
+        DateTime.now().difference(_groupsCacheTimestamp!) < _cacheDuration;
+
+    if (isCacheValid) {
+      _allGroups = List<Map<String, dynamic>>.from(_cachedAllGroups!);
+      _groups = _getFilteredGroups();
+      _isLoading = false;
+    } else {
+      _fetchGroups();
+    }
   }
 
-  Future<void> _fetchGroups() async {
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, dynamic>> _getFilteredGroups() {
+    final query = _searchQuery.trim().toLowerCase();
+    return _allGroups.where((g) {
+      final src = g['source']?.toString();
+      final matchesSource = _selectedSource == 'gym'
+          ? (src == 'gym' || src == 'organization')
+          : (src == 'trainer');
+      if (!matchesSource) return false;
+      if (query.isEmpty) return true;
+      final name = (g['name'] ?? '').toString().toLowerCase();
+      return name.contains(query);
+    }).toList();
+  }
+
+  Future<void> _fetchGroups({bool forceRefresh = false}) async {
     if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-      _groups = [];
-    });
+    if (_allGroups.isEmpty || forceRefresh) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       final response = await DioClient().dio.get<dynamic>(
         ApiUris.workoutGroups,
-        queryParameters: {
-          if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
-        },
         options: Options(headers: {'X-Platform': platformSource}),
       );
 
@@ -1363,19 +1398,12 @@ class _AssignPlanBottomSheetContentState
         final allGroups =
             data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
-        // Filter groups based on source
-        final filteredGroups =
-            allGroups.where((g) {
-              final src = g['source']?.toString();
-              if (_selectedSource == 'gym') {
-                return src == 'gym' || src == 'organization';
-              } else {
-                return src == 'trainer';
-              }
-            }).toList();
+        _allGroups = allGroups;
+        _cachedAllGroups = allGroups;
+        _groupsCacheTimestamp = DateTime.now();
 
         setState(() {
-          _groups = filteredGroups;
+          _groups = _getFilteredGroups();
           _isLoading = false;
         });
       } else {
@@ -1395,6 +1423,25 @@ class _AssignPlanBottomSheetContentState
   }
 
   Future<void> _fetchPlans() async {
+    if (_selectedGroupId == null) return;
+    final int groupId = _selectedGroupId!;
+
+    if (_staticPlansByGroup.containsKey(groupId)) {
+      final cached = _staticPlansByGroup[groupId]!;
+      final query = _searchQuery.trim().toLowerCase();
+      setState(() {
+        _plans = query.isEmpty
+            ? cached
+            : cached.where((p) {
+                final title =
+                    (p['plan_name'] ?? p['title'] ?? '').toString().toLowerCase();
+                return title.contains(query);
+              }).toList();
+        _isLoading = false;
+      });
+      return;
+    }
+
     if (!mounted) return;
     setState(() {
       _isLoading = true;
@@ -1406,8 +1453,7 @@ class _AssignPlanBottomSheetContentState
         ApiUris.workoutPlans,
         queryParameters: {
           'source': _selectedSource,
-          if (_selectedGroupId != null) 'group': _selectedGroupId,
-          if (_searchQuery.trim().isNotEmpty) 'search': _searchQuery.trim(),
+          'group': groupId,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );
@@ -1415,9 +1461,19 @@ class _AssignPlanBottomSheetContentState
       if (response.statusCode == 200 && response.data is List) {
         final List<dynamic> data = response.data as List<dynamic>;
         if (!mounted) return;
+        final list =
+            data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        _staticPlansByGroup[groupId] = list;
+
+        final query = _searchQuery.trim().toLowerCase();
         setState(() {
-          _plans =
-              data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _plans = query.isEmpty
+              ? list
+              : list.where((p) {
+                  final title =
+                      (p['plan_name'] ?? p['title'] ?? '').toString().toLowerCase();
+                  return title.contains(query);
+                }).toList();
           _isLoading = false;
         });
       } else {
@@ -1729,55 +1785,60 @@ class _AssignPlanBottomSheetContentState
         return;
       }
 
-      // 2. Assign workout plan directly — backend resolves trainer from auth token
-      final response = await dio.post<dynamic>(
-        ApiUris.assignWorkoutPlan(planId),
-        data: {
-          'customer_id': widget.customerId,
-          'title': finalTitle,
-          if (notesController.text.trim().isNotEmpty)
-            'notes': notesController.text.trim(),
-          if (selectedDate != null)
-            'start_date':
-                "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}",
-        },
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+      // 2. Assign workout plan directly in background with optimized UI feedback
+      final String? startDateStr = selectedDate != null
+          ? "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}"
+          : null;
+      final String? notesStr = notesController.text.trim().isNotEmpty
+          ? notesController.text.trim()
+          : null;
+      final int customerId = widget.customerId;
+      final String customerName = widget.customerName;
+      final VoidCallback onSuccessCallback = widget.onSuccess;
 
-      if (!mounted) return;
-      setState(() {
-        _submittingMap[planId] = false;
-      });
+      // Close the bottom sheet immediately so trainer isn't blocked waiting
+      Navigator.pop(context);
+      Dialogs.showSnack(msg: "Assigning '$finalTitle' to $customerName in background...");
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        Dialogs.showSnack(msg: 'Plan assigned successfully');
-        Navigator.pop(context);
-        widget.onSuccess();
-      } else {
-        Dialogs.showSnack(msg: 'Failed to assign plan');
-      }
-    } on DioException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _submittingMap[planId] = false;
-        _assigningMap[widget.customerId] = false;
-      });
-      String errorMsg = 'Error assigning plan';
-      if (e.response?.data is Map) {
-        errorMsg =
-            (e.response!.data as Map)['error']?.toString() ??
-            (e.response!.data as Map)['message']?.toString() ??
-            (e.response!.data as Map)['detail']?.toString() ??
-            errorMsg;
-      }
-      Dialogs.showSnack(msg: errorMsg);
+      unawaited(() async {
+        try {
+          final response = await dio.post<dynamic>(
+            ApiUris.assignWorkoutPlan(planId),
+            data: {
+              'customer_id': customerId,
+              'title': finalTitle,
+              if (notesStr != null) 'notes': notesStr,
+              if (startDateStr != null) 'start_date': startDateStr,
+            },
+            options: Options(headers: {'X-Platform': platformSource}),
+          );
+
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            Dialogs.showSnack(msg: "Workout '$finalTitle' assigned successfully!");
+            onSuccessCallback();
+          } else {
+            Dialogs.showSnack(msg: "Failed to assign workout '$finalTitle'");
+          }
+        } on DioException catch (e) {
+          String errorMsg = "Error assigning workout '$finalTitle'";
+          if (e.response?.data is Map) {
+            errorMsg = (e.response!.data as Map)['error']?.toString() ??
+                (e.response!.data as Map)['message']?.toString() ??
+                (e.response!.data as Map)['detail']?.toString() ??
+                errorMsg;
+          }
+          Dialogs.showSnack(msg: errorMsg);
+        } catch (e) {
+          Dialogs.showSnack(msg: "Error assigning workout: $e");
+        }
+      }());
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _submittingMap[planId] = false;
         _assigningMap[widget.customerId] = false;
       });
-      Dialogs.showSnack(msg: 'Error assigning plan: ${e.toString()}');
+      Dialogs.showSnack(msg: 'Error: ${e.toString()}');
     }
   }
 
@@ -1924,8 +1985,13 @@ class _AssignPlanBottomSheetContentState
               _selectedSource = sourceValue;
               _selectedGroupId = null;
               _selectedGroupName = null;
+              _searchQuery = '';
+              _searchController.clear();
+              _groups = _getFilteredGroups();
             });
-            _fetchGroups();
+            if (_allGroups.isEmpty) {
+              _fetchGroups();
+            }
           }
         },
         child: Container(
@@ -1995,19 +2061,37 @@ class _AssignPlanBottomSheetContentState
               ),
               const SizedBox(height: 12),
               TextField(
+                controller: _searchController,
                 onChanged: (val) {
                   _searchQuery = val;
-                  EasyDebounce.debounce(
-                    'assign_sheet_plans_search',
-                    const Duration(milliseconds: 300),
-                    () {
-                      if (_selectedGroupId == null) {
-                        _fetchGroups();
-                      } else {
-                        _fetchPlans();
-                      }
-                    },
-                  );
+                  if (_selectedGroupId == null) {
+                    setState(() {
+                      _groups = _getFilteredGroups();
+                    });
+                  } else {
+                    final cached = _staticPlansByGroup[_selectedGroupId];
+                    if (cached != null) {
+                      final q = val.trim().toLowerCase();
+                      setState(() {
+                        _plans = q.isEmpty
+                            ? cached
+                            : cached.where((p) {
+                                final title = (p['plan_name'] ??
+                                        p['title'] ??
+                                        '')
+                                    .toString()
+                                    .toLowerCase();
+                                return title.contains(q);
+                              }).toList();
+                      });
+                    } else {
+                      EasyDebounce.debounce(
+                        'assign_sheet_plans_search',
+                        const Duration(milliseconds: 300),
+                        () => _fetchPlans(),
+                      );
+                    }
+                  }
                 },
                 decoration: InputDecoration(
                   hintText:
@@ -2048,8 +2132,9 @@ class _AssignPlanBottomSheetContentState
                           _selectedGroupId = null;
                           _selectedGroupName = null;
                           _searchQuery = '';
+                          _searchController.clear();
+                          _groups = _getFilteredGroups();
                         });
-                        _fetchGroups();
                       },
                     ),
                     Expanded(
@@ -2095,12 +2180,21 @@ class _AssignPlanBottomSheetContentState
 
                                     return InkWell(
                                       onTap: () {
+                                        final int currentGroupId = groupId;
                                         setState(() {
-                                          _selectedGroupId = groupId;
+                                          _selectedGroupId = currentGroupId;
                                           _selectedGroupName = groupTitle;
                                           _searchQuery = '';
+                                          _searchController.clear();
                                         });
-                                        _fetchPlans();
+                                        if (_staticPlansByGroup.containsKey(currentGroupId)) {
+                                          setState(() {
+                                            _plans = _staticPlansByGroup[currentGroupId]!;
+                                            _isLoading = false;
+                                          });
+                                        } else {
+                                          _fetchPlans();
+                                        }
                                       },
                                       borderRadius: BorderRadius.circular(12),
                                       child: Container(

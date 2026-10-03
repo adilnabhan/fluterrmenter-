@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/trainer/cubit/assigned_workouts/assigned_workouts_cubit.dart';
 import 'package:mentor_mobile_app/src/features/trainer/cubit/assigned_workouts/assigned_workouts_state.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_customers_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_groups_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 
@@ -8,11 +9,15 @@ class TrainerAssignedWorkoutsScreen extends StatelessWidget {
   const TrainerAssignedWorkoutsScreen({
     this.customerId,
     this.customerName,
+    this.organizationId,
+    this.isAssignedToMe = true,
     super.key,
   });
 
   final int? customerId;
   final String? customerName;
+  final int? organizationId;
+  final bool isAssignedToMe;
 
   static void clearCache() {}
 
@@ -26,6 +31,8 @@ class TrainerAssignedWorkoutsScreen extends StatelessWidget {
       child: _TrainerAssignedWorkoutsView(
         customerId: customerId,
         customerName: customerName,
+        organizationId: organizationId,
+        isAssignedToMe: isAssignedToMe,
       ),
     );
   }
@@ -34,10 +41,14 @@ class TrainerAssignedWorkoutsScreen extends StatelessWidget {
 class _TrainerAssignedWorkoutsView extends StatefulWidget {
   final int? customerId;
   final String? customerName;
+  final int? organizationId;
+  final bool isAssignedToMe;
 
   const _TrainerAssignedWorkoutsView({
     this.customerId,
     this.customerName,
+    this.organizationId,
+    this.isAssignedToMe = true,
   });
 
   @override
@@ -214,16 +225,31 @@ class _TrainerAssignedWorkoutsViewState
                 icon: const Icon(Icons.add_rounded, color: AppColors.dark),
                 tooltip: 'Assign Workout',
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (context) => const WorkoutGroupsScreen(),
-                    ),
-                  ).then((_) {
-                    context
-                        .read<AssignedWorkoutsCubit>()
-                        .loadAssignedWorkouts(reset: true);
-                  });
+                  if (widget.customerId != null) {
+                    showAssignPlanBottomSheet(
+                      context: context,
+                      customerId: widget.customerId!,
+                      customerName: widget.customerName ?? 'Client',
+                      isAssignedToMe: widget.isAssignedToMe,
+                      organizationId: widget.organizationId,
+                      onSuccess: () {
+                        context
+                            .read<AssignedWorkoutsCubit>()
+                            .reloadSilently();
+                      },
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (context) => const WorkoutGroupsScreen(),
+                      ),
+                    ).then((_) {
+                      context
+                          .read<AssignedWorkoutsCubit>()
+                          .loadAssignedWorkouts(reset: true);
+                    });
+                  }
                 },
               ),
               IconButton(
