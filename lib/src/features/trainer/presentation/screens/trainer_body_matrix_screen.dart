@@ -3,6 +3,7 @@ import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/core/api/uris/api_uris.dart';
 import 'package:mentor_mobile_app/core/widgets/buttons/pop_button.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/trainer_body_matrix_history_tab.dart';
 
 class TrainerBodyMatrixScreen extends StatefulWidget {
   const TrainerBodyMatrixScreen({
@@ -26,6 +27,7 @@ class TrainerBodyMatrixScreen extends StatefulWidget {
 class _TrainerBodyMatrixScreenState extends State<TrainerBodyMatrixScreen> {
   Map<String, dynamic>? _bodyMatrixData;
   bool _isLoading = false;
+  int _selectedTabIndex = 0; // 0: Present Condition, 1: History
   bool _showWhrInfo = false;
   bool _showWhtrInfo = false;
   bool _showAboutBmi = false;
@@ -176,55 +178,141 @@ class _TrainerBodyMatrixScreenState extends State<TrainerBodyMatrixScreen> {
                     ),
                     const SizedBox(height: 14),
 
-                    // 1. BMI Card
-                    _buildBmiCard(bmiVal ?? 21.8, bmiStr, bmiLabel),
-                    const SizedBox(height: 14),
-
-                    // 2. BMR Card
-                    _buildBmrCard(bmrStr, bmrUnit),
-                    const SizedBox(height: 14),
-
-                    // 3. Body Fat Card
-                    _buildBodyFatCard(
-                      bfVal: bfVal,
-                      bodyFatStr: bodyFatStr,
-                      category: bodyFatCategory,
-                      isFemale: isFemale,
-                    ),
-                    const SizedBox(height: 14),
-
-                    // 4 & 5. Waist-to-Hip & Waist-to-Height Ratios
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _buildWhrCard(whrVal, whrCategory),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildWhtrCard(whtrVal, whtrCategory),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-
-                    // 6. Body Measurements Section
-                    _buildMeasurementsSection(
-                      height: heightStr,
-                      weight: weightStr,
-                      neck: neckStr,
-                      waist: waistStr,
-                      hip: hipStr,
-                    ),
+                    // Tab Bar: Present Condition & History
+                    _buildTabBar(),
                     const SizedBox(height: 16),
 
-                    // 7. Medical Disclaimer
-                    _buildDisclaimerCard(),
-                    const SizedBox(height: 24),
+                    if (_selectedTabIndex == 0) ...[
+                      // 1. BMI Card
+                      _buildBmiCard(bmiVal ?? 21.8, bmiStr, bmiLabel),
+                      const SizedBox(height: 14),
+
+                      // 2. BMR Card
+                      _buildBmrCard(bmrStr, bmrUnit),
+                      const SizedBox(height: 14),
+
+                      // 3. Body Fat Card
+                      _buildBodyFatCard(
+                        bfVal: bfVal,
+                        bodyFatStr: bodyFatStr,
+                        category: bodyFatCategory,
+                        isFemale: isFemale,
+                      ),
+                      const SizedBox(height: 14),
+
+                      // 4 & 5. Waist-to-Hip & Waist-to-Height Ratios
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildWhrCard(whrVal, whrCategory),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildWhtrCard(whtrVal, whtrCategory),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+
+                      // 6. Body Measurements Section
+                      _buildMeasurementsSection(
+                        height: heightStr,
+                        weight: weightStr,
+                        neck: neckStr,
+                        waist: waistStr,
+                        hip: hipStr,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 7. Medical Disclaimer
+                      _buildDisclaimerCard(),
+                      const SizedBox(height: 24),
+                    ] else ...[
+                      TrainerBodyMatrixHistoryTab(
+                        customerId: widget.customerId,
+                        historyData: _bodyMatrixData?['history'] as Map<dynamic, dynamic>?,
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                   ],
                 ),
               ),
             ),
+    );
+  }
+
+  // ==================== Tab Bar ====================
+  Widget _buildTabBar() {
+    return Container(
+      height: 46,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEEEEEE),
+        borderRadius: BorderRadius.circular(26),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (_selectedTabIndex != 0) {
+                  setState(() => _selectedTabIndex = 0);
+                }
+              },
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: _selectedTabIndex == 0
+                      ? AppColors.primary
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Text(
+                  'Present Condition',
+                  style: AppStyles.text14Px.poppins.copyWith(
+                    color: _selectedTabIndex == 0
+                        ? Colors.white
+                        : const Color(0xFF1E293B),
+                    fontWeight: _selectedTabIndex == 0
+                        ? FontWeight.w600
+                        : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (_selectedTabIndex != 1) {
+                  setState(() => _selectedTabIndex = 1);
+                }
+              },
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: _selectedTabIndex == 1
+                      ? AppColors.primary
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Text(
+                  'History',
+                  style: AppStyles.text14Px.poppins.copyWith(
+                    color: _selectedTabIndex == 1
+                        ? Colors.white
+                        : const Color(0xFF1E293B),
+                    fontWeight: _selectedTabIndex == 1
+                        ? FontWeight.w600
+                        : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -33,10 +33,35 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
   bool _isFetchingMore = false;
   final ScrollController _scrollController = ScrollController();
 
+  static List<Map<String, dynamic>>? _cachedClients;
+  static String? _cachedNextUrl;
+  static DateTime? _cacheTimestamp;
+  static const Duration _cacheDuration = Duration(minutes: 5);
+
+  /// Clears the in-memory clients cache when needed.
+  static void clearCache() {
+    _cachedClients = null;
+    _cachedNextUrl = null;
+    _cacheTimestamp = null;
+  }
+
   @override
   void initState() {
     super.initState();
-    _fetchClients();
+    final isCacheValid = _cachedClients != null &&
+        _cacheTimestamp != null &&
+        DateTime.now().difference(_cacheTimestamp!) < _cacheDuration;
+
+    if (isCacheValid) {
+      _clients = _cachedClients!
+          .map((e) => Map<String, dynamic>.from(e)..['is_assigned'] = false)
+          .toList();
+      _nextUrl = _cachedNextUrl;
+      _isLoading = false;
+    } else {
+      _fetchClients();
+    }
+
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
@@ -87,6 +112,14 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                 'is_assigned': false,
               };
             }).toList();
+
+        if (_searchQuery.trim().isEmpty) {
+          _cachedClients = parsedClients
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+          _cachedNextUrl = _nextUrl;
+          _cacheTimestamp = DateTime.now();
+        }
 
         if (!mounted) return;
         setState(() {
@@ -147,6 +180,12 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
           _clients.addAll(parsedClients);
           _isFetchingMore = false;
         });
+        if (_searchQuery.trim().isEmpty) {
+          _cachedClients = _clients
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+          _cachedNextUrl = _nextUrl;
+        }
       } else {
         if (!mounted) return;
         setState(() {
