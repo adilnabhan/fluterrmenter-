@@ -11,6 +11,8 @@ Act as a senior Flutter developer working on a production application.
 - Repository pattern
 - Clean architecture
 - Null safety
+- Always use the generated API client and models. Do not create your own API calls or models.
+- Ensure to check the latest API documentation before making any changes to the API calls and endpoints or data models or data structures.
 
 ## Rules
 

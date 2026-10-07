@@ -86,6 +86,9 @@ class _CreateTrainerResultsScreenState extends State<CreateTrainerResultsScreen>
                       ImagePickerDialog(
                         allowMultiple: true,
                         needRemove: false,
+                        maxWidth: 1080,
+                        maxHeight: 1080,
+                        imageQuality: 75,
                         onPickedImages: (images) {
                           if (!mounted) return;
                           setState(() => _galleryImages.addAll(images));
@@ -258,6 +261,9 @@ class _TransformationCard extends StatelessWidget {
         onTap: () {
           ImagePickerDialog(
             needRemove: false,
+            maxWidth: 1080,
+            maxHeight: 1080,
+            imageQuality: 75,
             onPickedImage: (file) {
               if (file != null) onPicked(file);
             },

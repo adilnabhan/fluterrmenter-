@@ -45,6 +45,30 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _precacheImages(_portfolioImages);
+  }
+
+  void _precacheImages(List<PortfolioImageModel> list) {
+    for (final item in list) {
+      final img = item.image;
+      if (img != null && img.isNotEmpty) {
+        String finalUrl = img.trim();
+        if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+          final baseUrl = ApiUris.baseUrl;
+          if (finalUrl.startsWith('/')) {
+            finalUrl = '$baseUrl$finalUrl';
+          } else {
+            finalUrl = '$baseUrl/$finalUrl';
+          }
+        }
+        precacheImage(CachedNetworkImageProvider(finalUrl), context);
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
@@ -53,6 +77,9 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
   Future<void> _uploadPortfolioImage() async {
     await ImagePickerDialog(
       needRemove: false,
+      maxWidth: 1080,
+      maxHeight: 1080,
+      imageQuality: 75,
       onPickedImage: (file) async {
         if (file != null) {
           await _submitPortfolioImage(File(file.path));
@@ -64,6 +91,8 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
   Future<void> _submitPortfolioImage(File file) async {
     setState(() => _isLoading = true);
     try {
+      final fileSize = await file.length();
+      debugPrint('[Portfolio Upload] Compressed size: ${(fileSize / 1024).toStringAsFixed(1)} KB (${(fileSize / (1024 * 1024)).toStringAsFixed(2)} MB)');
       final formData = FormData.fromMap({
         'image_file': await MultipartFile.fromFile(file.path),
         'type': 'result',
@@ -177,6 +206,7 @@ class _TrainerPortfolioScreenState extends State<TrainerPortfolioScreen> {
                 }
               }
             });
+            _precacheImages(mapped);
           }
         }
       }

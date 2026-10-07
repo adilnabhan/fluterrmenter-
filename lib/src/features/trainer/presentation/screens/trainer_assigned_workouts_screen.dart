@@ -221,24 +221,11 @@ class _TrainerAssignedWorkoutsViewState
             ),
             centerTitle: true,
             actions: [
-              IconButton(
-                icon: const Icon(Icons.add_rounded, color: AppColors.dark),
-                tooltip: 'Assign Workout',
-                onPressed: () {
-                  if (widget.customerId != null) {
-                    showAssignPlanBottomSheet(
-                      context: context,
-                      customerId: widget.customerId!,
-                      customerName: widget.customerName ?? 'Client',
-                      isAssignedToMe: widget.isAssignedToMe,
-                      organizationId: widget.organizationId,
-                      onSuccess: () {
-                        context
-                            .read<AssignedWorkoutsCubit>()
-                            .reloadSilently();
-                      },
-                    );
-                  } else {
+              if (widget.customerId == null)
+                IconButton(
+                  icon: const Icon(Icons.add_rounded, color: AppColors.dark),
+                  tooltip: 'Assign Workout',
+                  onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute<void>(
@@ -249,9 +236,8 @@ class _TrainerAssignedWorkoutsViewState
                           .read<AssignedWorkoutsCubit>()
                           .loadAssignedWorkouts(reset: true);
                     });
-                  }
-                },
-              ),
+                  },
+                ),
               IconButton(
                 icon: const Icon(Icons.refresh, color: AppColors.dark),
                 onPressed: () {
@@ -494,7 +480,12 @@ class _TrainerAssignedWorkoutsViewState
                                     .loadAssignedWorkouts(reset: true),
                                 child: ListView.separated(
                                   controller: _scrollController,
-                                  padding: const EdgeInsets.all(16),
+                                  padding: EdgeInsets.fromLTRB(
+                                    16,
+                                    16,
+                                    16,
+                                    widget.customerId != null ? 84 : 16,
+                                  ),
                                   physics:
                                       const AlwaysScrollableScrollPhysics(),
                                   itemCount: filteredWorkouts.length +
@@ -904,8 +895,77 @@ class _TrainerAssignedWorkoutsViewState
               ),
             ],
           ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: widget.customerId != null
+              ? _buildAssignWorkoutFab(context)
+              : null,
         );
       },
+    );
+  }
+
+  Widget _buildAssignWorkoutFab(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          height: 48,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.35),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(30),
+              onTap: () {
+                if (widget.customerId != null) {
+                  showAssignPlanBottomSheet(
+                    context: context,
+                    customerId: widget.customerId!,
+                    customerName: widget.customerName ?? 'Client',
+                    isAssignedToMe: widget.isAssignedToMe,
+                    organizationId: widget.organizationId,
+                    onSuccess: () {
+                      context
+                          .read<AssignedWorkoutsCubit>()
+                          .reloadSilently();
+                    },
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (context) => const WorkoutGroupsScreen(),
+                    ),
+                  ).then((_) {
+                    context
+                        .read<AssignedWorkoutsCubit>()
+                        .loadAssignedWorkouts(reset: true);
+                  });
+                }
+              },
+              child: Center(
+                child: Text(
+                  'Assign Workout',
+                  style: AppStyles.text15Px.poppins.w600.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

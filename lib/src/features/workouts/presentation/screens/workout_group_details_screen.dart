@@ -674,6 +674,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                                       planId: targetPlanId,
                                                       planDayId:
                                                           targetPlanDayId,
+                                                      isOrganizationWorkout:
+                                                          isOrgPlan,
                                                     ),
                                           ),
                                         );

@@ -8,6 +8,7 @@ import 'package:mentor_mobile_app/core/widgets/dialogs/image_picker_dialog.dart'
 
 import 'package:mentor_mobile_app/src/features/auth/login/domain/models/login_with_otp_model.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'dart:math' as math;
@@ -16,6 +17,161 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final ValueNotifier<int> trainerProfileRefreshTrigger = ValueNotifier<int>(0);
+
+class _HeroPortfolioCarousel extends StatefulWidget {
+  final List<String> images;
+  final void Function(int index) onTapImage;
+
+  const _HeroPortfolioCarousel({
+    required this.images,
+    required this.onTapImage,
+  });
+
+  @override
+  State<_HeroPortfolioCarousel> createState() => _HeroPortfolioCarouselState();
+}
+
+class _HeroPortfolioCarouselState extends State<_HeroPortfolioCarousel> {
+  int _currentIndex = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _precacheImages();
+  }
+
+  @override
+  void didUpdateWidget(covariant _HeroPortfolioCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.images != widget.images) {
+      _precacheImages();
+    }
+  }
+
+  void _precacheImages() {
+    for (final url in widget.images) {
+      if (url.isNotEmpty) {
+        String finalUrl = url.trim();
+        if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+          final baseUrl = ApiUris.baseUrl;
+          if (finalUrl.startsWith('/')) {
+            finalUrl = '$baseUrl$finalUrl';
+          } else {
+            finalUrl = '$baseUrl/$finalUrl';
+          }
+        }
+        precacheImage(CachedNetworkImageProvider(finalUrl), context);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.images.isEmpty) return const SizedBox.shrink();
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        CarouselSlider.builder(
+          itemCount: widget.images.length,
+          itemBuilder: (context, index, realIndex) {
+            final imgUrl = widget.images[index];
+            return GestureDetector(
+              onTap: () => widget.onTapImage(index),
+              child: SizedBox.expand(
+                child: ImageNetwork(
+                  imgUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+              ),
+            );
+          },
+          options: CarouselOptions(
+            height: 320,
+            viewportFraction: 1.0,
+            autoPlay: widget.images.length > 1,
+            autoPlayInterval: const Duration(seconds: 4),
+            autoPlayAnimationDuration: const Duration(milliseconds: 600),
+            autoPlayCurve: Curves.easeInOut,
+            enableInfiniteScroll: widget.images.length > 1,
+            onPageChanged: (index, reason) {
+              if (mounted && _currentIndex != index) {
+                setState(() => _currentIndex = index);
+              }
+            },
+          ),
+        ),
+        // Subtle gradient at the bottom edge
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: 60,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  const Color(0xffF7F7F7).withValues(alpha: 0.7),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Dot indicators with pill background
+        if (widget.images.length > 1)
+          Positioned(
+            bottom: 8,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    widget.images.length,
+                    (i) {
+                      final isActive = i == _currentIndex;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: isActive ? 16 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color:
+                              isActive
+                                  ? Colors.white
+                                  : Colors.grey.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
 
 class TrainerMainProfileScreen extends StatefulWidget {
   final String? trainerId;
@@ -33,8 +189,6 @@ class TrainerMainProfileScreen extends StatefulWidget {
 }
 
 class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
-  final PageController _heroPagerController = PageController();
-  int _heroCurrentIndex = 0;
   bool _isLoading = false;
   LoginSuccessModel? _fetchedUser;
 
@@ -63,7 +217,6 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
 
   @override
   void dispose() {
-    _heroPagerController.dispose();
     _transformationPageController.dispose();
     super.dispose();
   }
@@ -199,6 +352,21 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             _transformations = parsedTransformations;
             _isLoadingTransformations = false;
           });
+          // Precache transformation images for instantaneous display
+          for (final trans in parsedTransformations) {
+            final bImg = (trans['before_image_url'] ?? trans['before_image'] ?? '').toString().trim();
+            final aImg = (trans['after_image_url'] ?? trans['after_image'] ?? '').toString().trim();
+            for (final url in [bImg, aImg]) {
+              if (url.isNotEmpty) {
+                String finalUrl = url;
+                if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+                  final baseUrl = ApiUris.baseUrl;
+                  finalUrl = finalUrl.startsWith('/') ? '$baseUrl$finalUrl' : '$baseUrl/$finalUrl';
+                }
+                precacheImage(CachedNetworkImageProvider(finalUrl), context);
+              }
+            }
+          }
         }
       } else {
         if (mounted) setState(() => _isLoadingTransformations = false);
@@ -563,6 +731,9 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
   Future<void> _uploadPortfolioImage() async {
     await ImagePickerDialog(
       needRemove: false,
+      maxWidth: 1080,
+      maxHeight: 1080,
+      imageQuality: 75,
       onPickedImage: (file) async {
         if (file != null) {
           await _submitPortfolioImage(File(file.path));
@@ -574,6 +745,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
   Future<void> _submitPortfolioImage(File file) async {
     setState(() => _isLoading = true);
     try {
+      final fileSize = await file.length();
+      debugPrint('[Portfolio Upload] Compressed size: ${(fileSize / 1024).toStringAsFixed(1)} KB (${(fileSize / (1024 * 1024)).toStringAsFixed(2)} MB)');
       final formData = FormData.fromMap({
         'image_file': await MultipartFile.fromFile(file.path),
         'type': 'result',
@@ -675,97 +848,12 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                       fit: StackFit.expand,
                       children: [
                         if (heroCarousel.isNotEmpty) ...[
-                          PageView.builder(
-                            controller: _heroPagerController,
-                            itemCount: heroCarousel.length,
-                            onPageChanged:
-                                (i) => setState(() => _heroCurrentIndex = i),
-                            itemBuilder: (context, index) {
-                              return GestureDetector(
-                                onTap:
-                                    () => _openFullScreen(context, index, user),
-                                child: ImageNetwork(
-                                  heroCarousel[index],
-                                  fit: BoxFit.cover,
-                                ),
-                              );
-                            },
+                          _HeroPortfolioCarousel(
+                            images: heroCarousel,
+                            onTapImage:
+                                (index) =>
+                                    _openFullScreen(context, index, user),
                           ),
-                          // Subtle gradient at the very bottom edge
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              height: 60,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    const Color(
-                                      0xffF7F7F7,
-                                    ).withValues(alpha: 0.7),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Dot indicators with pill background
-                          if (heroCarousel.length > 1)
-                            Positioned(
-                              bottom: 8,
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.4),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.2),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: List.generate(
-                                      heroCarousel.length,
-                                      (i) {
-                                        final isActive = i == _heroCurrentIndex;
-                                        return AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 250,
-                                          ),
-                                          curve: Curves.easeInOut,
-                                          margin: const EdgeInsets.symmetric(
-                                            horizontal: 3,
-                                          ),
-                                          width: isActive ? 16 : 6,
-                                          height: 6,
-                                          decoration: BoxDecoration(
-                                            color:
-                                                isActive
-                                                    ? Colors.white
-                                                    : Colors.grey.withOpacity(
-                                                      0.5,
-                                                    ),
-                                            borderRadius: BorderRadius.circular(
-                                              3,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
                         ] else ...[
                           _buildCoverBackdrop(user),
                         ],
@@ -1228,15 +1316,39 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                 ],
                 if (user?.whatsapp?.toString().isNotEmpty == true) ...[
                   GestureDetector(
-                    onTap: () {
-                      var whatsappUrl = user!.whatsapp!.toString().trim();
-                      if (!whatsappUrl.startsWith('http')) {
-                        whatsappUrl = 'https://wa.me/$whatsappUrl';
+                    onTap: () async {
+                      final raw = user?.whatsapp?.toString().trim() ?? '';
+                      if (raw.isEmpty) return;
+
+                      var cleanNum = raw.replaceAll(RegExp(r'[^\d]'), '');
+                      if (cleanNum.startsWith('0')) {
+                        cleanNum = cleanNum.replaceFirst(RegExp(r'^0+'), '');
                       }
-                      launchUrl(
-                        Uri.parse(whatsappUrl),
-                        mode: LaunchMode.externalApplication,
-                      );
+                      if (cleanNum.length == 10) {
+                        cleanNum = '91$cleanNum';
+                      }
+
+                      String whatsappUrl;
+                      if (raw.startsWith('http://') || raw.startsWith('https://')) {
+                        whatsappUrl = raw;
+                      } else {
+                        whatsappUrl = 'https://wa.me/$cleanNum';
+                      }
+
+                      try {
+                        final uri = Uri.parse(whatsappUrl);
+                        final launched = await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                        if (!launched) {
+                          await launchUrl(uri, mode: LaunchMode.platformDefault);
+                        }
+                      } catch (e) {
+                        Dialogs.showSnack(
+                          msg: 'Could not open WhatsApp: Please ensure WhatsApp is installed.',
+                        );
+                      }
                     },
                     child: _buildSocialSvgIcon(
                       'assets/images/svg/icons/whatsapp.svg',
@@ -2293,6 +2405,15 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
           currentUser?.id?.toString();
 
       bool success = false;
+      if (_beforeFile != null) {
+        final bSize = await _beforeFile!.length();
+        debugPrint('[Transformation Upload] Before image compressed: ${(bSize / 1024).toStringAsFixed(1)} KB');
+      }
+      if (_afterFile != null) {
+        final aSize = await _afterFile!.length();
+        debugPrint('[Transformation Upload] After image compressed: ${(aSize / 1024).toStringAsFixed(1)} KB');
+      }
+
       if (trainerId != null && trainerId.isNotEmpty) {
         try {
           bool beforeOk = true;
@@ -2420,9 +2541,14 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
                       context: context,
                       builder:
                           (c) => ImagePickerDialog(
+                            needRemove: false,
+                            maxWidth: 1080,
+                            maxHeight: 1080,
+                            imageQuality: 75,
                             onPickedImage: (f) {
-                              if (f != null)
+                              if (f != null) {
                                 setState(() => _beforeFile = File(f.path));
+                              }
                             },
                           ),
                     );
@@ -2464,9 +2590,14 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
                       context: context,
                       builder:
                           (c) => ImagePickerDialog(
+                            needRemove: false,
+                            maxWidth: 1080,
+                            maxHeight: 1080,
+                            imageQuality: 75,
                             onPickedImage: (f) {
-                              if (f != null)
+                              if (f != null) {
                                 setState(() => _afterFile = File(f.path));
+                              }
                             },
                           ),
                     );

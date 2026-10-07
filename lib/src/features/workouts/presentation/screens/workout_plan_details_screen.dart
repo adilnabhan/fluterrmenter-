@@ -28,6 +28,7 @@ class WorkoutPlanDetailsScreen extends StatefulWidget {
     this.planDayId,
     this.assignToCustomerId,
     this.isInstantWorkout = false,
+    this.isOrganizationWorkout,
   });
 
   final String planTitle;
@@ -35,6 +36,7 @@ class WorkoutPlanDetailsScreen extends StatefulWidget {
   final int? planDayId;
   final int? assignToCustomerId;
   final bool? isInstantWorkout;
+  final bool? isOrganizationWorkout;
 
   @override
   State<WorkoutPlanDetailsScreen> createState() =>
@@ -45,6 +47,25 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
   List<PlanDayItem> _planDays = [];
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isOrgPlanFromApi = false;
+
+  bool get _isOrganizationPlan {
+    if (widget.isOrganizationWorkout == true) return true;
+    return _isOrgPlanFromApi;
+  }
+
+  bool get _canEditExercises {
+    // When customizing a workout to assign to a client, the trainer is always allowed to edit exercises
+    if (widget.assignToCustomerId != null) {
+      return true;
+    }
+    final user = context.read<AppCubit>().state.currentUser;
+    final bool isTrainer = user?.userRole == 35;
+    if (isTrainer && _isOrganizationPlan) {
+      return false;
+    }
+    return true;
+  }
 
   int get _totalExercisesCount =>
       _planDays.fold(0, (sum, day) => sum + day.exercises.length);
@@ -71,6 +92,19 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
         final Map<String, dynamic> data = Map<String, dynamic>.from(
           response.data as Map,
         );
+
+        final planSource = (data['source'] ?? data['type'] ?? data['plan_type'] ?? '').toString().toLowerCase();
+        final bool isOrgFromData = data['is_preset'] == true ||
+            data['is_organization'] == true ||
+            data['is_gym_created'] == true ||
+            planSource == 'organization' ||
+            planSource == 'gym' ||
+            (data['organization_id'] != null && data['trainer_id'] == null && data['mentor_id'] == null) ||
+            (data['organization'] != null && data['trainer'] == null && data['mentor'] == null);
+        if (isOrgFromData) {
+          _isOrgPlanFromApi = true;
+        }
+
         final List<dynamic> days = data['days'] as List<dynamic>? ?? [];
         if (days.isNotEmpty) {
           List<dynamic> targetDays = days;
@@ -883,6 +917,10 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
   }
 
   void _editExerciseBottomSheet(WorkoutExercise ex, PlanDayItem day) {
+    if (!_canEditExercises) {
+      Dialogs.showSnack(msg: 'Exercises in organization created workouts cannot be edited');
+      return;
+    }
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -965,18 +1003,19 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
               ],
             ),
           ),
-          InkWell(
-            onTap: () => _showSelectExerciseSheet(context, day),
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF5F5F5),
-                shape: BoxShape.circle,
+          if (_canEditExercises)
+            InkWell(
+              onTap: () => _showSelectExerciseSheet(context, day),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F5F5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.add, color: Color(0xFFD30000), size: 20),
               ),
-              child: const Icon(Icons.add, color: Color(0xFFD30000), size: 20),
             ),
-          ),
         ],
       ),
     );
@@ -1041,7 +1080,14 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                           )
                           : _planDays.length == 1
                           ? ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+                            padding: EdgeInsets.fromLTRB(
+                              20,
+                              24,
+                              20,
+                              (_canEditExercises || widget.assignToCustomerId != null)
+                                  ? 120
+                                  : 32,
+                            ),
                             itemCount: _planDays.first.exercises.length,
                             separatorBuilder:
                                 (context, index) => const SizedBox(height: 12),
@@ -1050,6 +1096,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                               return _ExerciseCard(
                                 index: index + 1,
                                 exercise: item,
+                                canEdit: _canEditExercises,
                                 onEditTap:
                                     () => _editExerciseBottomSheet(
                                       item,
@@ -1059,7 +1106,14 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                             },
                           )
                           : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+                            padding: EdgeInsets.fromLTRB(
+                              20,
+                              16,
+                              20,
+                              (_canEditExercises || widget.assignToCustomerId != null)
+                                  ? 120
+                                  : 32,
+                            ),
                             itemCount: _planDays.length,
                             separatorBuilder:
                                 (context, index) => const SizedBox(height: 20),
@@ -1107,6 +1161,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                                         return _ExerciseCard(
                                           index: exIndex + 1,
                                           exercise: item,
+                                          canEdit: _canEditExercises,
                                           onEditTap:
                                               () => _editExerciseBottomSheet(
                                                 item,
@@ -1123,10 +1178,11 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
               ],
             ),
           ),
-          Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
+          if (_canEditExercises || widget.assignToCustomerId != null)
+            Positioned(
+              bottom: 40,
+              left: 0,
+              right: 0,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -1574,6 +1630,13 @@ class _SelectExerciseSheetContentState
   }
 
   Future<void> _deleteExercise(int id, {bool isGym = false}) async {
+    final user = context.read<AppCubit>().state.currentUser;
+    final bool isTrainer = user?.userRole == 35;
+    if (isTrainer && (isGym || _currentTabSource == 'gym')) {
+      Dialogs.showSnack(msg: 'Trainers cannot delete gym created exercises');
+      return;
+    }
+
     final confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -1630,11 +1693,16 @@ class _SelectExerciseSheetContentState
     BuildContext context, [
     Map<String, dynamic>? exercise,
   ]) {
+    final user = context.read<AppCubit>().state.currentUser;
+    final bool isTrainer = user?.userRole == 35;
+
     final bool isGym =
-        exercise != null
+        !isTrainer &&
+        (exercise != null
             ? (exercise['source'] == 'gym' ||
+                exercise['source'] == 'organization' ||
                 (_shouldHideYouCreated && _currentTabSource == 'gym'))
-            : (_shouldHideYouCreated || _currentTabSource == 'gym');
+            : (_shouldHideYouCreated || _currentTabSource == 'gym'));
 
     showModalBottomSheet<void>(
       context: context,
@@ -1720,71 +1788,66 @@ class _SelectExerciseSheetContentState
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: List.generate(_availableTabs.length, (index) {
-                    final tab = _availableTabs[index];
-                    final isSelected = _selectedTabIndex == index;
-                    final isFirst = index == 0;
-                    final isLast = index == _availableTabs.length - 1;
+                Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: AppColors.borderGrey),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Row(
+                    children: List.generate(_availableTabs.length, (index) {
+                      final tab = _availableTabs[index];
+                      final isSelected = _selectedTabIndex == index;
+                      final isLast = index == _availableTabs.length - 1;
 
-                    BorderRadius borderRadius = BorderRadius.zero;
-                    if (isFirst) {
-                      borderRadius = const BorderRadius.horizontal(
-                        left: Radius.circular(20),
-                      );
-                    } else if (isLast) {
-                      borderRadius = const BorderRadius.horizontal(
-                        right: Radius.circular(20),
-                      );
-                    }
-
-                    Border border;
-                    if (isFirst) {
-                      border = Border.all(color: AppColors.borderGrey);
-                    } else if (isLast) {
-                      border = const Border(
-                        top: BorderSide(color: AppColors.borderGrey),
-                        bottom: BorderSide(color: AppColors.borderGrey),
-                        right: BorderSide(color: AppColors.borderGrey),
-                      );
-                    } else {
-                      border = const Border(
-                        top: BorderSide(color: AppColors.borderGrey),
-                        bottom: BorderSide(color: AppColors.borderGrey),
-                      );
-                    }
-
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          if (!mounted) return;
-                          if (_selectedTabIndex != index) {
-                            setState(() => _selectedTabIndex = index);
-                            _fetchExercises();
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color:
-                                isSelected
-                                    ? const Color(0xFFF1F1F1)
-                                    : Colors.white,
-                            borderRadius: borderRadius,
-                            border: border,
-                          ),
-                          child: Center(
-                            child: Text(
-                              tab.label,
-                              style: AppStyles.text14Px.poppins.w500.copyWith(
-                                color: AppColors.textDark,
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            if (!mounted) return;
+                            if (_selectedTabIndex != index) {
+                              setState(() => _selectedTabIndex = index);
+                              _fetchExercises();
+                            }
+                          },
+                          child: Container(
+                            height: double.infinity,
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? const Color(0xFFF1F1F1)
+                                      : Colors.white,
+                              border:
+                                  isLast
+                                      ? null
+                                      : const Border(
+                                        right: BorderSide(
+                                          color: AppColors.borderGrey,
+                                        ),
+                                      ),
+                            ),
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    tab.label,
+                                    maxLines: 1,
+                                    style: AppStyles.text13Px.poppins.w500
+                                        .copyWith(color: AppColors.textDark),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
               ],
             ),
@@ -1975,11 +2038,21 @@ class _SelectExerciseSheetContentState
                           (e) => e.workoutId == idStr,
                         );
                         final showAdd = _shouldShowAddButton;
-                        final bool canEdit =
-                            _currentTabSource == 'you_created' ||
-                            item['source'] == 'you_created' ||
-                            (_shouldHideYouCreated &&
-                                _currentTabSource == 'gym');
+                        final user = context.read<AppCubit>().state.currentUser;
+                        final bool isTrainer = user?.userRole == 35;
+                        final bool isGymWorkout =
+                            _currentTabSource == 'gym' ||
+                            item['source'] == 'gym' ||
+                            item['source'] == 'organization';
+
+                        final bool canEdit = isTrainer
+                            ? (!isGymWorkout &&
+                                (_currentTabSource == 'you_created' ||
+                                    item['source'] == 'you_created'))
+                            : (_currentTabSource == 'you_created' ||
+                                item['source'] == 'you_created' ||
+                                (_shouldHideYouCreated &&
+                                    _currentTabSource == 'gym'));
 
                         return InkWell(
                           onTap: () {
@@ -2065,8 +2138,9 @@ class _SelectExerciseSheetContentState
                                         _deleteExercise(
                                           exId,
                                           isGym:
-                                              _shouldHideYouCreated ||
-                                              _currentTabSource == 'gym',
+                                              !isTrainer &&
+                                              (_shouldHideYouCreated ||
+                                                  _currentTabSource == 'gym'),
                                         );
                                       }
                                     }
@@ -2499,6 +2573,355 @@ class _CreateExerciseBottomSheetState
     );
   }
 
+  Widget _buildDropdownSelectorField({
+    required String? text,
+    required String hintText,
+    required VoidCallback onTap,
+  }) {
+    final hasValue = text != null && text.isNotEmpty;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.grey.shade400,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                hasValue ? text : hintText,
+                style: AppStyles.text14Px.poppins.w400.copyWith(
+                  color: hasValue ? AppColors.textDark : Colors.grey.shade600,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.grey,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openSearchableSingleSelectSheet({
+    required String title,
+    required String searchHint,
+    required List<Map<String, dynamic>> items,
+    required int? selectedId,
+    required String addActionLabel,
+    required Future<void> Function() onAddNew,
+    required ValueChanged<int> onSelected,
+  }) {
+    final searchController = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final query = searchController.text.trim().toLowerCase();
+            final filteredItems = query.isEmpty
+                ? items
+                : items.where((item) {
+                    final name = (item['name'] ?? '').toString().toLowerCase();
+                    return name.contains(query);
+                  }).toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          title,
+                          style: AppStyles.text16Px.poppins.w600.dark,
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: searchController,
+                      onChanged: (_) => setModalState(() {}),
+                      decoration: InputDecoration(
+                        hintText: searchHint,
+                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: Colors.grey.shade400,
+                        ),
+                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                        suffixIcon: searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+                                onPressed: () {
+                                  searchController.clear();
+                                  setModalState(() {});
+                                },
+                              )
+                            : null,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.primary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await onAddNew();
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.add_circle_outline, color: Colors.blue, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              addActionLabel,
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: filteredItems.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No results found',
+                                style: AppStyles.text14Px.poppins.w400.copyWith(color: Colors.grey),
+                              ),
+                            )
+                          : ListView.separated(
+                              itemCount: filteredItems.length,
+                              separatorBuilder: (_, __) => const Divider(height: 1),
+                              itemBuilder: (context, index) {
+                                final item = filteredItems[index];
+                                final id = item['id'] as int;
+                                final name = (item['name'] ?? '').toString();
+                                final isSelected = selectedId == id;
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                  title: Text(
+                                    name,
+                                    style: AppStyles.text14Px.poppins.w500.copyWith(
+                                      color: isSelected ? AppColors.primary : AppColors.textDark,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                    ),
+                                  ),
+                                  trailing: isSelected
+                                      ? const Icon(Icons.check, color: AppColors.primary)
+                                      : null,
+                                  onTap: () {
+                                    onSelected(id);
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _openSearchableSecondaryMuscleSheet() {
+    final searchController = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final query = searchController.text.trim().toLowerCase();
+            final filteredMuscles = query.isEmpty
+                ? _muscles
+                : _muscles.where((m) {
+                    final name = (m['name'] ?? '').toString().toLowerCase();
+                    return name.contains(query);
+                  }).toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Select Secondary Muscles',
+                          style: AppStyles.text16Px.poppins.w600.dark,
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: searchController,
+                      onChanged: (_) => setModalState(() {}),
+                      decoration: InputDecoration(
+                        hintText: 'Search secondary muscles...',
+                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: Colors.grey.shade400,
+                        ),
+                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                        suffixIcon: searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+                                onPressed: () {
+                                  searchController.clear();
+                                  setModalState(() {});
+                                },
+                              )
+                            : null,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.primary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: filteredMuscles.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No muscles found',
+                                style: AppStyles.text14Px.poppins.w400.copyWith(color: Colors.grey),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: filteredMuscles.length,
+                              itemBuilder: (context, index) {
+                                final m = filteredMuscles[index];
+                                final mId = m['id'] as int;
+                                final isSelected =
+                                    _selectedSecondaryMuscleIds.contains(mId);
+                                return CheckboxListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    m['name'] as String,
+                                    style: AppStyles.text14Px.poppins.w500.dark,
+                                  ),
+                                  value: isSelected,
+                                  activeColor: AppColors.primary,
+                                  onChanged: (val) {
+                                    setModalState(() {
+                                      if (val == true) {
+                                        _selectedSecondaryMuscleIds.add(mId);
+                                      } else {
+                                        _selectedSecondaryMuscleIds.remove(mId);
+                                      }
+                                    });
+                                    setState(() {});
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Done',
+                          style: AppStyles.text14Px.poppins.w600.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -2576,53 +2999,39 @@ class _CreateExerciseBottomSheetState
                               style: AppStyles.text14Px.poppins.w500.dark,
                             ),
                             const SizedBox(height: 8),
-                            DropdownButtonFormField<int>(
-                              menuMaxHeight: 300,
-                              value: _selectedMuscleId,
-                              hint: const Text('Select the muscle'),
-                              items: [
-                                ..._muscles.map((m) {
-                                  return DropdownMenuItem<int>(
-                                    value: m['id'] as int,
-                                    child: Text(m['name'] as String),
-                                  );
-                                }),
-                                const DropdownMenuItem<int>(
-                                  value: -1,
-                                  child: Text(
-                                    '+ Add New Muscle...',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              onChanged: (val) async {
-                                if (val == -1) {
-                                  final newMuscle = await _showAddNewDialog(
-                                    'Muscle Group',
-                                    ApiUris.muscleGroups,
-                                  );
-                                  if (newMuscle != null && mounted) {
-                                    setState(() {
-                                      _muscles.add(newMuscle);
-                                      _selectedMuscleId =
-                                          newMuscle['id'] as int;
-                                    });
-                                  } else {
-                                    setState(() {}); // Reset if cancelled
-                                  }
-                                } else {
-                                  if (!mounted) return;
-                                  setState(() => _selectedMuscleId = val);
-                                }
+                            _buildDropdownSelectorField(
+                              text: _selectedMuscleId == null
+                                  ? null
+                                  : _muscles.firstWhere(
+                                      (m) => m['id'] == _selectedMuscleId,
+                                      orElse: () => {'name': ''},
+                                    )['name'] as String?,
+                              hintText: 'Select the muscle',
+                              onTap: () {
+                                _openSearchableSingleSelectSheet(
+                                  title: 'Select Muscle',
+                                  searchHint: 'Search muscle...',
+                                  items: _muscles,
+                                  selectedId: _selectedMuscleId,
+                                  addActionLabel: '+ Add New Muscle...',
+                                  onAddNew: () async {
+                                    final newMuscle = await _showAddNewDialog(
+                                      'Muscle Group',
+                                      ApiUris.muscleGroups,
+                                    );
+                                    if (newMuscle != null && mounted) {
+                                      setState(() {
+                                        _muscles.add(newMuscle);
+                                        _selectedMuscleId =
+                                            newMuscle['id'] as int;
+                                      });
+                                    }
+                                  },
+                                  onSelected: (id) {
+                                    setState(() => _selectedMuscleId = id);
+                                  },
+                                );
                               },
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -2630,172 +3039,19 @@ class _CreateExerciseBottomSheetState
                               style: AppStyles.text14Px.poppins.w500.dark,
                             ),
                             const SizedBox(height: 8),
-                            InkWell(
-                              onTap: () {
-                                showModalBottomSheet<void>(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (ctx) {
-                                    return StatefulBuilder(
-                                      builder: (context, setModalState) {
-                                        return Container(
-                                          height:
-                                              MediaQuery.of(
-                                                context,
-                                              ).size.height *
-                                              0.5,
-                                          padding: const EdgeInsets.all(20),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(24),
-                                            ),
-                                          ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Select Secondary Muscles',
-                                                style:
-                                                    AppStyles
-                                                        .text16Px
-                                                        .poppins
-                                                        .w600
-                                                        .dark,
-                                              ),
-                                              const SizedBox(height: 16),
-                                              Expanded(
-                                                child: ListView.builder(
-                                                  itemCount: _muscles.length,
-                                                  itemBuilder: (
-                                                    context,
-                                                    index,
-                                                  ) {
-                                                    final m = _muscles[index];
-                                                    final mId = m['id'] as int;
-                                                    final isSelected =
-                                                        _selectedSecondaryMuscleIds
-                                                            .contains(mId);
-                                                    return CheckboxListTile(
-                                                      title: Text(
-                                                        m['name'] as String,
-                                                        style:
-                                                            AppStyles
-                                                                .text14Px
-                                                                .poppins
-                                                                .w500
-                                                                .dark,
-                                                      ),
-                                                      value: isSelected,
-                                                      activeColor:
-                                                          AppColors.primary,
-                                                      onChanged: (val) {
-                                                        setModalState(() {
-                                                          if (val == true) {
-                                                            _selectedSecondaryMuscleIds
-                                                                .add(mId);
-                                                          } else {
-                                                            _selectedSecondaryMuscleIds
-                                                                .remove(mId);
-                                                          }
-                                                        });
-                                                        setState(
-                                                          () {},
-                                                        ); // Update parent UI
-                                                      },
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                              const SizedBox(height: 16),
-                                              SizedBox(
-                                                width: double.infinity,
-                                                child: ElevatedButton(
-                                                  onPressed:
-                                                      () => Navigator.pop(
-                                                        context,
-                                                      ),
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        AppColors.primary,
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          vertical: 16,
-                                                        ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    'Done',
-                                                    style: AppStyles
-                                                        .text14Px
-                                                        .poppins
-                                                        .w600
-                                                        .copyWith(
-                                                          color: Colors.white,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.grey.shade400,
-                                  ), // Match the standard Dropdown border
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        _selectedSecondaryMuscleIds.isEmpty
-                                            ? 'Select the secondary muscles'
-                                            : _selectedSecondaryMuscleIds
-                                                .map(
-                                                  (id) =>
-                                                      _muscles.firstWhere(
-                                                        (m) => m['id'] == id,
-                                                        orElse:
-                                                            () => {'name': ''},
-                                                      )['name'],
-                                                )
-                                                .join(', '),
-                                        style: AppStyles.text14Px.poppins.w400
-                                            .copyWith(
-                                              color:
-                                                  _selectedSecondaryMuscleIds
-                                                          .isEmpty
-                                                      ? Colors.grey.shade600
-                                                      : AppColors.textDark,
-                                            ),
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.arrow_drop_down,
-                                      color: Colors.grey,
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            _buildDropdownSelectorField(
+                              text: _selectedSecondaryMuscleIds.isEmpty
+                                  ? null
+                                  : _selectedSecondaryMuscleIds
+                                      .map(
+                                        (id) => _muscles.firstWhere(
+                                          (m) => m['id'] == id,
+                                          orElse: () => {'name': ''},
+                                        )['name'],
+                                      )
+                                      .join(', '),
+                              hintText: 'Select the secondary muscles',
+                              onTap: _openSearchableSecondaryMuscleSheet,
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -2805,13 +3061,20 @@ class _CreateExerciseBottomSheetState
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
                               menuMaxHeight: 300,
+                              isExpanded: true,
                               value: _selectedType,
-                              hint: const Text('Select the type of exercise'),
+                              hint: const Text(
+                                'Select the type of exercise',
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               items:
                                   _types.map((t) {
                                     return DropdownMenuItem<String>(
                                       value: t['value'] as String,
-                                      child: Text(t['label'] as String),
+                                      child: Text(
+                                        t['label'] as String,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     );
                                   }).toList(),
                               onChanged: (val) {
@@ -2832,13 +3095,20 @@ class _CreateExerciseBottomSheetState
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
                               menuMaxHeight: 300,
+                              isExpanded: true,
                               value: _selectedTrackBy,
-                              hint: const Text('Select track by'),
+                              hint: const Text(
+                                'Select track by',
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               items:
                                   ['Reps', 'Time', 'Distance'].map((t) {
                                     return DropdownMenuItem<String>(
                                       value: t.toLowerCase(),
-                                      child: Text(t),
+                                      child: Text(
+                                        t,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     );
                                   }).toList(),
                               onChanged: (val) {
@@ -2857,53 +3127,39 @@ class _CreateExerciseBottomSheetState
                               style: AppStyles.text14Px.poppins.w500.dark,
                             ),
                             const SizedBox(height: 8),
-                            DropdownButtonFormField<int>(
-                              menuMaxHeight: 300,
-                              value: _selectedEquipmentId,
-                              hint: const Text('Select the equipment used'),
-                              items: [
-                                ..._equipments.map((eq) {
-                                  return DropdownMenuItem<int>(
-                                    value: eq['id'] as int,
-                                    child: Text(eq['name'] as String),
-                                  );
-                                }),
-                                const DropdownMenuItem<int>(
-                                  value: -1,
-                                  child: Text(
-                                    '+ Add New Equipment...',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              onChanged: (val) async {
-                                if (val == -1) {
-                                  final newEquipment = await _showAddNewDialog(
-                                    'Equipment',
-                                    ApiUris.equipment,
-                                  );
-                                  if (newEquipment != null && mounted) {
-                                    setState(() {
-                                      _equipments.add(newEquipment);
-                                      _selectedEquipmentId =
-                                          newEquipment['id'] as int;
-                                    });
-                                  } else {
-                                    setState(() {}); // Reset if cancelled
-                                  }
-                                } else {
-                                  if (!mounted) return;
-                                  setState(() => _selectedEquipmentId = val);
-                                }
+                            _buildDropdownSelectorField(
+                              text: _selectedEquipmentId == null
+                                  ? null
+                                  : _equipments.firstWhere(
+                                      (eq) => eq['id'] == _selectedEquipmentId,
+                                      orElse: () => {'name': ''},
+                                    )['name'] as String?,
+                              hintText: 'Select the equipment used',
+                              onTap: () {
+                                _openSearchableSingleSelectSheet(
+                                  title: 'Select Equipment',
+                                  searchHint: 'Search equipment...',
+                                  items: _equipments,
+                                  selectedId: _selectedEquipmentId,
+                                  addActionLabel: '+ Add New Equipment...',
+                                  onAddNew: () async {
+                                    final newEquipment = await _showAddNewDialog(
+                                      'Equipment',
+                                      ApiUris.equipment,
+                                    );
+                                    if (newEquipment != null && mounted) {
+                                      setState(() {
+                                        _equipments.add(newEquipment);
+                                        _selectedEquipmentId =
+                                            newEquipment['id'] as int;
+                                      });
+                                    }
+                                  },
+                                  onSelected: (id) {
+                                    setState(() => _selectedEquipmentId = id);
+                                  },
+                                );
                               },
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -2963,11 +3219,13 @@ class _ExerciseCard extends StatelessWidget {
     required this.index,
     required this.exercise,
     required this.onEditTap,
+    this.canEdit = true,
   });
 
   final int index;
   final WorkoutExercise exercise;
   final VoidCallback onEditTap;
+  final bool canEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -3068,21 +3326,22 @@ class _ExerciseCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        InkWell(
-                          onTap: onEditTap,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFF5F5F5),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.edit,
-                              size: 16,
-                              color: AppColors.textGrey,
+                        if (canEdit)
+                          InkWell(
+                            onTap: onEditTap,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF5F5F5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                size: 16,
+                                color: AppColors.textGrey,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 4),

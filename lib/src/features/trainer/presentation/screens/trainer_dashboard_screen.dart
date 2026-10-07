@@ -12,6 +12,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/client_attendance_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reviews_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_notifications_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_clients_trained_screen.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
   const TrainerDashboardScreen({super.key});
@@ -26,6 +27,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   int _pendingVerificationsCount = 0;
   int _todaysAssignedWorkoutsCount = 0;
   int _todayPresentCount = 0;
+  int _clientsTrainedCount = 0;
   List<Map<String, dynamic>> _banners = [];
   bool _isLoading = true;
   int _currentBannerIndex = 0;
@@ -157,9 +159,23 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
               )
               : Future.value(null);
 
-      final results = await Future.wait([dashboardFuture, bannersFuture]);
+      final reportsFuture = DioClient().dio
+          .get<dynamic>(
+            ApiUris.trainerReports,
+            queryParameters: {'range_type': 'daily'},
+            options: Options(headers: {'X-Platform': platformSource}),
+          )
+          .then<dynamic>((res) => res)
+          .catchError((_) => null);
+
+      final results = await Future.wait([
+        dashboardFuture,
+        bannersFuture,
+        reportsFuture,
+      ]);
       final response = results[0];
       final bannersResponse = results[1];
+      final reportsResponse = results[2];
 
       debugPrint(
         "Trainer Dashboard: Dashboard response status=${response?.statusCode}",
@@ -196,6 +212,16 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
         );
       }
 
+      int fetchedClientsTrained = 0;
+      if (reportsResponse != null &&
+          reportsResponse.statusCode == 200 &&
+          reportsResponse.data is Map) {
+        final rData = reportsResponse.data as Map<String, dynamic>;
+        fetchedClientsTrained =
+            int.tryParse(rData['clients_trained_count']?.toString() ?? '') ??
+            0;
+      }
+
       if (!mounted) return;
 
       if (response != null &&
@@ -206,6 +232,18 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
 
         setState(() {
           _dashboardData = dataMap;
+          _clientsTrainedCount =
+              int.tryParse(
+                (stats['clients_trained_count'] ??
+                        stats['clients_trained'] ??
+                        stats['today_clients_trained_count'] ??
+                        stats['today_clients_trained'] ??
+                        stats['trained_clients_count'] ??
+                        stats['trained_count'] ??
+                        fetchedClientsTrained)
+                    .toString(),
+              ) ??
+              fetchedClientsTrained;
           if (fetchedBanners.isNotEmpty) {
             _banners = fetchedBanners;
           }
@@ -239,6 +277,14 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     final workoutGroupsCreated =
         stats['workout_groups_count'] ?? _workoutGroupsCount;
     final averageRating = stats['average_rating'] ?? 0.0;
+    final clientsTrained =
+        stats['clients_trained_count'] ??
+        stats['clients_trained'] ??
+        stats['today_clients_trained_count'] ??
+        stats['today_clients_trained'] ??
+        stats['trained_clients_count'] ??
+        stats['trained_count'] ??
+        _clientsTrainedCount;
 
     final memberInsights =
         _dashboardData['member_insights'] as Map<String, dynamic>? ?? {};
@@ -305,21 +351,11 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                             ),
                             Row(
                               children: [
-                                IconButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute<void>(
-                                        builder:
-                                            (context) =>
-                                                const TrainerNotificationsScreen(),
-                                      ),
-                                    );
-                                  },
-                                  icon: Icon(
-                                    Icons.notifications_none_rounded,
-                                    color: context.colors.icon,
-                                  ),
+                                NotificationBellButton(
+                                  isTrainer: true,
+                                  orgId: user?.organizationId ??
+                                      user?.trainer?.organizationId,
+                                  iconColor: context.colors.icon,
                                 ),
                                 IconButton(
                                   onPressed: () {
@@ -490,7 +526,32 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 12),
-                                    const Expanded(child: SizedBox.shrink()),
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        title: 'Clients\nTrained',
+                                        value: '$clientsTrained',
+                                        valueColor: const Color(0xFF7C3AED),
+                                        titleColor: context.colors.textPrimary,
+                                        onTap: () {
+                                          final todayStr = DateFormat(
+                                            'yyyy-MM-dd',
+                                          ).format(DateTime.now());
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder:
+                                                  (context) =>
+                                                      TrainerClientsTrainedScreen(
+                                                        rangeType: 'daily',
+                                                        date: todayStr,
+                                                        title:
+                                                            'Clients Trained Today',
+                                                      ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -832,7 +893,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                       children: [
                         Expanded(child: _buildStatCardShimmer()),
                         const SizedBox(width: 12),
-                        const Expanded(child: SizedBox.shrink()),
+                        Expanded(child: _buildStatCardShimmer()),
                       ],
                     ),
                   ),

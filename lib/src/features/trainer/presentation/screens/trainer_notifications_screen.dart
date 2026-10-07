@@ -767,11 +767,13 @@ class _TrainerNotificationsScreenState
 class NotificationBellButton extends StatefulWidget {
   final int? orgId;
   final bool isTrainer;
+  final Color? iconColor;
 
   const NotificationBellButton({
     super.key,
     this.orgId,
     this.isTrainer = false,
+    this.iconColor,
   });
 
   @override
@@ -789,12 +791,25 @@ class _NotificationBellButtonState extends State<NotificationBellButton> {
 
   Future<void> _fetchUnreadCount() async {
     try {
-      final response = await DioClient().dio.get<dynamic>(
-        ApiUris.mentorNotificationsUnreadCount,
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
-      if (response.statusCode == 200 && response.data is Map) {
-        final count = response.data['unread_count'] as int? ?? 0;
+      final uri = widget.isTrainer
+          ? ApiUris.mentorNotificationsUnreadCount
+          : ApiUris.fitnessCenterNotificationsUnreadCount;
+      Response<dynamic>? response;
+      try {
+        response = await DioClient().dio.get<dynamic>(
+          uri,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      } catch (_) {
+        response = await DioClient().dio.get<dynamic>(
+          ApiUris.mentorNotificationsUnreadCount,
+          options: Options(headers: {'X-Platform': platformSource}),
+        );
+      }
+      if (response != null && response.statusCode == 200 && response.data is Map) {
+        final count = response.data['unread_count'] as int? ??
+            response.data['count'] as int? ??
+            0;
         if (mounted) setState(() => _unreadCount = count);
       }
     } catch (_) {}
@@ -818,9 +833,9 @@ class _NotificationBellButtonState extends State<NotificationBellButton> {
       icon: Stack(
         clipBehavior: Clip.none,
         children: [
-          const Icon(
+          Icon(
             Icons.notifications_none_rounded,
-            color: Colors.black87,
+            color: widget.iconColor ?? Colors.black87,
           ),
           if (_unreadCount > 0)
             Positioned(

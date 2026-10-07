@@ -1362,8 +1362,15 @@ class _ImagePickerBox extends StatelessWidget {
     return GestureDetector(
       onTap: () async {
         final picker = ImagePicker();
-        final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+        final img = await picker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 1080,
+          maxHeight: 1080,
+          imageQuality: 75,
+        );
         if (img != null) {
+          final fileSize = await File(img.path).length();
+          debugPrint('[Transformation Upload] Image compressed: ${(fileSize / 1024).toStringAsFixed(1)} KB');
           onPick(File(img.path));
         }
       },
