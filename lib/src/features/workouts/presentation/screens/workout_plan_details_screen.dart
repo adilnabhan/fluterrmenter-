@@ -4201,6 +4201,7 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                   )
                 else
                   DropdownButtonFormField<int>(
+                    isExpanded: true,
                     value: _selectedGroupId,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
@@ -4218,6 +4219,7 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                             value: group['id'] as int,
                             child: Text(
                               group['name'] as String? ?? 'Unnamed Group',
+                              overflow: TextOverflow.ellipsis,
                             ),
                           );
                         }).toList(),

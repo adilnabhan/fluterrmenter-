@@ -1001,6 +1001,7 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
   List<Map<String, dynamic>> _types = [];
 
   int? _selectedMuscleId;
+  List<int> _selectedSecondaryMuscleIds = [];
   int? _selectedEquipmentId;
   String? _selectedType;
 
@@ -1018,6 +1019,22 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
       
       final muscle = widget.editExercise!['primary_muscle_group_id'] ?? widget.editExercise!['muscle_group_id'];
       if (muscle != null) _selectedMuscleId = int.tryParse(muscle.toString());
+
+      final secondary = widget.editExercise!['secondary_muscle_group'] ??
+          widget.editExercise!['secondary_muscle_groups'] ??
+          widget.editExercise!['secondary_muscles'] ??
+          widget.editExercise!['secondary_muscle_group_ids'];
+      if (secondary is List) {
+        _selectedSecondaryMuscleIds = secondary
+            .map((m) {
+              if (m is Map) {
+                return int.tryParse(m['id']?.toString() ?? '') ?? 0;
+              }
+              return int.tryParse(m.toString()) ?? 0;
+            })
+            .where((id) => id > 0)
+            .toList();
+      }
 
       final equipment = widget.editExercise!['equipment_id'] ?? widget.editExercise!['equipment'];
       if (equipment != null) _selectedEquipmentId = int.tryParse(equipment.toString());
@@ -1078,9 +1095,15 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
       final data = {
         'name': _nameController.text.trim(),
         'muscle_group_id': _selectedMuscleId,
+        'primary_muscle_group': _selectedMuscleId,
+        'primary_muscle_group_id': _selectedMuscleId,
+        'secondary_muscle_group': _selectedSecondaryMuscleIds,
         'equipment_id': _selectedEquipmentId,
+        'equipment': _selectedEquipmentId,
         'exercise_type_id': _selectedType,
+        'type': _selectedType,
         'youtube_link': _youtubeController.text.trim(),
+        'video_url': _youtubeController.text.trim(),
       };
 
       final response = isEditing 
@@ -1215,6 +1238,160 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
     super.dispose();
   }
 
+  void _openSearchableSecondaryMuscleSheet() {
+    final searchController = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final query = searchController.text.trim().toLowerCase();
+            final filteredMuscles = query.isEmpty
+                ? _muscles
+                : _muscles.where((m) {
+                    final name = (m['name'] ?? '').toString().toLowerCase();
+                    return name.contains(query);
+                  }).toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Select Secondary Muscles',
+                          style: AppStyles.text16Px.poppins.w600,
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: searchController,
+                      onChanged: (_) => setModalState(() {}),
+                      decoration: InputDecoration(
+                        hintText: 'Search secondary muscles...',
+                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: Colors.grey.shade400,
+                        ),
+                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                        suffixIcon: searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+                                onPressed: () {
+                                  searchController.clear();
+                                  setModalState(() {});
+                                },
+                              )
+                            : null,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          borderSide: BorderSide(color: AppColors.primary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: filteredMuscles.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No muscles found',
+                                style: AppStyles.text14Px.poppins.w400.copyWith(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: filteredMuscles.length,
+                              itemBuilder: (context, index) {
+                                final m = filteredMuscles[index];
+                                final mId = m['id'] as int;
+                                final isSelected =
+                                    _selectedSecondaryMuscleIds.contains(mId);
+                                return CheckboxListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    m['name'] as String,
+                                    style: AppStyles.text14Px.poppins.w500.copyWith(
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  value: isSelected,
+                                  activeColor: AppColors.primary,
+                                  onChanged: (val) {
+                                    setModalState(() {
+                                      if (val == true) {
+                                        _selectedSecondaryMuscleIds.add(mId);
+                                      } else {
+                                        _selectedSecondaryMuscleIds.remove(mId);
+                                      }
+                                    });
+                                    setState(() {});
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Done',
+                          style: AppStyles.text14Px.poppins.w600.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1305,20 +1482,28 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<int>(
+                                isExpanded: true,
                                 menuMaxHeight: 300,
                                 value: _selectedMuscleId,
-                                hint: const Text('Select the muscle'),
+                                hint: const Text(
+                                  'Select the muscle',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                                 items: [
                                   ..._muscles.map((m) {
                                     return DropdownMenuItem<int>(
                                       value: m['id'] as int,
-                                      child: Text(m['name'] as String),
+                                      child: Text(
+                                        m['name'] as String,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     );
                                   }),
                                   const DropdownMenuItem<int>(
                                     value: -1,
                                     child: Text(
                                       '+ Add New Muscle...',
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: Colors.blue,
                                         fontWeight: FontWeight.bold,
@@ -1364,6 +1549,74 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                               const SizedBox(height: 20),
 
                               Text(
+                                'Secondary Muscle',
+                                style: AppStyles.text14Px.poppins.w500.copyWith(
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: _openSearchableSecondaryMuscleSheet,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          _selectedSecondaryMuscleIds.isEmpty
+                                              ? 'Select the secondary muscles'
+                                              : _selectedSecondaryMuscleIds
+                                                  .map(
+                                                    (id) => _muscles
+                                                        .firstWhere(
+                                                          (m) =>
+                                                              m['id'] == id,
+                                                          orElse: () => {
+                                                            'name': '',
+                                                          },
+                                                        )['name']
+                                                        as String?,
+                                                  )
+                                                  .where(
+                                                    (name) =>
+                                                        name != null &&
+                                                        name.isNotEmpty,
+                                                  )
+                                                  .join(', '),
+                                          style: AppStyles.text14Px.poppins.w400
+                                              .copyWith(
+                                                color:
+                                                    _selectedSecondaryMuscleIds
+                                                            .isEmpty
+                                                        ? Colors.grey
+                                                        : Colors.black,
+                                              ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const Icon(
+                                        Icons.arrow_drop_down,
+                                        color: Colors.grey,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+
+                              Text(
                                 'Type *',
                                 style: AppStyles.text14Px.poppins.w500.copyWith(
                                   color: Colors.black,
@@ -1371,14 +1624,21 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
+                                isExpanded: true,
                                 menuMaxHeight: 300,
                                 value: _selectedType,
-                                hint: const Text('Select the type of exercise'),
+                                hint: const Text(
+                                  'Select the type of exercise',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                                 items:
                                     _types.map((t) {
                                       return DropdownMenuItem<String>(
                                         value: t['value'] as String,
-                                        child: Text(t['label'] as String),
+                                        child: Text(
+                                          t['label'] as String,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       );
                                     }).toList(),
                                 onChanged: (val) {
@@ -1410,20 +1670,28 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<int>(
+                                isExpanded: true,
                                 menuMaxHeight: 300,
                                 value: _selectedEquipmentId,
-                                hint: const Text('Select the equipment used'),
+                                hint: const Text(
+                                  'Select the equipment used',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                                 items: [
                                   ..._equipments.map((eq) {
                                     return DropdownMenuItem<int>(
                                       value: eq['id'] as int,
-                                      child: Text(eq['name'] as String),
+                                      child: Text(
+                                        eq['name'] as String,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     );
                                   }),
                                   const DropdownMenuItem<int>(
                                     value: -1,
                                     child: Text(
                                       '+ Add New Equipment...',
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: Colors.blue,
                                         fontWeight: FontWeight.bold,
