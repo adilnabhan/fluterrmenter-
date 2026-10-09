@@ -339,23 +339,48 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
         _groupName.controller?.clear();
 
         if (response.data is Map && response.data['id'] != null) {
-          final int groupId = response.data['id'] as int;
-          final String createdName = response.data['name'] as String? ?? name;
-          _fetchGroups(silent: false);
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-              builder:
-                  (context) => WorkoutGroupDetailsScreen(
-                    groupId: groupId,
-                    groupTitle: createdName,
-                    source: source,
-                    groupType: groupType,
-                  ),
-            ),
-          );
+          final Map<String, dynamic> newGroup =
+              Map<String, dynamic>.from(response.data as Map);
+          newGroup['plans_count'] ??= 0;
+          newGroup['workout_count'] ??= 0;
+          newGroup['type'] ??= groupType;
+          newGroup['source'] ??= source;
+
+          final int groupId = newGroup['id'] as int;
+          final String createdName = newGroup['name'] as String? ?? name;
+
+          if (mounted) {
+            setState(() {
+              _groups.removeWhere((g) => g['id'] == groupId);
+              _groups.insert(0, newGroup);
+              _cachedGroups = _groups;
+              _isLoading = false;
+            });
+          }
+
+          if (mounted) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder:
+                    (context) => WorkoutGroupDetailsScreen(
+                      groupId: groupId,
+                      groupTitle: createdName,
+                      source: source,
+                      groupType: groupType,
+                    ),
+              ),
+            );
+          }
+
+          // Silently sync in background when returning from details screen
+          if (mounted) {
+            _fetchGroups(silent: true);
+          }
         } else {
-          _fetchGroups(silent: false);
+          if (mounted) {
+            _fetchGroups(silent: true);
+          }
         }
       } else {
         if (!mounted) return;
@@ -497,8 +522,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
                                                   context.colors.textSecondary,
                                             ),
                                       ),
-                                      if (_selectedTabIndex == 0)
-                                        _buildFilterButton(isTrainer),
+                                      _buildFilterButton(isTrainer),
                                     ],
                                   ),
                                 ),
@@ -1102,7 +1126,7 @@ class _WorkoutGroupCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '$planCount plans',
+                    '$planCount ${planCount == 1 ? 'plan' : 'plans'}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyles.text14Px.poppins.w400.copyWith(
@@ -1210,7 +1234,7 @@ class _MultiDayWorkoutGroupCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '$planCount plans',
+                        '$planCount ${planCount == 1 ? 'plan' : 'plans'}',
                         style: AppStyles.text13Px.poppins.w400.copyWith(
                           color: context.colors.textSecondary,
                         ),

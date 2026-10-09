@@ -78,11 +78,13 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchPlans() async {
+  Future<void> _fetchPlans({bool silent = false}) async {
     if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-    });
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       final dio = DioClient().dio;
@@ -250,7 +252,13 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                     }
 
                     int? planDayId;
-                    if (dayMap['id'] != null) {
+                    if (dayMap['plan_day_id'] != null) {
+                      planDayId =
+                          int.tryParse(dayMap['plan_day_id'].toString());
+                    } else if (dayMap['day_id'] != null) {
+                      planDayId =
+                          int.tryParse(dayMap['day_id'].toString());
+                    } else if (dayMap['id'] != null) {
                       planDayId = int.tryParse(dayMap['id'].toString());
                     }
 
@@ -443,7 +451,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       setState(() {
         _plans = updatedPlans;
       });
-      _fetchPlans();
+      _fetchPlans(silent: true);
     }
   }
 
@@ -631,8 +639,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
                                     final int? dayNum =
                                         widget.groupType == 'multi_day'
-                                            ? ((plan['day_number'] as int?) ??
-                                                (index + 1))
+                                            ? (index + 1)
                                             : null;
 
                                     return _PlanCard(
@@ -664,9 +671,9 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                                         as int?)
                                                     : null);
 
-                                        await Navigator.push(
+                                        final dynamic result = await Navigator.push(
                                           context,
-                                          MaterialPageRoute<void>(
+                                          MaterialPageRoute<dynamic>(
                                             builder:
                                                 (context) =>
                                                     WorkoutPlanDetailsScreen(
@@ -679,8 +686,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                                     ),
                                           ),
                                         );
-                                        if (mounted) {
-                                          _fetchPlans();
+                                        if (result == true && mounted) {
+                                          _fetchPlans(silent: true);
                                         }
                                       },
                                       onAssignTap: () {
@@ -697,8 +704,18 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                         );
                                       },
                                       onRename:
-                                          () => _renamePlan(planId, planName),
-                                      onDelete: () => _deletePlan(planId),
+                                          () => _renamePlan(
+                                            planId,
+                                            planName,
+                                            planDayId:
+                                                plan['plan_day_id'] as int?,
+                                          ),
+                                      onDelete:
+                                          () => _deletePlan(
+                                            planId,
+                                            planDayId:
+                                                plan['plan_day_id'] as int?,
+                                          ),
                                     );
                                   },
                                 ),
@@ -922,21 +939,32 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         final dio = DioClient().dio;
         dynamic response;
 
+        final int? masterPlanId =
+            _masterPlanId ?? await _getOrCreateMasterPlanId();
+
         if (widget.groupType == 'multi_day' &&
             planDayId != null &&
-            _masterPlanId != null) {
+            masterPlanId != null) {
           try {
             response = await dio.patch<dynamic>(
-              '${ApiUris.multiDayWorkouts}$_masterPlanId/days/$planDayId/',
+              '${ApiUris.workoutPlanDays(masterPlanId)}$planDayId/',
               data: {'title': newName, 'name': newName},
               options: Options(headers: {'X-Platform': platformSource}),
             );
           } catch (_) {
-            response = await dio.patch<dynamic>(
-              '${ApiUris.workoutPlans}$_masterPlanId/days/$planDayId/',
-              data: {'title': newName},
-              options: Options(headers: {'X-Platform': platformSource}),
-            );
+            try {
+              response = await dio.patch<dynamic>(
+                '${ApiUris.multiDayWorkoutDays(masterPlanId)}$planDayId/',
+                data: {'title': newName, 'name': newName},
+                options: Options(headers: {'X-Platform': platformSource}),
+              );
+            } catch (_) {
+              response = await dio.patch<dynamic>(
+                '${ApiUris.workoutPlans}$masterPlanId/days/$planDayId/',
+                data: {'title': newName},
+                options: Options(headers: {'X-Platform': platformSource}),
+              );
+            }
           }
         } else {
           try {
@@ -977,11 +1005,15 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
             borderRadius: BorderRadius.circular(16),
           ),
           title: Text(
-            'Delete Workout Plan',
+            widget.groupType == 'multi_day'
+                ? 'Delete Workout Day'
+                : 'Delete Workout Plan',
             style: AppStyles.text16Px.poppins.w600,
           ),
-          content: const Text(
-            'Are you sure you want to delete this workout plan?',
+          content: Text(
+            widget.groupType == 'multi_day'
+                ? 'Are you sure you want to delete this workout day?'
+                : 'Are you sure you want to delete this workout plan?',
           ),
           actions: [
             TextButton(
@@ -1014,23 +1046,55 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
     );
 
     if (confirmed == true) {
+      final previousPlans = List<Map<String, dynamic>>.from(_plans);
+      setState(() {
+        _plans.removeWhere((p) {
+          if (planDayId != null) {
+            return p['plan_day_id'] == planDayId;
+          }
+          return p['id'] == planId;
+        });
+        if (widget.groupType == 'multi_day') {
+          for (int i = 0; i < _plans.length; i++) {
+            _plans[i]['day_number'] = i + 1;
+          }
+        }
+      });
+
       try {
         final dio = DioClient().dio;
         dynamic response;
 
+        final int? masterPlanId =
+            _masterPlanId ?? await _getOrCreateMasterPlanId();
+
         if (widget.groupType == 'multi_day' &&
             planDayId != null &&
-            _masterPlanId != null) {
+            masterPlanId != null) {
           try {
             response = await dio.delete<dynamic>(
-              '${ApiUris.multiDayWorkouts}$_masterPlanId/days/$planDayId/',
+              '${ApiUris.workoutPlanDays(masterPlanId)}$planDayId/',
               options: Options(headers: {'X-Platform': platformSource}),
             );
           } catch (_) {
-            response = await dio.delete<dynamic>(
-              '${ApiUris.workoutPlans}$_masterPlanId/days/$planDayId/',
-              options: Options(headers: {'X-Platform': platformSource}),
-            );
+            try {
+              response = await dio.delete<dynamic>(
+                '${ApiUris.multiDayWorkoutDays(masterPlanId)}$planDayId/',
+                options: Options(headers: {'X-Platform': platformSource}),
+              );
+            } catch (_) {
+              try {
+                response = await dio.delete<dynamic>(
+                  '${ApiUris.workoutPlans}$masterPlanId/days/$planDayId/',
+                  options: Options(headers: {'X-Platform': platformSource}),
+                );
+              } catch (_) {
+                response = await dio.delete<dynamic>(
+                  'api/v1/trainer/plan-days/$planDayId/',
+                  options: Options(headers: {'X-Platform': platformSource}),
+                );
+              }
+            }
           }
         } else {
           try {
@@ -1051,13 +1115,34 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
           final msg =
               (response.data is Map && response.data['message'] != null)
                   ? response.data['message'].toString()
-                  : 'Workout plan deleted successfully.';
+                  : (widget.groupType == 'multi_day'
+                      ? 'Workout day deleted successfully.'
+                      : 'Workout plan deleted successfully.');
           Dialogs.showSnack(msg: msg);
-          _fetchPlans();
+          if (widget.groupType == 'multi_day') {
+            await _saveReorderedDays();
+          }
+          if (mounted) {
+            await _fetchPlans(silent: true);
+          }
         } else {
-          Dialogs.showSnack(msg: 'Failed to delete workout plan');
+          if (mounted) {
+            setState(() {
+              _plans = previousPlans;
+            });
+          }
+          Dialogs.showSnack(
+            msg: widget.groupType == 'multi_day'
+                ? 'Failed to delete workout day'
+                : 'Failed to delete workout plan',
+          );
         }
       } on DioException catch (e) {
+        if (mounted) {
+          setState(() {
+            _plans = previousPlans;
+          });
+        }
         String errorMsg = 'Error deleting plan';
         if (e.response?.data is Map) {
           final map = e.response!.data as Map;
@@ -1068,6 +1153,11 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         }
         Dialogs.showSnack(msg: errorMsg);
       } catch (e) {
+        if (mounted) {
+          setState(() {
+            _plans = previousPlans;
+          });
+        }
         Dialogs.showSnack(msg: 'Error deleting plan: ${e.toString()}');
       }
     }
@@ -1159,10 +1249,12 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                   ),
             ),
           ).then((_) {
-            _fetchPlans();
+            if (mounted) {
+              _fetchPlans(silent: true);
+            }
           });
         } else {
-          _fetchPlans();
+          _fetchPlans(silent: true);
         }
       } else {
         if (!mounted) return;
