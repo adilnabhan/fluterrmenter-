@@ -227,6 +227,8 @@ final class ApiUris {
       '${_v1}trainer/multi-day-workouts/$id/preview/';
   static String assignMultiDayWorkout(int id) =>
       '${_v1}trainer/multi-day-workouts/$id/assign/';
+  static String copyMultiDayWorkout(int id) =>
+      '${_v1}trainer/multi-day-workouts/$id/copy/';
 
   // Legacy Multi-Day Workout endpoints (maintained for backward compatibility)
   static final multiDayAssign = '${_v1}trainer/multi-day-container-assign/';
