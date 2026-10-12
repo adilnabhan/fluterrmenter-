@@ -2054,6 +2054,7 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                         ? DateTime.tryParse(membership['start_date'].toString().split('T').first)
                         : null,
                 workoutHistory: _workoutHistory,
+                assignedWorkouts: _assignedWorkouts,
               ),
               const SizedBox(height: 24),
             ],

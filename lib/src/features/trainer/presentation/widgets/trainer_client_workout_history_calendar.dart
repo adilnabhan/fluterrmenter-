@@ -1,4 +1,5 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
+import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class TrainerClientWorkoutHistoryCalendar extends StatefulWidget {
@@ -7,6 +8,7 @@ class TrainerClientWorkoutHistoryCalendar extends StatefulWidget {
     required this.workoutHistory,
     this.startDate,
     this.showTitle = true,
+    this.assignedWorkouts,
     super.key,
   });
 
@@ -14,6 +16,7 @@ class TrainerClientWorkoutHistoryCalendar extends StatefulWidget {
   final DateTime? startDate;
   final List<Map<String, dynamic>> workoutHistory;
   final bool showTitle;
+  final List<dynamic>? assignedWorkouts;
 
   @override
   State<TrainerClientWorkoutHistoryCalendar> createState() =>
@@ -34,6 +37,7 @@ class _TrainerClientWorkoutHistoryCalendarState
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   final Map<String, CalendarDayState> _dayStates = {};
+  List<dynamic> _internalAssignedWorkouts = [];
 
   DateTime get _firstWorkoutDate {
     DateTime earliest =
@@ -55,6 +59,7 @@ class _TrainerClientWorkoutHistoryCalendarState
   void initState() {
     super.initState();
     _computeDayStates();
+    _fetchAssignedWorkoutsIfNeeded();
   }
 
   @override
@@ -65,6 +70,211 @@ class _TrainerClientWorkoutHistoryCalendarState
     if (oldWidget.workoutHistory != widget.workoutHistory) {
       _computeDayStates();
     }
+    if (oldWidget.assignedWorkouts != widget.assignedWorkouts) {
+      if (widget.assignedWorkouts == null || widget.assignedWorkouts!.isEmpty) {
+        _fetchAssignedWorkoutsIfNeeded();
+      }
+    }
+  }
+
+  Future<void> _fetchAssignedWorkoutsIfNeeded() async {
+    if (widget.assignedWorkouts != null && widget.assignedWorkouts!.isNotEmpty) {
+      return;
+    }
+    try {
+      final response = await DioClient().dio.get<dynamic>(
+        ApiUris.trainerClientAssignedWorkouts(widget.customerId),
+        options: Options(headers: {'X-Platform': platformSource}),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        List<dynamic> list = [];
+        if (response.data is List) {
+          list = response.data as List<dynamic>;
+        } else if (response.data is Map) {
+          final m = response.data as Map;
+          if (m['results'] is List) {
+            list = m['results'] as List;
+          } else if (m['data'] is List) {
+            list = m['data'] as List;
+          }
+        }
+        if (mounted && list.isNotEmpty) {
+          setState(() {
+            _internalAssignedWorkouts = list;
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  String? _resolvePlanName(
+    DateTime date,
+    Map<String, dynamic>? historyEntry,
+    List<dynamic> logs,
+  ) {
+    // 1. Check historyEntry level fields
+    if (historyEntry != null) {
+      final candidates = [
+        historyEntry['plan_name'],
+        historyEntry['workout_plan_name'],
+        historyEntry['plan_title'],
+        historyEntry['routine_name'],
+        historyEntry['day_title'],
+        historyEntry['day_name'],
+        historyEntry['title'],
+        if (historyEntry['plan'] is Map) ...[
+          historyEntry['plan']['plan_name'],
+          historyEntry['plan']['name'],
+          historyEntry['plan']['title'],
+        ],
+        if (historyEntry['plan'] is String) historyEntry['plan'],
+        if (historyEntry['workout_plan'] is Map) ...[
+          historyEntry['workout_plan']['plan_name'],
+          historyEntry['workout_plan']['name'],
+          historyEntry['workout_plan']['title'],
+        ],
+        if (historyEntry['workout_plan'] is String)
+          historyEntry['workout_plan'],
+        if (historyEntry['customer_workout_plan'] is Map) ...[
+          historyEntry['customer_workout_plan']['plan_name'],
+          historyEntry['customer_workout_plan']['title'],
+          historyEntry['customer_workout_plan']['name'],
+        ],
+        if (historyEntry['day'] is Map) ...[
+          historyEntry['day']['title'],
+          historyEntry['day']['name'],
+          historyEntry['day']['plan_name'],
+        ],
+      ];
+      for (final c in candidates) {
+        if (c != null &&
+            c.toString().trim().isNotEmpty &&
+            c.toString() != 'null') {
+          return c.toString().trim();
+        }
+      }
+    }
+
+    // 2. Check logs level fields
+    for (final l in logs) {
+      if (l is Map) {
+        final candidates = [
+          l['plan_name'],
+          l['workout_plan_name'],
+          l['plan_title'],
+          l['routine_name'],
+          l['day_title'],
+          l['day_name'],
+          if (l['plan'] is Map) ...[
+            l['plan']['plan_name'],
+            l['plan']['name'],
+            l['plan']['title'],
+          ],
+          if (l['plan'] is String) l['plan'],
+          if (l['workout_plan'] is Map) ...[
+            l['workout_plan']['plan_name'],
+            l['workout_plan']['name'],
+            l['workout_plan']['title'],
+          ],
+          if (l['workout_plan'] is String) l['workout_plan'],
+          if (l['customer_workout_plan'] is Map) ...[
+            l['customer_workout_plan']['plan_name'],
+            l['customer_workout_plan']['title'],
+            l['customer_workout_plan']['name'],
+          ],
+          if (l['day'] is Map) ...[
+            l['day']['title'],
+            l['day']['name'],
+            l['day']['plan_name'],
+          ],
+        ];
+        for (final c in candidates) {
+          if (c != null &&
+              c.toString().trim().isNotEmpty &&
+              c.toString() != 'null') {
+            return c.toString().trim();
+          }
+        }
+      }
+    }
+
+    // 3. Check assigned workouts
+    final assigned = (widget.assignedWorkouts != null && widget.assignedWorkouts!.isNotEmpty)
+        ? widget.assignedWorkouts!
+        : _internalAssignedWorkouts;
+    if (assigned.isNotEmpty) {
+      final dateKey = DateFormat('yyyy-MM-dd').format(date);
+      for (final p in assigned) {
+        if (p is Map) {
+          final pDate =
+              (p['scheduled_date'] ?? p['date'] ?? p['assigned_date'] ?? '')
+                  .toString()
+                  .split('T')
+                  .first;
+          if (pDate == dateKey) {
+            final name = p['plan_name'] ?? p['title'] ?? p['name'];
+            if (name != null &&
+                name.toString().trim().isNotEmpty &&
+                name.toString() != 'null') {
+              return name.toString().trim();
+            }
+          }
+        }
+      }
+
+      for (final p in assigned) {
+        if (p is Map) {
+          final startStr = (p['start_date'] ??
+                  p['assigned_date'] ??
+                  p['created_at'])
+              ?.toString()
+              .split('T')
+              .first;
+          final endStr = (p['end_date'] ?? p['expiry_date'])
+              ?.toString()
+              .split('T')
+              .first;
+          final startDate =
+              startStr != null ? DateTime.tryParse(startStr) : null;
+          final endDate = endStr != null ? DateTime.tryParse(endStr) : null;
+          if (startDate != null) {
+            final effectiveEnd = endDate ??
+                startDate.add(
+                  Duration(days: (p['total_days'] as num?)?.toInt() ?? 30),
+                );
+            if (!date.isBefore(startDate) && !date.isAfter(effectiveEnd)) {
+              final name = p['plan_name'] ?? p['title'] ?? p['name'];
+              if (name != null &&
+                  name.toString().trim().isNotEmpty &&
+                  name.toString() != 'null') {
+                return name.toString().trim();
+              }
+            }
+          }
+        }
+      }
+
+      Map<String, dynamic>? active;
+      for (final p in assigned) {
+        if (p is Map && (p['status'] == 'active' || p['is_active'] == true)) {
+          active = Map<String, dynamic>.from(p);
+          break;
+        }
+      }
+      active ??= (assigned.isNotEmpty && assigned.first is Map)
+          ? Map<String, dynamic>.from(assigned.first as Map)
+          : null;
+      if (active != null) {
+        final name = active['plan_name'] ?? active['title'] ?? active['name'];
+        if (name != null &&
+            name.toString().trim().isNotEmpty &&
+            name.toString() != 'null') {
+          return name.toString().trim();
+        }
+      }
+    }
+
+    return null;
   }
 
   /// Derives calendar day states locally from the workout history data.
@@ -615,6 +825,7 @@ class _TrainerClientWorkoutHistoryCalendarState
         (historyEntry != null
             ? CalendarDayState.assigned
             : CalendarDayState.future);
+    final planName = _resolvePlanName(date, historyEntry, logs);
 
     showModalBottomSheet<void>(
       context: context,
@@ -663,6 +874,17 @@ class _TrainerClientWorkoutHistoryCalendarState
                             style: AppStyles.text16Px.poppins.w600.dark,
                           ),
                           const SizedBox(height: 2),
+                          if (planName != null && planName.isNotEmpty) ...[
+                            Text(
+                              planName,
+                              style: AppStyles.text14Px.poppins.w600.copyWith(
+                                color: AppColors.primary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                          ],
                           Text(
                             'Workout History Details',
                             style: AppStyles.text12Px.poppins.w400.textGrey,
@@ -686,6 +908,7 @@ class _TrainerClientWorkoutHistoryCalendarState
                     state,
                     logs,
                     historyEntry,
+                    planName: planName,
                   ),
                 ),
               ),
@@ -755,8 +978,9 @@ class _TrainerClientWorkoutHistoryCalendarState
     DateTime date,
     CalendarDayState state,
     List<dynamic> logs,
-    Map<String, dynamic>? historyEntry,
-  ) {
+    Map<String, dynamic>? historyEntry, {
+    String? planName,
+  }) {
     if (state == CalendarDayState.rest) {
       return Container(
         width: double.infinity,
@@ -804,6 +1028,58 @@ class _TrainerClientWorkoutHistoryCalendarState
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (planName != null && planName.isNotEmpty) ...[
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xffF9F9F9),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: Colors.grey.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.fitness_center_rounded,
+                      size: 20,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'WORKOUT PLAN',
+                          style: AppStyles.text10Px.poppins.w600.copyWith(
+                            color: AppColors.primary,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          planName,
+                          style: AppStyles.text15Px.poppins.w600.dark,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           Row(
             children: [
               const Icon(
@@ -1068,14 +1344,19 @@ class _TrainerClientWorkoutHistoryCalendarState
             ),
             const SizedBox(height: 12),
             Text(
-              'Assigned Workout',
+              planName != null && planName.isNotEmpty
+                  ? planName
+                  : 'Assigned Workout',
               style: AppStyles.text16Px.poppins.w600.copyWith(
                 color: const Color(0xFFD1AC19),
               ),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
             Text(
-              'Workout plan assigned for this day, awaiting completion/verification.',
+              planName != null && planName.isNotEmpty
+                  ? 'Plan "$planName" assigned for this day, awaiting completion/verification.'
+                  : 'Workout plan assigned for this day, awaiting completion/verification.',
               textAlign: TextAlign.center,
               style: AppStyles.text12Px.poppins.w400.textGrey,
             ),

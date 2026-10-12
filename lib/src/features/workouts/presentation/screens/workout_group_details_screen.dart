@@ -458,7 +458,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
   Future<void> _openReorderScreen() async {
     if (_plans.isEmpty) return;
-    final int? mId = _masterPlanId ?? await _getOrCreateMasterPlanId();
+    final int? mId = _masterPlanId;
     if (mId == null || !mounted) return;
 
     final updatedPlans = await Navigator.push<List<Map<String, dynamic>>>(
@@ -1211,6 +1211,9 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
   }
 
   Future<int?> _getOrCreateMasterPlanId() async {
+    if (widget.groupType != 'multi_day') {
+      return null;
+    }
     if (_masterPlanId != null) {
       return _masterPlanId;
     }
@@ -1408,8 +1411,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         final dio = DioClient().dio;
         dynamic response;
 
-        final int? masterPlanId =
-            _masterPlanId ?? await _getOrCreateMasterPlanId();
+        final int? masterPlanId = _masterPlanId;
 
         if (widget.groupType == 'multi_day' &&
             planDayId != null &&
@@ -1428,11 +1430,27 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                 options: Options(headers: {'X-Platform': platformSource}),
               );
             } catch (_) {
-              response = await dio.patch<dynamic>(
-                '${ApiUris.workoutPlans}$masterPlanId/days/$planDayId/',
-                data: {'title': newName},
-                options: Options(headers: {'X-Platform': platformSource}),
-              );
+              try {
+                response = await dio.put<dynamic>(
+                  '${ApiUris.workoutPlanDays(masterPlanId)}$planDayId/',
+                  data: {'title': newName, 'name': newName},
+                  options: Options(headers: {'X-Platform': platformSource}),
+                );
+              } catch (_) {
+                try {
+                  response = await dio.put<dynamic>(
+                    '${ApiUris.multiDayWorkoutDays(masterPlanId)}$planDayId/',
+                    data: {'title': newName, 'name': newName},
+                    options: Options(headers: {'X-Platform': platformSource}),
+                  );
+                } catch (_) {
+                  response = await dio.patch<dynamic>(
+                    '${ApiUris.workoutPlans}$masterPlanId/days/$planDayId/',
+                    data: {'title': newName},
+                    options: Options(headers: {'X-Platform': platformSource}),
+                  );
+                }
+              }
             }
           }
         } else {
@@ -1534,8 +1552,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         final dio = DioClient().dio;
         dynamic response;
 
-        final int? masterPlanId =
-            _masterPlanId ?? await _getOrCreateMasterPlanId();
+        final int? masterPlanId = _masterPlanId;
 
         if (widget.groupType == 'multi_day' &&
             planDayId != null &&
