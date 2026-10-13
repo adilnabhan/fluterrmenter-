@@ -6,6 +6,57 @@ enum SnackType { success, error, warning }
 @immutable
 ///
 abstract class Dialogs {
+  static String _sanitizeMessage(String? rawMsg) {
+    if (rawMsg == null || rawMsg.trim().isEmpty) {
+      return 'Something went wrong! Please try again later.';
+    }
+    String msg = rawMsg.trim();
+
+    // Check for HTML error pages (e.g. Django debug 404/500, Cloudflare/Render HTML)
+    final lower = msg.toLowerCase();
+    if (lower.contains('<!doctype') ||
+        lower.contains('<html') ||
+        lower.contains('</html>') ||
+        lower.contains('<body') ||
+        lower.contains('<table') ||
+        lower.contains('<style') ||
+        lower.contains('<head')) {
+      if (lower.contains('page not found') || lower.contains('404')) {
+        return 'Requested resource not found.';
+      }
+      if (lower.contains('500') || lower.contains('internal server error')) {
+        return 'Server error. Please try again later.';
+      }
+      if (lower.contains('502') || lower.contains('bad gateway')) {
+        return 'Server is temporarily unavailable. Please try again.';
+      }
+      return 'An unexpected error occurred. Please try again.';
+    }
+
+    // Strip any residual HTML tags
+    if (msg.contains('<') && msg.contains('>')) {
+      msg =
+          msg
+              .replaceAll(RegExp(r'<[^>]*>'), ' ')
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .trim();
+    }
+
+    // Strip technical exception prefixes
+    if (msg.startsWith('Exception: ')) {
+      msg = msg.substring('Exception: '.length).trim();
+    } else if (msg.startsWith('DioException')) {
+      msg = 'Network or server error occurred. Please try again.';
+    }
+
+    // Cap message length so toasts never expand into giant full-screen cards
+    if (msg.length > 120) {
+      msg = '${msg.substring(0, 117)}...';
+    }
+
+    return msg.isEmpty ? 'Something went wrong! Please try again later.' : msg;
+  }
+
   ///Show snackbar withoud context
   static Future<void> showSnack({
     String? msg,
@@ -14,10 +65,11 @@ abstract class Dialogs {
     SnackType type = SnackType.success,
     bool showIcon = false,
   }) async {
+    final cleanMsg = _sanitizeMessage(msg);
     if (Platform.isAndroid || Platform.isIOS) {
       await Fluttertoast.cancel();
       await Fluttertoast.showToast(
-        msg: msg ?? 'Something went wrong! Please try again later.',
+        msg: cleanMsg,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: const Color(0xFF4B5563),
@@ -39,7 +91,7 @@ abstract class Dialogs {
                   children: [
                     Flexible(
                       child: Text(
-                        msg ?? 'Something went wrong! Please try again later.',
+                        cleanMsg,
                         textAlign: TextAlign.center,
                         style: AppStyles.text14Px.w400.light,
                       ),
@@ -86,11 +138,14 @@ abstract class Dialogs {
   }) {
     final url = imageUrl?.trim() ?? '';
     if (url.isEmpty || url == 'null') {
-      unawaited(showSnack(
-        msg: name != null && name.trim().isNotEmpty
-            ? 'No profile photo uploaded for ${name.trim()}'
-            : 'No profile photo uploaded',
-      ));
+      unawaited(
+        showSnack(
+          msg:
+              name != null && name.trim().isNotEmpty
+                  ? 'No profile photo uploaded for ${name.trim()}'
+                  : 'No profile photo uploaded',
+        ),
+      );
       return;
     }
 
@@ -99,8 +154,10 @@ abstract class Dialogs {
       barrierColor: Colors.black.withValues(alpha: 0.65),
       barrierDismissible: true,
       builder: (ctx) {
-        final diameter =
-            (MediaQuery.of(ctx).size.width * 0.58).clamp(200.0, 240.0);
+        final diameter = (MediaQuery.of(ctx).size.width * 0.58).clamp(
+          200.0,
+          240.0,
+        );
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -140,13 +197,14 @@ abstract class Dialogs {
                         ),
                       );
                     },
-                    errorBuilder: (_, __, ___) => const Center(
-                      child: Icon(
-                        Icons.person,
-                        size: 80,
-                        color: AppColors.primary,
-                      ),
-                    ),
+                    errorBuilder:
+                        (_, __, ___) => const Center(
+                          child: Icon(
+                            Icons.person,
+                            size: 80,
+                            color: AppColors.primary,
+                          ),
+                        ),
                   ),
                 ),
               ),
