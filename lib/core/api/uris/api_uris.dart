@@ -107,6 +107,16 @@ final class ApiUris {
   static final reportsCustomers = '${_v1}fitnesscenter/reports/customers/';
   static final clientWorkoutCalendar = '${_v1}fitnesscenter/reports/client-workout-calendar/';
   static String clientWorkoutCalendarDetail(String date) => '${_v1}fitnesscenter/reports/client-workout-calendar/$date/';
+  static String fitnessCenterTrainerReports({
+    required int organizationId,
+    int? year,
+    int? month,
+  }) {
+    var uri = '${_v1}fitnesscenter/reports/trainers/?organization_id=$organizationId';
+    if (year != null) uri += '&year=$year';
+    if (month != null) uri += '&month=$month';
+    return uri;
+  }
   static final expenses = '${_v1}fitnesscenter/expenses/';
   static String expenseDetail(int id) => '${_v1}fitnesscenter/expenses/$id/';
   static final revenueCategories = '${_v1}fitnesscenter/revenue-categories/';
@@ -145,6 +155,10 @@ final class ApiUris {
   static final trainerCustomers = '${_v1}trainer/customers/';
   static String trainerCustomerDetails(int customerId) =>
       '${_v1}trainer/customers/$customerId/';
+  static String trainerCustomerPersonalRecords(int customerId) =>
+      '${_v1}trainer/customers/$customerId/personal-records/';
+  static String trainerCustomerExerciseRecord(int customerId, int workoutId) =>
+      '${_v1}trainer/customers/$customerId/personal-records/exercise/$workoutId/';
   static final trainerAssignedWorkouts = '${_v1}trainer/assigned-workouts/';
   static String trainerDeleteAssignedWorkout(int customerWorkoutPlanId) =>
       '${_v1}trainer/assigned-workouts/$customerWorkoutPlanId/';

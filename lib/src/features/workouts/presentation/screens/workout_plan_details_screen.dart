@@ -26,6 +26,7 @@ class WorkoutPlanDetailsScreen extends StatefulWidget {
     required this.planTitle,
     required this.planId,
     this.planDayId,
+    this.initialDayNumber,
     this.assignToCustomerId,
     this.isInstantWorkout = false,
     this.isOrganizationWorkout,
@@ -34,6 +35,7 @@ class WorkoutPlanDetailsScreen extends StatefulWidget {
   final String planTitle;
   final int planId;
   final int? planDayId;
+  final int? initialDayNumber;
   final int? assignToCustomerId;
   final bool? isInstantWorkout;
   final bool? isOrganizationWorkout;
@@ -45,6 +47,7 @@ class WorkoutPlanDetailsScreen extends StatefulWidget {
 
 class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
   List<PlanDayItem> _planDays = [];
+  int? _selectedDayIndex;
   bool _isLoading = true;
   bool _isSaving = false;
   bool _isOrgPlanFromApi = false;
@@ -70,6 +73,13 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
 
   int get _totalExercisesCount =>
       _planDays.fold(0, (sum, day) => sum + day.exercises.length);
+
+  List<PlanDayItem> get _displayedDays {
+    if (_selectedDayIndex != null && _selectedDayIndex! < _planDays.length) {
+      return [_planDays[_selectedDayIndex!]];
+    }
+    return _planDays;
+  }
 
   @override
   void initState() {
@@ -218,6 +228,16 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
           if (!mounted) return;
           setState(() {
             _planDays = parsedPlanDays;
+            if (widget.initialDayNumber != null && parsedPlanDays.isNotEmpty) {
+              final idx = parsedPlanDays
+                  .indexWhere((d) => d.dayNumber == widget.initialDayNumber);
+              if (idx != -1) {
+                _selectedDayIndex = idx;
+              } else if (widget.initialDayNumber! > 0 &&
+                  widget.initialDayNumber! <= parsedPlanDays.length) {
+                _selectedDayIndex = widget.initialDayNumber! - 1;
+              }
+            }
             _isLoading = false;
           });
         } else {
@@ -521,6 +541,7 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                         if (picked != null) {
                           final hol = await GymHolidayService.getHolidayName(
                             picked,
+                            forceRefresh: true,
                           );
                           setStateDialog(() {
                             selectedDate = picked;
@@ -667,7 +688,8 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
     if (confirmed != true) return;
 
     final targetDate = selectedDate ?? DateTime.now();
-    final isHol = await GymHolidayService.isHoliday(targetDate);
+    final isHol =
+        await GymHolidayService.isHoliday(targetDate, forceRefresh: true);
     if (isHol) {
       Dialogs.showSnack(
         msg: 'Cannot assign workout: The selected date is a gym holiday.',
@@ -1080,6 +1102,72 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                     ),
                   ),
                 ),
+                if (_planDays.length > 1)
+                  Container(
+                    height: 38,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: _planDays.length + 1,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, idx) {
+                        final isAll = idx == 0;
+                        final isSelected = isAll
+                            ? _selectedDayIndex == null
+                            : _selectedDayIndex == (idx - 1);
+                        final label = isAll
+                            ? 'All Days (${_planDays.length})'
+                            : 'Day ${_planDays[idx - 1].dayNumber}';
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedDayIndex = isAll ? null : (idx - 1);
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : const Color(0xFFE2E8F0),
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.primary
+                                            .withValues(alpha: 0.25),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Center(
+                              child: Text(
+                                label,
+                                style: AppStyles.text12Px.poppins.w600.copyWith(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppColors.textDark,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 Expanded(
                   child:
                       _isLoading
@@ -1124,74 +1212,80 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
                             },
                           )
                           : ListView.separated(
-                            padding: EdgeInsets.fromLTRB(
-                              20,
-                              16,
-                              20,
-                              (_canEditExercises || widget.assignToCustomerId != null)
-                                  ? 120
-                                  : 32,
+                              padding: EdgeInsets.fromLTRB(
+                                20,
+                                16,
+                                20,
+                                (_canEditExercises ||
+                                        widget.assignToCustomerId != null)
+                                    ? 120
+                                    : 32,
+                              ),
+                              itemCount: _displayedDays.length,
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(height: 20),
+                              itemBuilder: (context, dayIndex) {
+                                final day = _displayedDays[dayIndex];
+                                return Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    _buildDayHeader(day),
+                                    if (day.exercises.isEmpty)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 20,
+                                          horizontal: 16,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: const Color(0xFFE2E8F0),
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            'No exercises for this day.\nTap "+" on the header to add.',
+                                            textAlign: TextAlign.center,
+                                            style: AppStyles
+                                                .text13Px
+                                                .poppins
+                                                .w400
+                                                .copyWith(
+                                              color: AppColors.textGrey,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    else
+                                      ListView.separated(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemCount: day.exercises.length,
+                                        separatorBuilder:
+                                            (context, exIndex) =>
+                                                const SizedBox(height: 12),
+                                        itemBuilder: (context, exIndex) {
+                                          final item = day.exercises[exIndex];
+                                          return _ExerciseCard(
+                                            index: exIndex + 1,
+                                            exercise: item,
+                                            canEdit: _canEditExercises,
+                                            onEditTap:
+                                                () => _editExerciseBottomSheet(
+                                                  item,
+                                                  day,
+                                                ),
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                );
+                              },
                             ),
-                            itemCount: _planDays.length,
-                            separatorBuilder:
-                                (context, index) => const SizedBox(height: 20),
-                            itemBuilder: (context, dayIndex) {
-                              final day = _planDays[dayIndex];
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildDayHeader(day),
-                                  if (day.exercises.isEmpty)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 20,
-                                        horizontal: 16,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: const Color(0xFFE2E8F0),
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          'No exercises for this day.\nTap "+" on the header to add.',
-                                          textAlign: TextAlign.center,
-                                          style: AppStyles.text13Px.poppins.w400
-                                              .copyWith(
-                                                color: AppColors.textGrey,
-                                              ),
-                                        ),
-                                      ),
-                                    )
-                                  else
-                                    ListView.separated(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: day.exercises.length,
-                                      separatorBuilder:
-                                          (context, exIndex) =>
-                                              const SizedBox(height: 12),
-                                      itemBuilder: (context, exIndex) {
-                                        final item = day.exercises[exIndex];
-                                        return _ExerciseCard(
-                                          index: exIndex + 1,
-                                          exercise: item,
-                                          canEdit: _canEditExercises,
-                                          onEditTap:
-                                              () => _editExerciseBottomSheet(
-                                                item,
-                                                day,
-                                              ),
-                                        );
-                                      },
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
                 ),
               ],
             ),

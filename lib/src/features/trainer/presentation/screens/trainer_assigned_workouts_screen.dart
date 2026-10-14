@@ -542,6 +542,47 @@ class _TrainerAssignedWorkoutsViewState
                                         (workout['workout_days'] as List?)
                                             ?.length ??
                                         0;
+
+                                    // Calculate current day number for multi-day plans based on selected date or today
+                                    int? currentDayNumber;
+                                    if (state.selectedPlanType == 'multi_day') {
+                                      final rawDate = (workout['start_date'] ??
+                                              workout['scheduled_date'] ??
+                                              workout['session_date'] ??
+                                              workout['assigned_date'] ??
+                                              workout['date'] ??
+                                              workout['created_at'] ??
+                                              '')
+                                          .toString();
+                                      if (rawDate.length >= 10) {
+                                        final startDt = DateTime.tryParse(
+                                          rawDate.substring(0, 10),
+                                        );
+                                        if (startDt != null) {
+                                          final targetDate =
+                                              state.selectedDate ??
+                                                  DateTime.now();
+                                          final checkTarget = DateTime(
+                                            targetDate.year,
+                                            targetDate.month,
+                                            targetDate.day,
+                                          );
+                                          final checkStart = DateTime(
+                                            startDt.year,
+                                            startDt.month,
+                                            startDt.day,
+                                          );
+                                          final diff = checkTarget
+                                              .difference(checkStart)
+                                              .inDays;
+                                          if (diff >= 0 &&
+                                              (routinesCount <= 0 ||
+                                                  diff < routinesCount)) {
+                                            currentDayNumber = diff + 1;
+                                          }
+                                        }
+                                      }
+                                    }
                                     // Status-specific color configurations
                                     Color statusBgColor;
                                     Color statusTextColor;
@@ -614,6 +655,8 @@ class _TrainerAssignedWorkoutsViewState
                                                       WorkoutPlanDetailsScreen(
                                                     planId: planId,
                                                     planTitle: title,
+                                                    initialDayNumber:
+                                                        currentDayNumber,
                                                   ),
                                                 ),
                                               );
@@ -642,14 +685,12 @@ class _TrainerAssignedWorkoutsViewState
                                               BorderRadius.circular(16),
                                           child: Container(
                                             decoration: BoxDecoration(
-                                              border: cardBorderColor != null
-                                                  ? Border(
-                                                      left: BorderSide(
-                                                        color: cardBorderColor,
-                                                        width: 4,
-                                                      ),
-                                                    )
-                                                  : null,
+                                              border: Border(
+                                                left: BorderSide(
+                                                  color: cardBorderColor,
+                                                  width: 4,
+                                                ),
+                                              ),
                                             ),
                                             padding: const EdgeInsets.all(14),
                                             child: Column(
@@ -841,20 +882,63 @@ class _TrainerAssignedWorkoutsViewState
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        Text(
-                                                          state.selectedPlanType == 'multi_day'
-                                                              ? (routinesCount > 0
-                                                                  ? '$routinesCount Days Plan'
-                                                                  : 'Multi-Day Plan')
-                                                              : 'Single Day Workout',
-                                                          style: AppStyles
-                                                              .text12Px
-                                                              .poppins
-                                                              .w500
-                                                              .copyWith(
-                                                            color: const Color(
-                                                                0xff4A5568),
-                                                          ),
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              state.selectedPlanType ==
+                                                                      'multi_day'
+                                                                  ? (routinesCount >
+                                                                          0
+                                                                      ? '$routinesCount Days Plan'
+                                                                      : 'Multi-Day Plan')
+                                                                  : 'Single Day Workout',
+                                                              style: AppStyles
+                                                                  .text12Px
+                                                                  .poppins
+                                                                  .w500
+                                                                  .copyWith(
+                                                                color: const Color(
+                                                                    0xff4A5568),
+                                                              ),
+                                                            ),
+                                                            if (currentDayNumber !=
+                                                                null) ...[
+                                                              const SizedBox(
+                                                                  width: 8),
+                                                              Container(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                  horizontal: 7,
+                                                                  vertical: 2,
+                                                                ),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: AppColors
+                                                                      .primary
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.1),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              6),
+                                                                ),
+                                                                child: Text(
+                                                                  'Day $currentDayNumber of $routinesCount',
+                                                                  style:
+                                                                      AppStyles
+                                                                          .text10Px
+                                                                          .poppins
+                                                                          .w600
+                                                                          .copyWith(
+                                                                    color: AppColors
+                                                                        .primary,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ],
                                                         ),
                                                         if (assignedDate
                                                             .isNotEmpty) ...[

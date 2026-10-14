@@ -11,6 +11,10 @@ class AssignToClientBottomSheet extends StatefulWidget {
   final String planTitle;
   final bool isMultiDayGroup;
 
+  static void clearCache() {
+    GymHolidayService.clearCache();
+  }
+
   const AssignToClientBottomSheet({
     required this.planId,
     required this.planTitle,
@@ -29,13 +33,11 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
   String _searchQuery = '';
   String _selectedGymFilter = 'All';
   final Map<int, bool> _submittingMap = {};
+  final Map<int, String?> _orgHolidaysToday = {};
 
   String? _nextUrl;
   bool _isFetchingMore = false;
   final ScrollController _scrollController = ScrollController();
-
-  /// Clears the in-memory clients cache when needed.
-  static void clearCache() {}
 
   @override
   void initState() {
@@ -89,6 +91,27 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
               final map = Map<String, dynamic>.from(e as Map);
               return {...map, 'is_assigned': false};
             }).toList();
+
+        final orgIds = parsedClients
+            .map(
+              (c) =>
+                  (c['organization_id'] as int?) ??
+                  (c['organization'] as int?),
+            )
+            .whereType<int>()
+            .toSet();
+
+        for (final oId in orgIds) {
+          try {
+            _orgHolidaysToday[oId] = await GymHolidayService.getHolidayName(
+              DateTime.now(),
+              orgId: oId,
+              forceRefresh: true,
+            );
+          } catch (_) {
+            _orgHolidaysToday[oId] = null;
+          }
+        }
 
         if (!mounted) return;
         setState(() {
@@ -506,6 +529,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                           final hol = await GymHolidayService.getHolidayName(
                             picked,
                             orgId: clientOrgId,
+                            forceRefresh: true,
                           );
                           setStateDialog(() {
                             selectedDate = picked;
@@ -819,6 +843,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
       final holCheck = await GymHolidayService.getHolidayName(
         startDate,
         orgId: clientOrgId,
+        forceRefresh: true,
       );
       if (holCheck != null) {
         if (!mounted) return;
@@ -1225,9 +1250,13 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                         ),
                       ),
                     )
-                    : ListView.separated(
-                      controller: _scrollController,
-                      itemCount: filtered.length + (_isFetchingMore ? 1 : 0),
+                    : RefreshIndicator(
+                        onRefresh: _fetchClients,
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount:
+                              filtered.length + (_isFetchingMore ? 1 : 0),
                       separatorBuilder:
                           (context, index) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
@@ -1260,6 +1289,25 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
 
                         final String? todayWorkoutName =
                             client['today_workout_name'] as String?;
+                        final int? clientOrgId =
+                            (client['organization_id'] as int?) ??
+                            (client['organization'] as int?);
+                        final currentOrgHoliday =
+                            clientOrgId != null
+                                ? _orgHolidaysToday[clientOrgId]
+                                : null;
+                        String? displayTodayWorkout = todayWorkoutName;
+                        if (displayTodayWorkout != null &&
+                            displayTodayWorkout
+                                .toLowerCase()
+                                .contains('holiday')) {
+                          if (currentOrgHoliday == null) {
+                            displayTodayWorkout = null;
+                          } else {
+                            displayTodayWorkout =
+                                'Gym Holiday: $currentOrgHoliday';
+                          }
+                        }
                         final String? previousWorkoutName =
                             client['previous_workout_name'] as String?;
                         final String? previousWorkoutTime =
@@ -1476,7 +1524,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                                     children: [
                                       TextSpan(
                                         text:
-                                            todayWorkoutName ?? 'not assigned',
+                                            displayTodayWorkout ??
+                                            'not assigned',
                                         style:
                                             AppStyles
                                                 .text12Px
@@ -1573,6 +1622,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                         );
                       },
                     ),
+                  ),
           ),
         ],
       ),

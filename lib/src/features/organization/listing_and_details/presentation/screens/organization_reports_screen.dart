@@ -5,6 +5,7 @@ import 'package:mentor_mobile_app/src/features/organization/listing_and_details/
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/monthly_revenue_detail_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/monthly_expense_detail_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/client_workout_calendar_widget.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/organization_trainers_report_widget.dart';
 
 double _safeDouble(dynamic val, [double fallback = 0.0]) {
   if (val == null) return fallback;
@@ -2332,11 +2333,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                         paymentModes: paymentModes,
                         categoryBreakdown: categoryBreakdown,
                       ),
-                      _buildTrainersTab(
-                        trainersPerformance: trainersPerformance,
-                        trainerGenderDist: trainerGenderDist,
-                        trainerAgeDist: trainerAgeDist,
-                        totalTrainers: totalTrainers.toString(),
+                      OrganizationTrainersReportWidget(
+                        orgId: widget.orgId,
                       ),
                       _buildClientsTab(
                         totalClients: totalClients.toString(),

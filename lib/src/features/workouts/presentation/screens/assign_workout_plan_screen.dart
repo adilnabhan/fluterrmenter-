@@ -170,6 +170,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
                           final hol = await GymHolidayService.getHolidayName(
                             picked,
                             orgId: clientOrgId,
+                            forceRefresh: true,
                           );
                           setStateDialog(() {
                             selectedDate = picked;
@@ -338,6 +339,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
       final isHol = await GymHolidayService.isHoliday(
         targetDate,
         orgId: clientOrgId,
+        forceRefresh: true,
       );
       if (isHol) {
         Dialogs.showSnack(

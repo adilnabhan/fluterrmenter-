@@ -17,6 +17,8 @@ class MemberOnboardPaymentSuccessScreen extends StatefulWidget {
     this.title,
     this.subtitle,
     this.onDone,
+    this.showBackButton = false,
+    this.transactionId,
     super.key,
   });
 
@@ -35,6 +37,8 @@ class MemberOnboardPaymentSuccessScreen extends StatefulWidget {
   final String? title;
   final String? subtitle;
   final VoidCallback? onDone;
+  final bool showBackButton;
+  final String? transactionId;
 
   @override
   State<MemberOnboardPaymentSuccessScreen> createState() =>
@@ -147,7 +151,17 @@ class _MemberOnboardPaymentSuccessScreenState
       buffer.writeln('📱 *Phone:* $_clientPhone');
     }
     buffer.writeln('📋 *Plan:* $_resolvedPlanName');
-    buffer.writeln('📅 *Duration:* $startDateStr to $endDateStr');
+    if (_resolvedEndDate != null) {
+      buffer.writeln('📅 *Duration:* $startDateStr to $endDateStr');
+    } else if (_resolvedStartDate != null) {
+      buffer.writeln('📅 *Payment Date:* $startDateStr');
+    }
+    if (widget.paymentMethod != null && widget.paymentMethod!.isNotEmpty) {
+      buffer.writeln('💳 *Payment Method:* ${widget.paymentMethod}');
+    }
+    if (widget.transactionId != null && widget.transactionId!.isNotEmpty) {
+      buffer.writeln('🔖 *Transaction ID:* ${widget.transactionId}');
+    }
     buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━━');
     buffer.writeln(
       '💰 *Plan Amount:* ₹${_resolvedPlanAmount.toStringAsFixed(0)}',
@@ -220,6 +234,15 @@ class _MemberOnboardPaymentSuccessScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                if (widget.showBackButton)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      onPressed: _onDone,
+                      icon: const Icon(Icons.arrow_back),
+                      color: context.colors.textPrimary,
+                    ),
+                  ),
                 // Animated Success Vector
                 SvgPicture.asset(
                   'assets/images/svg/vectors/onboarding_success.svg',
@@ -369,15 +392,27 @@ class _MemberOnboardPaymentSuccessScreenState
                         label: 'Plan',
                         value: _resolvedPlanName,
                       ),
-                      _buildInvoiceRow(
-                        label: 'Validity',
-                        value: '$startDateStr – $endDateStr',
-                      ),
+                      if (_resolvedEndDate != null)
+                        _buildInvoiceRow(
+                          label: 'Validity',
+                          value: '$startDateStr – $endDateStr',
+                        )
+                      else if (_resolvedStartDate != null)
+                        _buildInvoiceRow(
+                          label: 'Payment Date',
+                          value: startDateStr,
+                        ),
                       if (widget.paymentMethod != null &&
                           widget.paymentMethod!.isNotEmpty)
                         _buildInvoiceRow(
                           label: 'Payment Method',
                           value: widget.paymentMethod!,
+                        ),
+                      if (widget.transactionId != null &&
+                          widget.transactionId!.isNotEmpty)
+                        _buildInvoiceRow(
+                          label: 'Transaction ID',
+                          value: widget.transactionId!,
                         ),
 
                       const SizedBox(height: 6),

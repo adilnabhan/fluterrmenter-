@@ -99,15 +99,56 @@ class AssignedWorkoutsState {
       return isMultiDayTab ? isMulti : !isMulti;
     }).toList();
 
-    // Filter strictly by exact selected date (Option A)
+    // Filter by date: exact match for single-day, active range match for multi-day
     if (selectedDate != null) {
       final selectedDateStr = DateFormat('yyyy-MM-dd').format(selectedDate!);
+      final checkDate =
+          DateTime(selectedDate!.year, selectedDate!.month, selectedDate!.day);
+
       list = list.where((item) {
-        final itemDate = _extractDate(item);
-        if (itemDate.isEmpty) return false;
-        final normalized =
-            itemDate.length >= 10 ? itemDate.substring(0, 10) : itemDate;
-        return normalized == selectedDateStr;
+        final isMulti = _isMultiDay(item);
+        if (!isMulti) {
+          final itemDate = _extractDate(item);
+          if (itemDate.isEmpty) return false;
+          final normalized =
+              itemDate.length >= 10 ? itemDate.substring(0, 10) : itemDate;
+          return normalized == selectedDateStr;
+        }
+
+        // For multi-day plans, check if selectedDate falls within [startDate, effectiveEnd]
+        final startStr = _extractDate(item);
+        if (startStr.isEmpty) return false;
+        final normStart =
+            startStr.length >= 10 ? startStr.substring(0, 10) : startStr;
+        final startDate = DateTime.tryParse(normStart);
+        if (startDate == null) return false;
+
+        final endRaw = (item['end_date'] ?? item['expiry_date'])?.toString();
+        final normEnd = (endRaw != null && endRaw.length >= 10)
+            ? endRaw.substring(0, 10)
+            : null;
+        final endDate = normEnd != null ? DateTime.tryParse(normEnd) : null;
+
+        final totalDays = (item['total_days'] as num?)?.toInt() ??
+            (item['days_count'] as num?)?.toInt() ??
+            (item['days'] as List?)?.length ??
+            (item['workout_days'] as List?)?.length ??
+            (item['routines'] as List?)?.length ??
+            1;
+
+        final effectiveEnd = endDate ??
+            startDate.add(
+              Duration(days: (totalDays > 0 ? totalDays : 1) - 1),
+            );
+        final checkStart =
+            DateTime(startDate.year, startDate.month, startDate.day);
+        final checkEnd = DateTime(
+          effectiveEnd.year,
+          effectiveEnd.month,
+          effectiveEnd.day,
+        );
+
+        return !checkDate.isBefore(checkStart) && !checkDate.isAfter(checkEnd);
       }).toList();
     }
 

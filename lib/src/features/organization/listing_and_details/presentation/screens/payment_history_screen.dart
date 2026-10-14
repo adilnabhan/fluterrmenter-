@@ -402,6 +402,7 @@ class _AllPaymentsTab extends StatelessWidget {
             itemCount: allPayment?.results.length ?? 0,
             itemBuilder: (context, index) {
               return paymentCard(
+                context: context,
                 isAllPayments: isAllPayment,
                 data: allPayment?.results[index],
               );
@@ -466,26 +467,63 @@ class _AllPaymentsTab extends StatelessWidget {
   }
 }
 
-Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
+Widget paymentCard({
+  BuildContext? context,
+  bool isAllPayments = true,
+  PaymentHistoryItem? data,
+}) {
   final modeStyle = _getPaymentModeStyle(data?.paymentMethod);
   final paymentMethodText = (data?.paymentMethod ?? '').trim();
 
-  return Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.grey.shade200, width: 0.8),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.03),
-          offset: const Offset(0, 2),
-          blurRadius: 6,
+  return Builder(
+    builder: (builderContext) {
+      final actualContext = context ?? builderContext;
+      return Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200, width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              offset: const Offset(0, 2),
+              blurRadius: 6,
+            ),
+          ],
         ),
-      ],
-    ),
-    child: Column(
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              if (data == null) return;
+              final amount = double.tryParse(data.amount) ?? 0.0;
+              Navigator.push(
+                actualContext,
+                MaterialPageRoute<void>(
+                  builder: (context) => MemberOnboardPaymentSuccessScreen(
+                    clientName: data.customerName,
+                    planName: data.membershipName,
+                    planAmount: amount,
+                    amountPaid: amount,
+                    discount: 0,
+                    pendingDue: 0,
+                    startDate: data.paymentDate,
+                    paymentMethod: data.paymentMethod?.toUpperCase(),
+                    title: 'Invoice Details',
+                    subtitle: 'Payment receipt for ${data.customerName}',
+                    showBackButton: true,
+                    transactionId: data.paymentId ?? data.orderId,
+                    onDone: () => Navigator.pop(context),
+                  ),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -661,17 +699,22 @@ Widget paymentCard({bool isAllPayments = true, PaymentHistoryItem? data}) {
                 const SizedBox.shrink(),
               // Date & Time positioned at bottom-right (switched with amount)
               Text(
-                formatPaymentDate(data?.paymentDate?.toString() ?? ''),
+                formatPaymentDate(data?.paymentDate.toString() ?? ''),
                 style: AppStyles.text12Px.poppins.copyWith(
                   color: Colors.grey.shade500,
                 ),
               ),
-            ],
+                    ],
+                  ),
+                ],
+              ],
+            ),
           ),
-        ],
-      ],
-    ),
-  );
+        ),
+      ),
+    );
+  },
+);
 }
 
 String formatPaymentDate(String isoDate) {

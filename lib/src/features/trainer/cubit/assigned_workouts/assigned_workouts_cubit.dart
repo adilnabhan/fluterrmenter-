@@ -24,9 +24,14 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
     if (isClosed) return;
 
     final date = dateOverride ?? state.selectedDate;
-    final dateStr =
-        date != null ? DateFormat('yyyy-MM-dd').format(date) : null;
     final planType = planTypeOverride ?? state.selectedPlanType;
+    // For multi_day workouts, avoid passing strict dateStr to the backend
+    // because the backend only filters by exact start_date == dateStr, which would hide
+    // active multi-day workouts that started on an earlier day.
+    // Active date range filtering is handled accurately on the client side in state.filteredWorkouts.
+    final dateStr = (date != null && planType != 'multi_day')
+        ? DateFormat('yyyy-MM-dd').format(date)
+        : null;
 
     if (reset) {
       emit(state.copyWith(
@@ -295,9 +300,10 @@ class AssignedWorkoutsCubit extends Cubit<AssignedWorkoutsState> {
     if (isClosed) return;
 
     final date = state.selectedDate;
-    final dateStr =
-        date != null ? DateFormat('yyyy-MM-dd').format(date) : null;
     final planType = state.selectedPlanType;
+    final dateStr = (date != null && planType != 'multi_day')
+        ? DateFormat('yyyy-MM-dd').format(date)
+        : null;
 
     try {
       WorkoutsFetchResult result;

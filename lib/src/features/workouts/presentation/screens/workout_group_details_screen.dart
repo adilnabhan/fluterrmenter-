@@ -7,6 +7,7 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:intl/intl.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/multi_day_plan_reorder_screen.dart';
 import 'package:mentor_mobile_app/core/services/holiday/gym_holiday_service.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/create_workout_plan_wizard_screen.dart';
 
 class WorkoutGroupDetailsScreen extends StatefulWidget {
   const WorkoutGroupDetailsScreen({
@@ -56,8 +57,9 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       },
       controller: TextEditingController(),
       focusNode: FocusNode(),
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         hintText: 'Enter plan name',
+        hintStyle: TextStyle(color: Colors.grey.shade400),
         filled: true,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -858,6 +860,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
     DateTime? selectedDate = DateTime.now();
     String? holidayWarning = await GymHolidayService.getHolidayName(
       selectedDate,
+      forceRefresh: true,
     );
 
     final bool? confirmed = await showDialog<bool>(
@@ -941,6 +944,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                         if (picked != null) {
                           final hol = await GymHolidayService.getHolidayName(
                             picked,
+                            forceRefresh: true,
                           );
                           setStateDialog(() {
                             selectedDate = picked;
@@ -1089,7 +1093,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
     if (confirmed != true) return;
 
     final targetDate = selectedDate ?? DateTime.now();
-    final isHol = await GymHolidayService.isHoliday(targetDate);
+    final isHol =
+        await GymHolidayService.isHoliday(targetDate, forceRefresh: true);
     if (isHol) {
       Dialogs.showSnack(
         msg: 'Cannot assign workout: The selected date is a gym holiday.',
@@ -1310,7 +1315,20 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
         );
       }
     } else {
-      _showCreatePlanSheet(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder:
+              (context) => CreateWorkoutPlanWizardScreen(
+                preselectedGroupId: widget.groupId,
+                preselectedGroupTitle: widget.groupTitle,
+              ),
+        ),
+      ).then((_) {
+        if (mounted) {
+          _fetchPlans(silent: true);
+        }
+      });
     }
   }
 

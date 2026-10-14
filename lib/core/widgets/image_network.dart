@@ -163,16 +163,29 @@ class ImageNetwork extends StatelessWidget {
   }
 
   ///
-  Widget get empty => Container(
-    alignment: Alignment.center,
-    height: height,
-    width: width,
-    color: Colors.grey.shade400,
-    child: Icon(
-      Icons.image,
-      color: Colors.white,
-      size: height ?? 50,
-      semanticLabel: 'Image not found',
-    ),
-  );
+  Widget get empty {
+    double iconSize = 32;
+    if (height != null && height!.isFinite && height! > 0) {
+      iconSize = height! * 0.4;
+      if (iconSize > 48) iconSize = 48;
+      if (iconSize < 16) iconSize = 16;
+    } else if (width != null && width!.isFinite && width! > 0) {
+      iconSize = width! * 0.4;
+      if (iconSize > 48) iconSize = 48;
+      if (iconSize < 16) iconSize = 16;
+    }
+
+    return Container(
+      alignment: Alignment.center,
+      height: height,
+      width: width,
+      color: Colors.grey.shade400,
+      child: Icon(
+        Icons.image,
+        color: Colors.white,
+        size: iconSize,
+        semanticLabel: 'Image not found',
+      ),
+    );
+  }
 }

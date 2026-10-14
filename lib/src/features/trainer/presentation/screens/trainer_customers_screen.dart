@@ -1741,6 +1741,7 @@ class _AssignPlanBottomSheetContentState
       final isHol = await GymHolidayService.isHoliday(
         targetDate,
         orgId: widget.organizationId,
+        forceRefresh: true,
       );
       if (isHol) {
         Dialogs.showSnack(

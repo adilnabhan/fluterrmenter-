@@ -5,6 +5,7 @@ import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/wor
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/assign_to_client_bottom_sheet.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/create_workout_plan_wizard_screen.dart';
 
 class WorkoutGroupsScreen extends StatefulWidget {
   const WorkoutGroupsScreen({super.key, this.orgId});
@@ -592,8 +593,18 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
             right: 0,
             child: Center(
               child: CreateGroupButton(
-                label: 'Create new group',
+                label:
+                    _selectedTabIndex == 0
+                        ? 'Create Workout Plan'
+                        : 'Create new group',
                 onTap: () {
+                  if (_selectedTabIndex == 0) {
+                    _openCreatePlanWizard(context);
+                  } else {
+                    _showCreateGroupSheet(context);
+                  }
+                },
+                onLongPress: () {
                   _showCreateGroupSheet(context);
                 },
               ),
@@ -602,6 +613,19 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
         ],
       ),
     );
+  }
+
+  void _openCreatePlanWizard(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => const CreateWorkoutPlanWizardScreen(),
+      ),
+    ).then((_) {
+      if (mounted) {
+        _fetchGroups(silent: true);
+      }
+    });
   }
 
   Widget _buildTab(String text, int index) {

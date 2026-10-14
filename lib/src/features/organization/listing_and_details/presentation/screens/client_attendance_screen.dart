@@ -4,6 +4,7 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/presentation/screens/member/member_detials_screen.dart';
+import 'package:mentor_mobile_app/core/services/holiday/gym_holiday_service.dart';
 
 class _AttendanceCacheEntry {
   final List<Map<String, dynamic>> clients;
@@ -41,6 +42,7 @@ class ClientAttendanceScreen extends StatefulWidget {
     _cachedUserRole = null;
     _cache.clear();
     _monthHolidaysCache.clear();
+    GymHolidayService.clearCache();
   }
 
   @override
@@ -949,18 +951,6 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   Future<void> _showSetHolidaySheet({
     Map<String, dynamic>? existingHoliday,
   }) async {
-    if (existingHoliday == null && _isHoliday) {
-      existingHoliday = {
-        'id': _dashboard['holiday_id'] ?? _dashboard['id'],
-        'title': _holidayName,
-        'description':
-            _dashboard['holiday_description'] ??
-            _dashboard['description'] ??
-            '',
-        'date': DateFormat('yyyy-MM-dd').format(_selectedDate),
-      };
-    }
-
     final titleController = TextEditingController(
       text: existingHoliday?['title']?.toString() ?? '',
     );
@@ -983,10 +973,6 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
               existingHoliday['title'].toString();
         }
       }
-    } else {
-      selectedDates.add(
-        DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day),
-      );
     }
 
     // Current viewed month in calendar
@@ -2118,7 +2104,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                           isSelected
                                               ? const Color(0xff2471A3)
                                               : hasExisting
-                                              ? const Color(0xffFDEDEC)
+                                              ? const Color(0xffEAF2F8)
                                               : Colors.white,
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
@@ -2127,7 +2113,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                                 ? const Color(0xff2471A3)
                                                 : hasExisting
                                                 ? const Color(
-                                                  0xffE74C3C,
+                                                  0xff2471A3,
                                                 ).withValues(alpha: 0.45)
                                                 : isTodayDate
                                                 ? AppColors.primary
@@ -2158,7 +2144,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                                         ? Colors.white
                                                         : hasExisting
                                                         ? const Color(
-                                                          0xffC0392B,
+                                                          0xff2471A3,
                                                         )
                                                         : isTodayDate
                                                         ? AppColors.primary
@@ -2172,7 +2158,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                               width: 4,
                                               height: 4,
                                               decoration: const BoxDecoration(
-                                                color: Color(0xffE74C3C),
+                                                color: Color(0xff2471A3),
                                                 shape: BoxShape.circle,
                                               ),
                                             ),
@@ -2215,9 +2201,15 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                     Container(
                                       width: 8,
                                       height: 8,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xffE74C3C),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xffEAF2F8),
                                         shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color(
+                                            0xff2471A3,
+                                          ).withValues(alpha: 0.7),
+                                          width: 1.5,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(width: 4),

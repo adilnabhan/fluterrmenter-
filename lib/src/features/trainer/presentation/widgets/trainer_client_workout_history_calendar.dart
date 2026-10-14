@@ -1,5 +1,6 @@
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
+import 'package:mentor_mobile_app/core/services/holiday/gym_holiday_service.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class TrainerClientWorkoutHistoryCalendar extends StatefulWidget {
@@ -9,6 +10,7 @@ class TrainerClientWorkoutHistoryCalendar extends StatefulWidget {
     this.startDate,
     this.showTitle = true,
     this.assignedWorkouts,
+    this.organizationId,
     super.key,
   });
 
@@ -17,6 +19,7 @@ class TrainerClientWorkoutHistoryCalendar extends StatefulWidget {
   final List<Map<String, dynamic>> workoutHistory;
   final bool showTitle;
   final List<dynamic>? assignedWorkouts;
+  final int? organizationId;
 
   @override
   State<TrainerClientWorkoutHistoryCalendar> createState() =>
@@ -38,6 +41,7 @@ class _TrainerClientWorkoutHistoryCalendarState
   DateTime? _selectedDay;
   final Map<String, CalendarDayState> _dayStates = {};
   List<dynamic> _internalAssignedWorkouts = [];
+  Map<String, String> _monthHolidays = {};
 
   DateTime get _firstWorkoutDate {
     DateTime earliest =
@@ -58,8 +62,24 @@ class _TrainerClientWorkoutHistoryCalendarState
   @override
   void initState() {
     super.initState();
-    _computeDayStates();
+    _fetchHolidaysAndComputeDayStates();
     _fetchAssignedWorkoutsIfNeeded();
+  }
+
+  Future<void> _fetchHolidaysAndComputeDayStates() async {
+    _computeDayStates();
+    try {
+      final holidays = await GymHolidayService.getMonthHolidays(
+        _focusedDay,
+        orgId: widget.organizationId,
+      );
+      if (mounted) {
+        setState(() {
+          _monthHolidays = holidays;
+          _computeDayStates();
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -67,8 +87,9 @@ class _TrainerClientWorkoutHistoryCalendarState
     covariant TrainerClientWorkoutHistoryCalendar oldWidget,
   ) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.workoutHistory != widget.workoutHistory) {
-      _computeDayStates();
+    if (oldWidget.workoutHistory != widget.workoutHistory ||
+        oldWidget.organizationId != widget.organizationId) {
+      _fetchHolidaysAndComputeDayStates();
     }
     if (oldWidget.assignedWorkouts != widget.assignedWorkouts) {
       if (widget.assignedWorkouts == null || widget.assignedWorkouts!.isEmpty) {
@@ -237,12 +258,21 @@ class _TrainerClientWorkoutHistoryCalendarState
           final startDate =
               startStr != null ? DateTime.tryParse(startStr) : null;
           final endDate = endStr != null ? DateTime.tryParse(endStr) : null;
-          if (startDate != null) {
+          final totalDays = (p['total_days'] as num?)?.toInt();
+
+          if (startDate != null &&
+              (endDate != null || (totalDays != null && totalDays > 1))) {
             final effectiveEnd = endDate ??
                 startDate.add(
-                  Duration(days: (p['total_days'] as num?)?.toInt() ?? 30),
+                  Duration(days: totalDays! - 1),
                 );
-            if (!date.isBefore(startDate) && !date.isAfter(effectiveEnd)) {
+            final checkDate = DateTime(date.year, date.month, date.day);
+            final checkStart =
+                DateTime(startDate.year, startDate.month, startDate.day);
+            final checkEnd =
+                DateTime(effectiveEnd.year, effectiveEnd.month, effectiveEnd.day);
+
+            if (!checkDate.isBefore(checkStart) && !checkDate.isAfter(checkEnd)) {
               final name = p['plan_name'] ?? p['title'] ?? p['name'];
               if (name != null &&
                   name.toString().trim().isNotEmpty &&
@@ -251,25 +281,6 @@ class _TrainerClientWorkoutHistoryCalendarState
               }
             }
           }
-        }
-      }
-
-      Map<String, dynamic>? active;
-      for (final p in assigned) {
-        if (p is Map && (p['status'] == 'active' || p['is_active'] == true)) {
-          active = Map<String, dynamic>.from(p);
-          break;
-        }
-      }
-      active ??= (assigned.isNotEmpty && assigned.first is Map)
-          ? Map<String, dynamic>.from(assigned.first as Map)
-          : null;
-      if (active != null) {
-        final name = active['plan_name'] ?? active['title'] ?? active['name'];
-        if (name != null &&
-            name.toString().trim().isNotEmpty &&
-            name.toString() != 'null') {
-          return name.toString().trim();
         }
       }
     }
@@ -347,7 +358,15 @@ class _TrainerClientWorkoutHistoryCalendarState
         continue;
       }
 
-      // 2. Only if NO workout history exists for this date:
+      // 2. Gym holiday check!
+      // If the fitness center set a holiday on this date, it is a scheduled rest day (Blue)
+      final isGymHoliday = _monthHolidays.containsKey(dateKey);
+      if (isGymHoliday) {
+        _dayStates[dateKey] = CalendarDayState.rest;
+        continue;
+      }
+
+      // 3. Only if NO workout history and NOT a gym holiday:
       // Future dates (strictly after today) → no indicator
       if (dateOnly.isAfter(todayOnly)) {
         _dayStates[dateKey] = CalendarDayState.future;
@@ -511,7 +530,7 @@ class _TrainerClientWorkoutHistoryCalendarState
                             1,
                           );
                         });
-                        _computeDayStates();
+                        _fetchHolidaysAndComputeDayStates();
                       }
                       : null,
             ),
@@ -548,7 +567,7 @@ class _TrainerClientWorkoutHistoryCalendarState
                             1,
                           );
                         });
-                        _computeDayStates();
+                        _fetchHolidaysAndComputeDayStates();
                       }
                       : null,
             ),
@@ -572,7 +591,7 @@ class _TrainerClientWorkoutHistoryCalendarState
         setState(() {
           _focusedDay = focusedDay;
         });
-        _computeDayStates();
+        _fetchHolidaysAndComputeDayStates();
       },
       calendarBuilders: CalendarBuilders<dynamic>(
         dowBuilder: (context, day) {
@@ -884,6 +903,16 @@ class _TrainerClientWorkoutHistoryCalendarState
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
+                          ] else if (_monthHolidays[dateKey] != null) ...[
+                            Text(
+                              _monthHolidays[dateKey]!,
+                              style: AppStyles.text14Px.poppins.w600.copyWith(
+                                color: const Color(0xFF3949AB),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
                           ],
                           Text(
                             'Workout History Details',
@@ -892,7 +921,11 @@ class _TrainerClientWorkoutHistoryCalendarState
                         ],
                       ),
                     ),
-                    _buildStatusBadge(state, hasLogs: logs.isNotEmpty),
+                    _buildStatusBadge(
+                      state,
+                      hasLogs: logs.isNotEmpty,
+                      isHoliday: _monthHolidays.containsKey(dateKey),
+                    ),
                   ],
                 ),
               ),
@@ -919,7 +952,11 @@ class _TrainerClientWorkoutHistoryCalendarState
     );
   }
 
-  Widget _buildStatusBadge(CalendarDayState state, {bool hasLogs = false}) {
+  Widget _buildStatusBadge(
+    CalendarDayState state, {
+    bool hasLogs = false,
+    bool isHoliday = false,
+  }) {
     Color bgColor;
     Color textColor;
     IconData icon;
@@ -940,17 +977,24 @@ class _TrainerClientWorkoutHistoryCalendarState
         bgColor = const Color(0xffE8EAF6);
         textColor = const Color(0xFF3949AB);
         icon = Icons.nightlight_round;
-        label = 'Rest Day';
+        label = isHoliday ? 'Gym Holiday' : 'Rest Day';
       case CalendarDayState.missed:
         bgColor = const Color(0xffFFEBEE);
         textColor = const Color(0xFFD32F2F);
         icon = Icons.cancel;
         label = 'Missed';
       case CalendarDayState.future:
-        bgColor = const Color(0xffF5F5F5);
-        textColor = Colors.grey.shade600;
-        icon = Icons.event;
-        label = 'Upcoming';
+        if (isHoliday) {
+          bgColor = const Color(0xffE8EAF6);
+          textColor = const Color(0xFF3949AB);
+          icon = Icons.beach_access_rounded;
+          label = 'Gym Holiday';
+        } else {
+          bgColor = const Color(0xffF5F5F5);
+          textColor = Colors.grey.shade600;
+          icon = Icons.event;
+          label = 'Upcoming';
+        }
     }
 
     return Container(
@@ -982,6 +1026,8 @@ class _TrainerClientWorkoutHistoryCalendarState
     String? planName,
   }) {
     if (state == CalendarDayState.rest) {
+      final dateKey = DateFormat('yyyy-MM-dd').format(date);
+      final holidayName = _monthHolidays[dateKey];
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
@@ -1000,22 +1046,26 @@ class _TrainerClientWorkoutHistoryCalendarState
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.nightlight_round,
-                color: Color(0xFF3949AB),
+              child: Icon(
+                holidayName != null ? Icons.beach_access_rounded : Icons.nightlight_round,
+                color: const Color(0xFF3949AB),
                 size: 32,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              'Rest & Recovery Day',
+              holidayName != null && holidayName.isNotEmpty
+                  ? 'Gym Holiday: $holidayName'
+                  : 'Rest & Recovery Day',
               style: AppStyles.text16Px.poppins.w600.copyWith(
                 color: const Color(0xFF3949AB),
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Scheduled rest day for muscle recovery and adaptation.',
+              holidayName != null && holidayName.isNotEmpty
+                  ? 'Gym was closed on this day for $holidayName.'
+                  : 'Scheduled rest day for muscle recovery and adaptation.',
               textAlign: TextAlign.center,
               style: AppStyles.text12Px.poppins.w400.textGrey,
             ),
@@ -1357,6 +1407,51 @@ class _TrainerClientWorkoutHistoryCalendarState
               planName != null && planName.isNotEmpty
                   ? 'Plan "$planName" assigned for this day, awaiting completion/verification.'
                   : 'Workout plan assigned for this day, awaiting completion/verification.',
+              textAlign: TextAlign.center,
+              style: AppStyles.text12Px.poppins.w400.textGrey,
+            ),
+          ],
+        ),
+      );
+    }
+
+    final dateKey = DateFormat('yyyy-MM-dd').format(date);
+    final holidayName = _monthHolidays[dateKey];
+    if (holidayName != null && holidayName.isNotEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xffE8EAF6),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFF3949AB).withValues(alpha: 0.2),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.beach_access_rounded,
+                color: Color(0xFF3949AB),
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Upcoming Gym Holiday',
+              style: AppStyles.text16Px.poppins.w600.copyWith(
+                color: const Color(0xFF3949AB),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Fitness center is closed for $holidayName.',
               textAlign: TextAlign.center,
               style: AppStyles.text12Px.poppins.w400.textGrey,
             ),

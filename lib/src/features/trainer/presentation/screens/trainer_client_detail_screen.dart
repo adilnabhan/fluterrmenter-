@@ -5,11 +5,17 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/trai
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_assigned_workouts_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_body_matrix_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_customers_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_personal_records_screen.dart';
 
 class TrainerClientDetailScreen extends StatefulWidget {
-  const TrainerClientDetailScreen({required this.customerId, super.key});
+  const TrainerClientDetailScreen({
+    required this.customerId,
+    this.organizationId,
+    super.key,
+  });
 
   final int customerId;
+  final int? organizationId;
 
   @override
   State<TrainerClientDetailScreen> createState() =>
@@ -832,7 +838,21 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () => _showWorkoutRecordsSheet(context),
+          onTap: () {
+            final clientName = (_clientData['profile']?['name'] ??
+                    _clientData['name'] ??
+                    'Client')
+                .toString();
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => TrainerPersonalRecordsScreen(
+                  customerId: widget.customerId,
+                  clientName: clientName,
+                ),
+              ),
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -2055,6 +2075,15 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                         : null,
                 workoutHistory: _workoutHistory,
                 assignedWorkouts: _assignedWorkouts,
+                organizationId: widget.organizationId ??
+                    (_clientData['organization_id'] as int?) ??
+                    (_clientData['fitness_center_id'] as int?) ??
+                    (_clientData['organization'] is Map
+                        ? _clientData['organization']['id'] as int?
+                        : null) ??
+                    (_clientData['membership'] is Map
+                        ? _clientData['membership']['organization_id'] as int?
+                        : null),
               ),
               const SizedBox(height: 24),
             ],

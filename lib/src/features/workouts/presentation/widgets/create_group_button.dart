@@ -2,17 +2,20 @@ import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class CreateGroupButton extends StatelessWidget {
   const CreateGroupButton({
-    super.key,
     required this.onTap,
+    this.onLongPress,
     this.label = 'Create new group',
+    super.key,
   });
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final String label;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(30),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
