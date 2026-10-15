@@ -14,6 +14,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_notifications_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_clients_trained_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/birthday_wishes_dialog.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
   const TrainerDashboardScreen({super.key});
@@ -613,18 +614,16 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
 
                                 return GestureDetector(
                                   onTap: () {
-                                    if (customerId != null) {
-                                      final id = int.tryParse(customerId.toString());
-                                      if (id != null) {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute<void>(
-                                            builder: (context) =>
-                                                TrainerClientDetailScreen(customerId: id),
-                                          ),
-                                        );
-                                      }
-                                    }
+                                    final gymName = user?.organizationName ??
+                                        user?.trainer?.organizationName ??
+                                        displayName;
+                                    BirthdayWishesDialog.show(
+                                      context,
+                                      client: Map<String, dynamic>.from(
+                                        bday as Map,
+                                      ),
+                                      organizationName: gymName,
+                                    );
                                   },
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,

@@ -114,9 +114,10 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
         backgroundColor: context.colors.background,
         elevation: 0,
         iconTheme: IconThemeData(color: context.colors.icon),
+        centerTitle: false,
         title: Text(
           'Trainer Reports',
-          style: AppStyles.text18Px.poppins.w600.copyWith(
+          style: AppStyles.text20Px.poppins.w600.copyWith(
             color: context.colors.textPrimary,
           ),
         ),
@@ -142,89 +143,99 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      GridView.count(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        childAspectRatio: 1.4,
+                      Row(
                         children: [
-                          _buildReportCard(
-                            title: 'Clients Trained',
-                            value: '$dailyClientsTrained',
-                            icon: Icons.people_outline,
-                            color: const Color(0xff486CC2),
-                            onTap: () {
-                              final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => TrainerClientsTrainedScreen(
-                                        rangeType: 'daily',
-                                        date: todayStr,
-                                        title: 'Clients Trained Today',
-                                      ),
-                                ),
-                              );
-                            },
+                          Expanded(
+                            child: _buildReportCard(
+                              title: 'Clients Trained',
+                              value: '$dailyClientsTrained',
+                              icon: Icons.people_outline,
+                              color: const Color(0xff486CC2),
+                              onTap: () {
+                                final todayStr =
+                                    DateFormat('yyyy-MM-dd').format(DateTime.now());
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder:
+                                        (context) => TrainerClientsTrainedScreen(
+                                          rangeType: 'daily',
+                                          date: todayStr,
+                                          title: 'Clients Trained Today',
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                          _buildReportCard(
-                            title: 'Workouts Assigned',
-                            value: '$dailyWorkoutsAssigned',
-                            icon: Icons.assignment_outlined,
-                            color: const Color(0xff9C51BF),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder:
-                                      (context) =>
-                                          const TrainerAssignedWorkoutsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          _buildReportCard(
-                            title: 'Workouts Completed',
-                            value: '$dailyWorkoutsCompleted',
-                            icon: Icons.check_circle_outline,
-                            color: const Color(0xff527F50),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder:
-                                      (context) =>
-                                          const TrainerPendingVerificationsScreen(
-                                            initialTabIndex: 0,
-                                          ),
-                                ),
-                              );
-                            },
-                          ),
-                          _buildReportCard(
-                            title: 'Verified Workouts',
-                            value: '$dailyVerifiedWorkouts',
-                            icon: Icons.verified_outlined,
-                            color: const Color(0xffE67E22),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder:
-                                      (context) =>
-                                          const TrainerPendingVerificationsScreen(
-                                            initialTabIndex: 1,
-                                          ),
-                                ),
-                              );
-                            },
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildReportCard(
+                              title: 'Workouts Assigned',
+                              value: '$dailyWorkoutsAssigned',
+                              icon: Icons.assignment_outlined,
+                              color: const Color(0xff9C51BF),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder:
+                                        (context) =>
+                                            const TrainerAssignedWorkoutsScreen(),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildReportCard(
+                              title: 'Workouts Completed',
+                              value: '$dailyWorkoutsCompleted',
+                              icon: Icons.check_circle_outline,
+                              color: const Color(0xff527F50),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder:
+                                        (context) =>
+                                            const TrainerPendingVerificationsScreen(
+                                              initialTabIndex: 0,
+                                            ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildReportCard(
+                              title: 'Verified Workouts',
+                              value: '$dailyVerifiedWorkouts',
+                              icon: Icons.verified_outlined,
+                              color: const Color(0xffE67E22),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder:
+                                        (context) =>
+                                            const TrainerPendingVerificationsScreen(
+                                              initialTabIndex: 1,
+                                            ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
 
                       // Monthly Report
                       Text(
@@ -278,7 +289,7 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 100),
                     ],
                   ),
                 ),
@@ -293,10 +304,12 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
     required Color color,
     VoidCallback? onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
+    return AspectRatio(
+      aspectRatio: 1.4,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: context.colors.card,
@@ -336,8 +349,9 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildReportRow(String label, String value) {
     return Row(
@@ -385,16 +399,22 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
           const SizedBox(height: 12),
 
           // 2x2 Grid Shimmer Cards
-          GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.4,
-            children: List.generate(4, (index) => _buildCardShimmer()),
+          Row(
+            children: [
+              Expanded(child: _buildCardShimmer()),
+              const SizedBox(width: 12),
+              Expanded(child: _buildCardShimmer()),
+            ],
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _buildCardShimmer()),
+              const SizedBox(width: 12),
+              Expanded(child: _buildCardShimmer()),
+            ],
+          ),
+          const SizedBox(height: 24),
 
           // Monthly Report Header
           Text(
@@ -438,34 +458,37 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 100),
         ],
       ),
     );
   }
 
   Widget _buildCardShimmer() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: context.colors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.colors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              KShimmer(width: 28, height: 28, radius: 14),
-              KShimmer(width: 50, height: 10, radius: 4),
-            ],
-          ),
-          KShimmer(width: double.infinity, height: 26, radius: 8),
-          KShimmer(width: 80, height: 10, radius: 4),
-        ],
+    return AspectRatio(
+      aspectRatio: 1.4,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: context.colors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.colors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: const [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                KShimmer(width: 28, height: 28, radius: 14),
+                KShimmer(width: 50, height: 10, radius: 4),
+              ],
+            ),
+            KShimmer(width: double.infinity, height: 26, radius: 8),
+            KShimmer(width: 80, height: 10, radius: 4),
+          ],
+        ),
       ),
     );
   }

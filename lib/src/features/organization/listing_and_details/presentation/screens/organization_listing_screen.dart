@@ -2184,6 +2184,7 @@ class _OrganizationListingAndDetailsScreenState
 
                 OrganizationReportsScreen(
                   orgId: state.selectedOrganization!.id!,
+                  showBackButton: false,
                 ),
 
                 OrganizationDetailsScreen(

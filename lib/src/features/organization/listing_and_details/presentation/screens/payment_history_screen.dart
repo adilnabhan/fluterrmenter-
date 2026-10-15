@@ -34,6 +34,7 @@ class PaymentHistoryList extends StatefulWidget {
 class _PaymentHistoryListState extends State<PaymentHistoryList> {
   late final MembersAndLeadsCubit _cubit;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
   String? _selectedPaymentMode;
   String? _selectedDate;
@@ -162,7 +163,25 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
   void initState() {
     super.initState();
     _cubit = context.read<MembersAndLeadsCubit>();
+    _scrollController.addListener(_onScroll);
     _fetch();
+  }
+
+  void _onScroll() {
+    if (_scrollController.hasClients &&
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200) {
+      final state = _cubit.state.paymentHistory;
+      if (state.isPagination) return;
+      final paymentHistoryData = state.data.fold(
+        () => null,
+        (t) => t.fold((l) => null, (r) => r),
+      );
+      final nextUrl = paymentHistoryData?.allPayments.next;
+      if (nextUrl != null && nextUrl.isNotEmpty) {
+        _fetch(isPagination: true);
+      }
+    }
   }
 
   Future<void> _fetch({bool isPagination = false}) async {
@@ -178,6 +197,7 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -188,6 +208,7 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
         automaticallyImplyLeading: false,
         titleSpacing: widget.showBackButton ? null : 16,
         leading: widget.showBackButton ? const PopButton().center : null,
@@ -209,9 +230,9 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
+                  child: AppSearchBar(
                     controller: _searchController,
-                    textInputAction: TextInputAction.search,
+                    hintText: 'Search for name or phone number',
                     onSubmitted: (val) {
                       EasyDebounce.cancel('payment_search_query');
                       _searchQuery = val.trim();
@@ -228,47 +249,22 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
                         },
                       );
                     },
-                    decoration: InputDecoration(
-                      hintText: 'Search for name or phone number',
-                      hintStyle: AppStyles.text14Px.poppins.copyWith(
-                        color: Colors.grey,
-                      ),
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(
-                                Icons.clear,
-                                color: Colors.grey,
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                _searchController.clear();
-                                _searchQuery = '';
-                                setState(() {});
-                                EasyDebounce.cancel('payment_search_query');
-                                _fetch();
-                              },
-                            )
-                          : null,
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.primary),
-                      ),
-                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(
+                              Icons.clear,
+                              color: Colors.grey,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                              _searchQuery = '';
+                              setState(() {});
+                              EasyDebounce.cancel('payment_search_query');
+                              _fetch();
+                            },
+                          )
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -296,10 +292,26 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
                       child: ColoredBox(
                         color: const Color(0xfff9f9f9),
                         child: data.allPayments.results.isEmpty
-                            ? ErrorUi.empty().center
+                            ? RefreshIndicator(
+                                onRefresh: () => _fetch(isPagination: false),
+                                color: AppColors.primary,
+                                child: SingleChildScrollView(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  child: SizedBox(
+                                    height:
+                                        MediaQuery.of(context).size.height *
+                                            0.6,
+                                    child: ErrorUi.empty().center,
+                                  ),
+                                ),
+                              )
                             : _AllPaymentsTab(
                                 allPayment: data.allPayments,
                                 dateFilter: _selectedDate,
+                                scrollController: _scrollController,
+                                isPagination: state.paymentHistory.isPagination,
+                                onRefresh: () => _fetch(isPagination: false),
                               ),
                       ),
                     );
@@ -317,14 +329,20 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
 class _AllPaymentsTab extends StatelessWidget {
   final bool isAllPayment;
   final String? dateFilter;
+  final PaymentHistorySection? allPayment;
+  final ScrollController scrollController;
+  final bool isPagination;
+  final Future<void> Function() onRefresh;
+
   const _AllPaymentsTab({
     super.key,
+    required this.scrollController,
+    required this.onRefresh,
     this.allPayment,
     this.isAllPayment = true,
     this.dateFilter,
+    this.isPagination = false,
   });
-
-  final PaymentHistorySection? allPayment;
 
   String _formatAmount(dynamic amount, num fallback) {
     if (amount != null) {
@@ -397,16 +415,39 @@ class _AllPaymentsTab extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            itemCount: allPayment?.results.length ?? 0,
-            itemBuilder: (context, index) {
-              return paymentCard(
-                context: context,
-                isAllPayments: isAllPayment,
-                data: allPayment?.results[index],
-              );
-            },
+          child: RefreshIndicator(
+            onRefresh: onRefresh,
+            color: AppColors.primary,
+            child: ListView.builder(
+              controller: scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+              itemCount:
+                  (allPayment?.results.length ?? 0) + (isPagination ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index < (allPayment?.results.length ?? 0)) {
+                  return paymentCard(
+                    context: context,
+                    isAllPayments: isAllPayment,
+                    data: allPayment?.results[index],
+                  );
+                } else {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
           ),
         ),
       ],

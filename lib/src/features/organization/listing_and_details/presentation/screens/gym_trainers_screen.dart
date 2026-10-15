@@ -204,7 +204,7 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
         automaticallyImplyLeading: false,
         centerTitle: false,
         titleSpacing: 16,
-        title: Text('Trainers', style: AppStyles.text16Px.poppins.w600),
+        title: Text('Trainers', style: AppStyles.text18Px.poppins.w600),
         actions: [
           IconButton(
             onPressed: () {
@@ -240,25 +240,8 @@ class _GymTrainersScreenState extends State<GymTrainersScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search trainers...',
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xffDDDDDD)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xffDDDDDD)),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
+                  child: AppSearchBar(
+                    hintText: 'Search trainers...',
                     onChanged: (value) {
                       if (!mounted) return;
                       setState(() {

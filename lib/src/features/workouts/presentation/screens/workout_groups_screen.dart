@@ -406,6 +406,13 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
     final isTrainer = user?.userRole == 35;
 
     final filtered = _filteredGroups;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final hasBottomNav =
+        context.findAncestorWidgetOfExactType<OrganizationDashboardScaffold>() !=
+                null ||
+            !(ModalRoute.of(context)?.canPop ?? true);
+    final createButtonBottom =
+        hasBottomNav ? (bottomInset + 20) : (bottomInset + 16);
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -415,7 +422,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
         centerTitle: false,
         title: Text(
           'Workouts',
-          style: AppStyles.text20Px.poppins.w500.copyWith(
+          style: AppStyles.text20Px.poppins.w600.copyWith(
             color: context.colors.textPrimary,
           ),
         ),
@@ -588,7 +595,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
             ],
           ),
           Positioned(
-            bottom: 16,
+            bottom: createButtonBottom,
             left: 0,
             right: 0,
             child: Center(

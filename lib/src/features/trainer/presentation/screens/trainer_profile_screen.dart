@@ -820,17 +820,6 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
 
     return Scaffold(
       backgroundColor: context.colors.background,
-      floatingActionButton:
-          widget.isViewOnly
-              ? null
-              : FloatingActionButton(
-                heroTag: null,
-                onPressed: () {
-                  Dialogs.showSnack(msg: "Add action coming soon!");
-                },
-                backgroundColor: Colors.red,
-                child: const Icon(Icons.add, color: Colors.white),
-              ),
       body: RefreshIndicator(
         onRefresh: _handleRefresh,
         child: SingleChildScrollView(

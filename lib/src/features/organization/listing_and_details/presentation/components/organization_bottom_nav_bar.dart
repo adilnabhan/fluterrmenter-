@@ -38,15 +38,17 @@ class OrganizationBottomNavBar extends StatelessWidget {
       if (!isTrainer) ...[
         _NavBarItem(
           icon: SvgPicture.asset(
-            'assets/images/svg/icons/trainers.svg',
-            width: 24,
-            height: 24,
-            colorFilter: ColorFilter.mode(
-              currentIndex == 1
-                  ? AppColors.primary
-                  : context.colors.textSecondary,
-              BlendMode.srcIn,
-            ),
+            currentIndex == 1
+                ? 'assets/images/svg/icons/coachIconSelected.svg'
+                : 'assets/images/svg/icons/trainers.svg',
+            width: currentIndex == 1 ? 21 : 24,
+            height: currentIndex == 1 ? 21 : 24,
+            colorFilter: currentIndex == 1
+                ? null
+                : ColorFilter.mode(
+                    context.colors.textSecondary,
+                    BlendMode.srcIn,
+                  ),
           ),
           label: 'Trainers',
           isSelected: currentIndex == 1,
@@ -54,15 +56,17 @@ class OrganizationBottomNavBar extends StatelessWidget {
         ),
         _NavBarItem(
           icon: SvgPicture.asset(
-            'assets/images/svg/icons/payments.svg',
-            width: 24,
-            height: 24,
-            colorFilter: ColorFilter.mode(
-              currentIndex == 2
-                  ? AppColors.primary
-                  : context.colors.textSecondary,
-              BlendMode.srcIn,
-            ),
+            currentIndex == 2
+                ? 'assets/images/svg/icons/paymentsIconSelected.svg'
+                : 'assets/images/svg/icons/payments.svg',
+            width: currentIndex == 2 ? 22 : 24,
+            height: currentIndex == 2 ? 18 : 24,
+            colorFilter: currentIndex == 2
+                ? null
+                : ColorFilter.mode(
+                    context.colors.textSecondary,
+                    BlendMode.srcIn,
+                  ),
           ),
           label: 'Payments',
           isSelected: currentIndex == 2,
@@ -116,24 +120,36 @@ class OrganizationBottomNavBar extends StatelessWidget {
         ),
       ] else ...[
         _NavBarItem(
-          icon: Icon(
-            Icons.fitness_center_rounded,
-            color: currentIndex == 1
-                ? AppColors.primary
-                : context.colors.textSecondary,
-            size: 22,
+          icon: SvgPicture.asset(
+            currentIndex == 1
+                ? 'assets/images/svg/icons/workoutselected.svg'
+                : 'assets/images/svg/icons/workouts.svg',
+            width: 24,
+            height: 24,
+            colorFilter: currentIndex == 1
+                ? null
+                : ColorFilter.mode(
+                    context.colors.textSecondary,
+                    BlendMode.srcIn,
+                  ),
           ),
           label: 'Workouts',
           isSelected: currentIndex == 1,
           onTap: () => onTap(1),
         ),
         _NavBarItem(
-          icon: Icon(
-            Icons.directions_walk_rounded,
-            color: currentIndex == 2
-                ? AppColors.primary
-                : context.colors.textSecondary,
-            size: 24,
+          icon: SvgPicture.asset(
+            currentIndex == 2
+                ? 'assets/images/svg/icons/clientselected.svg'
+                : 'assets/images/svg/icons/clients.svg',
+            width: 24,
+            height: 24,
+            colorFilter: currentIndex == 2
+                ? null
+                : ColorFilter.mode(
+                    context.colors.textSecondary,
+                    BlendMode.srcIn,
+                  ),
           ),
           label: 'Clients',
           isSelected: currentIndex == 2,
@@ -292,21 +308,7 @@ class _NavBarItem extends StatelessWidget {
               SizedBox(
                 height: 26,
                 child: Center(
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween<double>(
-                      begin: 1,
-                      end: isSelected ? 1.08 : 1.0,
-                    ),
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutBack,
-                    builder: (context, scale, child) {
-                      return Transform.scale(
-                        scale: scale,
-                        child: child,
-                      );
-                    },
-                    child: icon,
-                  ),
+                  child: icon,
                 ),
               ),
               const SizedBox(height: 2),

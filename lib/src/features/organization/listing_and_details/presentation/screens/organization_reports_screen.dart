@@ -37,7 +37,8 @@ String _safeString(dynamic val, [String fallback = '']) {
 
 class OrganizationReportsScreen extends StatefulWidget {
   final int orgId;
-  const OrganizationReportsScreen({super.key, required this.orgId});
+  final bool showBackButton;
+  const OrganizationReportsScreen({super.key, required this.orgId, this.showBackButton = true});
 
   @override
   State<OrganizationReportsScreen> createState() =>
@@ -1995,7 +1996,10 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          leading: const PopButton().center,
+          centerTitle: false,
+          automaticallyImplyLeading: false,
+          titleSpacing: widget.showBackButton ? null : 16,
+          leading: widget.showBackButton ? const PopButton().center : null,
           title: Text(
             'Gym Analytics & Reports',
             style: AppStyles.text18Px.poppins.w600.dark,
@@ -2190,37 +2194,14 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           appBar: AppBar(
             backgroundColor: Colors.white,
             elevation: 0,
-            leading: const PopButton().center,
+            centerTitle: false,
+            automaticallyImplyLeading: false,
+            titleSpacing: widget.showBackButton ? null : 16,
+            leading: widget.showBackButton ? const PopButton().center : null,
             title: Text(
               'Gym Analytics & Reports',
               style: AppStyles.text18Px.poppins.w600.dark,
             ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  _startDate != null && _endDate != null
-                      ? Icons.calendar_month
-                      : Icons.calendar_today,
-                  color: AppColors.primary,
-                ),
-                tooltip: 'Filter by date range',
-                onPressed: _selectDateRange,
-              ),
-              if (_startDate != null || _endDate != null)
-                IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.red),
-                  tooltip: 'Clear filter',
-                  onPressed: () {
-                    setState(() {
-                      _startDate = null;
-                      _endDate = null;
-                      _selectedYear = DateTime.now().year;
-                      _selectedMonth = DateTime.now().month;
-                    });
-                    _fetchReports();
-                  },
-                ),
-            ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(56),
               child: Container(
@@ -2362,7 +2343,10 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          leading: const PopButton().center,
+          centerTitle: false,
+          automaticallyImplyLeading: false,
+          titleSpacing: widget.showBackButton ? null : 16,
+          leading: widget.showBackButton ? const PopButton().center : null,
           title: Text(
             'Gym Analytics & Reports',
             style: AppStyles.text18Px.poppins.w600.dark,
@@ -3765,120 +3749,17 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   }
 
   void _showMonthYearPicker() {
-    final currentYear = DateTime.now().year;
-    final years = List.generate(5, (i) => currentYear - 3 + i);
-
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setPickerState) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Select Month & Year',
-                        style: AppStyles.text16Px.poppins.w600.dark,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: years.map((y) {
-                        final isSel = y == _selectedYear;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(y.toString()),
-                            selected: isSel,
-                            selectedColor: AppColors.primary,
-                            labelStyle: TextStyle(
-                              color: isSel ? Colors.white : AppColors.textDark,
-                              fontWeight:
-                                  isSel ? FontWeight.w600 : FontWeight.w500,
-                            ),
-                            onSelected: (val) {
-                              if (val) {
-                                setPickerState(() => _selectedYear = y);
-                                setState(() => _selectedYear = y);
-                              }
-                            },
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                      childAspectRatio: 2.2,
-                    ),
-                    itemCount: 12,
-                    itemBuilder: (context, idx) {
-                      final m = idx + 1;
-                      final isSel =
-                          m == _selectedMonth && _selectedYear == _selectedYear;
-                      final mName =
-                          DateFormat('MMM').format(DateTime(2026, m));
-                      return InkWell(
-                        onTap: () {
-                          setState(() {
-                            _selectedMonth = m;
-                            _startDate = null;
-                            _endDate = null;
-                          });
-                          Navigator.pop(context);
-                          _fetchReports();
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isSel
-                                ? AppColors.primary
-                                : const Color(0xffF5F5F5),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            mName,
-                            style: AppStyles.text12Px.poppins.copyWith(
-                              fontWeight:
-                                  isSel ? FontWeight.w600 : FontWeight.w500,
-                              color: isSel ? Colors.white : AppColors.textDark,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            );
-          },
-        );
+    AppMonthPickerBottomSheet.show(
+      context,
+      initialDate: DateTime(_selectedYear, _selectedMonth),
+      onSelected: (date) {
+        setState(() {
+          _selectedYear = date.year;
+          _selectedMonth = date.month;
+          _startDate = null;
+          _endDate = null;
+        });
+        _fetchReports();
       },
     );
   }
