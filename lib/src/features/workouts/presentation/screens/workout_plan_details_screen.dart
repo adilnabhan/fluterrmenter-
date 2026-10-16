@@ -4315,6 +4315,8 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                 else
                   DropdownButtonFormField<int>(
                     isExpanded: true,
+                    menuMaxHeight: MediaQuery.of(context).size.height * 0.5,
+                    borderRadius: BorderRadius.circular(12),
                     value: _selectedGroupId,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(

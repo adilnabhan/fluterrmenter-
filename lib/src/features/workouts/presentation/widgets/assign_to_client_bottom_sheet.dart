@@ -38,11 +38,19 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
   String? _nextUrl;
   bool _isFetchingMore = false;
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _fetchClients();
+
+    _searchFocusNode.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -54,6 +62,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
 
   @override
   void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -1118,8 +1128,22 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
     final filtered = _filteredClients;
     final gyms = _gymFilters;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
+    final mediaQuery = MediaQuery.of(context);
+    final isKeyboardOpen = mediaQuery.viewInsets.bottom > 0;
+    final isEnlarged = _searchFocusNode.hasFocus ||
+        isKeyboardOpen ||
+        _searchQuery.trim().isNotEmpty;
+    final double maxHeight =
+        mediaQuery.size.height - mediaQuery.padding.top - 10;
+    final double enlargedHeight =
+        (mediaQuery.size.height * 0.92).clamp(0, maxHeight);
+    final double normalHeight = mediaQuery.size.height * 0.7;
+    final double sheetHeight = isEnlarged ? enlargedHeight : normalHeight;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      height: sheetHeight,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -1128,7 +1152,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         20,
         20,
         20,
-        MediaQuery.of(context).viewInsets.bottom + 20,
+        mediaQuery.viewInsets.bottom + 20,
       ),
       child: Column(
         children: [
@@ -1148,6 +1172,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
           const SizedBox(height: 12),
           // Search Bar
           TextField(
+            controller: _searchController,
+            focusNode: _searchFocusNode,
             onChanged: (val) {
               if (!mounted) return;
               setState(() {
@@ -1156,7 +1182,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
               EasyDebounce.debounce(
                 'assign-clients-search',
                 const Duration(milliseconds: 400),
-                () => _fetchClients(),
+                _fetchClients,
               );
             },
             decoration: InputDecoration(
@@ -1169,6 +1195,22 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                 color: AppColors.textGrey,
                 size: 20,
               ),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(
+                        Icons.clear,
+                        color: AppColors.textGrey,
+                        size: 18,
+                      ),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                        _fetchClients();
+                      },
+                    )
+                  : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.grey.shade200),
@@ -1254,6 +1296,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                         onRefresh: _fetchClients,
                         child: ListView.separated(
                           controller: _scrollController,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
                           physics: const AlwaysScrollableScrollPhysics(),
                           itemCount:
                               filtered.length + (_isFetchingMore ? 1 : 0),
