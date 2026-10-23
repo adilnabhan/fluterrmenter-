@@ -102,6 +102,9 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
     final enteredTitle = titleController.text.trim();
     final String finalTitle = enteredTitle.isNotEmpty ? enteredTitle : widget.planTitle;
 
+    final trainerId = context.read<AppCubit>().state.currentUser?.trainer?.id ??
+                      context.read<AppCubit>().state.currentUser?.mentor?.id;
+
     setState(() {
       _assigningMap[customerId] = true;
     });
@@ -112,6 +115,7 @@ class _AssignWorkoutPlanScreenState extends State<AssignWorkoutPlanScreen> {
         data: {
           'customer_id': customerId,
           'title': finalTitle,
+          if (trainerId != null) 'trainer_id': trainerId,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );

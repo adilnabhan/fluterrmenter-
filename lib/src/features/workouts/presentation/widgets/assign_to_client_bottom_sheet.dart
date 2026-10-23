@@ -203,6 +203,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         data: {
           'customer_id': customerId,
           'title': finalTitle,
+          'trainer_id': trainerId,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );

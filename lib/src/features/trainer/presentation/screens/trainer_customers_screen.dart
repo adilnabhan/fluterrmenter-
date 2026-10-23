@@ -977,6 +977,7 @@ class _AssignPlanBottomSheetContentState extends State<_AssignPlanBottomSheetCon
         data: {
           'customer_id': widget.customerId,
           'title': finalTitle,
+          'trainer_id': trainerId,
         },
         options: Options(headers: {'X-Platform': platformSource}),
       );
