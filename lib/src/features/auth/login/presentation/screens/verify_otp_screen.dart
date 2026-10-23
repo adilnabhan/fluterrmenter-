@@ -61,7 +61,18 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
         );
         state.verifyOtp?.fold(
           () => null,
-          (t) => t.fold((l) {}, (r) {
+          (t) => t.fold((l) {
+            final msg = l.msg.toLowerCase();
+            if (msg.contains('register') || msg.contains('no trainer account found')) {
+              context.push(
+                UserRoleSelectionScreen(
+                  sentOtpEntity: state.sentOtpEntity.copyWith(process: 'registration'),
+                ),
+              );
+              return;
+            }
+            Dialogs.showSnack(msg: l.msg);
+          }, (r) {
             print('process is--${state.sentOtpEntity.process}');
 
             if (state.sentOtpEntity.process == 'registration') {
@@ -72,7 +83,13 @@ class _VerifyOtpScreenState extends State<_VerifyOtpScreen> {
             }
             final isLogin = state.sentOtpEntity.process == 'login';
             if (isLogin) {
-              context.read<AppCubit>().addUser(r!);
+              if (r == null) {
+                context.push(
+                  UserRoleSelectionScreen(sentOtpEntity: state.sentOtpEntity),
+                );
+                return;
+              }
+              context.read<AppCubit>().addUser(r);
 
               if (r.userRole == 35) {
                 context.pushAndRemoveUntil(const TrainerMainScreen(initialIndex: 0));

@@ -101,12 +101,14 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
       ),
     );
 
+    final initialPhone = widget.sentOtpEntity.mobileNumber ?? '';
+    final cleanPhone = initialPhone.startsWith('+91') ? initialPhone.substring(3) : initialPhone;
     _mobileNumber = FieldData(
       type: FieldType.word,
       textInputAction: TextInputAction.next,
       label: 'Mobile Number',
       requiredLabel: true,
-      controller: TextEditingController(),
+      controller: TextEditingController(text: cleanPhone),
       focusNode: FocusNode(),
       keyboardType: TextInputType.phone,
       inputFormatters: [
@@ -202,18 +204,16 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
 
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      // final firstName = _firstName.controller?.text.trim();
-      // final lastName = _lastName.controller?.text.trim();
-      // final email = _email.controller?.text.trim();
+      final firstName = _firstName.controller?.text.trim();
+      final lastName = _lastName.controller?.text.trim();
+      final email = _email.controller?.text.trim();
 
-      // context.read<CreateAccountCubit>().onboardUser(
-      //   firstName: firstName ?? '',
-      //   lastName: lastName ?? '',
-      //   email: email ?? '',
-      // );
-      
-      // Directly navigate to professional details as per user request to not call API
-      context.push(const CreateTrainerProfessionalDetailsScreen());
+      context.read<CreateAccountCubit>().onboardUser(
+        firstName: firstName ?? '',
+        lastName: lastName ?? '',
+        email: email ?? '',
+        userRole: '35',
+      );
     } else {
       Dialogs.showSnack(msg: 'Please fill all the required fields');
     }
@@ -275,7 +275,7 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
               ),
               const SizedBox(height: 40),
               Text(
-                'Let’s Create Your\nTrainer Profile 💪',
+                'Let's Create Your\nTrainer Profile 💪',
                 style: AppStyles.text30Px.poppins.w600.dark,
               ),
               const SizedBox(height: 16),

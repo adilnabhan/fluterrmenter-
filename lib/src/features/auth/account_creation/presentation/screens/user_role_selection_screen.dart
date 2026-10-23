@@ -67,8 +67,7 @@ class UserRoleSelectionScreen extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // Trainer Option (Commented out)
-                  // /*
+                  // Trainer Option
                   _RoleOptionCard(
                     icon: 'assets/images/png/icons/arm.png',
                     title: 'Trainer/Coach',
@@ -81,7 +80,6 @@ class UserRoleSelectionScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  // */
                 ],
               ),
 
