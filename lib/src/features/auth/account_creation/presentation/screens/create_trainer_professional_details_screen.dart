@@ -5,6 +5,21 @@ import 'package:dio/dio.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mentor_mobile_app/src/features/organization/creation/presentation/components/brand_logo_picker.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_certificates_screen.dart';
+
+class _LocalCertificate {
+  final File file;
+  final String name;
+  final String issuedBy;
+  final String issuedDate;
+
+  _LocalCertificate({
+    required this.file,
+    required this.name,
+    required this.issuedBy,
+    required this.issuedDate,
+  });
+}
 
 class CreateTrainerProfessionalDetailsScreen extends StatefulWidget {
   const CreateTrainerProfessionalDetailsScreen({super.key});
@@ -20,7 +35,7 @@ class _CreateTrainerProfessionalDetailsScreenState
   late final FieldData<String> _specializations;
   late final FieldData<dynamic> _experience;
   late final FieldData<dynamic> _bio;
-  final List<XFile> _certificates = [];
+  final List<_LocalCertificate> _localCertificates = [];
   XFile? _profileImage;
   final ValueNotifier<List<({String label, String value})>>
   _selectedSpecializations =
@@ -35,7 +50,7 @@ class _CreateTrainerProfessionalDetailsScreenState
       focusNode: FocusNode(),
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      decoration: const InputDecoration(hintText: 'Year of Experience'),
+      decoration: const InputDecoration(),
     );
 
     _specializations = FieldData<String>(
@@ -75,6 +90,28 @@ class _CreateTrainerProfessionalDetailsScreenState
 
   bool _isLoading = false;
 
+  void _openAddCertificateSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AddCertificateSheet(
+        onSubmit: (file, name, issuedBy, issuedDate) {
+          setState(() {
+            _localCertificates.add(
+              _LocalCertificate(
+                file: file,
+                name: name,
+                issuedBy: issuedBy,
+                issuedDate: issuedDate,
+              ),
+            );
+          });
+        },
+      ),
+    );
+  }
+
   Future<void> _onNext() async {
     if (_isLoading) return;
     setState(() => _isLoading = true);
@@ -97,10 +134,16 @@ class _CreateTrainerProfessionalDetailsScreenState
           ),
         );
       }
+      final authToken = user?.access ?? (mounted ? context.read<AppCubit>().state.currentUser?.access : null);
+      final authHeaders = {
+        'X-Platform': platformSource,
+        if (authToken != null && authToken.isNotEmpty) 'Authorization': 'JWT $authToken',
+      };
+
       final response = await DioClient().dio.put<dynamic>(
         ApiUris.editTrainerBasicDetails,
         data: formData,
-        options: Options(headers: {'X-Platform': platformSource}).token,
+        options: Options(headers: authHeaders),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -116,17 +159,17 @@ class _CreateTrainerProfessionalDetailsScreenState
       }
 
       // Upload Certificates
-      for (final file in _certificates) {
+      for (final cert in _localCertificates) {
         final certFormData = FormData.fromMap({
-          'certificate_name': file.name,
-          'issued_by': 'Trainer',
-          'issued_date': DateTime.now().toIso8601String().split('T').first,
-          'certificate_file': await MultipartFile.fromFile(file.path),
+          'certificate_name': cert.name,
+          'issued_by': cert.issuedBy,
+          if (cert.issuedDate.isNotEmpty) 'issued_date': cert.issuedDate,
+          'certificate_file': await MultipartFile.fromFile(cert.file.path),
         });
         await DioClient().dio.post<dynamic>(
           ApiUris.certificates,
           data: certFormData,
-          options: Options(headers: {'X-Platform': platformSource}).token,
+          options: Options(headers: authHeaders),
         );
       }
 
@@ -235,22 +278,7 @@ class _CreateTrainerProfessionalDetailsScreenState
             const SizedBox(height: 8),
             // Certification Upload Box
             InkWell(
-              onTap: () async {
-                final result = await FilePicker.platform.pickFiles(
-                  type: FileType.custom,
-                  allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-                  allowMultiple: true,
-                );
-
-                if (result != null && result.files.isNotEmpty) {
-                  if (!mounted) return;
-                  setState(() {
-                    _certificates.addAll(
-                      result.files.map((file) => XFile(file.path!)).toList(),
-                    );
-                  });
-                }
-              },
+              onTap: _openAddCertificateSheet,
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 decoration: BoxDecoration(
@@ -276,114 +304,79 @@ class _CreateTrainerProfessionalDetailsScreenState
                 ),
               ),
             ),
-            if (_certificates.isNotEmpty) ...[
+            if (_localCertificates.isNotEmpty) ...[
               const SizedBox(height: 16),
-              SizedBox(
-                height: 140,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _certificates.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 16),
-                  itemBuilder: (context, index) {
-                    final file = _certificates[index];
-                    return Stack(
-                      children: [
-                        Container(
-                          width: 140,
-                          decoration: BoxDecoration(
-                            color: const Color(0xffF7F7F7),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xffEEEEEE)),
-                          ),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child:
-                                    file.name.toLowerCase().endsWith('.pdf')
-                                        ? Center(
-                                          child: Icon(
-                                            Icons.picture_as_pdf,
-                                            color: AppColors.primary
-                                                .withOpacity(0.5),
-                                            size: 40,
-                                          ),
-                                        )
-                                        : ClipRRect(
-                                          borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(12),
-                                            topRight: Radius.circular(12),
-                                          ),
-                                          child: Image.file(
-                                            File(file.path),
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                          ),
-                                        ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xffFFCECE),
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(12),
-                                    bottomRight: Radius.circular(12),
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      file.name.toLowerCase().endsWith('.pdf')
-                                          ? Icons.picture_as_pdf
-                                          : Icons.image,
-                                      color: AppColors.primary,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        file.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style:
-                                            AppStyles
-                                                .text12Px
-                                                .poppins
-                                                .w400
-                                                .dark,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: InkWell(
-                            onTap:
-                                () => setState(
-                                  () => _certificates.removeAt(index),
-                                ),
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.close,
-                                size: 14,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _localCertificates.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final cert = _localCertificates[index];
+                  final isPdf = cert.file.path.toLowerCase().endsWith('.pdf');
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.02),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
                         ),
                       ],
-                    );
-                  },
-                ),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      leading: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: isPdf
+                            ? const Icon(Icons.picture_as_pdf, color: Colors.red)
+                            : ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  cert.file,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      const Icon(Icons.image, color: Colors.red),
+                                ),
+                              ),
+                      ),
+                      title: Text(
+                        cert.name.isNotEmpty ? cert.name : 'Certificate',
+                        style: AppStyles.text14Px.poppins.w600.dark,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: cert.issuedBy.isNotEmpty
+                          ? Text(
+                              cert.issuedBy,
+                              style: AppStyles.text12Px.poppins.w400.copyWith(
+                                color: AppColors.textGrey,
+                              ),
+                            )
+                          : null,
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            _localCertificates.removeAt(index);
+                          });
+                        },
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
             const SizedBox(height: 24),

@@ -773,7 +773,7 @@ class _CreateWorkoutPlanWizardScreenState
           ),
           const SizedBox(height: 4),
           Text(
-            'Give your single-day workout plan a title.',
+            'Give your workout plan a title.',
             style: AppStyles.text12Px.poppins.w400.copyWith(
               color: context.colors.textSecondary,
             ),
@@ -1347,7 +1347,7 @@ class _CreateWorkoutPlanWizardScreenState
                           const SizedBox(height: 12),
                           Text(
                             _groupSearchQuery.isEmpty
-                                ? 'No single-day groups found'
+                                ? 'No workout groups found'
                                 : 'No matching groups found',
                             style: AppStyles.text14Px.poppins.w500.copyWith(
                               color: context.colors.textSecondary,

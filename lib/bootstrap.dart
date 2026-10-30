@@ -22,13 +22,20 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   Bloc.observer = const AppBlocObserver();
 
   // //* 🍪📦  session configuration
+  final Directory? storageDir = kIsWeb
+      ? null
+      : (Platform.isWindows || Platform.isLinux || Platform.isMacOS
+          ? await getApplicationSupportDirectory()
+          : await getApplicationDocumentsDirectory());
+  if (storageDir != null && !await storageDir.exists()) {
+    await storageDir.create(recursive: true);
+  }
+
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory:
         kIsWeb
             ? HydratedStorageDirectory.web
-            : HydratedStorageDirectory(
-              (await getApplicationDocumentsDirectory()).path,
-            ),
+            : HydratedStorageDirectory(storageDir!.path),
   );
 
   //* 📦 Local Storage (Hive)

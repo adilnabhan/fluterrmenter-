@@ -106,8 +106,7 @@ class CheckboxField<T> extends StatefulWidget {
   State<CheckboxField<T>> createState() => _CheckboxFieldState<T>();
 }
 
-class _CheckboxFieldState<T> extends State<CheckboxField<T>>
-    with ChangeNotifier {
+class _CheckboxFieldState<T> extends State<CheckboxField<T>> {
   // T selectedRadio;
   late final ValueNotifier<List<({String label, T value})>> _ctrl;
   OverlayEntry? _overlyEntry;

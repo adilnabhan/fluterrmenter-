@@ -27,7 +27,6 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
   late final FieldData<dynamic> _firstName;
   late final FieldData<dynamic> _lastName;
   late final FieldData<dynamic> _email;
-  late final FieldData<dynamic> _mobileNumber;
   late final FieldData<String> _gender;
   late final FieldData<dynamic> _dob;
 
@@ -93,40 +92,10 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
         return null;
       },
       onSubmitted: (value) {
-        _mobileNumber.focusNode?.requestFocus();
-      },
-      decoration: InputDecoration(
-        hintText: 'Email',
-        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-      ),
-    );
-
-    _mobileNumber = FieldData(
-      type: FieldType.word,
-      textInputAction: TextInputAction.next,
-      label: 'Mobile Number',
-      requiredLabel: true,
-      controller: TextEditingController(),
-      focusNode: FocusNode(),
-      keyboardType: TextInputType.phone,
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-        LengthLimitingTextInputFormatter(10),
-      ],
-      validator: (value) {
-        if (value?.trim().isEmpty ?? true) {
-          return 'Mobile number is required';
-        }
-        if (value?.trim().length != 10) {
-          return 'Invalid mobile number';
-        }
-        return null;
-      },
-      onSubmitted: (value) {
         _gender.focusNode?.requestFocus();
       },
       decoration: InputDecoration(
-        hintText: 'Number',
+        hintText: 'Email',
         hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
       ),
     );
@@ -188,13 +157,11 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
     _firstName.controller?.dispose();
     _lastName.controller?.dispose();
     _email.controller?.dispose();
-    _mobileNumber.controller?.dispose();
     _gender.controller?.dispose();
     _dob.controller?.dispose();
     _firstName.focusNode?.dispose();
     _lastName.focusNode?.dispose();
     _email.focusNode?.dispose();
-    _mobileNumber.focusNode?.dispose();
     _gender.focusNode?.dispose();
     _dob.focusNode?.dispose();
     super.dispose();
@@ -209,7 +176,7 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
       context.read<CreateAccountCubit>().onboardUser(
         firstName: firstName ?? '',
         lastName: lastName ?? '',
-        email: email ?? '',
+        email: (email != null && email.isNotEmpty) ? email : null,
         userRole: '35',
       );
       
@@ -307,8 +274,6 @@ class __CreateTrainerAccountScreenState extends State<_CreateTrainerAccountScree
               Field(data: _lastName),
               const SizedBox(height: 16),
               Field(data: _email),
-              const SizedBox(height: 16),
-              Field(data: _mobileNumber),
               const SizedBox(height: 16),
               Field(data: _gender),
               const SizedBox(height: 16),

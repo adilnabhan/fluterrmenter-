@@ -10,7 +10,7 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
   Future<void> onboardUser({
     required String firstName,
     required String lastName,
-    required String email,
+    String? email,
     String userRole = '20',
   }) async {
     if (state.onboardingUser?.isNone() ?? false) {
@@ -40,20 +40,9 @@ class CreateAccountCubit extends Cubit<CreateAccountState> {
       );
       return;
     }
-    if (email.isEmpty) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          onboardingUser: some(
-            left(const ApiException.notFound(msg: 'Email is required!')),
-          ),
-        ),
-      );
-      return;
-    }
     final result = await AuthRepository().onboarding(
       body: {
-        'email': email,
+        if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
         'first_name': firstName,
         'last_name': lastName,
         'otp_id': state.sentOtpEntity.id,

@@ -133,6 +133,12 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
     return sum;
   }
 
+  DateTime? get _endDate {
+    if (_selectedPlan == null) return null;
+    final duration = _selectedPlan!.durationDays ?? 30;
+    return _startDate.add(Duration(days: duration));
+  }
+
   double get _pendingDue => (_totalPayable - _totalPaid).clamp(0.0, double.infinity);
 
   List<String> get _availableMethods {
@@ -393,11 +399,7 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
                       amountPaid: _totalPaid,
                       pendingDue: _pendingDue,
                       startDate: _startDate,
-                      endDate: _selectedPlan?.durationDays != null
-                          ? _startDate.add(
-                              Duration(days: _selectedPlan!.durationDays!),
-                            )
-                          : null,
+                      endDate: _endDate,
                       paymentMethod:
                           methodsStr.isNotEmpty ? methodsStr : null,
                     ),
@@ -1094,59 +1096,154 @@ class _AddCustomerSearchScreenState extends State<AddCustomerSearchScreen> {
 
               const SizedBox(height: 24),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Start Date',
-                    style: AppStyles.text14Px.poppins.w500.copyWith(
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const Text(
-                    ' *',
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xffD0D5DD)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: InkWell(
-                  onTap: _pickStartDate,
-                  borderRadius: BorderRadius.circular(14),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Start Date
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          DateFormat('dd/MM/yyyy').format(_startDate),
-                          style: AppStyles.text14Px.poppins.w500.copyWith(
-                            color: Colors.black87,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              'Start Date',
+                              style: AppStyles.text14Px.poppins.w500.copyWith(
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const Text(
+                              ' *',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        const Icon(
-                          Icons.calendar_today_outlined,
-                          color: Colors.black87,
-                          size: 18,
+                        const SizedBox(height: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xffD0D5DD)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: InkWell(
+                            onTap: _pickStartDate,
+                            borderRadius: BorderRadius.circular(14),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    DateFormat('dd/MM/yyyy').format(_startDate),
+                                    style: AppStyles.text14Px.poppins.w500
+                                        .copyWith(
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.calendar_today_outlined,
+                                    color: Colors.black87,
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  // End Date
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'End Date',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF9FAFB),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xffD0D5DD)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              if (_selectedPlan == null) {
+                                Dialogs.showSnack(
+                                  msg: 'Please select a membership plan first',
+                                );
+                              } else {
+                                final days = _selectedPlan!.durationDays ?? 30;
+                                Dialogs.showSnack(
+                                  msg:
+                                      'End date is calculated automatically from plan duration ($days days)',
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(14),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    _endDate != null
+                                        ? DateFormat('dd/MM/yyyy')
+                                            .format(_endDate!)
+                                        : '--/--/----',
+                                    style: AppStyles.text14Px.poppins.w500
+                                        .copyWith(
+                                      color: _endDate != null
+                                          ? Colors.black87
+                                          : Colors.black38,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.calendar_today_outlined,
+                                    color: _endDate != null
+                                        ? Colors.black87
+                                        : Colors.black38,
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 32),

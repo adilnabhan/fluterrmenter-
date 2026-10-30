@@ -18,6 +18,7 @@ _$OrganizationHomeDataModelImpl _$$OrganizationHomeDataModelImplFromJson(
   allPaymentCount: (json['allPayment_count'] as num?)?.toInt(),
   totalCustomersCount: (json['total_customers_count'] as num?)?.toInt(),
   totalCustomers: (json['total_customers'] as num?)?.toInt(),
+  freezedCustomersCount: (json['freezed_customers_count'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$$OrganizationHomeDataModelImplToJson(
@@ -32,4 +33,5 @@ Map<String, dynamic> _$$OrganizationHomeDataModelImplToJson(
   'allPayment_count': instance.allPaymentCount,
   'total_customers_count': instance.totalCustomersCount,
   'total_customers': instance.totalCustomers,
+  'freezed_customers_count': instance.freezedCustomersCount,
 };

@@ -583,9 +583,9 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
                       right: 16,
                       child: Row(
                         children: [
-                          Expanded(child: _buildTab('Single-Day Workout', 0)),
+                          Expanded(child: _buildTab('Workouts', 0)),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildTab('Multi-Day Workout', 1)),
+                          Expanded(child: _buildTab('Programs', 1)),
                         ],
                       ),
                     ),
@@ -710,8 +710,8 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
                 children: [
                   Text(
                     isMultiDay
-                        ? 'Create a Multi-Day group'
-                        : 'Create a Single-Day group',
+                        ? 'Create a Program group'
+                        : 'Create a Workout group',
                     style: AppStyles.text18Px.poppins.w600.copyWith(
                       color: AppColors.textDark,
                     ),
@@ -865,11 +865,18 @@ class _WorkoutGroupCard extends StatelessWidget {
 
     final user = context.read<AppCubit>().state.currentUser;
     final isTrainer = user?.userRole == 35;
+    final isTrainerOwned = group['source'] == 'trainer' ||
+        (isTrainer &&
+            group['source'] != 'organization' &&
+            group['source'] != 'gym' &&
+            group['created_by_organization'] != true);
     final isOrgCreated =
-        group['source'] == 'organization' ||
-        group['source'] == 'gym' ||
-        group['is_preset'] == true;
-    final canEditOrDelete = !isTrainer || !isOrgCreated;
+        (group['source'] == 'organization' ||
+            group['source'] == 'gym' ||
+            group['created_by_organization'] == true ||
+            group['is_preset'] == true) &&
+        !isTrainerOwned;
+    final canEditOrDelete = isTrainerOwned || !isTrainer || !isOrgCreated;
 
     return InkWell(
       onTap: () async {
@@ -1204,11 +1211,18 @@ class _MultiDayWorkoutGroupCard extends StatelessWidget {
 
     final user = context.read<AppCubit>().state.currentUser;
     final isTrainer = user?.userRole == 35;
+    final isTrainerOwned = group['source'] == 'trainer' ||
+        (isTrainer &&
+            group['source'] != 'organization' &&
+            group['source'] != 'gym' &&
+            group['created_by_organization'] != true);
     final isOrgCreated =
-        group['source'] == 'organization' ||
-        group['source'] == 'gym' ||
-        group['is_preset'] == true;
-    final canEditOrDelete = !isTrainer || !isOrgCreated;
+        (group['source'] == 'organization' ||
+            group['source'] == 'gym' ||
+            group['created_by_organization'] == true ||
+            group['is_preset'] == true) &&
+        !isTrainerOwned;
+    final canEditOrDelete = isTrainerOwned || !isTrainer || !isOrgCreated;
 
     return InkWell(
       onTap: () async {

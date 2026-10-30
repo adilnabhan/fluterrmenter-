@@ -116,10 +116,16 @@ class _CreateTrainerLocationDetailsScreenState extends State<CreateTrainerLocati
         'user_type': 'trainer',
       });
       
+      final authToken = user?.access ?? (mounted ? context.read<AppCubit>().state.currentUser?.access : null);
+      final authHeaders = {
+        'X-Platform': platformSource,
+        if (authToken != null && authToken.isNotEmpty) 'Authorization': 'JWT $authToken',
+      };
+
       final response = await DioClient().dio.put<dynamic>(
         ApiUris.editTrainerBasicDetails,
         data: formData,
-        options: Options(headers: {'X-Platform': platformSource}).token,
+        options: Options(headers: authHeaders),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {

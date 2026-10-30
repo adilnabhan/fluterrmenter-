@@ -451,20 +451,39 @@ class _AddOrEditLeadScreenState extends State<AddOrEditLeadScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Expanded(
-                                    child: PDFView(
-                                      filePath: document.path,
-                                      swipeHorizontal: true,
-                                      autoSpacing: false,
-                                      pageFling: false,
-                                      backgroundColor: Colors.grey,
-                                      onRender: (pages) {},
-                                      onError: (error) {},
-                                      onPageError: (page, error) {},
-                                      onViewCreated:
-                                          (
-                                            PDFViewController pdfViewController,
-                                          ) {},
-                                    ).pOnly(left: 12, right: 12, top: 12),
+                                    child: (Platform.isAndroid || Platform.isIOS)
+                                        ? PDFView(
+                                            filePath: document.path ?? '',
+                                            swipeHorizontal: true,
+                                            autoSpacing: false,
+                                            pageFling: false,
+                                            backgroundColor: Colors.grey,
+                                            onRender: (pages) {},
+                                            onError: (error) {},
+                                            onPageError: (page, error) {},
+                                            onViewCreated:
+                                                (
+                                                  PDFViewController pdfViewController,
+                                                ) {},
+                                          ).pOnly(left: 12, right: 12, top: 12)
+                                        : Center(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.picture_as_pdf,
+                                                  size: 48,
+                                                  color: Colors.redAccent,
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  document.name,
+                                                  style: const TextStyle(fontSize: 12),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                   ),
                                   Container(
                                     width: double.maxFinite,

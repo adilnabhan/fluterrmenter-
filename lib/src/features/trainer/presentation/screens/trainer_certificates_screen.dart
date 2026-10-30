@@ -45,7 +45,7 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder:
-          (context) => _AddCertificateSheet(
+          (context) => AddCertificateSheet(
             onSubmit: (file, name, issuedBy, issuedDate) {
               _submitCertificate(file, name, issuedBy, issuedDate);
             },
@@ -64,7 +64,7 @@ class _TrainerCertificatesScreenState extends State<TrainerCertificatesScreen> {
       final formData = FormData.fromMap({
         'certificate_name': name,
         'issued_by': issuedBy,
-        'issued_date': issuedDate,
+        if (issuedDate.isNotEmpty) 'issued_date': issuedDate,
         'certificate_file': await MultipartFile.fromFile(file.path),
       });
 
@@ -571,17 +571,17 @@ class _CertificateImageViewerPage extends StatelessWidget {
 }
 
 
-class _AddCertificateSheet extends StatefulWidget {
+class AddCertificateSheet extends StatefulWidget {
   final Function(File file, String name, String issuedBy, String issuedDate)
   onSubmit;
 
-  const _AddCertificateSheet({required this.onSubmit});
+  const AddCertificateSheet({super.key, required this.onSubmit});
 
   @override
-  State<_AddCertificateSheet> createState() => _AddCertificateSheetState();
+  State<AddCertificateSheet> createState() => _AddCertificateSheetState();
 }
 
-class _AddCertificateSheetState extends State<_AddCertificateSheet> {
+class _AddCertificateSheetState extends State<AddCertificateSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _issuedByController = TextEditingController();
@@ -711,8 +711,6 @@ class _AddCertificateSheetState extends State<_AddCertificateSheet> {
                       ),
                       suffixIcon: const Icon(Icons.calendar_today),
                     ),
-                    validator:
-                        (val) => val == null || val.isEmpty ? 'Required' : null,
                   ),
                   const SizedBox(height: 16),
                   OutlinedButton.icon(

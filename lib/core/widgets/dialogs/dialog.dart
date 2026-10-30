@@ -42,10 +42,37 @@ abstract class Dialogs {
               .trim();
     }
 
+    // Strip technical exceptions and Dio internal stack/status code explanations
+    if (lower.contains('this exception was thrown') ||
+        lower.contains('requestoptions') ||
+        lower.contains('validatestatus') ||
+        lower.contains('dioexception') ||
+        lower.contains('socketexception') ||
+        lower.contains('handshakeexception') ||
+        lower.contains('status code of 500') ||
+        lower.contains('status code of 502') ||
+        lower.contains('status code of 503')) {
+      // If there was a user-friendly prefix (e.g., "Failed to finish workout: ...")
+      final colonIndex = msg.indexOf(':');
+      if (colonIndex > 0 && colonIndex < 60) {
+        final prefix = msg.substring(0, colonIndex).trim();
+        if (!prefix.toLowerCase().startsWith('dioexception') &&
+            !prefix.toLowerCase().startsWith('exception')) {
+          return '$prefix. Please try again later.';
+        }
+      }
+      if (lower.contains('socketexception') ||
+          lower.contains('handshakeexception') ||
+          lower.contains('connection timeout')) {
+        return 'Network error. Please check your connection.';
+      }
+      return 'Server error. Please try again later.';
+    }
+
     // Strip technical exception prefixes
     if (msg.startsWith('Exception: ')) {
       msg = msg.substring('Exception: '.length).trim();
-    } else if (msg.startsWith('DioException')) {
+    } else if (msg.toLowerCase().startsWith('dioexception')) {
       msg = 'Network or server error occurred. Please try again.';
     }
 

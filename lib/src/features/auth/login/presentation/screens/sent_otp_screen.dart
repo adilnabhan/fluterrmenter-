@@ -71,10 +71,7 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFECEE),
-              Colors.white,
-            ],
+            colors: [Color(0xFFFFECEE), Colors.white],
             stops: [0.0, 0.45],
           ),
         ),
@@ -154,7 +151,10 @@ class __SentOtpScreenState extends State<_SentOtpScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 4.h,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF9FAFB),
                       borderRadius: BorderRadius.circular(16.r),

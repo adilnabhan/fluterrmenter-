@@ -1,3 +1,4 @@
+import 'dart:ui' show ImageFilter;
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/organization_details_screen.dart';
@@ -42,30 +43,41 @@ class OrganizationListingScreen extends StatelessWidget {
             OrganizationListingAndDetailsCubit,
             OrganizationListingAndDetailsState
           >(
-            listenWhen: (p, c) => p.selectedOrganization != c.selectedOrganization,
+            listenWhen:
+                (p, c) => p.selectedOrganization != c.selectedOrganization,
             listener: (context, state) {
               final selectedOrg = state.selectedOrganization;
               if (selectedOrg != null) {
                 final appCubit = context.read<AppCubit>();
                 final current = appCubit.state.currentUser;
-                final isOwner = current != null && (current.userRole == 34 || current.userRole == 20 || current.userRole != 35);
+                final isOwner =
+                    current != null &&
+                    (current.userRole == 34 ||
+                        current.userRole == 20 ||
+                        current.userRole != 35);
                 if (isOwner) {
                   final updatedUser = current.copyWith(
                     organizationId: selectedOrg.id,
                     organizationName: selectedOrg.name,
-                    profilePicture: (selectedOrg.logo != null && selectedOrg.logo!.isNotEmpty)
-                        ? selectedOrg.logo
-                        : current.profilePicture,
-                    mentor: current.mentor?.copyWith(
-                      org: current.mentor?.org?.copyWith(
-                        id: selectedOrg.id,
-                        name: selectedOrg.name,
-                      ) ?? Org(id: selectedOrg.id, name: selectedOrg.name),
-                    ) ?? Mentor(
-                      id: selectedOrg.id,
-                      name: selectedOrg.name,
-                      org: Org(id: selectedOrg.id, name: selectedOrg.name),
-                    ),
+                    profilePicture:
+                        (selectedOrg.logo != null &&
+                                selectedOrg.logo!.isNotEmpty)
+                            ? selectedOrg.logo
+                            : current.profilePicture,
+                    mentor:
+                        current.mentor?.copyWith(
+                          org:
+                              current.mentor?.org?.copyWith(
+                                id: selectedOrg.id,
+                                name: selectedOrg.name,
+                              ) ??
+                              Org(id: selectedOrg.id, name: selectedOrg.name),
+                        ) ??
+                        Mentor(
+                          id: selectedOrg.id,
+                          name: selectedOrg.name,
+                          org: Org(id: selectedOrg.id, name: selectedOrg.name),
+                        ),
                   );
                   appCubit.addUser(updatedUser);
                 }
@@ -102,25 +114,34 @@ class OrganizationListingScreen extends StatelessWidget {
                     } else {
                       final appCubit = context.read<AppCubit>();
                       final current = appCubit.state.currentUser;
-                      final isOwner = current != null && (current.userRole == 34 || current.userRole == 20 || current.userRole != 35);
+                      final isOwner =
+                          current != null &&
+                          (current.userRole == 34 ||
+                              current.userRole == 20 ||
+                              current.userRole != 35);
                       if (isOwner) {
                         for (final org in r.result!) {
                           final orgAccount = current.copyWith(
                             organizationId: org.id,
                             organizationName: org.name,
-                            profilePicture: (org.logo != null && org.logo!.isNotEmpty)
-                                ? org.logo
-                                : current.profilePicture,
-                            mentor: current.mentor?.copyWith(
-                              org: current.mentor?.org?.copyWith(
-                                id: org.id,
-                                name: org.name,
-                              ) ?? Org(id: org.id, name: org.name),
-                            ) ?? Mentor(
-                              id: org.id,
-                              name: org.name,
-                              org: Org(id: org.id, name: org.name),
-                            ),
+                            profilePicture:
+                                (org.logo != null && org.logo!.isNotEmpty)
+                                    ? org.logo
+                                    : current.profilePicture,
+                            mentor:
+                                current.mentor?.copyWith(
+                                  org:
+                                      current.mentor?.org?.copyWith(
+                                        id: org.id,
+                                        name: org.name,
+                                      ) ??
+                                      Org(id: org.id, name: org.name),
+                                ) ??
+                                Mentor(
+                                  id: org.id,
+                                  name: org.name,
+                                  org: Org(id: org.id, name: org.name),
+                                ),
                           );
                           appCubit.addUser(orgAccount);
                         }
@@ -160,36 +181,167 @@ class _OrganizationListingAndDetailsScreenState
     _fetch(isRefresh: true);
   }
 
-  int? _pausedCustomersCount;
-
-  Future<void> _fetchPausedCount(int orgId) async {
-    try {
-      final res = await MembersRepository().membersListing(
-        queryParameters: {
-          'status': 'paused',
-          'organization_id': orgId,
-          'page_size': 1,
-        },
-      );
-      res.fold(
-        (_) {},
-        (model) {
-          if (mounted) {
-            setState(() {
-              _pausedCustomersCount = model.count ?? 0;
-            });
-          }
-        },
-      );
-    } catch (_) {}
-  }
-
   void _fetch({bool isRefresh = false}) {
     _cubit.fetchList(isRefresh: isRefresh);
-    final orgId = _cubit.state.selectedOrganization?.id;
-    if (orgId != null) {
-      _fetchPausedCount(orgId);
-    }
+  }
+
+  bool _canRefresh = true;
+
+  Widget _buildIosPullToRefresh({required List<Widget> children}) {
+    return RefreshIndicator(
+      color: AppColors.primary,
+      backgroundColor: AppColors.light,
+      onRefresh: () async => _fetch(isRefresh: true),
+      notificationPredicate: (ScrollNotification notification) {
+        if (notification.depth != 0) return false;
+        if (notification is ScrollStartNotification) {
+          if (notification.dragDetails != null) {
+            _canRefresh =
+                notification.metrics.extentBefore <= 0.0 ||
+                notification.metrics.pixels <=
+                    notification.metrics.minScrollExtent + 0.5;
+          } else {
+            _canRefresh = false;
+          }
+        }
+        return _canRefresh;
+      },
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: ClampingScrollPhysics(),
+        ),
+        padding: EdgeInsets.zero,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildAttendanceCard({
+    required String subtitle,
+    required Color highlightColor,
+    required List<Color> gradientColors,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: gradientColors,
+          ),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.8),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Mark',
+                      style: AppStyles.text13Px.w600.poppins.copyWith(
+                        color: const Color(0xff333333),
+                        height: 1.15,
+                      ),
+                    ),
+                  ),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      subtitle,
+                      style: AppStyles.text15Px.w700.poppins.copyWith(
+                        color: highlightColor,
+                        height: 1.15,
+                      ),
+                    ),
+                  ),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Attendance',
+                      style: AppStyles.text13Px.w600.poppins.copyWith(
+                        color: const Color(0xff333333),
+                        height: 1.15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: highlightColor.withValues(alpha: 0.22),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.60),
+                          Colors.white.withValues(alpha: 0.15),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.edit_rounded,
+                        color: highlightColor,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   int _currentBannerIndex = 0;
@@ -281,7 +433,6 @@ class _OrganizationListingAndDetailsScreenState
       listener: (context, state) {
         if (state.selectedOrganization?.id != null) {
           _cubit.fetchOrg(orgId: state.selectedOrganization!.id!);
-          _fetchPausedCount(state.selectedOrganization!.id!);
         }
       },
 
@@ -510,7 +661,7 @@ class _OrganizationListingAndDetailsScreenState
 
                             color: const Color(0xff0284C7),
 
-                            count: _pausedCustomersCount ?? 0,
+                            count: orgHomeData.freezedCustomersCount ?? 0,
 
                             onTap: () {
                               if (state.selectedOrganization?.id != null) {
@@ -597,506 +748,490 @@ class _OrganizationListingAndDetailsScreenState
                           ),
                         ];
 
-                        return RefreshIndicator(
-                          onRefresh: () async => _fetch(isRefresh: true),
+                        return _buildIosPullToRefresh(
+                          children: [
+                            ListView(
+                              padding: const EdgeInsets.all(16),
 
-                          child: ListView(
-                            padding: EdgeInsets.zero,
+                              shrinkWrap: true,
 
-                            children: [
-                              ListView(
-                                padding: const EdgeInsets.all(16),
+                              physics: const NeverScrollableScrollPhysics(),
 
-                                shrinkWrap: true,
+                              children: [
+                                GridView.builder(
+                                  padding: EdgeInsets.zero,
 
-                                physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
 
-                                children: [
-                                  GridView.builder(
-                                    padding: EdgeInsets.zero,
+                                  physics: const NeverScrollableScrollPhysics(),
 
-                                    shrinkWrap: true,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
 
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
+                                        mainAxisSpacing: 16,
 
-                                    gridDelegate:
-                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 2,
+                                        crossAxisSpacing: 16,
 
-                                          mainAxisSpacing: 16,
+                                        mainAxisExtent: 120,
+                                      ),
 
-                                          crossAxisSpacing: 16,
+                                  itemCount: cards.length,
 
-                                          mainAxisExtent: 120,
-                                        ),
+                                  itemBuilder: (
+                                    BuildContext context,
 
-                                    itemCount: cards.length,
+                                    int index,
+                                  ) {
+                                    final card = cards[index];
 
-                                    itemBuilder: (
-                                      BuildContext context,
+                                    return InkWell(
+                                      borderRadius: BorderRadius.circular(16),
 
-                                      int index,
-                                    ) {
-                                      final card = cards[index];
+                                      onTap: card.onTap,
 
-                                      return InkWell(
+                                      child: ClipRRect(
                                         borderRadius: BorderRadius.circular(16),
 
-                                        onTap: card.onTap,
+                                        child: ColoredBox(
+                                          color: card.color.withAlpha(25),
 
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
 
-                                          child: ColoredBox(
-                                            color: card.color.withAlpha(25),
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
 
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                card.count.toString(),
 
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                                style: AppStyles
+                                                    .text25Px
+                                                    .poppins
+                                                    .w700
+                                                    .copyWith(
+                                                      color: card.color,
+                                                    ),
+                                              ),
 
-                                              children: [
-                                                Text(
-                                                  card.count.toString(),
+                                              const Spacer(),
 
-                                                  style: AppStyles
-                                                      .text25Px
-                                                      .poppins
-                                                      .w700
-                                                      .copyWith(
-                                                        color: card.color,
-                                                      ),
-                                                ),
+                                              Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: SizedBox(
+                                                      width: double.maxFinite,
 
-                                                const Spacer(),
+                                                      child: Text(
+                                                        card.title,
 
-                                                Row(
-                                                  children: [
-                                                    Flexible(
-                                                      child: SizedBox(
-                                                        width: double.maxFinite,
-
-                                                        child: Text(
-                                                          card.title,
-
-                                                          style: AppStyles
-                                                              .text14Px
-                                                              .poppins
-                                                              .w600
-                                                              .copyWith(
-                                                                color:
-                                                                    card.color,
-                                                              ),
-                                                        ),
+                                                        style: AppStyles
+                                                            .text14Px
+                                                            .poppins
+                                                            .w600
+                                                            .copyWith(
+                                                              color: card.color,
+                                                            ),
                                                       ),
                                                     ),
+                                                  ),
 
-                                                    CircleAvatar(
-                                                      backgroundColor:
-                                                          card.color,
+                                                  CircleAvatar(
+                                                    backgroundColor: card.color,
 
-                                                      radius: 18,
+                                                    radius: 18,
 
-                                                      child: const Icon(
-                                                        Icons
-                                                            .keyboard_arrow_right_outlined,
+                                                    child: const Icon(
+                                                      Icons
+                                                          .keyboard_arrow_right_outlined,
 
-                                                        color: AppColors.light,
-                                                      ),
+                                                      color: AppColors.light,
                                                     ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ).pad(16),
-                                          ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ).pad(16),
                                         ),
-                                      );
-                                    },
-                                  ),
-
-                                  const SizedBox(height: 40),
-
-                                  _buildBannerCarousel(),
-
-                                  const SizedBox(height: 40),
-
-                                  // Customer Support Section
-
-                                  // Container(
-
-                                  //   padding: const EdgeInsets.all(16),
-
-                                  //   decoration: BoxDecoration(
-
-                                  //     color: AppColors.primary.withAlpha(25),
-
-                                  //     borderRadius: BorderRadius.circular(16),
-
-                                  //     border: Border.all(
-
-                                  //       color: AppColors.primary.withAlpha(50),
-
-                                  //     ),
-
-                                  //   ),
-
-                                  //   child: Column(
-
-                                  //     crossAxisAlignment:
-
-                                  //         CrossAxisAlignment.start,
-
-                                  //     children: [
-
-                                  //       Row(
-
-                                  //         children: [
-
-                                  //           const Icon(
-
-                                  //             Icons.support_agent,
-
-                                  //             color: AppColors.primary,
-
-                                  //             size: 20,
-
-                                  //           ),
-
-                                  //           const SizedBox(width: 8),
-
-                                  //           Text(
-
-                                  //             'Need Help?',
-
-                                  //             style: AppStyles
-
-                                  //                 .text16Px
-
-                                  //                 .poppins
-
-                                  //                 .w600
-
-                                  //                 .copyWith(
-
-                                  //                   color: AppColors.primary,
-
-                                  //                 ),
-
-                                  //           ),
-
-                                  //         ],
-
-                                  //       ),
-
-                                  //       const SizedBox(height: 12),
-
-                                  //       Text(
-
-                                  //         'Get instant support via WhatsApp or call us directly',
-
-                                  //         style: AppStyles.text12Px.poppins.w400
-
-                                  //             .copyWith(
-
-                                  //               color: AppColors.dark.withAlpha(
-
-                                  //                 150,
-
-                                  //               ),
-
-                                  //             ),
-
-                                  //       ),
-
-                                  //       const SizedBox(height: 16),
-
-                                  //       Row(
-
-                                  //         children: [
-
-                                  //           Expanded(
-
-                                  //             child: InkWell(
-
-                                  //               onTap:
-
-                                  //                   CustomerSupportServices
-
-                                  //                       .whatsappChat,
-
-                                  //               borderRadius:
-
-                                  //                   BorderRadius.circular(12),
-
-                                  //               child: Container(
-
-                                  //                 padding:
-
-                                  //                     const EdgeInsets.symmetric(
-
-                                  //                       vertical: 12,
-
-                                  //                       horizontal: 16,
-
-                                  //                     ),
-
-                                  //                 decoration: BoxDecoration(
-
-                                  //                   color: const Color(
-
-                                  //                     0xff25D366,
-
-                                  //                   ),
-
-                                  //                   borderRadius:
-
-                                  //                       BorderRadius.circular(
-
-                                  //                         12,
-
-                                  //                       ),
-
-                                  //                 ),
-
-                                  //                 child: Row(
-
-                                  //                   mainAxisAlignment:
-
-                                  //                       MainAxisAlignment
-
-                                  //                           .center,
-
-                                  //                   children: [
-
-                                  //                     const Icon(
-
-                                  //                       Icons.chat,
-
-                                  //                       color: Colors.white,
-
-                                  //                       size: 18,
-
-                                  //                     ),
-
-                                  //                     const SizedBox(width: 8),
-
-                                  //                     Text(
-
-                                  //                       'WhatsApp',
-
-                                  //                       style: AppStyles
-
-                                  //                           .text14Px
-
-                                  //                           .poppins
-
-                                  //                           .w600
-
-                                  //                           .copyWith(
-
-                                  //                             color:
-
-                                  //                                 Colors.white,
-
-                                  //                           ),
-
-                                  //                     ),
-
-                                  //                   ],
-
-                                  //                 ),
-
-                                  //               ),
-
-                                  //             ),
-
-                                  //           ),
-
-                                  //           const SizedBox(width: 12),
-
-                                  //           Expanded(
-
-                                  //             child: InkWell(
-
-                                  //               onTap:
-
-                                  //                   CustomerSupportServices
-
-                                  //                       .phoneCall,
-
-                                  //               borderRadius:
-
-                                  //                   BorderRadius.circular(12),
-
-                                  //               child: Container(
-
-                                  //                 padding:
-
-                                  //                     const EdgeInsets.symmetric(
-
-                                  //                       vertical: 12,
-
-                                  //                       horizontal: 16,
-
-                                  //                     ),
-
-                                  //                 decoration: BoxDecoration(
-
-                                  //                   color: AppColors.primary,
-
-                                  //                   borderRadius:
-
-                                  //                       BorderRadius.circular(
-
-                                  //                         12,
-
-                                  //                       ),
-
-                                  //                 ),
-
-                                  //                 child: Row(
-
-                                  //                   mainAxisAlignment:
-
-                                  //                       MainAxisAlignment
-
-                                  //                           .center,
-
-                                  //                   children: [
-
-                                  //                     const Icon(
-
-                                  //                       Icons.phone,
-
-                                  //                       color: Colors.white,
-
-                                  //                       size: 18,
-
-                                  //                     ),
-
-                                  //                     const SizedBox(width: 8),
-
-                                  //                     Text(
-
-                                  //                       'Call Us',
-
-                                  //                       style: AppStyles
-
-                                  //                           .text14Px
-
-                                  //                           .poppins
-
-                                  //                           .w600
-
-                                  //                           .copyWith(
-
-                                  //                             color:
-
-                                  //                                 Colors.white,
-
-                                  //                           ),
-
-                                  //                     ),
-
-                                  //                   ],
-
-                                  //                 ),
-
-                                  //               ),
-
-                                  //             ),
-
-                                  //           ),
-
-                                  //         ],
-
-                                  //       ),
-
-                                  //     ],
-
-                                  //   ),
-
-                                  // ),
-                                  const SizedBox(height: 40),
-                                ],
-                              ),
-
-                              ColoredBox(
-                                color: const Color(0xffF7F7F7),
-
-                                child: SizedBox(
-                                  width: double.maxFinite,
-
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-
-                                    children: [
-                                      const SizedBox(height: 60),
-
-                                      Text(
-                                        'Did you know?',
-
-                                        style:
-                                            AppStyles
-                                                .text14Px
-                                                .poppins
-                                                .w500
-                                                .dark,
                                       ),
-
-                                      const SizedBox(height: 24),
-
-                                      Text(
-                                        'Strong Businesses',
-
-                                        style: AppStyles.text26Px.titanOne.w400
-                                            .copyWith(
-                                              color: const Color(0xff878787),
-                                            ),
-                                      ),
-
-                                      Text(
-                                        'Made',
-
-                                        style: AppStyles.text36Px.titanOne.w400
-                                            .copyWith(
-                                              color: const Color(0xff878787),
-                                            ),
-                                      ),
-
-                                      Text(
-                                        'Not Born',
-
-                                        style: AppStyles.text26Px.titanOne.w400
-                                            .copyWith(
-                                              color: const Color(0xff878787),
-                                            ),
-                                      ),
-
-                                      const SizedBox(height: 24),
-
-                                      Text(
-                                        'Built by fitness lovers 🧡',
-
-                                        style: AppStyles.text14Px.poppins.w400
-                                            .copyWith(
-                                              color: const Color(0xff666666),
-                                            ),
-                                      ),
-
-                                      const SizedBox(height: 132),
-                                    ],
-                                  ).pxy(x: 20),
+                                    );
+                                  },
                                 ),
+
+                                const SizedBox(height: 40),
+
+                                _buildBannerCarousel(),
+
+                                const SizedBox(height: 40),
+
+                                // Customer Support Section
+
+                                // Container(
+
+                                //   padding: const EdgeInsets.all(16),
+
+                                //   decoration: BoxDecoration(
+
+                                //     color: AppColors.primary.withAlpha(25),
+
+                                //     borderRadius: BorderRadius.circular(16),
+
+                                //     border: Border.all(
+
+                                //       color: AppColors.primary.withAlpha(50),
+
+                                //     ),
+
+                                //   ),
+
+                                //   child: Column(
+
+                                //     crossAxisAlignment:
+
+                                //         CrossAxisAlignment.start,
+
+                                //     children: [
+
+                                //       Row(
+
+                                //         children: [
+
+                                //           const Icon(
+
+                                //             Icons.support_agent,
+
+                                //             color: AppColors.primary,
+
+                                //             size: 20,
+
+                                //           ),
+
+                                //           const SizedBox(width: 8),
+
+                                //           Text(
+
+                                //             'Need Help?',
+
+                                //             style: AppStyles
+
+                                //                 .text16Px
+
+                                //                 .poppins
+
+                                //                 .w600
+
+                                //                 .copyWith(
+
+                                //                   color: AppColors.primary,
+
+                                //                 ),
+
+                                //           ),
+
+                                //         ],
+
+                                //       ),
+
+                                //       const SizedBox(height: 12),
+
+                                //       Text(
+
+                                //         'Get instant support via WhatsApp or call us directly',
+
+                                //         style: AppStyles.text12Px.poppins.w400
+
+                                //             .copyWith(
+
+                                //               color: AppColors.dark.withAlpha(
+
+                                //                 150,
+
+                                //               ),
+
+                                //             ),
+
+                                //       ),
+
+                                //       const SizedBox(height: 16),
+
+                                //       Row(
+
+                                //         children: [
+
+                                //           Expanded(
+
+                                //             child: InkWell(
+
+                                //               onTap:
+
+                                //                   CustomerSupportServices
+
+                                //                       .whatsappChat,
+
+                                //               borderRadius:
+
+                                //                   BorderRadius.circular(12),
+
+                                //               child: Container(
+
+                                //                 padding:
+
+                                //                     const EdgeInsets.symmetric(
+
+                                //                       vertical: 12,
+
+                                //                       horizontal: 16,
+
+                                //                     ),
+
+                                //                 decoration: BoxDecoration(
+
+                                //                   color: const Color(
+
+                                //                     0xff25D366,
+
+                                //                   ),
+
+                                //                   borderRadius:
+
+                                //                       BorderRadius.circular(
+
+                                //                         12,
+
+                                //                       ),
+
+                                //                 ),
+
+                                //                 child: Row(
+
+                                //                   mainAxisAlignment:
+
+                                //                       MainAxisAlignment
+
+                                //                           .center,
+
+                                //                   children: [
+
+                                //                     const Icon(
+
+                                //                       Icons.chat,
+
+                                //                       color: Colors.white,
+
+                                //                       size: 18,
+
+                                //                     ),
+
+                                //                     const SizedBox(width: 8),
+
+                                //                     Text(
+
+                                //                       'WhatsApp',
+
+                                //                       style: AppStyles
+
+                                //                           .text14Px
+
+                                //                           .poppins
+
+                                //                           .w600
+
+                                //                           .copyWith(
+
+                                //                             color:
+
+                                //                                 Colors.white,
+
+                                //                           ),
+
+                                //                     ),
+
+                                //                   ],
+
+                                //                 ),
+
+                                //               ),
+
+                                //             ),
+
+                                //           ),
+
+                                //           const SizedBox(width: 12),
+
+                                //           Expanded(
+
+                                //             child: InkWell(
+
+                                //               onTap:
+
+                                //                   CustomerSupportServices
+
+                                //                       .phoneCall,
+
+                                //               borderRadius:
+
+                                //                   BorderRadius.circular(12),
+
+                                //               child: Container(
+
+                                //                 padding:
+
+                                //                     const EdgeInsets.symmetric(
+
+                                //                       vertical: 12,
+
+                                //                       horizontal: 16,
+
+                                //                     ),
+
+                                //                 decoration: BoxDecoration(
+
+                                //                   color: AppColors.primary,
+
+                                //                   borderRadius:
+
+                                //                       BorderRadius.circular(
+
+                                //                         12,
+
+                                //                       ),
+
+                                //                 ),
+
+                                //                 child: Row(
+
+                                //                   mainAxisAlignment:
+
+                                //                       MainAxisAlignment
+
+                                //                           .center,
+
+                                //                   children: [
+
+                                //                     const Icon(
+
+                                //                       Icons.phone,
+
+                                //                       color: Colors.white,
+
+                                //                       size: 18,
+
+                                //                     ),
+
+                                //                     const SizedBox(width: 8),
+
+                                //                     Text(
+
+                                //                       'Call Us',
+
+                                //                       style: AppStyles
+
+                                //                           .text14Px
+
+                                //                           .poppins
+
+                                //                           .w600
+
+                                //                           .copyWith(
+
+                                //                             color:
+
+                                //                                 Colors.white,
+
+                                //                           ),
+
+                                //                     ),
+
+                                //                   ],
+
+                                //                 ),
+
+                                //               ),
+
+                                //             ),
+
+                                //           ),
+
+                                //         ],
+
+                                //       ),
+
+                                //     ],
+
+                                //   ),
+
+                                // ),
+                                const SizedBox(height: 40),
+                              ],
+                            ),
+
+                            ColoredBox(
+                              color: const Color(0xffF7F7F7),
+
+                              child: SizedBox(
+                                width: double.maxFinite,
+
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                                  children: [
+                                    const SizedBox(height: 60),
+
+                                    Text(
+                                      'Did you know?',
+
+                                      style:
+                                          AppStyles.text14Px.poppins.w500.dark,
+                                    ),
+
+                                    const SizedBox(height: 24),
+
+                                    Text(
+                                      'Strong Businesses',
+
+                                      style: AppStyles.text26Px.titanOne.w400
+                                          .copyWith(
+                                            color: const Color(0xff878787),
+                                          ),
+                                    ),
+
+                                    Text(
+                                      'Made',
+
+                                      style: AppStyles.text36Px.titanOne.w400
+                                          .copyWith(
+                                            color: const Color(0xff878787),
+                                          ),
+                                    ),
+
+                                    Text(
+                                      'Not Born',
+
+                                      style: AppStyles.text26Px.titanOne.w400
+                                          .copyWith(
+                                            color: const Color(0xff878787),
+                                          ),
+                                    ),
+
+                                    const SizedBox(height: 24),
+
+                                    Text(
+                                      'Built by fitness lovers 🧡',
+
+                                      style: AppStyles.text14Px.poppins.w400
+                                          .copyWith(
+                                            color: const Color(0xff666666),
+                                          ),
+                                    ),
+
+                                    const SizedBox(height: 132),
+                                  ],
+                                ).pxy(x: 20),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         );
                       }),
                     );
@@ -1666,34 +1801,27 @@ class _OrganizationListingAndDetailsScreenState
                                 ),
 
                                 (
-                                  title: 'Freezed\nClients',
-
-                                  count: _pausedCustomersCount ?? 0,
-
-                                  countColor: const Color(0xff0284C7),
-
-                                  labelColor: const Color(0xff0284C7),
-
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-
-                                    end: Alignment.bottomRight,
-
-                                    colors: [
-                                      Color(0xffE0F2FE),
-
-                                      Color(0xffBAE6FD),
-                                    ],
-                                  ),
-
-                                  borderColor: Colors.transparent,
-
-                                  iconColor: Colors.white,
-
-                                  iconBgColor: const Color(0xff0284C7),
-
+                                  title: 'Balance\nPayment',
+                                  count: 0,
+                                  countColor: const Color(0xff333333),
+                                  labelColor: const Color(0xff333333),
+                                  gradient: null,
+                                  borderColor: const Color(0xffEEEEEE),
+                                  iconColor: const Color(0xff555555),
+                                  iconBgColor: null,
                                   isChevron: false,
-
+                                  onTap: () {},
+                                ),
+                                (
+                                  title: 'Freezed\nClients',
+                                  count: orgHomeData.freezedCustomersCount ?? 0,
+                                  countColor: const Color(0xff333333),
+                                  labelColor: const Color(0xff333333),
+                                  gradient: null,
+                                  borderColor: const Color(0xffEEEEEE),
+                                  iconColor: const Color(0xff555555),
+                                  iconBgColor: null,
+                                  isChevron: false,
                                   onTap: () {
                                     if (state.selectedOrganization?.id !=
                                         null) {
@@ -1706,42 +1834,8 @@ class _OrganizationListingAndDetailsScreenState
                                     }
                                   },
                                 ),
-
-                                (
-                                  title: 'Upcoming\nRenewals',
-
-                                  count: orgHomeData.upcomingRenewalsCount ?? 0,
-
-                                  countColor: const Color(0xffE67E22),
-
-                                  labelColor: const Color(0xff333333),
-
-                                  gradient: null,
-
-                                  borderColor: const Color(0xffEEEEEE),
-
-                                  iconColor: AppColors.dark,
-
-                                  iconBgColor: null,
-
-                                  isChevron: true,
-
-                                  onTap: () {
-                                    if (state.selectedOrganization?.id !=
-                                        null) {
-                                      context.push(
-                                        UpcomingRenewalsListingScreen(
-                                          orgId:
-                                              state.selectedOrganization!.id!,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-
                                 (
                                   title: 'Total\nClients',
-
                                   count:
                                       orgHomeData.totalCustomers ??
                                       orgHomeData.totalCustomersCount ??
@@ -1749,21 +1843,13 @@ class _OrganizationListingAndDetailsScreenState
                                               0) +
                                           (orgHomeData.activeCustomersCount ??
                                               0)),
-
                                   countColor: const Color(0xff333333),
-
                                   labelColor: const Color(0xff333333),
-
                                   gradient: null,
-
                                   borderColor: const Color(0xffEEEEEE),
-
-                                  iconColor: AppColors.dark,
-
+                                  iconColor: const Color(0xff555555),
                                   iconBgColor: null,
-
-                                  isChevron: true,
-
+                                  isChevron: false,
                                   onTap: () {
                                     if (state.selectedOrganization?.id !=
                                         null) {
@@ -1777,69 +1863,22 @@ class _OrganizationListingAndDetailsScreenState
                                   },
                                 ),
                                 (
-                                  title: 'Trainer\nAttendance',
-
-                                  count: 'Mark / Report',
-
-                                  countColor: const Color(0xff9C51BF),
-
+                                  title: 'Upcoming\nRenewals',
+                                  count: orgHomeData.upcomingRenewalsCount ?? 0,
+                                  countColor: const Color(0xff333333),
                                   labelColor: const Color(0xff333333),
-
                                   gradient: null,
-
                                   borderColor: const Color(0xffEEEEEE),
-
-                                  iconColor: AppColors.dark,
-
+                                  iconColor: const Color(0xff555555),
                                   iconBgColor: null,
-
-                                  isChevron: true,
-
+                                  isChevron: false,
                                   onTap: () {
-                                    if (state.selectedOrganization?.id != null) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute<void>(
-                                          builder: (context) =>
-                                              TrainerAttendanceScreen(
-                                            orgId:
-                                                state.selectedOrganization!.id!,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-
-                                (
-                                  title: 'Client\nAttendance',
-
-                                  count: 'Mark',
-
-                                  countColor: const Color(0xff486CC2),
-
-                                  labelColor: const Color(0xff333333),
-
-                                  gradient: null,
-
-                                  borderColor: const Color(0xffEEEEEE),
-
-                                  iconColor: AppColors.dark,
-
-                                  iconBgColor: null,
-
-                                  isChevron: true,
-
-                                  onTap: () {
-                                    if (state.selectedOrganization?.id != null) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute<void>(
-                                          builder: (context) =>
-                                              ClientAttendanceScreen(
-                                            orgId:
-                                                state.selectedOrganization!.id!,
-                                          ),
+                                    if (state.selectedOrganization?.id !=
+                                        null) {
+                                      context.push(
+                                        UpcomingRenewalsListingScreen(
+                                          orgId:
+                                              state.selectedOrganization!.id!,
                                         ),
                                       );
                                     }
@@ -1847,53 +1886,31 @@ class _OrganizationListingAndDetailsScreenState
                                 ),
                               ];
 
-                              return RefreshIndicator(
-                                onRefresh: () async => _fetch(isRefresh: true),
-
-                                child: ListView(
-                                  padding: EdgeInsets.zero,
-
-                                  children: [
-                                    const SizedBox(height: 10),
-
-                                    Padding(
-                                      padding: const EdgeInsets.all(20),
-
-                                      child: _buildBannerCarousel(),
-                                    ),
-
-                                    // const SizedBox(height: 5),
-                                    ListView(
-                                      padding: const EdgeInsets.all(16),
-
-                                      shrinkWrap: true,
-
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-
-                                      children: [
-                                        GridView.builder(
+                              return _buildIosPullToRefresh(
+                                children: [
+                                  ListView(
+                                    padding: const EdgeInsets.all(16),
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                        ),
+                                        child: GridView.builder(
                                           padding: EdgeInsets.zero,
-
                                           shrinkWrap: true,
-
                                           physics:
                                               const NeverScrollableScrollPhysics(),
-
                                           gridDelegate:
                                               const SliverGridDelegateWithFixedCrossAxisCount(
                                                 crossAxisCount: 2,
-
-                                                mainAxisSpacing: 16,
-
-                                                crossAxisSpacing: 16,
-
-                                                mainAxisExtent:
-                                                    120, // Reduced from 128
+                                                mainAxisSpacing: 14,
+                                                crossAxisSpacing: 14,
+                                                mainAxisExtent: 110,
                                               ),
-
                                           itemCount: newCards.length,
-
                                           itemBuilder: (context, index) {
                                             final card = newCards[index];
 
@@ -1901,29 +1918,24 @@ class _OrganizationListingAndDetailsScreenState
                                               builder: (context, constraints) {
                                                 return InkWell(
                                                   onTap: card.onTap,
-
                                                   borderRadius:
                                                       BorderRadius.circular(20),
-
                                                   child: Container(
                                                     padding:
-                                                        const EdgeInsets.all(
-                                                          16,
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 14,
+                                                          vertical: 12,
                                                         ),
-
                                                     decoration: BoxDecoration(
                                                       color:
                                                           card.gradient == null
                                                               ? Colors.white
                                                               : null,
-
                                                       gradient: card.gradient,
-
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                             20,
                                                           ),
-
                                                       border:
                                                           card.gradient == null
                                                               ? Border.all(
@@ -1931,7 +1943,6 @@ class _OrganizationListingAndDetailsScreenState
                                                                     card.borderColor,
                                                               )
                                                               : null,
-
                                                       boxShadow: [
                                                         if (card.gradient ==
                                                             null)
@@ -1940,33 +1951,26 @@ class _OrganizationListingAndDetailsScreenState
                                                                 .withValues(
                                                                   alpha: 0.04,
                                                                 ),
-
                                                             blurRadius: 10,
-
                                                             offset:
                                                                 const Offset(
                                                                   0,
-
                                                                   4,
                                                                 ),
                                                           ),
                                                       ],
                                                     ),
-
                                                     child: Column(
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
                                                               .start,
-
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
                                                               .spaceBetween,
-
                                                       children: [
                                                         Expanded(
                                                           child: Text(
                                                             '${card.count}',
-
                                                             style: AppStyles
                                                                 .text24Px
                                                                 .w700
@@ -1974,30 +1978,25 @@ class _OrganizationListingAndDetailsScreenState
                                                                 .copyWith(
                                                                   color:
                                                                       card.countColor,
-
                                                                   fontSize:
                                                                       card.count
                                                                               is String
                                                                           ? 16
-                                                                          : 32,
+                                                                          : 30,
                                                                 ),
                                                           ),
                                                         ),
-
                                                         Row(
                                                           mainAxisAlignment:
                                                               MainAxisAlignment
                                                                   .spaceBetween,
-
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
                                                                   .end,
-
                                                           children: [
                                                             Expanded(
                                                               child: Text(
                                                                 card.title,
-
                                                                 style: AppStyles
                                                                     .text14Px
                                                                     .w500
@@ -2005,47 +2004,103 @@ class _OrganizationListingAndDetailsScreenState
                                                                     .copyWith(
                                                                       color:
                                                                           card.labelColor,
-
                                                                       height:
                                                                           1.2,
                                                                     ),
                                                               ),
                                                             ),
-
-                                                            if (card.isChevron)
-                                                              Icon(
-                                                                Icons
-                                                                    .chevron_right_rounded,
-
-                                                                color:
-                                                                    card.iconColor,
-
-                                                                size: 20,
-                                                              )
-                                                            else
+                                                            const SizedBox(
+                                                              width: 6,
+                                                            ),
+                                                            if (card.iconBgColor !=
+                                                                null)
                                                               Container(
-                                                                padding:
-                                                                    const EdgeInsets.all(
-                                                                      4,
-                                                                    ),
-
+                                                                width: 28,
+                                                                height: 28,
                                                                 decoration: BoxDecoration(
                                                                   color:
                                                                       card.iconBgColor,
-
                                                                   shape:
                                                                       BoxShape
                                                                           .circle,
                                                                 ),
-
                                                                 child: Icon(
                                                                   Icons
                                                                       .chevron_right_rounded,
-
                                                                   color:
                                                                       card.iconColor,
-
                                                                   size: 16,
+                                                                ),
+                                                              )
+                                                            else
+                                                              Container(
+                                                                width: 28,
+                                                                height: 28,
+                                                                decoration: BoxDecoration(
+                                                                  shape:
+                                                                      BoxShape
+                                                                          .circle,
+                                                                  gradient: const LinearGradient(
+                                                                    begin:
+                                                                        Alignment
+                                                                            .topLeft,
+                                                                    end:
+                                                                        Alignment
+                                                                            .bottomRight,
+                                                                    colors: [
+                                                                      Color(
+                                                                        0xffFFFFFF,
+                                                                      ),
+                                                                      Color(
+                                                                        0xffEDEDED,
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  border: Border.all(
+                                                                    color: const Color(
+                                                                      0xffE2E2E2,
+                                                                    ),
+                                                                  ),
+                                                                  boxShadow: [
+                                                                    BoxShadow(
+                                                                      color: Colors
+                                                                          .black
+                                                                          .withValues(
+                                                                            alpha:
+                                                                                0.08,
+                                                                          ),
+                                                                      blurRadius:
+                                                                          4,
+                                                                      offset:
+                                                                          const Offset(
+                                                                            0,
+                                                                            1.5,
+                                                                          ),
+                                                                    ),
+                                                                    BoxShadow(
+                                                                      color: Colors
+                                                                          .white
+                                                                          .withValues(
+                                                                            alpha:
+                                                                                0.8,
+                                                                          ),
+                                                                      blurRadius:
+                                                                          1,
+                                                                      offset:
+                                                                          const Offset(
+                                                                            0,
+                                                                            -0.5,
+                                                                          ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                child: const Icon(
+                                                                  Icons
+                                                                      .chevron_right_rounded,
+                                                                  color: Color(
+                                                                    0xff555555,
+                                                                  ),
+                                                                  size: 18,
                                                                 ),
                                                               ),
                                                           ],
@@ -2058,114 +2113,200 @@ class _OrganizationListingAndDetailsScreenState
                                             );
                                           },
                                         ),
-                                        const SizedBox(height: 20),
+                                      ),
+                                      const SizedBox(height: 14),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
+                                        child: GridView.count(
+                                          crossAxisCount: 2,
+                                          mainAxisSpacing: 10,
+                                          crossAxisSpacing: 10,
+                                          mainAxisExtent: 80,
+                                          shrinkWrap: true,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          padding: EdgeInsets.zero,
+                                          children: [
+                                          _buildAttendanceCard(
+                                            subtitle: 'Trainer’s',
+                                            highlightColor: const Color(
+                                              0xff9B51E0,
+                                            ),
+                                            gradientColors: const [
+                                              Color(0xffFAF4FD),
+                                              Color(0xffE4CEF8),
+                                            ],
+                                            onTap: () {
+                                              if (state
+                                                      .selectedOrganization
+                                                      ?.id !=
+                                                  null) {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute<void>(
+                                                    builder:
+                                                        (
+                                                          context,
+                                                        ) => TrainerAttendanceScreen(
+                                                          orgId:
+                                                              state
+                                                                  .selectedOrganization!
+                                                                  .id!,
+                                                        ),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                          _buildAttendanceCard(
+                                            subtitle: 'Client’s',
+                                            highlightColor: const Color(
+                                              0xff3B82F6,
+                                            ),
+                                            gradientColors: const [
+                                              Color(0xffF2F7FE),
+                                              Color(0xffCCE0FC),
+                                            ],
+                                            onTap: () {
+                                              if (state
+                                                      .selectedOrganization
+                                                      ?.id !=
+                                                  null) {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute<void>(
+                                                    builder:
+                                                        (
+                                                          context,
+                                                        ) => ClientAttendanceScreen(
+                                                          orgId:
+                                                              state
+                                                                  .selectedOrganization!
+                                                                  .id!,
+                                                        ),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
 
-                                        if (state.selectedOrganization?.id != null)
-                                          UpcomingPaymentsWidget(
-                                            orgId: state.selectedOrganization!.id!,
+                                      if (state.selectedOrganization?.id !=
+                                          null)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                          ),
+                                          child: UpcomingPaymentsWidget(
+                                            orgId:
+                                                state.selectedOrganization!.id!,
+                                          ),
+                                        ),
+                                      const SizedBox(height: 24),
+
+                                      _buildBannerCarousel(),
+
+                                      const SizedBox(height: 40),
+
+                                      // const SizedBox(height: 40),
+                                    ],
+                                  ),
+
+                                  ColoredBox(
+                                    color: const Color(0xffF7F7F7),
+
+                                    child: SizedBox(
+                                      width: double.maxFinite,
+
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+
+                                        children: [
+                                          const SizedBox(height: 60),
+
+                                          Text(
+                                            'Did you know?',
+
+                                            style:
+                                                AppStyles
+                                                    .text14Px
+                                                    .poppins
+                                                    .w500
+                                                    .dark,
                                           ),
 
-                                        const SizedBox(height: 24),
+                                          const SizedBox(height: 24),
 
-                                        _buildBannerCarousel(),
+                                          Text(
+                                            'Strong Businesses',
 
-                                        const SizedBox(height: 40),
+                                            style: AppStyles
+                                                .text26Px
+                                                .titanOne
+                                                .w400
+                                                .copyWith(
+                                                  color: const Color(
+                                                    0xff878787,
+                                                  ),
+                                                ),
+                                          ),
 
-                                        // const SizedBox(height: 40),
-                                      ],
+                                          Text(
+                                            'Are Made',
+
+                                            style: AppStyles
+                                                .text36Px
+                                                .titanOne
+                                                .w400
+                                                .copyWith(
+                                                  color: const Color(
+                                                    0xff878787,
+                                                  ),
+                                                ),
+                                          ),
+
+                                          Text(
+                                            'Not Born',
+
+                                            style: AppStyles
+                                                .text26Px
+                                                .titanOne
+                                                .w400
+                                                .copyWith(
+                                                  color: const Color(
+                                                    0xff878787,
+                                                  ),
+                                                ),
+                                          ),
+
+                                          const SizedBox(height: 24),
+
+                                          Text(
+                                            'Built by fitness lovers 🧡',
+
+                                            style: AppStyles
+                                                .text14Px
+                                                .poppins
+                                                .w400
+                                                .copyWith(
+                                                  color: const Color(
+                                                    0xff666666,
+                                                  ),
+                                                ),
+                                          ),
+
+                                          const SizedBox(height: 132),
+                                        ],
+                                      ).pxy(x: 20),
                                     ),
-
-                                    ColoredBox(
-                                      color: const Color(0xffF7F7F7),
-
-                                      child: SizedBox(
-                                        width: double.maxFinite,
-
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-
-                                          children: [
-                                            const SizedBox(height: 60),
-
-                                            Text(
-                                              'Did you know?',
-
-                                              style:
-                                                  AppStyles
-                                                      .text14Px
-                                                      .poppins
-                                                      .w500
-                                                      .dark,
-                                            ),
-
-                                            const SizedBox(height: 24),
-
-                                            Text(
-                                              'Strong Businesses',
-
-                                              style: AppStyles
-                                                  .text26Px
-                                                  .titanOne
-                                                  .w400
-                                                  .copyWith(
-                                                    color: const Color(
-                                                      0xff878787,
-                                                    ),
-                                                  ),
-                                            ),
-
-                                            Text(
-                                              'Are Made',
-
-                                              style: AppStyles
-                                                  .text36Px
-                                                  .titanOne
-                                                  .w400
-                                                  .copyWith(
-                                                    color: const Color(
-                                                      0xff878787,
-                                                    ),
-                                                  ),
-                                            ),
-
-                                            Text(
-                                              'Not Born',
-
-                                              style: AppStyles
-                                                  .text26Px
-                                                  .titanOne
-                                                  .w400
-                                                  .copyWith(
-                                                    color: const Color(
-                                                      0xff878787,
-                                                    ),
-                                                  ),
-                                            ),
-
-                                            const SizedBox(height: 24),
-
-                                            Text(
-                                              'Built by fitness lovers 🧡',
-
-                                              style: AppStyles
-                                                  .text14Px
-                                                  .poppins
-                                                  .w400
-                                                  .copyWith(
-                                                    color: const Color(
-                                                      0xff666666,
-                                                    ),
-                                                  ),
-                                            ),
-
-                                            const SizedBox(height: 132),
-                                          ],
-                                        ).pxy(x: 20),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               );
                             }),
                           );
@@ -2486,7 +2627,7 @@ class _OrganizationListingAndDetailsScreenState
 
                             color: const Color(0xff0284C7),
 
-                            count: _pausedCustomersCount ?? 0,
+                            count: orgHomeData.freezedCustomersCount ?? 0,
 
                             onTap: () {
 
@@ -2590,15 +2731,8 @@ class _OrganizationListingAndDetailsScreenState
 
                         ];
 
-                        return RefreshIndicator(
-
-                          onRefresh: () async => _fetch(isRefresh: true),
-
-                          child: ListView(
-
-                            padding: EdgeInsets.zero,
-
-                            children: [
+                        return _buildIosPullToRefresh(
+                          children: [
 
                               ListView(
 
@@ -2891,10 +3025,7 @@ class _OrganizationListingAndDetailsScreenState
                               ),
 
                             ],
-
-                          ),
-
-                        );
+                          );
 
                       }),
 
@@ -2940,191 +3071,185 @@ class _OrganizationListingAndDetailsScreenState
         ],
       ),
 
-      body: RefreshIndicator(
-        onRefresh: () async => _fetch(isRefresh: true),
+      body: _buildIosPullToRefresh(
+        children: [
+          ListView(
+            padding: const EdgeInsets.all(16),
 
-        child: ListView(
-          padding: EdgeInsets.zero,
+            shrinkWrap: true,
 
-          children: [
-            ListView(
-              padding: const EdgeInsets.all(16),
+            physics: const NeverScrollableScrollPhysics(),
 
-              shrinkWrap: true,
+            children: [
+              GridView.builder(
+                padding: EdgeInsets.zero,
 
-              physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
 
-              children: [
-                GridView.builder(
-                  padding: EdgeInsets.zero,
+                physics: const NeverScrollableScrollPhysics(),
 
-                  shrinkWrap: true,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
 
-                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: 16,
 
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                  crossAxisSpacing: 16,
 
-                    mainAxisSpacing: 16,
-
-                    crossAxisSpacing: 16,
-
-                    mainAxisExtent: 108,
-                  ),
-
-                  itemCount: 4,
-
-                  itemBuilder: (BuildContext context, int index) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-
-                      child: ColoredBox(
-                        color: Colors.grey.shade100,
-
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            KShimmer(height: 24, width: 60, radius: 4),
-
-                            Spacer(),
-
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: KShimmer(
-                                    height: 16,
-
-                                    width: double.maxFinite,
-
-                                    radius: 4,
-                                  ),
-                                ),
-
-                                SizedBox(width: 8),
-
-                                KShimmer(height: 36, width: 36, radius: 18),
-                              ],
-                            ),
-                          ],
-                        ).pad(16),
-                      ),
-                    );
-                  },
+                  mainAxisExtent: 108,
                 ),
 
-                const SizedBox(height: 40),
+                itemCount: 4,
 
-                const AspectRatio(
-                  aspectRatio: 16 / 9,
-
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-
-                    child: KShimmer(),
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-
-                // Customer Support Shimmer
-                Container(
-                  padding: const EdgeInsets.all(16),
-
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-
+                itemBuilder: (BuildContext context, int index) {
+                  return ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                  ),
 
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    child: ColoredBox(
+                      color: Colors.grey.shade100,
 
-                    children: [
-                      Row(
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
                         children: [
-                          KShimmer(height: 20, width: 20, radius: 10),
+                          KShimmer(height: 24, width: 60, radius: 4),
 
-                          SizedBox(width: 8),
+                          Spacer(),
 
-                          KShimmer(height: 16, width: 80, radius: 4),
-                        ],
-                      ),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: KShimmer(
+                                  height: 16,
 
-                      SizedBox(height: 12),
+                                  width: double.maxFinite,
 
-                      KShimmer(height: 12, width: double.maxFinite, radius: 4),
+                                  radius: 4,
+                                ),
+                              ),
 
-                      SizedBox(height: 16),
+                              SizedBox(width: 8),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: KShimmer(
-                              height: 44,
-
-                              width: double.maxFinite,
-
-                              radius: 12,
-                            ),
-                          ),
-
-                          SizedBox(width: 12),
-
-                          Expanded(
-                            child: KShimmer(
-                              height: 44,
-
-                              width: double.maxFinite,
-
-                              radius: 12,
-                            ),
+                              KShimmer(height: 36, width: 36, radius: 18),
+                            ],
                           ),
                         ],
-                      ),
-                    ],
-                  ),
+                      ).pad(16),
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 40),
+
+              const AspectRatio(
+                aspectRatio: 16 / 9,
+
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+
+                  child: KShimmer(),
                 ),
+              ),
 
-                const SizedBox(height: 40),
-              ],
-            ),
+              const SizedBox(height: 40),
 
-            ColoredBox(
-              color: const Color(0xffF7F7F7),
+              // Customer Support Shimmer
+              Container(
+                padding: const EdgeInsets.all(16),
 
-              child: SizedBox(
-                width: double.maxFinite,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+
+                  borderRadius: BorderRadius.circular(16),
+                ),
 
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-                    SizedBox(height: 60),
+                    Row(
+                      children: [
+                        KShimmer(height: 20, width: 20, radius: 10),
 
-                    KShimmer(height: 16, width: 120, radius: 4),
+                        SizedBox(width: 8),
 
-                    SizedBox(height: 24),
+                        KShimmer(height: 16, width: 80, radius: 4),
+                      ],
+                    ),
 
-                    KShimmer(height: 26, width: 200, radius: 4),
+                    SizedBox(height: 12),
 
-                    KShimmer(height: 36, width: 150, radius: 4),
+                    KShimmer(height: 12, width: double.maxFinite, radius: 4),
 
-                    KShimmer(height: 26, width: 180, radius: 4),
+                    SizedBox(height: 16),
 
-                    SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: KShimmer(
+                            height: 44,
 
-                    KShimmer(height: 16, width: 180, radius: 4),
+                            width: double.maxFinite,
 
-                    SizedBox(height: 132),
+                            radius: 12,
+                          ),
+                        ),
+
+                        SizedBox(width: 12),
+
+                        Expanded(
+                          child: KShimmer(
+                            height: 44,
+
+                            width: double.maxFinite,
+
+                            radius: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                ).pxy(x: 20),
+                ),
               ),
+
+              const SizedBox(height: 40),
+            ],
+          ),
+
+          ColoredBox(
+            color: const Color(0xffF7F7F7),
+
+            child: SizedBox(
+              width: double.maxFinite,
+
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  SizedBox(height: 60),
+
+                  KShimmer(height: 16, width: 120, radius: 4),
+
+                  SizedBox(height: 24),
+
+                  KShimmer(height: 26, width: 200, radius: 4),
+
+                  KShimmer(height: 36, width: 150, radius: 4),
+
+                  KShimmer(height: 26, width: 180, radius: 4),
+
+                  SizedBox(height: 24),
+
+                  KShimmer(height: 16, width: 180, radius: 4),
+
+                  SizedBox(height: 132),
+                ],
+              ).pxy(x: 20),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

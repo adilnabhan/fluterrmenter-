@@ -328,120 +328,11 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
             }).toList(),
           ),
           const SizedBox(height: 4),
-
-          // Days Grid (compact height with childAspectRatio: 1.3)
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: daysInMonth + firstDayOfWeek,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              childAspectRatio: 1.3,
-              mainAxisSpacing: 3,
-              crossAxisSpacing: 3,
-            ),
-            itemBuilder: (context, index) {
-              if (index < firstDayOfWeek) {
-                return const SizedBox.shrink();
-              }
-              final day = index - firstDayOfWeek + 1;
-              final currentDate = DateTime(_focusedMonth.year, _focusedMonth.month, day);
-              final isSelected = _selectedDate != null && DateUtils.isSameDay(_selectedDate, currentDate);
-              final isToday = DateUtils.isSameDay(DateTime.now(), currentDate);
-
-              final dayPayments = dayPaymentsMap[day] ?? [];
-              final hasOverdue = dayPayments.any((p) => p['status']?.toString().toLowerCase() == 'overdue');
-              final hasPending = dayPayments.any((p) => p['status']?.toString().toLowerCase() == 'pending');
-              final hasPaid = dayPayments.any((p) => p['status']?.toString().toLowerCase() == 'paid');
-
-              Color? cellBg;
-              Color textColor = context.colors.textPrimary;
-              Border? cellBorder;
-
-              if (isSelected) {
-                cellBg = const Color(0xff27AE60);
-                textColor = Colors.white;
-              } else if (hasOverdue) {
-                cellBg = const Color(0xffE74C3C).withValues(alpha: 0.18);
-                textColor = const Color(0xffC0392B);
-                cellBorder = Border.all(color: const Color(0xffE74C3C), width: 1.5);
-              } else if (hasPending) {
-                cellBg = const Color(0xffF39C12).withValues(alpha: 0.2);
-                textColor = const Color(0xffD35400);
-                cellBorder = Border.all(color: const Color(0xffF39C12), width: 1.5);
-              } else if (hasPaid) {
-                cellBg = const Color(0xff27AE60).withValues(alpha: 0.15);
-                textColor = const Color(0xff1E8449);
-              } else if (isToday) {
-                cellBg = const Color(0xff27AE60).withValues(alpha: 0.08);
-                cellBorder = Border.all(color: const Color(0xff27AE60), width: 1.5);
-              }
-
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    _selectedDate = currentDate;
-                  });
-                },
-                borderRadius: BorderRadius.circular(6),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: cellBg ?? Colors.transparent,
-                    borderRadius: BorderRadius.circular(6),
-                    border: cellBorder,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '$day',
-                        style: AppStyles.text12Px.poppins.w600.copyWith(
-                          color: textColor,
-                        ),
-                      ),
-                      if (dayPayments.isNotEmpty) ...[
-                        const SizedBox(height: 1),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (hasOverdue)
-                              Container(
-                                width: 4,
-                                height: 4,
-                                margin: const EdgeInsets.symmetric(horizontal: 1),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? Colors.white : const Color(0xffE74C3C),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            if (hasPending)
-                              Container(
-                                width: 4,
-                                height: 4,
-                                margin: const EdgeInsets.symmetric(horizontal: 1),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? Colors.white : const Color(0xffF39C12),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            if (hasPaid && !hasOverdue && !hasPending)
-                              Container(
-                                width: 4,
-                                height: 4,
-                                margin: const EdgeInsets.symmetric(horizontal: 1),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? Colors.white : const Color(0xff27AE60),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              );
-            },
+          // Days Grid (manual Column+Row for tight wrapping)
+          ..._buildCalendarRows(
+            daysInMonth: daysInMonth,
+            firstDayOfWeek: firstDayOfWeek,
+            dayPaymentsMap: dayPaymentsMap,
           ),
 
           const SizedBox(height: 10),
@@ -585,6 +476,143 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
             }),
           ],
         ],
+      ),
+    );
+  }
+
+  List<Widget> _buildCalendarRows({
+    required int daysInMonth,
+    required int firstDayOfWeek,
+    required Map<int, List<Map<String, dynamic>>> dayPaymentsMap,
+  }) {
+    final totalSlots = daysInMonth + firstDayOfWeek;
+    final numberOfWeeks = (totalSlots / 7).ceil();
+    final List<Widget> rows = [];
+
+    for (int week = 0; week < numberOfWeeks; week++) {
+      final List<Widget> cells = [];
+      for (int col = 0; col < 7; col++) {
+        final index = week * 7 + col;
+        if (index < firstDayOfWeek || index >= totalSlots) {
+          cells.add(const Expanded(child: SizedBox.shrink()));
+        } else {
+          final day = index - firstDayOfWeek + 1;
+          cells.add(Expanded(child: _buildDayCell(day, dayPaymentsMap)));
+        }
+      }
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 3),
+          child: SizedBox(
+            height: 38,
+            child: Row(
+              children: cells,
+            ),
+          ),
+        ),
+      );
+    }
+    return rows;
+  }
+
+  Widget _buildDayCell(int day, Map<int, List<Map<String, dynamic>>> dayPaymentsMap) {
+    final currentDate = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+    final isSelected = _selectedDate != null && DateUtils.isSameDay(_selectedDate, currentDate);
+    final isToday = DateUtils.isSameDay(DateTime.now(), currentDate);
+
+    final dayPayments = dayPaymentsMap[day] ?? [];
+    final hasOverdue = dayPayments.any((p) => p['status']?.toString().toLowerCase() == 'overdue');
+    final hasPending = dayPayments.any((p) => p['status']?.toString().toLowerCase() == 'pending');
+    final hasPaid = dayPayments.any((p) => p['status']?.toString().toLowerCase() == 'paid');
+
+    Color? cellBg;
+    Color textColor = context.colors.textPrimary;
+    Border? cellBorder;
+
+    if (isSelected) {
+      cellBg = const Color(0xff27AE60);
+      textColor = Colors.white;
+    } else if (hasOverdue) {
+      cellBg = const Color(0xffE74C3C).withValues(alpha: 0.18);
+      textColor = const Color(0xffC0392B);
+      cellBorder = Border.all(color: const Color(0xffE74C3C), width: 1.5);
+    } else if (hasPending) {
+      cellBg = const Color(0xffF39C12).withValues(alpha: 0.2);
+      textColor = const Color(0xffD35400);
+      cellBorder = Border.all(color: const Color(0xffF39C12), width: 1.5);
+    } else if (hasPaid) {
+      cellBg = const Color(0xff27AE60).withValues(alpha: 0.15);
+      textColor = const Color(0xff1E8449);
+    } else if (isToday) {
+      cellBg = const Color(0xff27AE60).withValues(alpha: 0.08);
+      cellBorder = Border.all(color: const Color(0xff27AE60), width: 1.5);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 1.5),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedDate = currentDate;
+          });
+        },
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          decoration: BoxDecoration(
+            color: cellBg ?? Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+            border: cellBorder,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$day',
+                style: AppStyles.text12Px.poppins.w600.copyWith(
+                  color: textColor,
+                ),
+              ),
+              if (dayPayments.isNotEmpty) ...[
+                const SizedBox(height: 1),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (hasOverdue)
+                      Container(
+                        width: 4,
+                        height: 4,
+                        margin: const EdgeInsets.symmetric(horizontal: 1),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white : const Color(0xffE74C3C),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    if (hasPending)
+                      Container(
+                        width: 4,
+                        height: 4,
+                        margin: const EdgeInsets.symmetric(horizontal: 1),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white : const Color(0xffF39C12),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    if (hasPaid && !hasOverdue && !hasPending)
+                      Container(
+                        width: 4,
+                        height: 4,
+                        margin: const EdgeInsets.symmetric(horizontal: 1),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white : const Color(0xff27AE60),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

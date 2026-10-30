@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mentor_mobile_app/src/features/auth/login/domain/models/login_with_otp_model.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// 🔐 Secure local storage service using encrypted Hive
 ///
@@ -28,7 +31,16 @@ class LocalStorageService {
 
   /// Initialize Hive with encryption
   Future<void> init() async {
-    await Hive.initFlutter();
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+      final dir = await getApplicationSupportDirectory();
+      final hiveDir = Directory('${dir.path}/hive');
+      if (!await hiveDir.exists()) {
+        await hiveDir.create(recursive: true);
+      }
+      Hive.init(hiveDir.path);
+    } else {
+      await Hive.initFlutter();
+    }
 
     // 🔑 Get or generate encryption key
     final encryptionKey = await _getEncryptionKey();

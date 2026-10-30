@@ -12,6 +12,12 @@ class TrainerCreationSuccessScreen extends StatefulWidget {
 class _TrainerCreationSuccessScreenState extends State<TrainerCreationSuccessScreen> {
   @override
   Widget build(BuildContext context) {
+    final user = LocalStorageService().getUser() ?? context.read<AppCubit>().state.currentUser;
+    final rawName = user?.firstName?.trim() ?? '';
+    final name = rawName.isNotEmpty
+        ? '${rawName[0].toUpperCase()}${rawName.substring(1)}'
+        : 'Trainer';
+
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -51,7 +57,7 @@ class _TrainerCreationSuccessScreenState extends State<TrainerCreationSuccessScr
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome to\nDiscipl,\nTrainer! 🚀',
+                      'Welcome to\nDiscipl,\n$name! 🚀',
                       style: AppStyles.text36Px.poppins.w600.dark.copyWith(
                         height: 1.1,
                       ),

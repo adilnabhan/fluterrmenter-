@@ -766,8 +766,6 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                             );
                           }
                           final client = filtered[index];
-                          final bool isAssignedToMe =
-                              client['is_assigned_to_me'] as bool? ?? false;
                           final int customerId = client['customer_id'] as int;
                           final String name =
                               client['name'] as String? ?? 'N/A';
@@ -953,8 +951,7 @@ class _TrainerCustomersScreenState extends State<TrainerCustomersScreen> {
                                       ),
                                       const SizedBox(width: 8),
                                       // Assign Workout
-                                      if (!isAssignedToMe)
-                                        OutlinedButton(
+                                      OutlinedButton(
                                           onPressed:
                                               () => _showAssignPlanBottomSheet(
                                                 context,
@@ -2189,8 +2186,8 @@ class _AssignPlanBottomSheetContentState
                                         group['name'] as String? ?? 'General';
                                     final String groupType =
                                         group['type'] == 'single_day'
-                                            ? 'Single Day'
-                                            : 'Multi Day';
+                                            ? 'Workouts'
+                                            : 'Programs';
                                     final int planCount =
                                         group['plans_count'] as int? ?? 0;
 

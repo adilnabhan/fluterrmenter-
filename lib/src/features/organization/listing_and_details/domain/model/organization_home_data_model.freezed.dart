@@ -41,6 +41,8 @@ mixin _$OrganizationHomeDataModel {
   int? get totalCustomersCount => throw _privateConstructorUsedError;
   @JsonKey(name: 'total_customers')
   int? get totalCustomers => throw _privateConstructorUsedError;
+  @JsonKey(name: 'freezed_customers_count')
+  int? get freezedCustomersCount => throw _privateConstructorUsedError;
 
   /// Serializes this OrganizationHomeDataModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -69,6 +71,7 @@ abstract class $OrganizationHomeDataModelCopyWith<$Res> {
     @JsonKey(name: 'allPayment_count') int? allPaymentCount,
     @JsonKey(name: 'total_customers_count') int? totalCustomersCount,
     @JsonKey(name: 'total_customers') int? totalCustomers,
+    @JsonKey(name: 'freezed_customers_count') int? freezedCustomersCount,
   });
 }
 
@@ -99,6 +102,7 @@ class _$OrganizationHomeDataModelCopyWithImpl<
     Object? allPaymentCount = freezed,
     Object? totalCustomersCount = freezed,
     Object? totalCustomers = freezed,
+    Object? freezedCustomersCount = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -147,6 +151,11 @@ class _$OrganizationHomeDataModelCopyWithImpl<
                     ? _value.totalCustomers
                     : totalCustomers // ignore: cast_nullable_to_non_nullable
                         as int?,
+            freezedCustomersCount:
+                freezed == freezedCustomersCount
+                    ? _value.freezedCustomersCount
+                    : freezedCustomersCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
           )
           as $Val,
     );
@@ -172,6 +181,7 @@ abstract class _$$OrganizationHomeDataModelImplCopyWith<$Res>
     @JsonKey(name: 'allPayment_count') int? allPaymentCount,
     @JsonKey(name: 'total_customers_count') int? totalCustomersCount,
     @JsonKey(name: 'total_customers') int? totalCustomers,
+    @JsonKey(name: 'freezed_customers_count') int? freezedCustomersCount,
   });
 }
 
@@ -202,6 +212,7 @@ class __$$OrganizationHomeDataModelImplCopyWithImpl<$Res>
     Object? allPaymentCount = freezed,
     Object? totalCustomersCount = freezed,
     Object? totalCustomers = freezed,
+    Object? freezedCustomersCount = freezed,
   }) {
     return _then(
       _$OrganizationHomeDataModelImpl(
@@ -250,6 +261,11 @@ class __$$OrganizationHomeDataModelImplCopyWithImpl<$Res>
                 ? _value.totalCustomers
                 : totalCustomers // ignore: cast_nullable_to_non_nullable
                     as int?,
+        freezedCustomersCount:
+            freezed == freezedCustomersCount
+                ? _value.freezedCustomersCount
+                : freezedCustomersCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
       ),
     );
   }
@@ -268,6 +284,7 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
     @JsonKey(name: 'allPayment_count') this.allPaymentCount,
     @JsonKey(name: 'total_customers_count') this.totalCustomersCount,
     @JsonKey(name: 'total_customers') this.totalCustomers,
+    @JsonKey(name: 'freezed_customers_count') this.freezedCustomersCount,
   });
 
   factory _$OrganizationHomeDataModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -300,10 +317,13 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
   @override
   @JsonKey(name: 'total_customers')
   final int? totalCustomers;
+  @override
+  @JsonKey(name: 'freezed_customers_count')
+  final int? freezedCustomersCount;
 
   @override
   String toString() {
-    return 'OrganizationHomeDataModel(organizationId: $organizationId, trainerCount: $trainerCount, activeCustomersCount: $activeCustomersCount, upcomingRenewalsCount: $upcomingRenewalsCount, expiredCustomersCount: $expiredCustomersCount, upcomingPaymentCount: $upcomingPaymentCount, allPaymentCount: $allPaymentCount, totalCustomersCount: $totalCustomersCount, totalCustomers: $totalCustomers)';
+    return 'OrganizationHomeDataModel(organizationId: $organizationId, trainerCount: $trainerCount, activeCustomersCount: $activeCustomersCount, upcomingRenewalsCount: $upcomingRenewalsCount, expiredCustomersCount: $expiredCustomersCount, upcomingPaymentCount: $upcomingPaymentCount, allPaymentCount: $allPaymentCount, totalCustomersCount: $totalCustomersCount, totalCustomers: $totalCustomers, freezedCustomersCount: $freezedCustomersCount)';
   }
 
   @override
@@ -328,7 +348,9 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
             (identical(other.totalCustomersCount, totalCustomersCount) ||
                 other.totalCustomersCount == totalCustomersCount) &&
             (identical(other.totalCustomers, totalCustomers) ||
-                other.totalCustomers == totalCustomers));
+                other.totalCustomers == totalCustomers) &&
+            (identical(other.freezedCustomersCount, freezedCustomersCount) ||
+                other.freezedCustomersCount == freezedCustomersCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -344,6 +366,7 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
     allPaymentCount,
     totalCustomersCount,
     totalCustomers,
+    freezedCustomersCount,
   );
 
   /// Create a copy of OrganizationHomeDataModel
@@ -373,6 +396,7 @@ abstract class _OrganizationHomeDataModel implements OrganizationHomeDataModel {
     @JsonKey(name: 'allPayment_count') final int? allPaymentCount,
     @JsonKey(name: 'total_customers_count') final int? totalCustomersCount,
     @JsonKey(name: 'total_customers') final int? totalCustomers,
+    @JsonKey(name: 'freezed_customers_count') final int? freezedCustomersCount,
   }) = _$OrganizationHomeDataModelImpl;
 
   factory _OrganizationHomeDataModel.fromJson(Map<String, dynamic> json) =
@@ -405,6 +429,9 @@ abstract class _OrganizationHomeDataModel implements OrganizationHomeDataModel {
   @override
   @JsonKey(name: 'total_customers')
   int? get totalCustomers;
+  @override
+  @JsonKey(name: 'freezed_customers_count')
+  int? get freezedCustomersCount;
 
   /// Create a copy of OrganizationHomeDataModel
   /// with the given fields replaced by the non-null parameter values.

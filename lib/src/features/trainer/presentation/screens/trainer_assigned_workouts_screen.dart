@@ -264,7 +264,7 @@ class _TrainerAssignedWorkoutsViewState
                     children: [
                       Expanded(
                         child: _buildSegmentButton(
-                          title: 'Single Day',
+                          title: 'Workouts',
                           isSelected: state.selectedPlanType == 'single_day',
                           onTap: () => context
                               .read<AssignedWorkoutsCubit>()
@@ -273,7 +273,7 @@ class _TrainerAssignedWorkoutsViewState
                       ),
                       Expanded(
                         child: _buildSegmentButton(
-                          title: 'Multi Day',
+                          title: 'Programs',
                           isSelected: state.selectedPlanType == 'multi_day',
                           onTap: () => context
                               .read<AssignedWorkoutsCubit>()
@@ -889,9 +889,9 @@ class _TrainerAssignedWorkoutsViewState
                                                                       'multi_day'
                                                                   ? (routinesCount >
                                                                           0
-                                                                      ? '$routinesCount Days Plan'
-                                                                      : 'Multi-Day Plan')
-                                                                  : 'Single Day Workout',
+                                                                      ? '$routinesCount Days Program'
+                                                                      : 'Program')
+                                                                  : 'Workout',
                                                               style: AppStyles
                                                                   .text12Px
                                                                   .poppins

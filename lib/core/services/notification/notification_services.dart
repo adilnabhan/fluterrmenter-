@@ -45,6 +45,10 @@ class NotificationServices {
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+      _isInitialized = true;
+      return;
+    }
     WidgetsFlutterBinding.ensureInitialized();
     try {
       if (Firebase.apps.isEmpty) {
@@ -149,6 +153,9 @@ class NotificationServices {
   /// and registers the device token with the backend if granted.
   /// Called after login or when an authenticated session is active.
   static Future<void> requestPermissionAndRegisterToken() async {
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+      return;
+    }
     try {
       if (!_isInitialized) {
         await initialize();
@@ -187,6 +194,9 @@ class NotificationServices {
 
   /// Sends the device token to your Django endpoint (only when user is authenticated)
   static Future<void> registerDeviceToken() async {
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+      return;
+    }
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null && kDebugMode) {

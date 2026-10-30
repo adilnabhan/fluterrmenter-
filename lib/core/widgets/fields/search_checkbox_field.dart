@@ -104,7 +104,7 @@ class SearchCheckboxField<T> extends StatefulWidget {
   State<SearchCheckboxField<T>> createState() => _SearchCheckboxFieldState<T>();
 }
 
-class _SearchCheckboxFieldState<T> extends State<SearchCheckboxField<T>> with ChangeNotifier {
+class _SearchCheckboxFieldState<T> extends State<SearchCheckboxField<T>> {
   // T selectedRadio;
   late final ValueNotifier<List<({String label, T value})>> _ctrl;
   bool _showSheet = true;

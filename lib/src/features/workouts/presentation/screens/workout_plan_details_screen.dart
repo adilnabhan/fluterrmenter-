@@ -105,13 +105,21 @@ class _WorkoutPlanDetailsScreenState extends State<WorkoutPlanDetailsScreen> {
         );
 
         final planSource = (data['source'] ?? data['type'] ?? data['plan_type'] ?? '').toString().toLowerCase();
-        final bool isOrgFromData = data['is_preset'] == true ||
-            data['is_organization'] == true ||
-            data['is_gym_created'] == true ||
-            planSource == 'organization' ||
-            planSource == 'gym' ||
-            (data['organization_id'] != null && data['trainer_id'] == null && data['mentor_id'] == null) ||
-            (data['organization'] != null && data['trainer'] == null && data['mentor'] == null);
+        final bool isTrainerOwned = planSource == 'trainer' ||
+            data['trainer_id'] != null ||
+            data['mentor_id'] != null;
+        final bool isOrgFromData = !isTrainerOwned &&
+            (data['is_preset'] == true ||
+                data['is_organization'] == true ||
+                data['is_gym_created'] == true ||
+                planSource == 'organization' ||
+                planSource == 'gym' ||
+                (data['organization_id'] != null &&
+                    data['trainer_id'] == null &&
+                    data['mentor_id'] == null) ||
+                (data['organization'] != null &&
+                    data['trainer'] == null &&
+                    data['mentor'] == null));
         if (isOrgFromData) {
           _isOrgPlanFromApi = true;
         }
@@ -2701,8 +2709,9 @@ class _CreateExerciseBottomSheetState
           vertical: 14,
         ),
         decoration: BoxDecoration(
+          color: Colors.white,
           border: Border.all(
-            color: Colors.grey.shade400,
+            color: Colors.grey.shade300,
           ),
           borderRadius: BorderRadius.circular(8),
         ),
@@ -2922,7 +2931,7 @@ class _CreateExerciseBottomSheetState
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Select Secondary Muscles',
+                          'Select Sub Group Muscles',
                           style: AppStyles.text16Px.poppins.w600.dark,
                         ),
                         IconButton(
@@ -2938,7 +2947,7 @@ class _CreateExerciseBottomSheetState
                       controller: searchController,
                       onChanged: (_) => setModalState(() {}),
                       decoration: InputDecoration(
-                        hintText: 'Search secondary muscles...',
+                        hintText: 'Search sub group muscles...',
                         hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
                           color: Colors.grey.shade400,
                         ),
@@ -3100,9 +3109,18 @@ class _CreateExerciseBottomSheetState
                                           ? 'Workout name is required'
                                           : null,
                               decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
                                 hintText: 'Enter workout name',
+                                hintStyle: AppStyles.text14Px.poppins.w400
+                                    .copyWith(color: Colors.grey.shade600),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
                                 ),
                               ),
                             ),
@@ -3148,7 +3166,7 @@ class _CreateExerciseBottomSheetState
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Secondary Muscle',
+                              'Sub group muscle',
                               style: AppStyles.text14Px.poppins.w500.dark,
                             ),
                             const SizedBox(height: 8),
@@ -3163,7 +3181,7 @@ class _CreateExerciseBottomSheetState
                                         )['name'],
                                       )
                                       .join(', '),
-                              hintText: 'Select the secondary muscles',
+                              hintText: 'Select sub group muscles',
                               onTap: _openSearchableSecondaryMuscleSheet,
                             ),
                             const SizedBox(height: 16),
@@ -3195,8 +3213,15 @@ class _CreateExerciseBottomSheetState
                                 setState(() => _selectedType = val);
                               },
                               decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
                                 ),
                               ),
                             ),
@@ -3229,8 +3254,15 @@ class _CreateExerciseBottomSheetState
                                 setState(() => _selectedTrackBy = val);
                               },
                               decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
                                 ),
                               ),
                             ),
@@ -3283,11 +3315,20 @@ class _CreateExerciseBottomSheetState
                             TextFormField(
                               controller: _youtubeController,
                               decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
                                 hintText: 'Paste the YouTube link of exercise',
+                                hintStyle: AppStyles.text14Px.poppins.w400
+                                    .copyWith(color: Colors.grey.shade600),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
                                 ),
-                                suffixIcon: const Icon(Icons.link),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                suffixIcon: const Icon(Icons.link, color: Colors.grey),
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -4394,7 +4435,7 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                       },
                     ),
                     Text(
-                      'Single Day',
+                      'Workouts',
                       style: AppStyles.text14Px.poppins.w500.dark,
                     ),
                     const SizedBox(width: 24),
@@ -4409,7 +4450,7 @@ class _SaveTemplateBottomSheetState extends State<_SaveTemplateBottomSheet> {
                       },
                     ),
                     Text(
-                      'Multi Day',
+                      'Programs',
                       style: AppStyles.text14Px.poppins.w500.dark,
                     ),
                   ],

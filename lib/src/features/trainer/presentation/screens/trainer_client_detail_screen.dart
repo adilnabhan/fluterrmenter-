@@ -6,6 +6,7 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_body_matrix_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_customers_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_personal_records_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_other_details_screen.dart';
 
 class TrainerClientDetailScreen extends StatefulWidget {
   const TrainerClientDetailScreen({
@@ -1906,47 +1907,51 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      membership['plan_name'] as String? ??
-                                          'No Plan',
-                                      style: AppStyles.text16Px.poppins.w600
-                                          .copyWith(
-                                            color: context.colors.textPrimary,
-                                          ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 2,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        membership['plan_name'] as String? ??
+                                            'No Plan',
+                                        style: AppStyles.text16Px.poppins.w600
+                                            .copyWith(
+                                              color: context.colors.textPrimary,
+                                            ),
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: context.colors.card,
-                                        borderRadius: BorderRadius.circular(12),
+                                      const SizedBox(height: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: context.colors.card,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 3,
+                                              backgroundColor: badgeColor,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              badgeText,
+                                              style: AppStyles
+                                                  .text12Px
+                                                  .poppins
+                                                  .w500
+                                                  .copyWith(color: badgeColor),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          CircleAvatar(
-                                            radius: 3,
-                                            backgroundColor: badgeColor,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            badgeText,
-                                            style: AppStyles
-                                                .text12Px
-                                                .poppins
-                                                .w500
-                                                .copyWith(color: badgeColor),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -2116,6 +2121,36 @@ class _TrainerClientDetailScreenState extends State<TrainerClientDetailScreen> {
                   'Other Details',
                   style: AppStyles.text16Px.poppins.w600.copyWith(
                     color: context.colors.textPrimary,
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (context) => TrainerClientOtherDetailsScreen(
+                          clientData: _clientData,
+                          bodyMatrixData: _bodyMatrixData,
+                          customerId: widget.customerId,
+                        ),
+                      ),
+                    ).then((_) {
+                      _fetchClientDetails();
+                      _fetchBodyMatrix();
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
+                    child: Text(
+                      'Show all',
+                      style: AppStyles.text13Px.poppins.w600.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ),
                 ),
               ],

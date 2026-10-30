@@ -2415,47 +2415,55 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSectionTitle('Client Overview'),
-            GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 1.4,
+            Row(
               children: [
-                _buildReportCard(
-                  title: 'Active Clients',
-                  value: totalClients,
-                  icon: Icons.people_outline,
-                  color: const Color(0xff486CC2),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ReportsCustomerListScreen(
-                          orgId: widget.orgId,
-                          filterType: 'all',
-                          filterValue: '',
-                          filterLabel: 'All Active Clients',
-                          startDate: _startDate,
-                          endDate: _endDate,
+                Expanded(
+                  child: _buildReportCard(
+                    title: 'Active Clients',
+                    value: totalClients,
+                    icon: Icons.people_outline,
+                    color: const Color(0xff486CC2),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReportsCustomerListScreen(
+                            orgId: widget.orgId,
+                            filterType: 'all',
+                            filterValue: '',
+                            filterLabel: 'All Active Clients',
+                            startDate: _startDate,
+                            endDate: _endDate,
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-                _buildReportCard(
-                  title: 'Completed Sessions',
-                  value: completedSessions,
-                  icon: Icons.check_circle_outline,
-                  color: const Color(0xff527F50),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildReportCard(
+                    title: 'Completed Sessions',
+                    value: completedSessions,
+                    icon: Icons.check_circle_outline,
+                    color: const Color(0xff527F50),
+                  ),
                 ),
-                _buildReportCard(
-                  title: 'Retention Rate',
-                  value: retentionRate,
-                  icon: Icons.trending_up_outlined,
-                  color: const Color(0xffE67E22),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildReportCard(
+                    title: 'Retention Rate',
+                    value: retentionRate,
+                    icon: Icons.trending_up_outlined,
+                    color: const Color(0xffE67E22),
+                  ),
                 ),
+                const SizedBox(width: 12),
+                const Expanded(child: SizedBox.shrink()),
               ],
             ),
             const SizedBox(height: 24),

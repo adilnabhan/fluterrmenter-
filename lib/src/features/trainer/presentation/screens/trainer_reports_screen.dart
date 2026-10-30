@@ -29,7 +29,8 @@ class _TrainerReportsScreenState extends State<TrainerReportsScreen> {
   @override
   void dispose() {
     reportsRefreshTrigger.removeListener(_fetchReports);
-    super.dispose();
+
+
   }
 
   Future<void> _fetchReports() async {

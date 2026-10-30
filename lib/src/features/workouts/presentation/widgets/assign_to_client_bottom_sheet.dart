@@ -3,6 +3,7 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_reports_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_plan_details_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/workout_group_details_screen.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/assign_program_schedule_bottom_sheet.dart';
 import 'package:mentor_mobile_app/core/services/holiday/gym_holiday_service.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_stats_screen.dart';
 
@@ -34,6 +35,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
   String _selectedGymFilter = 'All';
   final Map<int, bool> _submittingMap = {};
   final Map<int, String?> _orgHolidaysToday = {};
+  List<Map<String, dynamic>>? _cachedProgramDays;
+  int? _cachedMasterPlanId;
 
   String? _nextUrl;
   bool _isFetchingMore = false;
@@ -415,49 +418,57 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
     final int? clientOrgId =
         client['organization_id'] as int? ?? client['gym_id'] as int?;
 
-    final titleController = TextEditingController(text: widget.planTitle);
-    final notesController = TextEditingController();
-    DateTime? selectedDate = widget.isMultiDayGroup ? DateTime.now() : null;
-    String? holidayWarning;
-    final action = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: Text(
-                'Assign Workout',
-                style: AppStyles.text16Px.poppins.w600,
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (widget.isMultiDayGroup)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF7F7F8),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Text(
-                          widget.planTitle,
-                          style: AppStyles.text14Px.poppins.w600.copyWith(
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                      )
-                    else
+    String? action;
+    String finalTitle = widget.planTitle;
+    String finalNotes = '';
+    DateTime? selectedDate;
+    DateTime startDate = DateTime.now();
+    DateTime calculatedEndDate = startDate.add(const Duration(days: 6));
+    List<Map<String, dynamic>> assignDays = [];
+    int? resolvedTargetPlanId = _cachedMasterPlanId;
+
+    if (widget.isMultiDayGroup) {
+      final scheduleResult = await AssignProgramScheduleBottomSheet.show(
+        context: context,
+        programId: widget.planId,
+        programTitle: widget.planTitle,
+        preloadedDays: _cachedProgramDays,
+        clientOrgId: clientOrgId,
+        showCustomize: true,
+      );
+
+      if (scheduleResult == null || scheduleResult.action == 'cancel') return;
+      action = scheduleResult.action;
+      startDate = scheduleResult.startDate;
+      calculatedEndDate = scheduleResult.endDate;
+      assignDays = scheduleResult.scheduleDays;
+      finalNotes = scheduleResult.notes;
+      resolvedTargetPlanId = scheduleResult.targetPlanId;
+      _cachedMasterPlanId = scheduleResult.targetPlanId;
+      _cachedProgramDays = scheduleResult.scheduleDays;
+    } else {
+      final titleController = TextEditingController(text: widget.planTitle);
+      final notesController = TextEditingController();
+      String? holidayWarning;
+      action = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) {
+          return StatefulBuilder(
+            builder: (context, setStateDialog) {
+              return AlertDialog(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                title: Text(
+                  'Assign Workout',
+                  style: AppStyles.text16Px.poppins.w600,
+                ),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       TextField(
                         controller: titleController,
                         decoration: InputDecoration(
@@ -478,248 +489,230 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                           ),
                         ),
                       ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: notesController,
-                      decoration: InputDecoration(
-                        hintText: 'Trainer notes (Optional)',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade400),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade400),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: notesController,
+                        decoration: InputDecoration(
+                          hintText: 'Trainer notes (Optional)',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade400),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade400),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    RichText(
-                      text: TextSpan(
-                        text: 'Start Date ',
-                        style: AppStyles.text12Px.poppins.w500.copyWith(
-                          color: AppColors.textDark,
-                        ),
-                        children: [
-                          if (widget.isMultiDayGroup)
-                            TextSpan(
-                              text: '*',
-                              style: AppStyles.text12Px.poppins.w600.copyWith(
-                                color: AppColors.primary,
-                              ),
-                            )
-                          else
+                      const SizedBox(height: 16),
+                      RichText(
+                        text: TextSpan(
+                          text: 'Start Date ',
+                          style: AppStyles.text12Px.poppins.w500.copyWith(
+                            color: AppColors.textDark,
+                          ),
+                          children: [
                             TextSpan(
                               text: '(Optional)',
                               style: AppStyles.text12Px.poppins.w400.copyWith(
                                 color: AppColors.textGrey,
                               ),
                             ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    InkWell(
-                      onTap: () async {
-                        final DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate ?? DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 365),
-                          ),
-                        );
-                        if (picked != null) {
-                          final hol = await GymHolidayService.getHolidayName(
-                            picked,
-                            orgId: clientOrgId,
-                            forceRefresh: true,
-                          );
-                          setStateDialog(() {
-                            selectedDate = picked;
-                            holidayWarning = hol;
-                          });
-                          if (hol != null) {
-                            Dialogs.showSnack(
-                              msg:
-                                  'Selected date is a gym holiday ($hol). Workouts cannot be assigned on holidays.',
-                            );
-                          }
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color:
-                                holidayWarning != null
-                                    ? const Color(0xffD32F2F)
-                                    : Colors.grey.shade400,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                selectedDate != null
-                                    ? "${selectedDate!.day.toString().padLeft(2, '0')}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.year}"
-                                    : (widget.isMultiDayGroup
-                                        ? 'Select start date'
-                                        : 'Select start date (Default: Today)'),
-                                style: AppStyles.text14Px.poppins.w400.copyWith(
-                                  color:
-                                      selectedDate != null
-                                          ? AppColors.textDark
-                                          : Colors.grey,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.calendar_today,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
                           ],
                         ),
                       ),
-                    ),
-                    if (holidayWarning != null) ...[
                       const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xffFFEBEE),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(
-                              0xffEF5350,
-                            ).withValues(alpha: 0.5),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              color: Color(0xffD32F2F),
-                              size: 16,
+                      InkWell(
+                        onTap: () async {
+                          final DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDate ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365),
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Cannot assign workout: $holidayWarning is a gym holiday.',
-                                style: AppStyles.text12Px.poppins.w500.copyWith(
-                                  color: const Color(0xffD32F2F),
+                          );
+                          if (picked != null) {
+                            final hol = await GymHolidayService.getHolidayName(
+                              picked,
+                              orgId: clientOrgId,
+                              forceRefresh: true,
+                            );
+                            setStateDialog(() {
+                              selectedDate = picked;
+                              holidayWarning = hol;
+                            });
+                            if (hol != null) {
+                              Dialogs.showSnack(
+                                msg:
+                                    'Selected date is a gym holiday ($hol). Workouts cannot be assigned on holidays.',
+                              );
+                            }
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color:
+                                  holidayWarning != null
+                                      ? const Color(0xffD32F2F)
+                                      : Colors.grey.shade400,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  selectedDate != null
+                                      ? "${selectedDate!.day.toString().padLeft(2, '0')}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.year}"
+                                      : 'Select start date (Default: Today)',
+                                  style: AppStyles.text14Px.poppins.w400.copyWith(
+                                    color:
+                                        selectedDate != null
+                                            ? AppColors.textDark
+                                            : Colors.grey,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              const Icon(
+                                Icons.calendar_today,
+                                size: 20,
+                                color: Colors.grey,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (holidayWarning != null) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffFFEBEE),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(
+                                0xffEF5350,
+                              ).withValues(alpha: 0.5),
                             ),
-                          ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                color: Color(0xffD32F2F),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Cannot assign workout: $holidayWarning is a gym holiday.',
+                                  style: AppStyles.text12Px.poppins.w500.copyWith(
+                                    color: const Color(0xffD32F2F),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                actions: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, 'cancel'),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed:
+                            () => Navigator.pop(dialogContext, 'customize'),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          'Customize',
+                          style: AppStyles.text14Px.poppins.w500.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(dialogContext, 'assign'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          'Assign',
+                          style: AppStyles.text14Px.poppins.w600.copyWith(
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
-                  ],
-                ),
-              ),
-              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              actions: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(dialogContext, 'cancel'),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style: AppStyles.text14Px.poppins.w500.copyWith(
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed:
-                          () => Navigator.pop(dialogContext, 'customize'),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        'Customize',
-                        style: AppStyles.text14Px.poppins.w500.copyWith(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (widget.isMultiDayGroup && selectedDate == null) {
-                          Dialogs.showSnack(
-                            msg:
-                                'Please select a start date for multi-day workout',
-                          );
-                          return;
-                        }
-                        Navigator.pop(dialogContext, 'assign');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 10,
-                        ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        'Assign',
-                        style: AppStyles.text14Px.poppins.w600.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
 
-    if (action == null || action == 'cancel') return;
-
-    final enteredTitle = titleController.text.trim();
-    final String finalTitle =
-        enteredTitle.isNotEmpty ? enteredTitle : widget.planTitle;
+      if (action == null || action == 'cancel') return;
+      final enteredTitle = titleController.text.trim();
+      finalTitle = enteredTitle.isNotEmpty ? enteredTitle : widget.planTitle;
+      finalNotes = notesController.text.trim();
+      startDate = selectedDate ?? DateTime.now();
+    }
 
     if (!mounted) return;
     setState(() {
@@ -730,8 +723,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
       final dio = DioClient().dio;
 
       if (action == 'customize') {
-        int targetPlanId = widget.planId;
-        if (widget.isMultiDayGroup) {
+        int targetPlanId = resolvedTargetPlanId ?? widget.planId;
+        if (widget.isMultiDayGroup && resolvedTargetPlanId == null) {
           try {
             dynamic groupPlansRes;
             try {
@@ -866,11 +859,9 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
         );
         return;
       }
-      List<Map<String, dynamic>> assignDays = [];
-      DateTime calculatedEndDate = startDate.add(const Duration(days: 6));
-      int? foundMasterPlanId;
+      int? foundMasterPlanId = resolvedTargetPlanId;
 
-      if (widget.isMultiDayGroup) {
+      if (widget.isMultiDayGroup && (foundMasterPlanId == null || assignDays.isEmpty)) {
         try {
           dynamic groupPlansRes;
           try {
@@ -919,7 +910,7 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
             foundMasterPlanId = widget.planId;
           }
 
-          if (foundMasterPlanId != null) {
+          if (foundMasterPlanId != null && assignDays.isEmpty) {
             final targetId = foundMasterPlanId;
             dynamic planDetailRes;
             try {
@@ -1001,8 +992,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
               'title': finalTitle,
               'start_date': startDateStr,
               'end_date': endDateStr,
-              if (notesController.text.trim().isNotEmpty)
-                'notes': notesController.text.trim(),
+              if (finalNotes.isNotEmpty)
+                'notes': finalNotes,
               if (assignDays.isNotEmpty) 'days': assignDays,
             },
             options: Options(headers: {'X-Platform': platformSource}),
@@ -1017,8 +1008,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                   'title': finalTitle,
                   'start_date': startDateStr,
                   'end_date': endDateStr,
-                  if (notesController.text.trim().isNotEmpty)
-                    'notes': notesController.text.trim(),
+                  if (finalNotes.isNotEmpty)
+                    'notes': finalNotes,
                   if (assignDays.isNotEmpty) 'days': assignDays,
                 },
                 options: Options(headers: {'X-Platform': platformSource}),
@@ -1034,8 +1025,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
                 'title': finalTitle,
                 'start_date': startDateStr,
                 'end_date': endDateStr,
-                if (notesController.text.trim().isNotEmpty)
-                  'notes': notesController.text.trim(),
+                if (finalNotes.isNotEmpty)
+                  'notes': finalNotes,
                 if (assignDays.isNotEmpty) 'days': assignDays,
               },
               options: Options(headers: {'X-Platform': platformSource}),
@@ -1049,8 +1040,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
             data: {
               'customer_id': customerId,
               'title': finalTitle,
-              if (notesController.text.trim().isNotEmpty)
-                'notes': notesController.text.trim(),
+              if (finalNotes.isNotEmpty)
+                'notes': finalNotes,
               if (selectedDate != null) 'start_date': startDateStr,
             },
             options: Options(headers: {'X-Platform': platformSource}),
@@ -1061,8 +1052,8 @@ class _AssignToClientBottomSheetState extends State<AssignToClientBottomSheet> {
             data: {
               'customer_id': customerId,
               'title': finalTitle,
-              if (notesController.text.trim().isNotEmpty)
-                'notes': notesController.text.trim(),
+              if (finalNotes.isNotEmpty)
+                'notes': finalNotes,
               if (selectedDate != null) 'start_date': startDateStr,
             },
             options: Options(headers: {'X-Platform': platformSource}),

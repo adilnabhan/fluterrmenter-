@@ -1272,7 +1272,7 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Select Secondary Muscles',
+                          'Select Sub Group Muscles',
                           style: AppStyles.text16Px.poppins.w600,
                         ),
                         IconButton(
@@ -1288,7 +1288,7 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                       controller: searchController,
                       onChanged: (_) => setModalState(() {}),
                       decoration: InputDecoration(
-                        hintText: 'Search secondary muscles...',
+                        hintText: 'Search sub group muscles...',
                         hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
                           color: Colors.grey.shade400,
                         ),
@@ -1392,6 +1392,172 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
     );
   }
 
+  void _openSearchableEquipmentSheet() {
+    final searchController = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final query = searchController.text.trim().toLowerCase();
+            final filteredEquipments = query.isEmpty
+                ? _equipments
+                : _equipments.where((eq) {
+                    final name = (eq['name'] ?? '').toString().toLowerCase();
+                    return name.contains(query);
+                  }).toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Select Equipment',
+                          style: AppStyles.text16Px.poppins.w600,
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: searchController,
+                      onChanged: (_) => setModalState(() {}),
+                      decoration: InputDecoration(
+                        hintText: 'Search equipment...',
+                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: Colors.grey.shade400,
+                        ),
+                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                        suffixIcon: searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+                                onPressed: () {
+                                  searchController.clear();
+                                  setModalState(() {});
+                                },
+                              )
+                            : null,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          borderSide: BorderSide(color: AppColors.primary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        final newEquipment = await _showAddNewDialog(
+                          'Equipment',
+                          ApiUris.equipment,
+                        );
+                        if (newEquipment != null && mounted) {
+                          setState(() {
+                            _equipments.add(newEquipment);
+                            _selectedEquipmentId = newEquipment['id'] as int;
+                          });
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        child: Row(
+                          children: [
+                            Icon(Icons.add_circle_outline, color: Colors.blue, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              '+ Add New Equipment...',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: filteredEquipments.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No equipment found',
+                                style: AppStyles.text14Px.poppins.w400.copyWith(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          : ListView.separated(
+                              itemCount: filteredEquipments.length,
+                              separatorBuilder: (_, __) => const Divider(height: 1),
+                              itemBuilder: (context, index) {
+                                final eq = filteredEquipments[index];
+                                final id = eq['id'] as int;
+                                final name = (eq['name'] ?? '').toString();
+                                final isSelected = _selectedEquipmentId == id;
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                  title: Text(
+                                    name,
+                                    style: AppStyles.text14Px.poppins.w500.copyWith(
+                                      color: isSelected ? AppColors.primary : Colors.black87,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                    ),
+                                  ),
+                                  trailing: isSelected
+                                      ? const Icon(Icons.check, color: AppColors.primary)
+                                      : null,
+                                  onTap: () {
+                                    setState(() => _selectedEquipmentId = id);
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1451,6 +1617,8 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                                             ? 'Required'
                                             : null,
                                 decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
                                   hintText: 'Enter exercise name',
                                   hintStyle: AppStyles.text14Px.poppins.w400
                                       .copyWith(color: Colors.grey),
@@ -1549,7 +1717,7 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                               const SizedBox(height: 20),
 
                               Text(
-                                'Secondary Muscle',
+                                'Sub group muscle',
                                 style: AppStyles.text14Px.poppins.w500.copyWith(
                                   color: Colors.black,
                                 ),
@@ -1576,7 +1744,7 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                                       Expanded(
                                         child: Text(
                                           _selectedSecondaryMuscleIds.isEmpty
-                                              ? 'Select the secondary muscles'
+                                              ? 'Select sub group muscles'
                                               : _selectedSecondaryMuscleIds
                                                   .map(
                                                     (id) => _muscles
@@ -1646,6 +1814,8 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                                   setState(() => _selectedType = val);
                                 },
                                 decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
@@ -1669,69 +1839,47 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              DropdownButtonFormField<int>(
-                                isExpanded: true,
-                                menuMaxHeight: 300,
-                                value: _selectedEquipmentId,
-                                hint: const Text(
-                                  'Select the equipment used',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                items: [
-                                  ..._equipments.map((eq) {
-                                    return DropdownMenuItem<int>(
-                                      value: eq['id'] as int,
-                                      child: Text(
-                                        eq['name'] as String,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    );
-                                  }),
-                                  const DropdownMenuItem<int>(
-                                    value: -1,
-                                    child: Text(
-                                      '+ Add New Equipment...',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.blue,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                              InkWell(
+                                onTap: _openSearchableEquipmentSheet,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
                                   ),
-                                ],
-                                onChanged: (val) async {
-                                  if (val == -1) {
-                                    final newEquipment =
-                                        await _showAddNewDialog(
-                                          'Equipment',
-                                          ApiUris.equipment,
-                                        );
-                                    if (newEquipment != null && mounted) {
-                                      setState(() {
-                                        _equipments.add(newEquipment);
-                                        _selectedEquipmentId =
-                                            newEquipment['id'] as int;
-                                      });
-                                    } else {
-                                      setState(() {}); // Reset if cancelled
-                                    }
-                                  } else {
-                                    if (!mounted) return;
-                                    setState(() => _selectedEquipmentId = val);
-                                  }
-                                },
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
                                       color: Colors.grey.shade300,
                                     ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey.shade300,
-                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          _selectedEquipmentId == null
+                                              ? 'Select the equipment used'
+                                              : (_equipments.firstWhere(
+                                                  (eq) =>
+                                                      eq['id'] ==
+                                                      _selectedEquipmentId,
+                                                  orElse: () => {'name': ''},
+                                                )['name'] ?? '') as String,
+                                          style: AppStyles.text14Px.poppins.w400.copyWith(
+                                            color: _selectedEquipmentId == null
+                                                ? Colors.grey.shade600
+                                                : Colors.black,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const Icon(
+                                        Icons.arrow_drop_down,
+                                        color: Colors.grey,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -1747,8 +1895,10 @@ class _CreateNewExerciseSheetState extends State<_CreateNewExerciseSheet> {
                               TextFormField(
                                 controller: _youtubeController,
                                 decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
                                   hintText:
-                                      'Paste the youtube link of exercis...',
+                                      'Paste the youtube link of exercise',
                                   hintStyle: AppStyles.text14Px.poppins.w400
                                       .copyWith(color: Colors.grey),
                                   border: OutlineInputBorder(

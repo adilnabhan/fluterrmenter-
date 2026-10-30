@@ -86,8 +86,7 @@ class MultiSelectField<T> extends StatefulWidget {
   State<MultiSelectField<T>> createState() => _MultiSelectFieldState<T>();
 }
 
-class _MultiSelectFieldState<T> extends State<MultiSelectField<T>>
-    with ChangeNotifier {
+class _MultiSelectFieldState<T> extends State<MultiSelectField<T>> {
   @override
   Widget build(BuildContext context) {
     return AbsorbPointer(
