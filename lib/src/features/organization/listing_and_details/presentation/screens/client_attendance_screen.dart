@@ -743,7 +743,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   void _showHolidaysManagementSheet() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -782,7 +782,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                       children: [
                         Text(
                           'Gym Holidays (${DateFormat('MMM yyyy').format(_selectedDate)})',
-                          style: AppStyles.text16Px.poppins.w600.dark,
+                          style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                         ),
                         if (!widget.isTrainer)
                           ElevatedButton.icon(
@@ -886,7 +886,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                                   .text12Px
                                                   .poppins
                                                   .w500
-                                                  .dark,
+                                                  .copyWith(color: context.colors.textPrimary),
                                         ),
                                         if (desc.isNotEmpty)
                                           Text(
@@ -1032,7 +1032,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
     await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
       isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
@@ -1071,7 +1071,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
               showModalBottomSheet<void>(
                 context: ctx,
-                backgroundColor: Colors.white,
+                backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
                 isScrollControlled: true,
                 useSafeArea: true,
                 shape: const RoundedRectangleBorder(
@@ -1102,7 +1102,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         const SizedBox(height: 12),
                         Text(
                           'Custom Title for $dateFormatted',
-                          style: AppStyles.text14Px.poppins.w600.dark,
+                          style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -1137,7 +1137,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                               vertical: 12,
                             ),
                           ),
-                          style: AppStyles.text14Px.poppins.w400.dark,
+                          style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                         ),
                         const SizedBox(height: 12),
                         // Presets - Horizontal scrollable
@@ -1267,7 +1267,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
               showModalBottomSheet<void>(
                 context: ctx,
-                backgroundColor: Colors.white,
+                backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
                 isScrollControlled: true,
                 useSafeArea: true,
                 shape: const RoundedRectangleBorder(
@@ -1304,7 +1304,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                               children: [
                                 Text(
                                   'Edit Saved Holiday',
-                                  style: AppStyles.text16Px.poppins.w600.dark,
+                                  style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                                 ),
                                 Text(
                                   dateFormatted,
@@ -1357,7 +1357,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                               vertical: 12,
                             ),
                           ),
-                          style: AppStyles.text14Px.poppins.w400.dark,
+                          style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                         ),
                         const SizedBox(height: 10),
                         Text(
@@ -1384,7 +1384,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                               vertical: 12,
                             ),
                           ),
-                          style: AppStyles.text14Px.poppins.w400.dark,
+                          style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -1523,7 +1523,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                     existingHoliday != null
                                         ? 'Edit Gym Holiday'
                                         : 'Set Gym Holidays',
-                                    style: AppStyles.text16Px.poppins.w600.dark,
+                                    style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                                   ),
                                   Text(
                                     selectedDates.length > 1
@@ -1623,7 +1623,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                         'MMMM yyyy',
                                       ).format(calendarMonth),
                                       style:
-                                          AppStyles.text14Px.poppins.w600.dark,
+                                          AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                                     ),
                                     if (calendarMonth.year != now.year ||
                                         calendarMonth.month != now.month) ...[
@@ -2148,7 +2148,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                                         )
                                                         : isTodayDate
                                                         ? AppColors.primary
-                                                        : AppColors.dark,
+                                                        : (context.isDarkMode ? context.colors.textPrimary : AppColors.dark),
                                               ),
                                         ),
                                         if (hasExisting && !isSelected)
@@ -2257,7 +2257,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                           children: [
                             Text(
                               'Selected Dates (${sortedSelectedDates.length})',
-                              style: AppStyles.text12Px.poppins.w600.dark,
+                              style: AppStyles.text12Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                             ),
                             Text(
                               'Tap date to rename',
@@ -2404,7 +2404,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             vertical: 12,
                           ),
                         ),
-                        style: AppStyles.text14Px.poppins.w400.dark,
+                        style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                       ),
                       const SizedBox(height: 8),
 
@@ -2541,7 +2541,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                             vertical: 12,
                           ),
                         ),
-                        style: AppStyles.text14Px.poppins.w400.dark,
+                        style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                       ),
                       const SizedBox(height: 18),
 
@@ -3086,7 +3086,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -3117,7 +3117,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Mark Attendance',
-                      style: AppStyles.text16Px.poppins.w600.dark,
+                      style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -3176,7 +3176,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                                 .text14Px
                                                 .poppins
                                                 .w400
-                                                .dark,
+                                                .copyWith(color: context.colors.textPrimary),
                                   ),
                                 ),
                                 if (isSelected)
@@ -3264,15 +3264,15 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+      backgroundColor: context.isDarkMode ? context.colors.background : const Color(0xffF7F7F7),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.isDarkMode ? context.colors.background : Colors.white,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: context.isDarkMode ? context.colors.background : Colors.white,
         leading: const PopButton().center,
         title: Text(
           'Client Attendance',
-          style: AppStyles.text18Px.poppins.w600.dark,
+          style: AppStyles.text18Px.poppins.w600.copyWith(color: context.colors.textPrimary),
         ),
         actions: [
           if (!widget.isTrainer)
@@ -3435,7 +3435,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     final today = DateTime.now();
 
     return Container(
-      color: Colors.white,
+      color: context.isDarkMode ? context.colors.card : Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       child: Row(
         children: [
@@ -3526,7 +3526,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                   color:
                                       isSelected
                                           ? Colors.white
-                                          : AppColors.dark,
+                                          : (context.isDarkMode ? context.colors.textPrimary : AppColors.dark),
                                 ),
                               ),
                               Text(
@@ -3605,14 +3605,14 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     ];
 
     return Container(
-      color: Colors.white,
+      color: context.isDarkMode ? context.colors.card : Colors.white,
       padding: const EdgeInsets.only(left: 16, right: 16, bottom: 14),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xffF9FAFB),
+          color: context.isDarkMode ? context.colors.background : const Color(0xffF9FAFB),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffEEEEEE)),
+          border: Border.all(color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
         ),
         child: Row(
           children: [
@@ -3671,7 +3671,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                     children: [
                       Text(
                         'Attendance Report',
-                        style: AppStyles.text12Px.poppins.w600.dark,
+                        style: AppStyles.text12Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                       ),
                       GestureDetector(
                         onTap: _showAttendanceReportSheet,
@@ -3750,7 +3750,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
     final hasFilter = _statusFilter != 'all';
 
     return Container(
-      color: Colors.white,
+      color: context.isDarkMode ? context.colors.card : Colors.white,
       padding: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3761,7 +3761,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                 child: Container(
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xffF5F5F5),
+                    color: context.isDarkMode ? context.colors.fieldFill : const Color(0xffF5F5F5),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
@@ -3797,7 +3797,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                         vertical: 12,
                       ),
                     ),
-                    style: AppStyles.text14Px.poppins.w400.dark,
+                    style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                   ),
                 ),
               ),
@@ -3807,7 +3807,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                 height: 44,
                 decoration: BoxDecoration(
                   color:
-                      hasFilter ? AppColors.primary : const Color(0xffF5F5F5),
+                      hasFilter ? AppColors.primary : (context.isDarkMode ? context.colors.fieldFill : const Color(0xffF5F5F5)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
@@ -3969,9 +3969,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.isDarkMode ? context.colors.card : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffEEEEEE)),
+          border: Border.all(color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
         ),
         child: Row(
           children: [
@@ -3997,7 +3997,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                       Flexible(
                         child: Text(
                           name,
-                          style: AppStyles.text14Px.poppins.w600.dark,
+                          style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -4067,9 +4067,9 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xffF2F4F4),
+                    color: context.isDarkMode ? context.colors.background : const Color(0xffF2F4F4),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xffBDC3C7)),
+                    border: Border.all(color: context.isDarkMode ? context.colors.border : const Color(0xffBDC3C7)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -4229,7 +4229,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -4255,7 +4255,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'Filter Clients',
-                  style: AppStyles.text16Px.poppins.w600.dark,
+                  style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -4308,7 +4308,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                     isSelected
                                         ? AppStyles.text14Px.poppins.w600
                                             .copyWith(color: opt.color)
-                                        : AppStyles.text14Px.poppins.w400.dark,
+                                        : AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                               ),
                             ),
                             Container(
@@ -4327,7 +4327,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                                 '${opt.count}',
                                 style: AppStyles.text12Px.poppins.w600.copyWith(
                                   color:
-                                      isSelected ? opt.color : AppColors.dark,
+                                      isSelected ? opt.color : (context.isDarkMode ? context.colors.textPrimary : AppColors.dark),
                                 ),
                               ),
                             ),
@@ -4395,7 +4395,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -4423,7 +4423,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                   children: [
                     Text(
                       'Attendance Analytics',
-                      style: AppStyles.text16Px.poppins.w600.dark,
+                      style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                     ),
                     Text(
                       DateFormat('MMM dd, yyyy').format(_selectedDate),
@@ -4525,7 +4525,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildMiniMetric('Total Clients', '$total', AppColors.dark),
+                    _buildMiniMetric('Total Clients', '$total', context.isDarkMode ? context.colors.textPrimary : AppColors.dark),
                     _buildMiniMetric(
                       'Active',
                       '$_activePresentCount',
@@ -4592,7 +4592,7 @@ class _ClientAttendanceScreenState extends State<ClientAttendanceScreen> {
           Icon(icon, color: color, size: 20),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(label, style: AppStyles.text14Px.poppins.w500.dark),
+            child: Text(label, style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary)),
           ),
           Text(
             '$count (${percentage.toStringAsFixed(1)}%)',
@@ -4791,7 +4791,7 @@ class _TimePickerField extends StatelessWidget {
                     value ?? 'Select',
                     style: AppStyles.text14Px.poppins.w500.copyWith(
                       color:
-                          value != null ? AppColors.dark : AppColors.textGrey,
+                          value != null ? (context.isDarkMode ? context.colors.textPrimary : AppColors.dark) : AppColors.textGrey,
                     ),
                   ),
                 ],

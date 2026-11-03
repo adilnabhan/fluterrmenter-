@@ -10,6 +10,9 @@ import 'package:mentor_mobile_app/src/features/organization/listing_and_details/
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/upcoming_payments_widget.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_notifications_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/birthday_wishes_dialog.dart';
 
 class OrganizationListingScreen extends StatelessWidget {
   const OrganizationListingScreen({super.key});
@@ -345,6 +348,138 @@ class _OrganizationListingAndDetailsScreenState
   }
 
   int _currentBannerIndex = 0;
+
+  Widget _buildBirthdaysSection(
+    List<dynamic> upcomingBirthdays,
+    String? organizationName,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            children: [
+              Text(
+                "Birthday's Today",
+                style: AppStyles.text16Px.poppins.w700.copyWith(
+                  fontSize: 18,
+                  color: context.colors.textPrimary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Image.asset(
+                'assets/images/png/icons/hat.png',
+                width: 24,
+                height: 24,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 98,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: upcomingBirthdays.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              final bday = upcomingBirthdays[index];
+              if (bday is! Map) return const SizedBox.shrink();
+              final String fullName = (bday['name'] ??
+                      bday['client_name'] ??
+                      'Client')
+                  .toString()
+                  .trim();
+              final String firstName = fullName.split(' ').first;
+              final imgUrl = (bday['profile_picture'] ??
+                      bday['image'] ??
+                      bday['avatar'] ??
+                      bday['profile_image'])
+                  ?.toString();
+
+              return GestureDetector(
+                onTap: () {
+                  final gymName = organizationName ?? 'Team';
+                  BirthdayWishesDialog.show(
+                    context,
+                    client: Map<String, dynamic>.from(bday),
+                    organizationName: gymName,
+                  );
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 62,
+                      height: 62,
+                      padding: const EdgeInsets.all(2.5),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFF59E0B),
+                          width: 2,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: imgUrl != null &&
+                                imgUrl.isNotEmpty &&
+                                imgUrl != 'null'
+                            ? CachedNetworkImage(
+                                imageUrl: imgUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (_, __) => Container(
+                                  color: context.colors.fieldFill,
+                                  child: Icon(
+                                    Icons.person,
+                                    color: context.colors.textSecondary,
+                                    size: 30,
+                                  ),
+                                ),
+                                errorWidget: (_, __, ___) => Container(
+                                  color: context.colors.fieldFill,
+                                  child: Icon(
+                                    Icons.person,
+                                    color: context.colors.textSecondary,
+                                    size: 30,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                color: context.colors.fieldFill,
+                                child: Icon(
+                                  Icons.person,
+                                  color: context.colors.textSecondary,
+                                  size: 30,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: 68,
+                      child: Text(
+                        firstName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: AppStyles.text13Px.poppins.w600.copyWith(
+                          color: context.colors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildBannerCarousel() {
     final List<String> banners = [
@@ -1252,6 +1387,14 @@ class _OrganizationListingAndDetailsScreenState
           if (hasData &&
               state.selectedOrganization?.id != null &&
               orgDetails != null) {
+            if (!kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
+              return DesktopOrganizationScaffold(
+                cubit: _cubit,
+                state: state,
+                orgDetails: orgDetails!,
+              );
+            }
+
             return OrganizationDashboardScaffold(
               initialIndex: 0,
 
@@ -1714,6 +1857,15 @@ class _OrganizationListingAndDetailsScreenState
                                 ),
 
                               ]; */
+
+                              final memberInsights =
+                                  orgHomeData.memberInsights ?? {};
+                              final upcomingBirthdays =
+                                  (memberInsights['birthdays_today']
+                                          as List<dynamic>?) ??
+                                      (memberInsights['upcoming_birthdays']
+                                          as List<dynamic>?) ??
+                                      [];
 
                               final newCards = [
                                 (
@@ -2194,6 +2346,14 @@ class _OrganizationListingAndDetailsScreenState
                                           ],
                                         ),
                                       ),
+                                      if (upcomingBirthdays.isNotEmpty) ...[
+                                        const SizedBox(height: 20),
+                                        _buildBirthdaysSection(
+                                          upcomingBirthdays,
+                                          state.selectedOrganization?.name,
+                                        ),
+                                      ],
+
                                       const SizedBox(height: 20),
 
                                       if (state.selectedOrganization?.id !=
@@ -2207,10 +2367,6 @@ class _OrganizationListingAndDetailsScreenState
                                                 state.selectedOrganization!.id!,
                                           ),
                                         ),
-                                      const SizedBox(height: 24),
-
-                                      _buildBannerCarousel(),
-
                                       const SizedBox(height: 40),
 
                                       // const SizedBox(height: 40),

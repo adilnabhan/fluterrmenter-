@@ -1,3 +1,4 @@
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 class MembersAndLeadsListingScreen extends StatelessWidget {
@@ -107,7 +108,7 @@ class __MembersAndLeadsListingScreenState
     return Material(
       color: hasActiveFilter
           ? AppColors.primary.withValues(alpha: 0.08)
-          : Colors.white,
+          : (context.isDarkMode ? context.colors.fieldFill : Colors.white),
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         onTap: _openSortAndFilterSheet,
@@ -120,7 +121,7 @@ class __MembersAndLeadsListingScreenState
             border: Border.all(
               color: hasActiveFilter
                   ? AppColors.primary
-                  : const Color(0xffDDDDDD),
+                  : (context.isDarkMode ? context.colors.border : const Color(0xffDDDDDD)),
               width: hasActiveFilter ? 1.5 : 1.0,
             ),
           ),
@@ -130,7 +131,9 @@ class __MembersAndLeadsListingScreenState
               Icon(
                 Icons.tune_rounded,
                 size: 22,
-                color: hasActiveFilter ? AppColors.primary : AppColors.textGrey,
+                color: hasActiveFilter
+                    ? AppColors.primary
+                    : (context.isDarkMode ? context.colors.textSecondary : AppColors.textGrey),
               ),
               if (hasActiveFilter)
                 Positioned(
@@ -225,10 +228,24 @@ class __MembersAndLeadsListingScreenState
         ),
       ],
       child: Scaffold(
+        backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
         appBar: AppBar(
           leading: const PopButton().center,
-          titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
-          title: const Text('Members & Leads'),
+          backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          titleTextStyle: AppStyles.text16Px.poppins.w500.copyWith(
+            color: context.colors.textPrimary,
+          ),
+          iconTheme: IconThemeData(
+            color: context.colors.textPrimary,
+          ),
+          title: Text(
+            'Members & Leads',
+            style: AppStyles.text16Px.poppins.w500.copyWith(
+              color: context.colors.textPrimary,
+            ),
+          ),
         ),
         body: Column(
           children: [
@@ -238,6 +255,9 @@ class __MembersAndLeadsListingScreenState
                 children: [
                   Expanded(
                     child: TextField(
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
+                      ),
                       onChanged: (q) {
                         if (q.isEmpty) {
                           FocusManager.instance.primaryFocus?.unfocus();
@@ -252,28 +272,48 @@ class __MembersAndLeadsListingScreenState
                       },
                       decoration: InputDecoration(
                         hintText: 'Search for name or phone number',
-                        hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
-                        filled: false,
+                        hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
+                        filled: context.isDarkMode,
+                        fillColor: context.colors.fieldFill,
                         prefixIcon: SizedBox.square(
                           dimension: 32,
                           child: SvgPicture.asset(
                             'assets/images/svg/icons/search.svg',
                             height: 32,
                             width: 32,
-                            color: AppColors.textGrey,
+                            colorFilter: ColorFilter.mode(
+                              context.isDarkMode
+                                  ? context.colors.textSecondary
+                                  : AppColors.textGrey,
+                              BlendMode.srcIn,
+                            ),
                           ).center,
                         ),
-                        border: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Color(0xffDDDDDD)),
+                        border: OutlineInputBorder(
+                          borderRadius: const BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide(
+                            color: context.isDarkMode
+                                ? context.colors.border
+                                : const Color(0xffDDDDDD),
+                          ),
                         ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Color(0xffDDDDDD)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: const BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide(
+                            color: context.isDarkMode
+                                ? AppColors.primary
+                                : const Color(0xffDDDDDD),
+                          ),
                         ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Color(0xffDDDDDD)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: const BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide(
+                            color: context.isDarkMode
+                                ? context.colors.border
+                                : const Color(0xffDDDDDD),
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -289,7 +329,9 @@ class __MembersAndLeadsListingScreenState
             ),
             Expanded(
               child: ColoredBox(
-                color: const Color(0xffF7F7F7),
+                color: context.isDarkMode
+                    ? context.colors.card
+                    : const Color(0xffF7F7F7),
                 child:
                 //* Members Listing
                 BlocBuilder<MembersAndLeadsCubit, MembersAndLeadsState>(
@@ -317,163 +359,66 @@ class __MembersAndLeadsListingScreenState
                                 }
                                 return RefreshIndicator.adaptive(
                                   onRefresh: _fetchMembers,
-                                  child: ListView.separated(
-                                    controller: _scrollController,
-                                    padding: const EdgeInsets.only(bottom: 104),
-                                    itemCount:
-                                        // (memebrsDataum.results?.length ??
-                                        //     0) +
-                                        // (state.members.isPagination
-                                        //     ? 1
-                                        //     : 0),
-                                        memebrsDataum.results?.length ?? 0,
-                                    separatorBuilder: (
-                                      BuildContext context,
-                                      int index,
-                                    ) {
-                                      return const SizedBox(height: 16);
-                                    },
-                                    itemBuilder: (
-                                      BuildContext context,
-                                      int index,
-                                    ) {
-                                      // final items =
-                                      //     memebrsDataum.results ?? [];
-                                      //
-                                      // // ===== Pagination Loader UI =====
-                                      // if (index == items.length) {
-                                      //   return const Padding(
-                                      //     padding: EdgeInsets.symmetric(
-                                      //       vertical: 16,
-                                      //     ),
-                                      //     child: Center(
-                                      //       child:
-                                      //           CircularProgressIndicator(),
-                                      //     ),
-                                      //   );
-                                      // }
-                                      final memberData =
-                                          memebrsDataum.results?[index];
-                                      return InkWell(
-                                        onTap: () {
-                                          if (memberData?.id != null) {
-                                            context.push(
-                                              BlocProvider.value(
-                                                value: _cubit,
-                                                child: MemberDetialsScreen(
-                                                  memberId: memberData!.id!,
-                                                ),
-                                              ),
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final isGrid = constraints.maxWidth >= 600;
+                                      if (isGrid) {
+                                        final cols = constraints.maxWidth < 650
+                                            ? 2
+                                            : (constraints.maxWidth < 850
+                                                ? 3
+                                                : (constraints.maxWidth < 1050
+                                                    ? 4
+                                                    : (constraints.maxWidth < 1250
+                                                        ? 5
+                                                        : 6)));
+
+                                        return GridView.builder(
+                                          controller: _scrollController,
+                                          padding: const EdgeInsets.only(bottom: 104),
+                                          gridDelegate:
+                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: cols,
+                                            mainAxisSpacing: 12,
+                                            crossAxisSpacing: 12,
+                                            mainAxisExtent: 205,
+                                          ),
+                                          itemCount:
+                                              memebrsDataum.results?.length ?? 0,
+                                          itemBuilder: (context, index) {
+                                            final memberData =
+                                                memebrsDataum.results?[index];
+                                            return _buildMemberGridCard(
+                                              context,
+                                              memberData,
                                             );
-                                          } else {
-                                            Dialogs.showSnack(
-                                              msg: 'Selected lead is not valid',
-                                            );
-                                          }
+                                          },
+                                        );
+                                      }
+
+                                      return ListView.separated(
+                                        controller: _scrollController,
+                                        padding:
+                                            const EdgeInsets.only(bottom: 104),
+                                        itemCount:
+                                            memebrsDataum.results?.length ?? 0,
+                                        separatorBuilder: (
+                                          BuildContext context,
+                                          int index,
+                                        ) {
+                                          return const SizedBox(height: 16);
                                         },
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                          child: ColoredBox(
-                                            color: Colors.white,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(16),
-                                              child: Column(
-                                                spacing: 8,
-                                                children: [
-                                                  Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      ClipRRect(
-                                                        borderRadius:
-                                                            const BorderRadius.all(
-                                                              Radius.circular(
-                                                                80000,
-                                                              ),
-                                                            ),
-                                                        child: ProfileImage(
-                                                          isEdit: false,
-                                                          canViewFullImage: true,
-                                                          name: memberData?.name,
-                                                          url:
-                                                              '${memberData?.profilePicture ?? ''}',
-                                                          radius: 40,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 8),
-                                                      Flexible(
-                                                        child: SizedBox(
-                                                          width:
-                                                              double.maxFinite,
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                memberData
-                                                                        ?.name ??
-                                                                    '',
-                                                                style:
-                                                                    AppStyles
-                                                                        .text14Px
-                                                                        .poppins
-                                                                        .w500
-                                                                        .dark,
-                                                              ),
-                                                              const SizedBox(
-                                                                height: 4,
-                                                              ),
-                                                              Text(
-                                                                memberData
-                                                                        ?.mobileNumber ??
-                                                                    '',
-                                                                style:
-                                                                    AppStyles
-                                                                        .text12Px
-                                                                        .poppins
-                                                                        .w400
-                                                                        .dark,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      if (_buildStatusBadge(memberData) != null)
-                                                        _buildStatusBadge(memberData)!,
-                                                    ],
-                                                  ),
-                                                  // Text('Check In', style: AppStyles.text10Px.poppins.w400.textGrey, textAlign: TextAlign.end).align(Alignment.centerRight),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        memberData
-                                                                ?.activePlan
-                                                                ?.planName ??
-                                                            '',
-                                                        style:
-                                                            AppStyles
-                                                                .text12Px
-                                                                .poppins
-                                                                .w500
-                                                                .dark,
-                                                      ),
-                                                      // const SizedBox(height: 4),
-                                                      // Text('05: AM', style: AppStyles.text12Px.poppins.w500.dark),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                        itemBuilder: (
+                                          BuildContext context,
+                                          int index,
+                                        ) {
+                                          final memberData =
+                                              memebrsDataum.results?[index];
+                                          return _buildMemberListItem(
+                                            context,
+                                            memberData,
+                                          );
+                                        },
                                       );
                                     },
                                   ),
@@ -487,40 +432,255 @@ class __MembersAndLeadsListingScreenState
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          onPressed: () {
-            AddMemberOrLeadSelectionSheet(
-              onSortSelected: (l, v) {
-                if (v == 'member') {
-                  context.push(
-                    BlocProvider.value(
-                      value: _cubit,
-                      child: AddOrEditMemeberScreen(orgId: widget.orgId),
-                    ),
-                  );
-                } else {
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder:
-                          (context) => BlocProvider.value(
+        floatingActionButton: (!kIsWeb &&
+                (Platform.isWindows || Platform.isMacOS || Platform.isLinux))
+            ? null
+            : FloatingActionButton(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                onPressed: () {
+                  AddMemberOrLeadSelectionSheet(
+                    onSortSelected: (l, v) {
+                      if (v == 'member') {
+                        context.push(
+                          BlocProvider.value(
                             value: _cubit,
-                            child: AddTrainerSearchScreen(orgId: widget.orgId),
+                            child: AddOrEditMemeberScreen(orgId: widget.orgId),
                           ),
+                        );
+                      } else {
+                        Navigator.push<dynamic>(
+                          context,
+                          MaterialPageRoute<dynamic>(
+                            builder:
+                                (context) => BlocProvider.value(
+                                  value: _cubit,
+                                  child: AddTrainerSearchScreen(orgId: widget.orgId),
+                                ),
+                          ),
+                        ).then((value) {
+                          if (value == true) {
+                            _fetchMembers();
+                          }
+                        });
+                      }
+                    },
+                  ).show(context);
+                },
+                child: const Icon(Icons.add),
+              ).pOnly(right: 16),
+      ),
+    );
+  }
+
+  Widget _buildMemberGridCard(BuildContext context, MemberDataModel? memberData) {
+    final isDark = context.isDarkMode;
+
+    return InkWell(
+      onTap: () {
+        if (memberData?.id != null) {
+          context.push(
+            BlocProvider.value(
+              value: _cubit,
+              child: MemberDetialsScreen(
+                memberId: memberData!.id!,
+              ),
+            ),
+          );
+        } else {
+          Dialogs.showSnack(
+            msg: 'Selected lead is not valid',
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : const Color(0xFFE5E7EB),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Centered Profile Picture
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: ProfileImage(
+                  isEdit: false,
+                  canViewFullImage: true,
+                  name: memberData?.name,
+                  url: '${memberData?.profilePicture ?? ''}',
+                  radius: 72,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Member Name
+            Text(
+              memberData?.name ?? '',
+              textAlign: TextAlign.center,
+              style: AppStyles.text14Px.poppins.w600.copyWith(
+                color: context.colors.textPrimary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+
+            // Phone Number
+            Text(
+              memberData?.mobileNumber ?? '',
+              textAlign: TextAlign.center,
+              style: AppStyles.text12Px.poppins.w400.copyWith(
+                color: context.colors.textSecondary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+
+            const Spacer(),
+
+            // Bottom row: Plan Name on the left, Status badge on the right
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    memberData?.activePlan?.planName ?? '',
+                    style: AppStyles.text12Px.poppins.w500.copyWith(
+                      color: context.colors.textSecondary,
                     ),
-                  ).then((value) {
-                    if (value == true) {
-                      _fetchMembers();
-                    }
-                  });
-                }
-              },
-            ).show(context);
-          },
-          child: const Icon(Icons.add),
-        ).pOnly(right: 16),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (_buildStatusBadge(memberData) != null) ...[
+                  const SizedBox(width: 6),
+                  _buildStatusBadge(memberData)!,
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMemberListItem(BuildContext context, MemberDataModel? memberData) {
+    return InkWell(
+      onTap: () {
+        if (memberData?.id != null) {
+          context.push(
+            BlocProvider.value(
+              value: _cubit,
+              child: MemberDetialsScreen(
+                memberId: memberData!.id!,
+              ),
+            ),
+          );
+        } else {
+          Dialogs.showSnack(
+            msg: 'Selected lead is not valid',
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.isDarkMode
+              ? const Color(0xFF1E1E1E)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: context.isDarkMode
+                ? context.colors.border
+                : Colors.transparent,
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(80000),
+                  ),
+                  child: ProfileImage(
+                    isEdit: false,
+                    canViewFullImage: true,
+                    name: memberData?.name,
+                    url: '${memberData?.profilePicture ?? ''}',
+                    radius: 40,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        memberData?.name ?? '',
+                        style: AppStyles.text14Px.poppins.w600.copyWith(
+                          color: context.colors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        memberData?.mobileNumber ?? '',
+                        style: AppStyles.text12Px.poppins.w400.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                if (_buildStatusBadge(memberData) != null) ...[
+                  const SizedBox(width: 8),
+                  _buildStatusBadge(memberData)!,
+                ],
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    memberData?.activePlan?.planName ?? '',
+                    style: AppStyles.text12Px.poppins.w500.copyWith(
+                      color: context.colors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -534,25 +694,27 @@ class __MembersAndLeadsListingScreenState
     Color text;
     String label;
 
+    final isDark = context.isDarkMode;
+
     if (statusLower == 'active') {
-      bg = const Color(0xFFE8F5E9);
-      text = const Color(0xFF4CAF50);
+      bg = isDark ? const Color(0xFF14331C) : const Color(0xFFE8F5E9);
+      text = isDark ? const Color(0xFF4ADE80) : const Color(0xFF2E7D32);
       label = 'Active';
     } else if (statusLower == 'expired') {
-      bg = const Color(0xFFFFEBEE);
-      text = const Color(0xFFD30000);
+      bg = isDark ? const Color(0xFF381A1A) : const Color(0xFFFFEBEE);
+      text = isDark ? const Color(0xFFF87171) : const Color(0xFFD32F2F);
       label = 'Expired';
     } else if (statusLower == 'frozen' || statusLower == 'paused' || statusLower == 'hold') {
-      bg = const Color(0xFFE1F5FE);
-      text = const Color(0xFF0288D1);
+      bg = isDark ? const Color(0xFF0F263B) : const Color(0xFFE1F5FE);
+      text = isDark ? const Color(0xFF60A5FA) : const Color(0xFF0288D1);
       label = statusLower == 'frozen' ? 'Frozen' : 'Paused';
     } else if (statusLower == 'pending' || statusLower.contains('due')) {
-      bg = const Color(0xFFFFF3E0);
-      text = const Color(0xFFE65100);
+      bg = isDark ? const Color(0xFF3B250A) : const Color(0xFFFFF3E0);
+      text = isDark ? const Color(0xFFFBBF24) : const Color(0xFFE65100);
       label = 'Pending';
     } else {
-      bg = const Color(0xFFF5F5F5);
-      text = const Color(0xFF616161);
+      bg = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5);
+      text = context.colors.textSecondary;
       label = rawStatus;
     }
 
@@ -560,11 +722,11 @@ class __MembersAndLeadsListingScreenState
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
         label,
-        style: AppStyles.text10Px.poppins.w500.copyWith(color: text),
+        style: AppStyles.text12Px.poppins.w600.copyWith(color: text),
       ),
     );
   }

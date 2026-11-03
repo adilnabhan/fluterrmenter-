@@ -32,9 +32,9 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
 
   static const AppThemeColors light = AppThemeColors(
     background: Color(0xFFFFFFFF),
-    surface: Color(0xFFF8F9FA),
+    surface: Color(0xFFF7F7F7),
     card: Color(0xFFFFFFFF),
-    border: Color(0xFFE8E8E8),
+    border: Color(0xFFDDDDDD),
     divider: Color(0xFFEEEEEE),
     textPrimary: Color(0xFF020202),
     textSecondary: Color(0xFF666666),

@@ -20,6 +20,7 @@ class OrganizationHomeDataModel with _$OrganizationHomeDataModel {
     @JsonKey(name: 'total_customers_count') int? totalCustomersCount,
     @JsonKey(name: 'total_customers') int? totalCustomers,
     @JsonKey(name: 'freezed_customers_count') int? freezedCustomersCount,
+    @JsonKey(name: 'member_insights') Map<String, dynamic>? memberInsights,
   }) = _OrganizationHomeDataModel;
 
   factory OrganizationHomeDataModel.fromJson(Map<String, dynamic> json) =>

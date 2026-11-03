@@ -1,3 +1,4 @@
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
@@ -66,9 +67,10 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
     final user = context.watch<AppCubit>().state.currentUser;
     final userName = '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim();
     final displayName = userName.isNotEmpty ? userName : 'Owner Profile';
+    final isDark = context.isDarkMode;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor: isDark ? context.colors.card : const Color(0xFFF7F8FA),
       body: BlocBuilder<
         OrganizationListingAndDetailsCubit,
         OrganizationListingAndDetailsState
@@ -187,7 +189,7 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              const Color(0xFFF7F8FA).withValues(alpha: 0.8),
+                              (context.isDarkMode ? context.colors.card : const Color(0xFFF7F8FA)).withValues(alpha: 0.8),
                             ],
                           ),
                         ),
@@ -397,14 +399,18 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
   // Profile Card
   // ────────────────────────────────────────────
   Widget _buildProfileCard(OrganizationDetailsModel orgDetails) {
+    final isDark = context.isDarkMode;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? context.colors.border : Colors.transparent,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -451,7 +457,9 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                     Expanded(
                       child: Text(
                         orgDetails.name ?? 'Organization',
-                        style: AppStyles.text16Px.poppins.w600.dark,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(
+                          color: context.colors.textPrimary,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -474,8 +482,8 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                       },
                       child: Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF3F3F3),
+                        decoration: BoxDecoration(
+                          color: isDark ? context.colors.fieldFill : const Color(0xFFF3F3F3),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -631,17 +639,22 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
       return const SizedBox.shrink();
     }
 
+    final isDark = context.isDarkMode;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? context.colors.border : Colors.transparent,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -663,13 +676,13 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF7F8FA),
+                          color: isDark ? context.colors.fieldFill : const Color(0xFFF7F8FA),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           cat.name ?? '',
                           style: AppStyles.text13Px.poppins.w500.copyWith(
-                            color: AppColors.textGrey,
+                            color: isDark ? context.colors.textSecondary : AppColors.textGrey,
                           ),
                         ),
                       );
@@ -697,7 +710,7 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                     child: Text(
                       locationStr,
                       style: AppStyles.text14Px.poppins.w500.copyWith(
-                        color: AppColors.textGrey,
+                        color: isDark ? context.colors.textSecondary : AppColors.textGrey,
                       ),
                     ),
                   ),
@@ -728,6 +741,8 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
     OrganizationDetailsModel orgDetails,
     List<AmenityModel> amenities,
   ) {
+    final isDark = context.isDarkMode;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -747,7 +762,7 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
               borderRadius: BorderRadius.only(
                 topLeft:
                     _selectedTabIndex == 0
@@ -760,10 +775,12 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                 bottomLeft: const Radius.circular(20),
                 bottomRight: const Radius.circular(20),
               ),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(
+                color: isDark ? context.colors.border : Colors.grey.shade200,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -781,24 +798,30 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
 
   Widget _buildCustomTab(String label, int index) {
     final isSelected = _selectedTabIndex == index;
+    final isDark = context.isDarkMode;
+
     return GestureDetector(
       onTap: () => setState(() => _selectedTabIndex = index),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
+          color: isSelected
+              ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
+              : Colors.transparent,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           border: isSelected ? Border(
-            top: BorderSide(color: Colors.grey.shade200),
-            left: BorderSide(color: Colors.grey.shade200),
-            right: BorderSide(color: Colors.grey.shade200),
+            top: BorderSide(color: isDark ? context.colors.border : Colors.grey.shade200),
+            left: BorderSide(color: isDark ? context.colors.border : Colors.grey.shade200),
+            right: BorderSide(color: isDark ? context.colors.border : Colors.grey.shade200),
           ) : null,
         ),
         child: Center(
           child: Text(
             label,
             style: AppStyles.text14Px.poppins.copyWith(
-              color: isSelected ? AppColors.textDark : AppColors.textGrey,
+              color: isSelected
+                  ? (isDark ? context.colors.textPrimary : AppColors.textDark)
+                  : AppColors.textGrey,
               fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
             ),
           ),
@@ -852,7 +875,7 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                           amenity.name ?? '',
                           textAlign: TextAlign.center,
                           style: AppStyles.text12Px.poppins.w400.copyWith(
-                            color: AppColors.textDark,
+                            color: context.colors.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1070,7 +1093,7 @@ class _TransformationCarouselState extends State<_TransformationCarousel> {
                             isBefore: true,
                           ),
                         ),
-                        Container(width: 2, color: Colors.white),
+                        Container(width: 2, color: context.isDarkMode ? context.colors.border : Colors.white),
                         Expanded(
                           child: _buildPlaceholderImage(
                             'Add After',
@@ -1100,7 +1123,7 @@ class _TransformationCarouselState extends State<_TransformationCarousel> {
                             isBefore: true,
                           ),
                         ),
-                        Container(width: 2, color: Colors.white),
+                        Container(width: 2, color: context.isDarkMode ? context.colors.border : Colors.white),
                         Expanded(
                           child: _buildTransformImage(
                             afterImg,
@@ -1117,8 +1140,8 @@ class _TransformationCarouselState extends State<_TransformationCarousel> {
                           onTap: () => _deleteTransformation(id),
                           child: Container(
                             padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
+                            decoration: BoxDecoration(
+                              color: context.isDarkMode ? context.colors.card : Colors.white,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -1274,9 +1297,9 @@ class _AddTransformationSheetState extends State<_AddTransformationSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -1377,9 +1400,9 @@ class _ImagePickerBox extends StatelessWidget {
       child: Container(
         height: 120,
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: context.isDarkMode ? context.colors.fieldFill : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: context.isDarkMode ? context.colors.border : Colors.grey.shade300),
           image: file != null
               ? DecorationImage(image: FileImage(file!), fit: BoxFit.cover)
               : null,
@@ -1477,11 +1500,15 @@ class _ScheduleTabViewState extends State<_ScheduleTabView> {
                         color:
                             isOpen
                                 ? (isSelected
-                                    ? const Color(0xFFDCFCE7)
-                                    : const Color(
-                                      0xFFDCFCE7,
-                                    ).withValues(alpha: 0.4))
-                                : const Color(0xFFF3F4F6),
+                                    ? (context.isDarkMode
+                                        ? const Color(0xFF166534)
+                                        : const Color(0xFFDCFCE7))
+                                    : (context.isDarkMode
+                                        ? const Color(0xFF166534).withValues(alpha: 0.35)
+                                        : const Color(0xFFDCFCE7).withValues(alpha: 0.4)))
+                                : (context.isDarkMode
+                                    ? context.colors.fieldFill
+                                    : const Color(0xFFF3F4F6)),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -1489,8 +1516,12 @@ class _ScheduleTabViewState extends State<_ScheduleTabView> {
                         style: AppStyles.text13Px.poppins.w500.copyWith(
                           color:
                               isOpen
-                                  ? const Color(0xFF16A34A)
-                                  : const Color(0xFF9CA3AF),
+                                  ? (context.isDarkMode
+                                      ? const Color(0xFF86EFAC)
+                                      : const Color(0xFF16A34A))
+                                  : (context.isDarkMode
+                                      ? context.colors.textSecondary
+                                      : const Color(0xFF9CA3AF)),
                         ),
                       ),
                     ),
@@ -1559,7 +1590,7 @@ class _ScheduleTabViewState extends State<_ScheduleTabView> {
           Text(
             title,
             style: AppStyles.text14Px.poppins.w500.copyWith(
-              color: AppColors.textDark,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -1576,10 +1607,14 @@ class _ScheduleTabViewState extends State<_ScheduleTabView> {
   }
 
   Widget _buildTimeBox(String time) {
+    final isDark = context.isDarkMode;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderGrey),
+        color: isDark ? context.colors.fieldFill : Colors.transparent,
+        border: Border.all(
+          color: isDark ? context.colors.border : AppColors.borderGrey,
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -1588,10 +1623,14 @@ class _ScheduleTabViewState extends State<_ScheduleTabView> {
           Text(
             time,
             style: AppStyles.text13Px.poppins.w600.copyWith(
-              color: AppColors.textDark,
+              color: context.colors.textPrimary,
             ),
           ),
-          const Icon(Icons.access_time, color: Colors.grey, size: 20),
+          Icon(
+            Icons.access_time,
+            color: isDark ? context.colors.textSecondary : Colors.grey,
+            size: 20,
+          ),
         ],
       ),
     );
@@ -1692,6 +1731,8 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
       return const SizedBox.shrink();
     }
 
+    final isDark = context.isDarkMode;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -1702,14 +1743,16 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
             children: [
               Text(
                 'Rating & Reviews',
-                style: AppStyles.text18Px.poppins.w600.copyWith(color: AppColors.textDark),
+                style: AppStyles.text18Px.poppins.w600.copyWith(color: context.colors.textPrimary),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? context.colors.fieldFill : Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(
+                    color: isDark ? context.colors.border : Colors.grey.shade300,
+                  ),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -1724,8 +1767,13 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
                         ? _period
                         : 'latest',
                     isDense: true,
-                    icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-                    style: AppStyles.text13Px.poppins.w500.copyWith(color: AppColors.textDark),
+                    dropdownColor: isDark ? context.colors.card : Colors.white,
+                    icon: Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 20,
+                      color: context.colors.textSecondary,
+                    ),
+                    style: AppStyles.text13Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                     onChanged: (String? newValue) {
                       if (newValue != null && newValue != _period) {
                         _period = newValue;
@@ -1751,7 +1799,7 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
             children: [
               Text(
                 _avgRating.toStringAsFixed(1),
-                style: AppStyles.text24Px.poppins.w700.copyWith(color: AppColors.textDark, fontSize: 32),
+                style: AppStyles.text24Px.poppins.w700.copyWith(color: context.colors.textPrimary, fontSize: 32),
               ),
               const SizedBox(width: 12),
               _buildStars(_avgRating, size: 28),
@@ -1777,9 +1825,11 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(
+                  color: isDark ? context.colors.border : Colors.grey.shade200,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1806,7 +1856,9 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
                           children: [
                             Text(
                               review['customer_name'] as String? ?? 'User',
-                              style: AppStyles.text14Px.poppins.w600.copyWith(color: AppColors.textDark),
+                              style: AppStyles.text14Px.poppins.w600.copyWith(
+                                color: context.colors.textPrimary,
+                              ),
                             ),
                             Text(
                               formattedDate,
@@ -1828,7 +1880,9 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
                             const SizedBox(width: 4),
                             Text(
                               rating.toStringAsFixed(1),
-                              style: AppStyles.text12Px.poppins.w600.copyWith(color: AppColors.textDark),
+                              style: AppStyles.text12Px.poppins.w600.copyWith(
+                                color: isDark ? Colors.amber.shade200 : AppColors.textDark,
+                              ),
                             ),
                           ],
                         ),
@@ -1838,7 +1892,10 @@ class _OrganizationReviewsWidgetState extends State<_OrganizationReviewsWidget> 
                   const SizedBox(height: 12),
                   Text(
                     review['comment'] as String? ?? '',
-                    style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textDark, height: 1.5),
+                    style: AppStyles.text14Px.poppins.w400.copyWith(
+                      color: context.colors.textPrimary,
+                      height: 1.5,
+                    ),
                   ),
                 ],
               ),
@@ -1864,7 +1921,7 @@ class _ReadMoreTextState extends State<_ReadMoreText> {
   @override
   Widget build(BuildContext context) {
     final style = AppStyles.text13Px.poppins.w400.copyWith(
-      color: AppColors.textDark,
+      color: context.isDarkMode ? context.colors.textPrimary : AppColors.textDark,
       height: 1.5,
     );
 

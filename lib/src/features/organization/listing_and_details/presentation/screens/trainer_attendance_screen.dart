@@ -170,7 +170,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -191,7 +191,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
               const SizedBox(height: 16),
               Text(
                 'Mark Attendance: ${record.trainerName}',
-                style: AppStyles.text14Px.poppins.w600.dark,
+                style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
               ),
               const SizedBox(height: 12),
               ...statuses.map((status) {
@@ -205,7 +205,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                     status.label,
                     style: isSelected 
                         ? AppStyles.text14Px.poppins.w600.copyWith(color: status.color)
-                        : AppStyles.text14Px.poppins.w400.dark,
+                        : AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                   ),
                   trailing: isSelected ? Icon(Icons.check, color: status.color) : null,
                   onTap: () {
@@ -300,14 +300,14 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+      backgroundColor: context.isDarkMode ? context.colors.background : const Color(0xffF7F7F7),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
         elevation: 0,
         leading: const PopButton().center,
         title: Text(
           'Trainer Attendance',
-          style: AppStyles.text18Px.poppins.w600.dark,
+          style: AppStyles.text18Px.poppins.w600.copyWith(color: context.colors.textPrimary),
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -338,7 +338,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
       children: [
         // Date selector
         Container(
-          color: Colors.white,
+          color: context.isDarkMode ? context.colors.card : Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -373,7 +373,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                     const SizedBox(width: 8),
                     Text(
                       DateFormat('EEEE, MMM dd, yyyy').format(_selectedDate),
-                      style: AppStyles.text14Px.poppins.w600.dark,
+                      style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                     ),
                   ],
                 ),
@@ -390,7 +390,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
             ],
           ),
         ),
-        const Divider(height: 1, color: Color(0xffEEEEEE)),
+        Divider(height: 1, color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
         // Daily list
         Expanded(
           child: _isDailyLoading
@@ -412,9 +412,9 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
 
                         return Container(
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: context.isDarkMode ? context.colors.card : Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xffEEEEEE)),
+                            border: Border.all(color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.01),
@@ -447,7 +447,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                         children: [
                                           Text(
                                             record.trainerName,
-                                            style: AppStyles.text14Px.poppins.w600.dark,
+                                            style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
@@ -466,7 +466,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                 ),
                               ),
                               // Expanded section for time sessions
-                              const Divider(height: 1, color: Color(0xffEEEEEE)),
+                              Divider(height: 1, color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
                               InkWell(
                                 onTap: () {
                                   setState(() {
@@ -484,18 +484,18 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                     children: [
                                       Row(
                                         children: [
-                                          const Icon(Icons.timer_outlined, size: 16, color: AppColors.dark),
+                                          Icon(Icons.timer_outlined, size: 16, color: context.colors.textPrimary),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Sessions (${record.sessions.length}) • ${record.workingHours} hrs worked',
-                                            style: AppStyles.text12Px.poppins.w500.dark,
+                                            style: AppStyles.text12Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                                           ),
                                         ],
                                       ),
                                       Icon(
                                         isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                                         size: 18,
-                                        color: AppColors.dark,
+                                        color: context.colors.textPrimary,
                                       ),
                                     ],
                                   ),
@@ -503,7 +503,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                               ),
                               if (isExpanded)
                                 Container(
-                                  color: const Color(0xffFAFFAF),
+                                  color: context.isDarkMode ? context.colors.background : const Color(0xffF9FAFB),
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                   child: Column(
                                     children: [
@@ -517,7 +517,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                             children: [
                                               Text(
                                                 '${session.checkIn} - ${session.checkOut}',
-                                                style: AppStyles.text12Px.poppins.w600.dark,
+                                                style: AppStyles.text12Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                                               ),
                                               IconButton(
                                                 icon: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
@@ -559,7 +559,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
         // Action buttons bottom bar
         if (_dailyRecords.isNotEmpty)
           Container(
-            color: Colors.white,
+            color: context.isDarkMode ? context.colors.card : Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Button.filled(
               title: 'Save Attendance',
@@ -576,7 +576,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
       children: [
         // Date range picker
         Container(
-          color: Colors.white,
+          color: context.isDarkMode ? context.colors.card : Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -601,7 +601,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xffEEEEEE)),
+                      border: Border.all(color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -613,7 +613,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                             const SizedBox(width: 8),
                             Text(
                               '${DateFormat('MMM dd').format(_startDate)} - ${DateFormat('MMM dd, yyyy').format(_endDate)}',
-                              style: AppStyles.text12Px.poppins.w600.dark,
+                              style: AppStyles.text12Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                             ),
                           ],
                         ),
@@ -626,7 +626,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
             ],
           ),
         ),
-        const Divider(height: 1, color: Color(0xffEEEEEE)),
+        Divider(height: 1, color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
         // Summary & Report View
         Expanded(
           child: _isReportLoading
@@ -666,7 +666,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                         // Detailed List
                         Text(
                           'Trainer Performance Reports',
-                          style: AppStyles.text14Px.poppins.w600.dark,
+                          style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                         ),
                         const SizedBox(height: 12),
                         ..._reportData!.trainers.map((trainer) {
@@ -674,9 +674,9 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: context.isDarkMode ? context.colors.card : Colors.white,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xffEEEEEE)),
+                              border: Border.all(color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -699,7 +699,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                         children: [
                                           Text(
                                             trainer.trainerName,
-                                            style: AppStyles.text14Px.poppins.w600.dark,
+                                            style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
@@ -730,7 +730,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                const Divider(height: 1, color: Color(0xffF2F2F2)),
+                                Divider(height: 1, color: context.isDarkMode ? context.colors.border : const Color(0xffF2F2F2)),
                                 const SizedBox(height: 12),
                                 // Metrics grid row
                                 Row(
@@ -743,7 +743,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-                                const Divider(height: 1, color: Color(0xffF2F2F2)),
+                                Divider(height: 1, color: context.isDarkMode ? context.colors.border : const Color(0xffF2F2F2)),
                                 const SizedBox(height: 12),
                                 // Working hours row
                                 Row(
@@ -755,7 +755,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                                     ),
                                     Text(
                                       '${trainer.totalWorkingHours} hrs (Avg: ${trainer.averageWorkingHours}/day)',
-                                      style: AppStyles.text12Px.poppins.w600.dark,
+                                      style: AppStyles.text12Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                                     ),
                                   ],
                                 ),
@@ -774,9 +774,9 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.isDarkMode ? context.colors.card : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -831,9 +831,9 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.isDarkMode ? context.colors.card : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -843,7 +843,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
             children: [
               Text(
                 'Attendance Distribution',
-                style: AppStyles.text14Px.poppins.w600.dark,
+                style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -883,7 +883,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                       children: [
                         Text(
                           '$total',
-                          style: AppStyles.text16Px.poppins.w700.dark,
+                          style: AppStyles.text16Px.poppins.w700.copyWith(color: context.colors.textPrimary),
                         ),
                         Text(
                           'Records',
@@ -911,7 +911,7 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                           Expanded(
                             child: Text(
                               s.label,
-                              style: AppStyles.text12Px.poppins.w400.dark,
+                              style: AppStyles.text12Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                             ),
                           ),
                           Text(

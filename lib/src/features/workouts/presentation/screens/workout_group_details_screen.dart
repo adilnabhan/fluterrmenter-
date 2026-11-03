@@ -38,6 +38,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
   List<Map<String, dynamic>> _plans = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
   int? _masterPlanId;
   bool _isAssigning = false;
 
@@ -80,6 +81,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _planName.controller?.dispose();
     _planName.focusNode?.dispose();
     super.dispose();
@@ -509,75 +511,117 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
       ),
       body: Stack(
         children: [
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.borderGrey),
-                  ),
-                  child: TextField(
-                    onChanged: (val) {
-                      _searchQuery = val;
-                      EasyDebounce.debounce(
-                        'plans-search',
-                        const Duration(milliseconds: 400),
-                        () => _fetchPlans(),
-                      );
-                    },
-                    decoration: InputDecoration(
-                      icon: const Icon(Icons.search, color: AppColors.textGrey),
-                      hintText: 'Search for plan',
-                      fillColor: Colors.white,
-                      border: InputBorder.none,
-                      hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-                        color: AppColors.textGrey,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF8F9FB),
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                        child: Text(
-                          widget.groupTitle.replaceAll('\n', ' '),
-                          style: AppStyles.text18Px.poppins.w600.copyWith(
-                            color: AppColors.textDark,
+          RefreshIndicator(
+            onRefresh: () => _fetchPlans(silent: true),
+            child: NestedScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.borderGrey),
+                            ),
+                            child: TextField(
+                              controller: _searchController,
+                              textAlignVertical: TextAlignVertical.center,
+                              onChanged: (val) {
+                                setState(() {
+                                  _searchQuery = val;
+                                });
+                                EasyDebounce.debounce(
+                                  'plans-search',
+                                  const Duration(milliseconds: 400),
+                                  () => _fetchPlans(),
+                                );
+                              },
+                              decoration: InputDecoration(
+                                icon: const Icon(
+                                  Icons.search,
+                                  color: AppColors.textGrey,
+                                ),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 32,
+                                          minHeight: 32,
+                                        ),
+                                        icon: const Icon(
+                                          Icons.close,
+                                          color: AppColors.textGrey,
+                                          size: 20,
+                                        ),
+                                        splashRadius: 18,
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          setState(() => _searchQuery = '');
+                                          _fetchPlans();
+                                        },
+                                      )
+                                    : null,
+                                hintText: 'Search for plan',
+                                fillColor: Colors.white,
+                                border: InputBorder.none,
+                                hintStyle:
+                                    AppStyles.text14Px.poppins.w400.copyWith(
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        const SizedBox(height: 8),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.groupTitle.replaceAll('\n', ' '),
+                            style: AppStyles.text18Px.poppins.w600.copyWith(
+                              color: AppColors.textDark,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              '${_plans.length} plans',
+                              '${_plans.length} ${_plans.length == 1 ? 'plan' : 'plans'}',
                               style: AppStyles.text14Px.poppins.w400.copyWith(
                                 color: AppColors.textGrey,
                               ),
                             ),
                             if (widget.groupType == 'multi_day' &&
-                                _plans.length > 1)
+                                _plans.length > 1) ...[
+                              const SizedBox(width: 8),
                               InkWell(
                                 onTap: _openReorderScreen,
                                 borderRadius: BorderRadius.circular(20),
@@ -591,6 +635,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Row(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       const Icon(
                                         Icons.swap_vert,
@@ -602,169 +647,194 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                         'Reorder',
                                         style: AppStyles.text12Px.poppins.w500
                                             .copyWith(
-                                              color: const Color(0xFFFF3434),
-                                            ),
+                                          color: const Color(0xFFFF3434),
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
+                            ],
                           ],
                         ),
-                      ),
-                      Expanded(
-                        child:
-                            _isLoading
-                                ? _buildShimmerList()
-                                : _plans.isEmpty
-                                ? const Center(
-                                  child: Text('No workout plans found.'),
-                                )
-                                : ListView.separated(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    0,
-                                    16,
-                                    100,
-                                  ),
-                                  itemCount: _plans.length,
-                                  separatorBuilder:
-                                      (context, index) =>
-                                          const SizedBox(height: 16),
-                                  itemBuilder: (context, index) {
-                                    final plan = _plans[index];
-                                    final int planId = plan['id'] as int;
-                                    final String planName =
-                                        plan['plan_name'] as String? ?? 'Plan';
-                                    final int exerciseCount =
-                                        plan['exercise_count'] as int? ?? 0;
-                                    final String createdOn =
-                                        plan['created_at'] != null
-                                            ? DateFormat('dd MMM yyyy').format(
-                                              DateTime.parse(
-                                                plan['created_at'] as String,
-                                              ),
-                                            )
-                                            : 'N/A';
-
-                                    final planSource =
-                                        plan['source'] as String? ??
-                                        widget.source;
-                                    final user =
-                                        context
-                                            .read<AppCubit>()
-                                            .state
-                                            .currentUser;
-                                    final isTrainer = user?.userRole == 35;
-                                    final isTrainerOwned =
-                                        widget.source == 'trainer' ||
-                                        planSource == 'trainer' ||
-                                        (isTrainer &&
-                                            planSource != 'organization' &&
-                                            planSource != 'gym');
-                                    final isOrgPlan =
-                                        (planSource == 'organization' ||
-                                            planSource == 'gym' ||
-                                            plan['is_preset'] == true) &&
-                                        !isTrainerOwned;
-                                    final canEditOrDelete =
-                                        widget.assignToCustomerId != null ||
-                                        isTrainerOwned ||
-                                        !isTrainer ||
-                                        !isOrgPlan;
-
-                                    final int? dayNum =
-                                        widget.groupType == 'multi_day'
-                                            ? (index + 1)
-                                            : null;
-
-                                    return _PlanCard(
-                                      title: planName,
-                                      exerciseCount: exerciseCount,
-                                      createdOn: createdOn,
-                                      canEditOrDelete: canEditOrDelete,
-                                      dayNumber: dayNum,
-                                      onTap: () async {
-                                        final int childPlanId =
-                                            (plan['id'] as int?) ?? 0;
-                                        final bool isChild =
-                                            widget.groupType == 'multi_day' &&
-                                            childPlanId != 0 &&
-                                            childPlanId != _masterPlanId;
-                                        final int targetPlanId =
-                                            isChild
-                                                ? childPlanId
-                                                : (widget.groupType ==
-                                                        'multi_day'
-                                                    ? (_masterPlanId ?? planId)
-                                                    : planId);
-                                        final int? targetPlanDayId =
-                                            isChild
-                                                ? null
-                                                : (widget.groupType ==
-                                                        'multi_day'
-                                                    ? (plan['plan_day_id']
-                                                        as int?)
-                                                    : null);
-
-                                        final dynamic
-                                        result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute<dynamic>(
-                                            builder:
-                                                (
-                                                  context,
-                                                ) => WorkoutPlanDetailsScreen(
-                                                  planTitle: planName,
-                                                  planId: targetPlanId,
-                                                  planDayId: targetPlanDayId,
-                                                  isOrganizationWorkout:
-                                                      widget.assignToCustomerId !=
-                                                              null
-                                                          ? false
-                                                          : isOrgPlan,
-                                                ),
-                                          ),
-                                        );
-                                        if (result == true && mounted) {
-                                          _fetchPlans(silent: true);
-                                        }
-                                      },
-                                      onAssignTap: () {
-                                        showModalBottomSheet<void>(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          builder:
-                                              (context) =>
-                                                  AssignToClientBottomSheet(
-                                                    planId: planId,
-                                                    planTitle: planName,
-                                                  ),
-                                        );
-                                      },
-                                      onRename:
-                                          () => _renamePlan(
-                                            planId,
-                                            planName,
-                                            planDayId:
-                                                plan['plan_day_id'] as int?,
-                                          ),
-                                      onDelete:
-                                          () => _deletePlan(
-                                            planId,
-                                            planDayId:
-                                                plan['plan_day_id'] as int?,
-                                          ),
-                                    );
-                                  },
-                                ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+                  Expanded(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF8F9FB),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
+                      ),
+                      child:
+                          _isLoading
+                              ? _buildShimmerList()
+                              : _plans.isEmpty
+                              ? LayoutBuilder(
+                                builder:
+                                    (context, constraints) =>
+                                        SingleChildScrollView(
+                                          physics:
+                                              const AlwaysScrollableScrollPhysics(),
+                                          child: ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              minHeight: constraints.maxHeight,
+                                            ),
+                                            child: const Center(
+                                              child: Text(
+                                                'No workout plans found.',
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                              )
+                              : ListView.separated(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  16,
+                                  16,
+                                  100,
+                                ),
+                                itemCount: _plans.length,
+                                separatorBuilder:
+                                    (context, index) =>
+                                        const SizedBox(height: 16),
+                                itemBuilder: (context, index) {
+                                  final plan = _plans[index];
+                                  final int planId = plan['id'] as int;
+                                  final String planName =
+                                      plan['plan_name'] as String? ?? 'Plan';
+                                  final int exerciseCount =
+                                      plan['exercise_count'] as int? ?? 0;
+                                  final String createdOn =
+                                      plan['created_at'] != null
+                                          ? DateFormat('dd MMM yyyy').format(
+                                            DateTime.parse(
+                                              plan['created_at'] as String,
+                                            ),
+                                          )
+                                          : 'N/A';
+
+                                  final planSource =
+                                      plan['source'] as String? ??
+                                      widget.source;
+                                  final user =
+                                      context
+                                          .read<AppCubit>()
+                                          .state
+                                          .currentUser;
+                                  final isTrainer = user?.userRole == 35;
+                                  final isTrainerOwned =
+                                      widget.source == 'trainer' ||
+                                      planSource == 'trainer' ||
+                                      (isTrainer &&
+                                          planSource != 'organization' &&
+                                          planSource != 'gym');
+                                  final isOrgPlan =
+                                      (planSource == 'organization' ||
+                                          planSource == 'gym' ||
+                                          plan['is_preset'] == true) &&
+                                      !isTrainerOwned;
+                                  final canEditOrDelete =
+                                      widget.assignToCustomerId != null ||
+                                      isTrainerOwned ||
+                                      !isTrainer ||
+                                      !isOrgPlan;
+
+                                  final int? dayNum =
+                                      widget.groupType == 'multi_day'
+                                          ? (index + 1)
+                                          : null;
+
+                                  return _PlanCard(
+                                    title: planName,
+                                    exerciseCount: exerciseCount,
+                                    createdOn: createdOn,
+                                    canEditOrDelete: canEditOrDelete,
+                                    dayNumber: dayNum,
+                                    onTap: () async {
+                                      final int childPlanId =
+                                          (plan['id'] as int?) ?? 0;
+                                      final bool isChild =
+                                          widget.groupType == 'multi_day' &&
+                                          childPlanId != 0 &&
+                                          childPlanId != _masterPlanId;
+                                      final int targetPlanId =
+                                          isChild
+                                              ? childPlanId
+                                              : (widget.groupType == 'multi_day'
+                                                  ? (_masterPlanId ?? planId)
+                                                  : planId);
+                                      final int? targetPlanDayId =
+                                          isChild
+                                              ? null
+                                              : (widget.groupType == 'multi_day'
+                                                  ? (plan['plan_day_id']
+                                                      as int?)
+                                                  : null);
+
+                                      final dynamic result =
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute<dynamic>(
+                                              builder:
+                                                  (
+                                                    context,
+                                                  ) => WorkoutPlanDetailsScreen(
+                                                    planTitle: planName,
+                                                    planId: targetPlanId,
+                                                    planDayId: targetPlanDayId,
+                                                    isOrganizationWorkout:
+                                                        widget.assignToCustomerId !=
+                                                                null
+                                                            ? false
+                                                            : isOrgPlan,
+                                                  ),
+                                            ),
+                                          );
+                                      if (result == true && mounted) {
+                                        _fetchPlans(silent: true);
+                                      }
+                                    },
+                                    onAssignTap: () {
+                                      showModalBottomSheet<void>(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder:
+                                            (context) =>
+                                                AssignToClientBottomSheet(
+                                                  planId: planId,
+                                                  planTitle: planName,
+                                                ),
+                                      );
+                                    },
+                                    onRename:
+                                        () => _renamePlan(
+                                          planId,
+                                          planName,
+                                          planDayId:
+                                              plan['plan_day_id'] as int?,
+                                        ),
+                                    onDelete:
+                                        () => _deletePlan(
+                                          planId,
+                                          planDayId:
+                                              plan['plan_day_id'] as int?,
+                                        ),
+                                  );
+                                },
+                              ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           Positioned(
             bottom: 20,
@@ -1748,8 +1818,8 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
 
   Widget _buildShimmerList() {
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      physics: const AlwaysScrollableScrollPhysics(),
       itemCount: 4,
       separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
@@ -1758,7 +1828,10 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
           decoration: BoxDecoration(
             color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: context.colors.border),
+            border: Border.all(
+              color: context.colors.border,
+              width: 1.5,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1821,11 +1894,17 @@ class _PlanCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: context.colors.border,
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: .05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(
+                alpha: context.isDarkMode ? 0.2 : .04,
+              ),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
           ],
         ),

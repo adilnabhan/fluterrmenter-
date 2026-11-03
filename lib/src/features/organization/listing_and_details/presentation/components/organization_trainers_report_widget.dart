@@ -138,12 +138,14 @@ class _OrganizationTrainersReportWidgetState
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
+        border: Border.all(
+          color: context.isDarkMode ? context.colors.border : const Color(0xFFEEEEEE),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -349,12 +351,14 @@ class _OrganizationTrainersReportWidgetState
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
+        border: Border.all(
+          color: context.isDarkMode ? context.colors.border : const Color(0xFFEEEEEE),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -591,12 +595,14 @@ class _OrganizationTrainersReportWidgetState
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFEEEEEE)),
+            border: Border.all(
+              color: context.isDarkMode ? context.colors.border : const Color(0xFFEEEEEE),
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : 0.02),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -721,15 +727,15 @@ class _OrganizationTrainersReportWidgetState
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Shimmer.fromColors(
-        baseColor: const Color(0xFFEEEEEE),
-        highlightColor: const Color(0xFFF9F9F9),
+        baseColor: context.isDarkMode ? const Color(0xFF242424) : const Color(0xFFEEEEEE),
+        highlightColor: context.isDarkMode ? const Color(0xFF383838) : const Color(0xFFF9F9F9),
         child: Column(
           children: [
             Container(
               height: 140,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
@@ -738,7 +744,7 @@ class _OrganizationTrainersReportWidgetState
               height: 36,
               width: 160,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
                 borderRadius: BorderRadius.circular(18),
               ),
             ),
@@ -747,7 +753,7 @@ class _OrganizationTrainersReportWidgetState
               height: 220,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
@@ -756,7 +762,7 @@ class _OrganizationTrainersReportWidgetState
               height: 180,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
               ),
             ),

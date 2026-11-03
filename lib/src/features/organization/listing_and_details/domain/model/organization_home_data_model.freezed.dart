@@ -43,6 +43,9 @@ mixin _$OrganizationHomeDataModel {
   int? get totalCustomers => throw _privateConstructorUsedError;
   @JsonKey(name: 'freezed_customers_count')
   int? get freezedCustomersCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'member_insights')
+  Map<String, dynamic>? get memberInsights =>
+      throw _privateConstructorUsedError;
 
   /// Serializes this OrganizationHomeDataModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -72,6 +75,7 @@ abstract class $OrganizationHomeDataModelCopyWith<$Res> {
     @JsonKey(name: 'total_customers_count') int? totalCustomersCount,
     @JsonKey(name: 'total_customers') int? totalCustomers,
     @JsonKey(name: 'freezed_customers_count') int? freezedCustomersCount,
+    @JsonKey(name: 'member_insights') Map<String, dynamic>? memberInsights,
   });
 }
 
@@ -103,6 +107,7 @@ class _$OrganizationHomeDataModelCopyWithImpl<
     Object? totalCustomersCount = freezed,
     Object? totalCustomers = freezed,
     Object? freezedCustomersCount = freezed,
+    Object? memberInsights = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -156,6 +161,11 @@ class _$OrganizationHomeDataModelCopyWithImpl<
                     ? _value.freezedCustomersCount
                     : freezedCustomersCount // ignore: cast_nullable_to_non_nullable
                         as int?,
+            memberInsights:
+                freezed == memberInsights
+                    ? _value.memberInsights
+                    : memberInsights // ignore: cast_nullable_to_non_nullable
+                        as Map<String, dynamic>?,
           )
           as $Val,
     );
@@ -182,6 +192,7 @@ abstract class _$$OrganizationHomeDataModelImplCopyWith<$Res>
     @JsonKey(name: 'total_customers_count') int? totalCustomersCount,
     @JsonKey(name: 'total_customers') int? totalCustomers,
     @JsonKey(name: 'freezed_customers_count') int? freezedCustomersCount,
+    @JsonKey(name: 'member_insights') Map<String, dynamic>? memberInsights,
   });
 }
 
@@ -213,6 +224,7 @@ class __$$OrganizationHomeDataModelImplCopyWithImpl<$Res>
     Object? totalCustomersCount = freezed,
     Object? totalCustomers = freezed,
     Object? freezedCustomersCount = freezed,
+    Object? memberInsights = freezed,
   }) {
     return _then(
       _$OrganizationHomeDataModelImpl(
@@ -266,6 +278,11 @@ class __$$OrganizationHomeDataModelImplCopyWithImpl<$Res>
                 ? _value.freezedCustomersCount
                 : freezedCustomersCount // ignore: cast_nullable_to_non_nullable
                     as int?,
+        memberInsights:
+            freezed == memberInsights
+                ? _value.memberInsights
+                : memberInsights // ignore: cast_nullable_to_non_nullable
+                    as Map<String, dynamic>?,
       ),
     );
   }
@@ -285,6 +302,7 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
     @JsonKey(name: 'total_customers_count') this.totalCustomersCount,
     @JsonKey(name: 'total_customers') this.totalCustomers,
     @JsonKey(name: 'freezed_customers_count') this.freezedCustomersCount,
+    @JsonKey(name: 'member_insights') this.memberInsights,
   });
 
   factory _$OrganizationHomeDataModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -320,10 +338,13 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
   @override
   @JsonKey(name: 'freezed_customers_count')
   final int? freezedCustomersCount;
+  @override
+  @JsonKey(name: 'member_insights')
+  final Map<String, dynamic>? memberInsights;
 
   @override
   String toString() {
-    return 'OrganizationHomeDataModel(organizationId: $organizationId, trainerCount: $trainerCount, activeCustomersCount: $activeCustomersCount, upcomingRenewalsCount: $upcomingRenewalsCount, expiredCustomersCount: $expiredCustomersCount, upcomingPaymentCount: $upcomingPaymentCount, allPaymentCount: $allPaymentCount, totalCustomersCount: $totalCustomersCount, totalCustomers: $totalCustomers, freezedCustomersCount: $freezedCustomersCount)';
+    return 'OrganizationHomeDataModel(organizationId: $organizationId, trainerCount: $trainerCount, activeCustomersCount: $activeCustomersCount, upcomingRenewalsCount: $upcomingRenewalsCount, expiredCustomersCount: $expiredCustomersCount, upcomingPaymentCount: $upcomingPaymentCount, allPaymentCount: $allPaymentCount, totalCustomersCount: $totalCustomersCount, totalCustomers: $totalCustomers, freezedCustomersCount: $freezedCustomersCount, memberInsights: $memberInsights)';
   }
 
   @override
@@ -350,7 +371,9 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
             (identical(other.totalCustomers, totalCustomers) ||
                 other.totalCustomers == totalCustomers) &&
             (identical(other.freezedCustomersCount, freezedCustomersCount) ||
-                other.freezedCustomersCount == freezedCustomersCount));
+                other.freezedCustomersCount == freezedCustomersCount) &&
+            (identical(other.memberInsights, memberInsights) ||
+                other.memberInsights == memberInsights));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -367,6 +390,7 @@ class _$OrganizationHomeDataModelImpl implements _OrganizationHomeDataModel {
     totalCustomersCount,
     totalCustomers,
     freezedCustomersCount,
+    memberInsights,
   );
 
   /// Create a copy of OrganizationHomeDataModel
@@ -397,6 +421,8 @@ abstract class _OrganizationHomeDataModel implements OrganizationHomeDataModel {
     @JsonKey(name: 'total_customers_count') final int? totalCustomersCount,
     @JsonKey(name: 'total_customers') final int? totalCustomers,
     @JsonKey(name: 'freezed_customers_count') final int? freezedCustomersCount,
+    @JsonKey(name: 'member_insights')
+    final Map<String, dynamic>? memberInsights,
   }) = _$OrganizationHomeDataModelImpl;
 
   factory _OrganizationHomeDataModel.fromJson(Map<String, dynamic> json) =
@@ -432,6 +458,9 @@ abstract class _OrganizationHomeDataModel implements OrganizationHomeDataModel {
   @override
   @JsonKey(name: 'freezed_customers_count')
   int? get freezedCustomersCount;
+  @override
+  @JsonKey(name: 'member_insights')
+  Map<String, dynamic>? get memberInsights;
 
   /// Create a copy of OrganizationHomeDataModel
   /// with the given fields replaced by the non-null parameter values.

@@ -6,6 +6,7 @@ import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_profile_settings_screen.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/assign_to_client_bottom_sheet.dart';
 import 'package:mentor_mobile_app/src/features/workouts/presentation/screens/create_workout_plan_wizard_screen.dart';
+import 'package:mentor_mobile_app/src/features/workouts/presentation/widgets/curved_tab_bar.dart';
 
 class WorkoutGroupsScreen extends StatefulWidget {
   const WorkoutGroupsScreen({super.key, this.orgId});
@@ -29,6 +30,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
   List<Map<String, dynamic>> _groups = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
   String _filterType = 'all'; // 'all' or 'org'
 
   @override
@@ -74,6 +76,7 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
 
   @override
   void dispose() {
+    _searchController.dispose();
     _groupName.controller?.dispose();
     _groupName.focusNode?.dispose();
     super.dispose();
@@ -442,157 +445,236 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
       ),
       body: Stack(
         children: [
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: context.colors.card,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: context.colors.border),
-                        ),
-                        child: TextField(
-                          onChanged: (val) {
-                            _searchQuery = val;
-                            if (val.trim().isEmpty && _cachedGroups != null) {
-                              setState(() {
-                                _groups = List<Map<String, dynamic>>.from(
-                                  _cachedGroups!,
-                                );
-                              });
-                            }
-                            EasyDebounce.debounce(
-                              'groups-search',
-                              const Duration(milliseconds: 400),
-                              () => _fetchGroups(silent: _groups.isNotEmpty),
-                            );
-                          },
-                          decoration: InputDecoration(
-                            icon: Icon(
-                              Icons.search,
-                              color: context.colors.textSecondary,
-                            ),
-                            hintText: 'Search for workout group',
-                            fillColor: context.colors.card,
-                            hintStyle: AppStyles.text14Px.poppins.w400.copyWith(
-                              color: context.colors.textSecondary,
-                            ),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: Stack(
-                  children: [
-                    Column(
+          RefreshIndicator(
+            onRefresh: _fetchGroups,
+            child: NestedScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const SizedBox(height: 44),
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: context.colors.background,
-                              border: Border.all(
-                                color: context.colors.border,
-                                width: 1,
-                              ),
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(24),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        _isLoading
-                                            ? 'Loading workout groups...'
-                                            : '${filtered.length} workout groups',
-                                        style: AppStyles.text14Px.poppins.w400
-                                            .copyWith(
-                                              color:
-                                                  context.colors.textSecondary,
-                                            ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: context.colors.card,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: context.colors.border,
+                                    ),
+                                  ),
+                                  child: TextField(
+                                    controller: _searchController,
+                                    textAlignVertical:
+                                        TextAlignVertical.center,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _searchQuery = val;
+                                      });
+                                      if (val.trim().isEmpty &&
+                                          _cachedGroups != null) {
+                                        setState(() {
+                                          _groups =
+                                              List<Map<String, dynamic>>.from(
+                                                _cachedGroups!,
+                                              );
+                                        });
+                                      }
+                                      EasyDebounce.debounce(
+                                        'groups-search',
+                                        const Duration(milliseconds: 400),
+                                        () => _fetchGroups(
+                                          silent: _groups.isNotEmpty,
+                                        ),
+                                      );
+                                    },
+                                    decoration: InputDecoration(
+                                      icon: Icon(
+                                        Icons.search,
+                                        color: context.colors.textSecondary,
                                       ),
-                                      _buildFilterButton(isTrainer),
-                                    ],
-                                  ),
-                                ),
-                                Expanded(
-                                  child: RefreshIndicator(
-                                    onRefresh: _fetchGroups,
-                                    child:
-                                        _isLoading
-                                            ? _buildShimmerGrid()
-                                            : filtered.isEmpty
-                                            ? SingleChildScrollView(
-                                              physics:
-                                                  const AlwaysScrollableScrollPhysics(),
-                                              child: SizedBox(
-                                                height:
-                                                    MediaQuery.of(
-                                                      context,
-                                                    ).size.height *
-                                                    0.4,
-                                                child: Center(
-                                                  child: Text(
-                                                    'No workout groups found.',
-                                                    style: TextStyle(
-                                                      color:
-                                                          context
-                                                              .colors
-                                                              .textPrimary,
+                                      suffixIcon:
+                                          _searchQuery.isNotEmpty
+                                              ? IconButton(
+                                                padding: EdgeInsets.zero,
+                                                constraints:
+                                                    const BoxConstraints(
+                                                      minWidth: 32,
+                                                      minHeight: 32,
                                                     ),
-                                                  ),
+                                                icon: Icon(
+                                                  Icons.close,
+                                                  color:
+                                                      context
+                                                          .colors
+                                                          .textSecondary,
+                                                  size: 20,
                                                 ),
-                                              ),
-                                            )
-                                            : WorkoutGroupsGrid(
-                                              groups: filtered,
-                                              onReturn: _fetchGroups,
-                                              isMultiDay:
-                                                  _selectedTabIndex == 1,
-                                            ),
+                                                splashRadius: 18,
+                                                onPressed: () {
+                                                  _searchController.clear();
+                                                  setState(() {
+                                                    _searchQuery = '';
+                                                    if (_cachedGroups != null) {
+                                                      _groups =
+                                                          List<
+                                                            Map<String, dynamic>
+                                                          >.from(
+                                                            _cachedGroups!,
+                                                          );
+                                                    }
+                                                  });
+                                                  _fetchGroups(
+                                                    silent: _groups.isNotEmpty,
+                                                  );
+                                                },
+                                              )
+                                              : null,
+                                      hintText: 'Search for workout group',
+                                      fillColor: context.colors.card,
+                                      hintStyle: AppStyles.text14Px.poppins.w400
+                                          .copyWith(
+                                            color: context.colors.textSecondary,
+                                          ),
+                                      border: InputBorder.none,
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
+                        const SizedBox(height: 10),
                       ],
                     ),
-                    Positioned(
-                      top: 1, // Overlaps the container's top border
-                      left: 16,
-                      right: 16,
-                      child: Row(
-                        children: [
-                          Expanded(child: _buildTab('Workouts', 0)),
-                          const SizedBox(width: 12),
-                          Expanded(child: _buildTab('Programs', 1)),
-                        ],
+                  ),
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _WorkoutTabsHeaderDelegate(
+                      child: CurvedTabBar(
+                        selectedIndex: _selectedTabIndex,
+                        onTabChanged: (index) {
+                          if (!mounted) return;
+                          setState(() => _selectedTabIndex = index);
+                        },
+                        tabs: const ['Workouts', 'Programs'],
+                        height: 50.0,
+                        borderWidth: 1.8,
                       ),
+                      height: 50.0,
                     ),
-                  ],
+                  ),
+                ];
+              },
+              body: Container(
+                color: context.colors.surface,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topRight: _selectedTabIndex == 0
+                        ? const Radius.circular(20.0)
+                        : Radius.zero,
+                    topLeft: _selectedTabIndex == 1
+                        ? const Radius.circular(20.0)
+                        : Radius.zero,
+                  ),
+                  child: CustomScrollView(
+                    key: PageStorageKey<String>(
+                      'workout_groups_tab_$_selectedTabIndex',
+                    ),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _isLoading
+                                    ? 'Loading workout groups...'
+                                    : '${filtered.length} workout groups',
+                                style: AppStyles.text14Px.poppins.w400.copyWith(
+                                  color: context.colors.textSecondary,
+                                ),
+                              ),
+                              _buildFilterButton(isTrainer),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (_isLoading)
+                        _buildShimmerSliver()
+                      else if (filtered.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            child: Center(
+                              child: Text(
+                                'No workout groups found.',
+                                style: TextStyle(
+                                  color: context.colors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      else if (_selectedTabIndex == 1)
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 180),
+                          sliver: SliverList.separated(
+                            itemCount: filtered.length,
+                            separatorBuilder:
+                                (_, __) => const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              return _MultiDayWorkoutGroupCard(
+                                group: filtered[index],
+                                onReturn: _fetchGroups,
+                              );
+                            },
+                          ),
+                        )
+                      else
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 180),
+                          sliver: SliverGrid(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  childAspectRatio: 1.50,
+                                ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                return _WorkoutGroupCard(
+                                  group: filtered[index],
+                                  onReturn: _fetchGroups,
+                                );
+                              },
+                              childCount: filtered.length,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
           Positioned(
             bottom: createButtonBottom,
@@ -633,54 +715,6 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
         _fetchGroups(silent: true);
       }
     });
-  }
-
-  Widget _buildTab(String text, int index) {
-    final isSelected = _selectedTabIndex == index;
-    return GestureDetector(
-      onTap: () {
-        if (!mounted) return;
-        setState(() => _selectedTabIndex = index);
-      },
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color:
-                  isSelected ? context.colors.background : Colors.transparent,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              border:
-                  isSelected
-                      ? Border.all(color: context.colors.border, width: 1)
-                      : Border.all(color: Colors.transparent, width: 1),
-            ),
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppStyles.text14Px.poppins.copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: context.colors.textPrimary,
-              ),
-            ),
-          ),
-          if (isSelected)
-            Positioned(
-              bottom: 0,
-              left: 1,
-              right: 1,
-              height: 2,
-              child: Container(color: context.colors.background),
-            ),
-        ],
-      ),
-    );
   }
 
   void _showCreateGroupSheet(BuildContext context) {
@@ -770,7 +804,10 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
           decoration: BoxDecoration(
             color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: context.colors.border),
+            border: Border.all(
+              color: context.colors.border,
+              width: 1.5,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -796,6 +833,87 @@ class _WorkoutGroupsScreenState extends State<WorkoutGroupsScreen>
         );
       },
     );
+  }
+
+  Widget _buildShimmerSliver() {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(22, 0, 22, 180),
+      sliver: SliverGrid(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1.50,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            return Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: context.colors.card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: context.colors.border,
+                  width: 1.5,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      KShimmer(width: 100, height: 14, radius: 4),
+                      SizedBox(height: 6),
+                      KShimmer(width: 70, height: 12, radius: 4),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      KShimmer(width: 50, height: 12, radius: 4),
+                      KShimmer(width: 14, height: 14, radius: 4),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+          childCount: 8,
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkoutTabsHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _WorkoutTabsHeaderDelegate({
+    required this.child,
+    this.height = 50.0,
+  });
+
+  final Widget child;
+  final double height;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant _WorkoutTabsHeaderDelegate oldDelegate) {
+    return oldDelegate.child != child || oldDelegate.height != height;
   }
 }
 
@@ -902,14 +1020,17 @@ class _WorkoutGroupCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.colors.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: context.colors.border),
+          border: Border.all(
+            color: context.colors.border,
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(
-                alpha: context.isDarkMode ? 0.2 : .05,
+                alpha: context.isDarkMode ? 0.2 : .04,
               ),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -1248,14 +1369,17 @@ class _MultiDayWorkoutGroupCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.colors.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: context.colors.border),
+          border: Border.all(
+            color: context.colors.border,
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(
-                alpha: context.isDarkMode ? 0.2 : .05,
+                alpha: context.isDarkMode ? 0.2 : .04,
               ),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
           ],
         ),

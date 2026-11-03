@@ -1,3 +1,4 @@
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 
 ///
@@ -20,10 +21,20 @@ class KShimmer extends StatelessWidget {
   final double radius;
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: ClipRRect(borderRadius: BorderRadius.circular(radius), child: ColoredBox(color: Colors.grey, child: SizedBox(width: width ?? double.maxFinite, height: height ?? double.maxFinite))),
+      baseColor: isDark ? const Color(0xFF242424) : Colors.grey.shade300,
+      highlightColor: isDark ? const Color(0xFF383838) : Colors.grey.shade100,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: ColoredBox(
+          color: isDark ? const Color(0xFF242424) : Colors.grey,
+          child: SizedBox(
+            width: width ?? double.maxFinite,
+            height: height ?? double.maxFinite,
+          ),
+        ),
+      ),
     );
   }
 }

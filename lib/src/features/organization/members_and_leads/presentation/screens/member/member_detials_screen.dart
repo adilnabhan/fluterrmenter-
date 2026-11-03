@@ -96,7 +96,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
           return Scaffold(
             appBar: AppBar(
               leading: const PopButton().center,
-              titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
+              titleTextStyle: AppStyles.text16Px.poppins.w500.copyWith(color: context.colors.textPrimary),
               title: const Text('Member Details'),
               actions: [
                 if (data?.whatsappLink?.isNotEmpty ?? false)
@@ -126,7 +126,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                   ),
               ],
             ),
-            backgroundColor: AppColors.grey,
+            backgroundColor: context.isDarkMode ? context.colors.background : AppColors.grey,
             body: state.memberDetails.fold(
               _buildShimmerLoading,
               (either) => either.fold(
@@ -149,7 +149,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.calendar_month,
                                     color: AppColors.primary,
                                     size: 20,
@@ -157,7 +157,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     'Workout Journey',
-                                    style: AppStyles.text16Px.poppins.w600.dark,
+                                    style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                                   ),
                                 ],
                               ).pOnly(bottom: 16),
@@ -192,7 +192,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
       children: [
         Text(
           'Profile ',
-          style: AppStyles.text16Px.poppins.w600.dark,
+          style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
         ).pOnly(bottom: 16),
         _card(
           child: InkWell(
@@ -225,10 +225,10 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     style: AppStyles.text14Px.poppins.w500,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
                   size: 14,
-                  color: AppColors.dark,
+                  color: context.colors.textPrimary,
                 ).pOnly(left: 8),
               ],
             ),
@@ -249,7 +249,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.card_membership,
                   color: AppColors.primary,
                   size: 20,
@@ -257,7 +257,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                 const SizedBox(width: 8),
                 Text(
                   'Memberships',
-                  style: AppStyles.text16Px.poppins.w600.dark,
+                  style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                 ),
               ],
             ),
@@ -265,7 +265,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
               onTap: () => _showMembershipActionSheet(data),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.add_circle_outline,
                     color: AppColors.primary,
                     size: 18,
@@ -349,7 +349,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.history,
                       size: 18,
                       color: AppColors.primary,
@@ -362,7 +362,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(
+                    Icon(
                       Icons.arrow_forward_ios,
                       size: 12,
                       color: AppColors.primary,
@@ -376,7 +376,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.isDarkMode ? context.colors.card : Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.grey.withOpacity(0.2)),
             ),
@@ -446,11 +446,11 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                   child: Icon(icon, color: iconColor, size: 20),
                 ),
                 const Spacer(),
-                Text(value, style: AppStyles.text24Px.poppins.w700.dark),
+                Text(value, style: AppStyles.text24Px.poppins.w700.copyWith(color: context.colors.textPrimary)),
               ],
             ),
             const SizedBox(height: 12),
-            Text(title, style: AppStyles.text14Px.poppins.w600.dark),
+            Text(title, style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary)),
             const SizedBox(height: 4),
             Text(subtitle, style: AppStyles.text12Px.poppins.w400.textGrey),
           ],
@@ -494,7 +494,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.light,
+        color: context.isDarkMode ? context.colors.card : AppColors.light,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
@@ -567,7 +567,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                                 : isExpired
                                     ? Icons.cancel
                                     : Icons.pending,
-                    color: Colors.white,
+                    color: context.isDarkMode ? context.colors.card : Colors.white,
                     size: 20,
                   ),
                 ),
@@ -578,7 +578,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     children: [
                       Text(
                         membership.membershipName ?? 'Unknown Plan',
-                        style: AppStyles.text16Px.poppins.w600.dark,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                       ),
                       const SizedBox(height: 4),
                       Row(
@@ -697,7 +697,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                         value: 'collect_fee',
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.payments_outlined,
                               size: 18,
                               color: Color(0xff27AE60),
@@ -720,7 +720,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                           const SizedBox(width: 10),
                           Text(
                             'Edit Plan',
-                            style: AppStyles.text14Px.poppins.w500.dark,
+                            style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                           ),
                         ],
                       ),
@@ -1040,7 +1040,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
           children: [
             Text(
               'Membership Progress',
-              style: AppStyles.text14Px.poppins.w600.dark,
+              style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
             ),
             Text(
               '${(progress * 100).toInt()}%',
@@ -1107,7 +1107,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
           const SizedBox(height: 4),
           Text(
             value,
-            style: AppStyles.text13Px.poppins.w600.dark,
+            style: AppStyles.text13Px.poppins.w600.copyWith(color: context.colors.textPrimary),
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -1136,7 +1136,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
       children: [
         Text(
           'Contact Details',
-          style: AppStyles.text16Px.poppins.w600.dark,
+          style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
         ).pOnly(bottom: 16),
         _card(
           child: Column(
@@ -1151,7 +1151,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     ),
                     TextSpan(
                       text: data.mobileNumber ?? 'N/A',
-                      style: AppStyles.text13Px.poppins.w500.dark,
+                      style: AppStyles.text13Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                     ),
                   ],
                 ),
@@ -1166,7 +1166,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     ),
                     TextSpan(
                       text: data.email ?? 'N/A',
-                      style: AppStyles.text13Px.poppins.w500.dark,
+                      style: AppStyles.text13Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                     ),
                   ],
                 ),
@@ -1211,7 +1211,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     ),
                     child: Text(
                       data.gender?.pascalCase ?? 'N/A',
-                      style: AppStyles.text14Px.poppins.w400.dark,
+                      style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                     ),
                   ),
                   Container(
@@ -1225,7 +1225,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     ),
                     child: Text(
                       data.bloodGroup ?? 'N/A',
-                      style: AppStyles.text14Px.poppins.w400.dark,
+                      style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                     ),
                   ),
                 ],
@@ -1243,7 +1243,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
       children: [
         Text(
           'Personal Details',
-          style: AppStyles.text16Px.poppins.w600.dark,
+          style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
         ).pOnly(bottom: 16),
         _card(
           child: Column(
@@ -1295,12 +1295,12 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                       const Spacer(),
                       Text(
                         e.value,
-                        style: AppStyles.text14Px.poppins.w500.dark,
+                        style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward_ios,
                         size: 12,
-                        color: AppColors.dark,
+                        color: context.colors.textPrimary,
                       ).pOnly(left: 8),
                     ],
                   ).pxy(y: 12),
@@ -1325,7 +1325,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                   const SizedBox(height: 8),
                   Text(
                     data.emergencyContactNumber ?? 'N/A',
-                    style: AppStyles.text14Px.poppins.w500.dark,
+                    style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                   ),
                 ],
               ),
@@ -1358,7 +1358,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.light,
+        color: context.isDarkMode ? context.colors.card : AppColors.light,
         borderRadius: BorderRadius.circular(16),
       ),
       child: child,
@@ -1512,7 +1512,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
         for (int i = 0; i < 1; i++)
           Container(
             decoration: BoxDecoration(
-              color: AppColors.light,
+              color: context.isDarkMode ? context.colors.card : AppColors.light,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: Colors.grey.withOpacity(0.2),
@@ -2074,7 +2074,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     children: [
                       Text(
                         'Pause Membership',
-                        style: AppStyles.text16Px.poppins.w600.dark,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                       ),
                       Text(
                         membership.membershipName ?? 'Current Plan',
@@ -2123,7 +2123,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Pause Duration',
-                    style: AppStyles.text12Px.poppins.w600.dark,
+                    style: AppStyles.text12Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                   ),
                   const SizedBox(height: 8),
                   // Preset duration chips
@@ -2393,7 +2393,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                     children: [
                       Text(
                         'Resume Membership',
-                        style: AppStyles.text16Px.poppins.w600.dark,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                       ),
                       Text(
                         membership.membershipName ?? 'Current Plan',
@@ -2600,7 +2600,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
             Flexible(
               child: Text(
                 'Cancel Membership',
-                style: AppStyles.text16Px.poppins.w600.dark,
+                style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
               ),
             ),
           ],
@@ -2611,7 +2611,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
           children: [
             Text(
               'Are you sure you want to cancel this membership?',
-              style: AppStyles.text14Px.poppins.w500.dark,
+              style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
@@ -2679,11 +2679,11 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                           ),
                           title: Text(
                             'Confirm Cancellation',
-                            style: AppStyles.text16Px.poppins.w600.dark,
+                            style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                           ),
                           content: Text(
                             'This will permanently cancel "${membership.membershipName ?? 'this membership'}". Are you absolutely sure?',
-                            style: AppStyles.text14Px.poppins.w400.dark,
+                            style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                           ),
                           actionsAlignment: MainAxisAlignment.spaceBetween,
                           actions: [
@@ -2823,8 +2823,8 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: context.isDarkMode ? context.colors.card : Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -2837,7 +2837,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                 children: [
                   Text(
                     'Membership Actions',
-                    style: AppStyles.text18Px.poppins.w600.dark,
+                    style: AppStyles.text18Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
@@ -2871,7 +2871,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                 ),
                 title: Text(
                   'Renew Existing Plan',
-                  style: AppStyles.text14Px.poppins.w600.dark,
+                  style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                 ),
                 subtitle: Text(
                   'Extend duration of current membership',
@@ -2899,7 +2899,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                 ),
                 leading: Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Color(0xFFD5F5E3),
                     shape: BoxShape.circle,
                   ),
@@ -2910,7 +2910,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                 ),
                 title: Text(
                   'Add Another Membership',
-                  style: AppStyles.text14Px.poppins.w600.dark,
+                  style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                 ),
                 subtitle: Text(
                   'Assign a concurrent plan (PT, Sauna, Locker, etc.)',

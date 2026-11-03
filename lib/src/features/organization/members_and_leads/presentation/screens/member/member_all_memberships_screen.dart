@@ -91,7 +91,7 @@ class _MemberAllMembershipsScreenState
           }).toList();
 
           return Scaffold(
-            backgroundColor: AppColors.grey,
+            backgroundColor: context.isDarkMode ? context.colors.background : AppColors.grey,
             appBar: AppBar(
               leading: const PopButton().center,
               title: Column(
@@ -99,7 +99,7 @@ class _MemberAllMembershipsScreenState
                 children: [
                   Text(
                     'Membership History',
-                    style: AppStyles.text16Px.poppins.w600.dark,
+                    style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                   ),
                   if (widget.memberName.isNotEmpty)
                     Text(
@@ -212,10 +212,10 @@ class _MemberAllMembershipsScreenState
                         horizontal: 16,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.isDarkMode ? context.colors.card : Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.grey.withOpacity(0.2),
+                          color: context.isDarkMode ? context.colors.border : Colors.grey.withOpacity(0.2),
                         ),
                       ),
                       child: Column(
@@ -249,10 +249,10 @@ class _MemberAllMembershipsScreenState
                         horizontal: 16,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.isDarkMode ? context.colors.card : Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.grey.withOpacity(0.2),
+                          color: context.isDarkMode ? context.colors.border : Colors.grey.withOpacity(0.2),
                         ),
                       ),
                       child: Column(
@@ -317,7 +317,7 @@ class _MemberAllMembershipsScreenState
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white,
+          color: isSelected ? AppColors.primary : (context.isDarkMode ? context.colors.card : Colors.white),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
@@ -337,7 +337,7 @@ class _MemberAllMembershipsScreenState
         child: Text(
           label,
           style: AppStyles.text12Px.poppins.w500.copyWith(
-            color: isSelected ? Colors.white : AppColors.dark,
+            color: isSelected ? Colors.white : (context.isDarkMode ? context.colors.textPrimary : AppColors.dark),
           ),
         ),
       ),
@@ -384,11 +384,11 @@ class _MemberAllMembershipsScreenState
                   child: Icon(icon, color: iconColor, size: 20),
                 ),
                 const Spacer(),
-                Text(value, style: AppStyles.text24Px.poppins.w700.dark),
+                Text(value, style: AppStyles.text24Px.poppins.w700.copyWith(color: context.colors.textPrimary)),
               ],
             ),
             const SizedBox(height: 12),
-            Text(title, style: AppStyles.text14Px.poppins.w600.dark),
+            Text(title, style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary)),
             const SizedBox(height: 4),
             Text(subtitle, style: AppStyles.text12Px.poppins.w400.textGrey),
           ],
@@ -432,7 +432,7 @@ class _MemberAllMembershipsScreenState
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.light,
+        color: context.isDarkMode ? context.colors.card : AppColors.light,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCancelled
@@ -516,7 +516,7 @@ class _MemberAllMembershipsScreenState
                           Flexible(
                             child: Text(
                               membership.membershipName ?? 'Unknown Plan',
-                              style: AppStyles.text16Px.poppins.w600.dark,
+                              style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -680,7 +680,7 @@ class _MemberAllMembershipsScreenState
                           const SizedBox(width: 10),
                           Text(
                             'Edit Plan',
-                            style: AppStyles.text14Px.poppins.w500.dark,
+                            style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                           ),
                         ],
                       ),
@@ -1003,7 +1003,7 @@ class _MemberAllMembershipsScreenState
           children: [
             Text(
               'Membership Progress',
-              style: AppStyles.text14Px.poppins.w600.dark,
+              style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
             ),
             Text(
               '${(progress * 100).toInt()}%',
@@ -1070,7 +1070,7 @@ class _MemberAllMembershipsScreenState
           const SizedBox(height: 4),
           Text(
             value,
-            style: AppStyles.text13Px.poppins.w600.dark,
+            style: AppStyles.text13Px.poppins.w600.copyWith(color: context.colors.textPrimary),
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -1158,7 +1158,7 @@ class _MemberAllMembershipsScreenState
                     children: [
                       Text(
                         'Pause Membership',
-                        style: AppStyles.text16Px.poppins.w600.dark,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                       ),
                       Text(
                         membership.membershipName ?? 'Current Plan',
@@ -1207,7 +1207,7 @@ class _MemberAllMembershipsScreenState
                   const SizedBox(height: 16),
                   Text(
                     'Pause Duration',
-                    style: AppStyles.text12Px.poppins.w600.dark,
+                    style: AppStyles.text12Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                   ),
                   const SizedBox(height: 8),
                   // Preset duration chips
@@ -1477,7 +1477,7 @@ class _MemberAllMembershipsScreenState
                     children: [
                       Text(
                         'Resume Membership',
-                        style: AppStyles.text16Px.poppins.w600.dark,
+                        style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                       ),
                       Text(
                         membership.membershipName ?? 'Current Plan',
@@ -1683,7 +1683,7 @@ class _MemberAllMembershipsScreenState
             Flexible(
               child: Text(
                 'Cancel Membership',
-                style: AppStyles.text16Px.poppins.w600.dark,
+                style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
               ),
             ),
           ],
@@ -1694,7 +1694,7 @@ class _MemberAllMembershipsScreenState
           children: [
             Text(
               'Are you sure you want to cancel this membership?',
-              style: AppStyles.text14Px.poppins.w500.dark,
+              style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
@@ -1764,11 +1764,11 @@ class _MemberAllMembershipsScreenState
                           ),
                           title: Text(
                             'Confirm Cancellation',
-                            style: AppStyles.text16Px.poppins.w600.dark,
+                            style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                           ),
                           content: Text(
                             'This will permanently cancel "${membership.membershipName ?? 'this membership'}". Are you absolutely sure?',
-                            style: AppStyles.text14Px.poppins.w400.dark,
+                            style: AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                           ),
                           actionsAlignment: MainAxisAlignment.spaceBetween,
                           actions: [
@@ -1908,8 +1908,8 @@ class _MemberAllMembershipsScreenState
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: context.isDarkMode ? context.colors.card : Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -1922,7 +1922,7 @@ class _MemberAllMembershipsScreenState
                 children: [
                   Text(
                     'Membership Actions',
-                    style: AppStyles.text18Px.poppins.w600.dark,
+                    style: AppStyles.text18Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
@@ -1956,7 +1956,7 @@ class _MemberAllMembershipsScreenState
                 ),
                 title: Text(
                   'Renew Existing Plan',
-                  style: AppStyles.text14Px.poppins.w600.dark,
+                  style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                 ),
                 subtitle: Text(
                   'Extend duration of current membership',
@@ -1995,7 +1995,7 @@ class _MemberAllMembershipsScreenState
                 ),
                 title: Text(
                   'Add Another Membership',
-                  style: AppStyles.text14Px.poppins.w600.dark,
+                  style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                 ),
                 subtitle: Text(
                   'Assign a concurrent plan (PT, Sauna, Locker, etc.)',

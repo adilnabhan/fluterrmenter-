@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'dart:math' as math;
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/reports_customer_list_screen.dart';
@@ -75,6 +77,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   int _overviewHalf = DateTime.now().month > 6 ? 2 : 1;
   int _overviewYear = DateTime.now().year;
 
+  Color get _cardBg => context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white;
+  Color get _cardBorder => context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE);
+
   @override
   void initState() {
     super.initState();
@@ -139,169 +144,114 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     bool mainReportsFailed = false;
     String? failedReason;
 
-    try {
-      // 1. Fetch reports
-      final reportsResponse = await DioClient().dio.get<dynamic>(
-        '${ApiUris.reports}?$queryParams',
-        options: Options(headers: {'X-Platform': platformSource}),
-      );
+    final dio = DioClient().dio;
+    final tokenOptions = Options(headers: {'X-Platform': platformSource}).token;
+    final baseOptions = Options(headers: {'X-Platform': platformSource});
 
-      if (reportsResponse.statusCode == 200 && reportsResponse.data is Map) {
-        if (mounted) {
-          setState(() {
-            _reportsData = Map<String, dynamic>.from(
-              reportsResponse.data as Map,
-            );
-          });
-        }
-      } else {
+    final results = await Future.wait([
+      // 0: Reports
+      dio.get<dynamic>('${ApiUris.reports}?$queryParams', options: baseOptions).catchError((e) {
         mainReportsFailed = true;
-        failedReason = 'Server error (${reportsResponse.statusCode})';
-      }
-    } on DioException catch (e) {
+        if (e is DioException) {
+          failedReason = e.response?.statusCode != null
+              ? 'Server error (${e.response?.statusCode})'
+              : 'Failed to connect to reports service';
+        } else {
+          failedReason = 'Failed to load reports';
+        }
+        return Response<dynamic>(requestOptions: RequestOptions(), statusCode: 500);
+      }),
+      // 1: Budget
+      dio.get<dynamic>('${ApiUris.budget}?year=$year&month=$month', options: tokenOptions).catchError((_) => Response<dynamic>(requestOptions: RequestOptions())),
+      // 2: Expenses
+      dio.get<dynamic>('${ApiUris.expenses}?$queryParams', options: tokenOptions).catchError((_) => Response<dynamic>(requestOptions: RequestOptions())),
+      // 3: Revenues
+      dio.get<dynamic>('${ApiUris.revenues}?$queryParams', options: tokenOptions).catchError((_) => Response<dynamic>(requestOptions: RequestOptions())),
+      // 4: Revenue Categories
+      dio.get<dynamic>('${ApiUris.revenueCategories}?organization_id=${widget.orgId}', options: tokenOptions).catchError((_) => Response<dynamic>(requestOptions: RequestOptions())),
+      // 5: Revenue Targets
+      dio.get<dynamic>('${ApiUris.revenueTargets}?$queryParams', options: tokenOptions).catchError((_) => Response<dynamic>(requestOptions: RequestOptions())),
+    ]);
+
+    if (!mounted) return;
+
+    final reportsRes = results[0];
+    final budgetRes = results[1];
+    final expensesRes = results[2];
+    final revenuesRes = results[3];
+    final catRes = results[4];
+    final targetRes = results[5];
+
+    Map<String, dynamic> newReportsData = _reportsData;
+    Map<String, dynamic> newBudgetData = _budgetData;
+    List<Map<String, dynamic>> newExpenses = _expenses;
+    List<Map<String, dynamic>> newRevenues = _revenues;
+    List<Map<String, dynamic>> newCategories = _revenueCategories;
+    Map<String, dynamic> newTargetData = _revenueTargetData;
+
+    if (reportsRes.statusCode == 200 && reportsRes.data is Map) {
+      newReportsData = Map<String, dynamic>.from(reportsRes.data as Map);
+    } else {
       mainReportsFailed = true;
-      failedReason = e.response?.statusCode != null
-          ? 'Server error (${e.response?.statusCode})'
-          : 'Failed to connect to reports service';
-      debugPrint('Reports API DioException: $e');
-    } catch (e) {
-      mainReportsFailed = true;
-      failedReason = 'Failed to load reports';
-      debugPrint('Reports API error: $e');
     }
 
-    try {
-      // 2. Fetch budget category breakdown
-      String budgetUri = '${ApiUris.budget}?year=$year&month=$month';
-      final budgetResponse = await DioClient().dio.get<dynamic>(
-        budgetUri,
-        options: Options(headers: {'X-Platform': platformSource}).token,
-      );
+    if (budgetRes.statusCode == 200 && budgetRes.data is Map) {
+      newBudgetData = Map<String, dynamic>.from(budgetRes.data as Map);
+    }
 
-      if (budgetResponse.statusCode == 200 && budgetResponse.data is Map) {
-        if (mounted) {
-          setState(() {
-            _budgetData = Map<String, dynamic>.from(
-              budgetResponse.data as Map,
-            );
-          });
-        }
+    if (expensesRes.statusCode == 200) {
+      final data = expensesRes.data;
+      List<dynamic> list = [];
+      if (data is List) {
+        list = data;
+      } else if (data is Map && data['results'] is List) {
+        list = data['results'] as List;
+      } else if (data is Map && data['expenses'] is List) {
+        list = data['expenses'] as List;
       }
-    } catch (e) {
-      // ignore/handle budget error quietly
+      newExpenses = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     }
 
-    try {
-      // 3. Fetch expenses
-      final expensesResponse = await DioClient().dio.get<dynamic>(
-        '${ApiUris.expenses}?$queryParams',
-        options: Options(headers: {'X-Platform': platformSource}).token,
-      );
-
-      if (expensesResponse.statusCode == 200) {
-        final data = expensesResponse.data;
-        List<dynamic> list = [];
-        if (data is List) {
-          list = data;
-        } else if (data is Map && data['results'] is List) {
-          list = data['results'] as List;
-        } else if (data is Map && data['expenses'] is List) {
-          list = data['expenses'] as List;
-        }
-        if (mounted) {
-          setState(() {
-            _expenses =
-                list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-          });
-        }
+    if (revenuesRes.statusCode == 200) {
+      final data = revenuesRes.data;
+      List<dynamic> list = [];
+      if (data is List) {
+        list = data;
+      } else if (data is Map && data['results'] is List) {
+        list = data['results'] as List;
+      } else if (data is Map && data['revenues'] is List) {
+        list = data['revenues'] as List;
       }
-    } catch (e) {
-      // ignore/handle expenses error quietly
+      newRevenues = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     }
 
-    try {
-      // 4. Fetch revenues
-      final revenuesResponse = await DioClient().dio.get<dynamic>(
-        '${ApiUris.revenues}?$queryParams',
-        options: Options(headers: {'X-Platform': platformSource}).token,
-      );
-
-      if (revenuesResponse.statusCode == 200) {
-        final data = revenuesResponse.data;
-        List<dynamic> list = [];
-        if (data is List) {
-          list = data;
-        } else if (data is Map && data['results'] is List) {
-          list = data['results'] as List;
-        } else if (data is Map && data['revenues'] is List) {
-          list = data['revenues'] as List;
-        }
-        if (mounted) {
-          setState(() {
-            _revenues =
-                list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-          });
-        }
+    if (catRes.statusCode == 200) {
+      final data = catRes.data;
+      List<dynamic> list = [];
+      if (data is List) {
+        list = data;
+      } else if (data is Map && data['results'] is List) {
+        list = data['results'] as List;
       }
-    } catch (e) {
-      // ignore/handle revenues error quietly
+      newCategories = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     }
 
-    try {
-      // 5. Fetch revenue categories
-      final catResponse = await DioClient().dio.get<dynamic>(
-        '${ApiUris.revenueCategories}?organization_id=${widget.orgId}',
-        options: Options(headers: {'X-Platform': platformSource}).token,
-      );
+    if (targetRes.statusCode == 200 && targetRes.data is Map) {
+      newTargetData = Map<String, dynamic>.from(targetRes.data as Map);
+    }
 
-      if (catResponse.statusCode == 200) {
-        final data = catResponse.data;
-        List<dynamic> list = [];
-        if (data is List) {
-          list = data;
-        } else if (data is Map && data['results'] is List) {
-          list = data['results'] as List;
-        }
-        if (mounted) {
-          setState(() {
-            _revenueCategories =
-                list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-          });
-        }
+    setState(() {
+      _reportsData = newReportsData;
+      _budgetData = newBudgetData;
+      _expenses = newExpenses;
+      _revenues = newRevenues;
+      _revenueCategories = newCategories;
+      _revenueTargetData = newTargetData;
+      _isLoading = false;
+      if (mainReportsFailed && _reportsData.isEmpty) {
+        _errorMessage = failedReason ?? 'Server error occurred while loading reports.';
       }
-    } catch (e) {
-      // ignore/handle revenue categories error quietly
-    }
-
-    try {
-      // 6. Fetch revenue targets
-      final revenueTargetResponse = await DioClient().dio.get<dynamic>(
-        '${ApiUris.revenueTargets}?$queryParams',
-        options: Options(headers: {'X-Platform': platformSource}).token,
-      );
-
-      if (revenueTargetResponse.statusCode == 200 &&
-          revenueTargetResponse.data is Map) {
-        if (mounted) {
-          setState(() {
-            _revenueTargetData = Map<String, dynamic>.from(
-              revenueTargetResponse.data as Map,
-            );
-          });
-        }
-      }
-    } catch (e) {
-      // ignore/handle revenue target error quietly
-    }
-
-    if (mounted && !silent) {
-      setState(() {
-        _isLoading = false;
-        if (mainReportsFailed && _reportsData.isEmpty) {
-          _errorMessage = failedReason ?? 'Server error occurred while loading reports.';
-        }
-      });
-    }
+    });
   }
 
   Widget _buildReportsShimmer() {
@@ -317,9 +267,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _cardBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFEEEEEE)),
+              border: Border.all(color: _cardBorder),
             ),
             child: Row(
               children: [
@@ -347,9 +297,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: _cardBg,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                    border: Border.all(color: _cardBorder),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,9 +318,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: _cardBg,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                    border: Border.all(color: _cardBorder),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -393,9 +343,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _cardBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFEEEEEE)),
+              border: Border.all(color: _cardBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,7 +385,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          const Divider(color: Color(0xFFEEEEEE)),
+          Divider(color: _cardBorder),
           const SizedBox(height: 10),
           // "Category Budget Breakdown" title shimmer
           Row(
@@ -456,9 +406,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _cardBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFEEEEEE)),
+              border: Border.all(color: _cardBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -507,8 +457,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
+            backgroundColor: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+            surfaceTintColor: Colors.transparent,
             title: const Text('Delete Expense'),
             content: const Text(
               'Are you sure you want to delete this expense?',
@@ -595,9 +545,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                 ),
@@ -846,9 +796,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.85,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              decoration: BoxDecoration(
+                color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Column(
                 children: [
@@ -962,8 +912,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     PopupMenuButton<String>(
-                                      color: Colors.white,
-                                      surfaceTintColor: Colors.white,
+                                      color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+                                      surfaceTintColor: Colors.transparent,
                                       onSelected: (val) {
                                         Navigator.pop(context);
                                         if (val == 'edit') {
@@ -1036,9 +986,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.85,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              decoration: BoxDecoration(
+                color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Column(
                 children: [
@@ -1152,8 +1102,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     PopupMenuButton<String>(
-                                      color: Colors.white,
-                                      surfaceTintColor: Colors.white,
+                                      color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+                                      surfaceTintColor: Colors.transparent,
                                       onSelected: (val) {
                                         Navigator.pop(context);
                                         if (val == 'edit') {
@@ -1212,8 +1162,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
+            backgroundColor: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+            surfaceTintColor: Colors.transparent,
             title: const Text('Delete Revenue'),
             content: const Text(
               'Are you sure you want to delete this revenue record?',
@@ -1302,9 +1252,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                 ),
@@ -1992,17 +1942,20 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   Widget build(BuildContext context) {
     if (_errorMessage != null && _reportsData.isEmpty) {
       return Scaffold(
-        backgroundColor: const Color(0xffF7F7F7),
+        backgroundColor: context.isDarkMode ? context.colors.card : const Color(0xffF7F7F7),
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
           elevation: 0,
+          surfaceTintColor: Colors.transparent,
           centerTitle: false,
           automaticallyImplyLeading: false,
           titleSpacing: widget.showBackButton ? null : 16,
           leading: widget.showBackButton ? const PopButton().center : null,
           title: Text(
             'Gym Analytics & Reports',
-            style: AppStyles.text18Px.poppins.w600.dark,
+            style: AppStyles.text18Px.poppins.w600.copyWith(
+              color: context.colors.textPrimary,
+            ),
           ),
         ),
         body: Center(
@@ -2187,20 +2140,25 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           (budgetSummary?['categories'] as List<dynamic>?) ??
           [];
 
+      final isDark = context.isDarkMode;
+
       return DefaultTabController(
         length: 3,
         child: Scaffold(
-          backgroundColor: const Color(0xffF7F7F7),
+          backgroundColor: isDark ? context.colors.card : const Color(0xffF7F7F7),
           appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: isDark ? context.colors.card : Colors.white,
             elevation: 0,
+            surfaceTintColor: Colors.transparent,
             centerTitle: false,
             automaticallyImplyLeading: false,
             titleSpacing: widget.showBackButton ? null : 16,
             leading: widget.showBackButton ? const PopButton().center : null,
             title: Text(
               'Gym Analytics & Reports',
-              style: AppStyles.text18Px.poppins.w600.dark,
+              style: AppStyles.text18Px.poppins.w600.copyWith(
+                color: context.colors.textPrimary,
+              ),
             ),
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(56),
@@ -2208,7 +2166,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                 margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: const Color(0xffE8ECEF),
+                  color: isDark ? context.colors.fieldFill : const Color(0xffE8ECEF),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: TabBar(
@@ -2221,7 +2179,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                   splashFactory: NoSplash.splashFactory,
                   overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                   labelColor: Colors.white,
-                  unselectedLabelColor: const Color(0xff2D3139),
+                  unselectedLabelColor: isDark ? context.colors.textSecondary : const Color(0xff2D3139),
                   labelStyle: AppStyles.text14Px.poppins.w600,
                   unselectedLabelStyle: AppStyles.text14Px.poppins.w500,
                   tabs: const [
@@ -2238,10 +2196,10 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
               if (_startDate != null && _endDate != null)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: _cardBg,
                     border: Border(
-                      bottom: BorderSide(color: Color(0xffEEEEEE)),
+                      bottom: BorderSide(color: _cardBorder),
                     ),
                   ),
                   child: Row(
@@ -2288,7 +2246,8 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                     ? _buildReportsShimmer()
                     : TabBarView(
                         children: [
-                      _buildFinanceTab(
+                      _ReportsKeepAliveTab(
+                        child: _buildFinanceTab(
                         monthlyRevenue:
                             totalRevenue is double
                                 ? totalRevenue
@@ -2314,11 +2273,15 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                         paymentModes: paymentModes,
                         categoryBreakdown: categoryBreakdown,
                       ),
-                      OrganizationTrainersReportWidget(
-                        orgId: widget.orgId,
                       ),
-                      _buildClientsTab(
-                        totalClients: totalClients.toString(),
+                      _ReportsKeepAliveTab(
+                        child: OrganizationTrainersReportWidget(
+                          orgId: widget.orgId,
+                        ),
+                      ),
+                      _ReportsKeepAliveTab(
+                        child: _buildClientsTab(
+                          totalClients: totalClients.toString(),
                         completedSessions: totalCompletedSessions.toString(),
                         retentionRate: financial?['retention_rate']?.toString() ?? "0%",
                         genderDistribution: genderDistribution,
@@ -2328,6 +2291,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                         sleepHoursDistribution: sleepHoursDistribution,
                         workingHoursDistribution: workingHoursDistribution,
                         peakWorkoutHours: peakWorkoutHours,
+                        ),
                       ),
                     ],
                   ),
@@ -2339,17 +2303,20 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     } catch (e, stack) {
       debugPrint('Error building OrganizationReportsScreen: $e\n$stack');
       return Scaffold(
-        backgroundColor: const Color(0xffF7F7F7),
+        backgroundColor: context.isDarkMode ? context.colors.card : const Color(0xffF7F7F7),
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: context.isDarkMode ? context.colors.card : Colors.white,
           elevation: 0,
+          surfaceTintColor: Colors.transparent,
           centerTitle: false,
           automaticallyImplyLeading: false,
           titleSpacing: widget.showBackButton ? null : 16,
           leading: widget.showBackButton ? const PopButton().center : null,
           title: Text(
             'Gym Analytics & Reports',
-            style: AppStyles.text18Px.poppins.w600.dark,
+            style: AppStyles.text18Px.poppins.w600.copyWith(
+              color: context.colors.textPrimary,
+            ),
           ),
         ),
         body: Center(
@@ -2564,9 +2531,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: _cardBg,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xffEEEEEE)),
+                  border: Border.all(color: _cardBorder),
                 ),
                 child: Column(
                   children: [
@@ -2602,9 +2569,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: _cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3354,9 +3321,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: _cardBg,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xffEEEEEE)),
+                border: Border.all(color: _cardBorder),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.02),
@@ -3448,9 +3415,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: _cardBg,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xffEEEEEE)),
+                border: Border.all(color: _cardBorder),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.02),
@@ -3640,9 +3607,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: _cardBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -3783,9 +3750,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _cardBg,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xffE0E0E0)),
+            border: Border.all(color: _cardBorder),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.03),
@@ -3826,9 +3793,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: _cardBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -3937,9 +3904,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: _cardBg,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xffEEEEEE)),
+                border: Border.all(color: _cardBorder),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.02),
@@ -4047,9 +4014,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: _cardBg,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xffEEEEEE)),
+                border: Border.all(color: _cardBorder),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.02),
@@ -4188,9 +4155,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _cardBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xffEEEEEE)),
+              border: Border.all(color: _cardBorder),
             ),
             child: Column(
               children: [
@@ -4213,9 +4180,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _cardBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xffEEEEEE)),
+              border: Border.all(color: _cardBorder),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.02),
@@ -4313,18 +4280,20 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       children: [
         Text(
           'Revenue & Expense Overview',
-          style: AppStyles.text18Px.poppins.w600.dark,
+          style: AppStyles.text18Px.poppins.w600.copyWith(
+            color: context.colors.textPrimary,
+          ),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _cardBg,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xffEEEEEE)),
+            border: Border.all(color: _cardBorder),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -4391,9 +4360,11 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: context.isDarkMode ? context.colors.fieldFill : Colors.white,
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xffE5E7EB)),
+                            border: Border.all(
+                              color: context.isDarkMode ? context.colors.border : const Color(0xffE5E7EB),
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.04),
@@ -4402,10 +4373,10 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.chevron_left_rounded,
                             size: 20,
-                            color: Color(0xff374151),
+                            color: context.isDarkMode ? context.colors.textPrimary : const Color(0xff374151),
                           ),
                         ),
                       ),
@@ -4428,9 +4399,11 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: context.isDarkMode ? context.colors.fieldFill : Colors.white,
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xffE5E7EB)),
+                            border: Border.all(
+                              color: context.isDarkMode ? context.colors.border : const Color(0xffE5E7EB),
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.04),
@@ -4439,10 +4412,10 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.chevron_right_rounded,
                             size: 20,
-                            color: Color(0xff374151),
+                            color: context.isDarkMode ? context.colors.textPrimary : const Color(0xff374151),
                           ),
                         ),
                       ),
@@ -4486,6 +4459,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                 child: CustomPaint(
                   painter: _GroupedBarChartPainter(
                     data: overviewData,
+                    isDark: context.isDarkMode,
                   ),
                 ),
               ),
@@ -4507,7 +4481,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                   Text(
                     'Revenue',
                     style: AppStyles.text12Px.poppins.w500.copyWith(
-                      color: const Color(0xff374151),
+                      color: context.isDarkMode ? context.colors.textSecondary : const Color(0xff374151),
                     ),
                   ),
                   const SizedBox(width: 24),
@@ -4523,7 +4497,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                   Text(
                     'Expense',
                     style: AppStyles.text12Px.poppins.w500.copyWith(
-                      color: const Color(0xff374151),
+                      color: context.isDarkMode ? context.colors.textSecondary : const Color(0xff374151),
                     ),
                   ),
                 ],
@@ -4538,7 +4512,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   void _showQuickAddOverviewModal() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -4666,7 +4640,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -4687,7 +4661,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                 children: [
                   Text(
                     'Category Wise Expenses',
-                    style: AppStyles.text18Px.poppins.w600.dark,
+                    style: AppStyles.text18Px.poppins.w600.copyWith(
+                      color: context.colors.textPrimary,
+                    ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(ctx),
@@ -4731,7 +4707,7 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -4752,7 +4728,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                 children: [
                   Text(
                     'Category Wise Revenue',
-                    style: AppStyles.text18Px.poppins.w600.dark,
+                    style: AppStyles.text18Px.poppins.w600.copyWith(
+                      color: context.colors.textPrimary,
+                    ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(ctx),
@@ -4805,9 +4783,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffEEEEEE)),
+          border: Border.all(color: _cardBorder),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -4858,9 +4836,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
   Widget _buildPlanRevenueBreakdown(List<dynamic> plans) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: _cardBorder),
       ),
       child: _PlanRevenuePieChart(plans: plans),
     );
@@ -4876,9 +4854,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: _cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -5009,9 +4987,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffEEEEEE)),
+          border: Border.all(color: _cardBorder),
         ),
         child: Center(
           child: Text(
@@ -5027,9 +5005,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: _cardBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -5143,9 +5121,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffEEEEEE)),
+          border: Border.all(color: _cardBorder),
         ),
         child: Center(
           child: Text(
@@ -5169,9 +5147,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _cardBg,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xffEEEEEE)),
+            border: Border.all(color: _cardBorder),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.02),
@@ -5316,9 +5294,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(color: _cardBorder),
       ),
       child: Column(
         children:
@@ -5377,9 +5355,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _cardBg,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xffEEEEEE)),
+            border: Border.all(color: _cardBorder),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.02),
@@ -5937,9 +5915,11 @@ class _ExpenseCategoryPieChart extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(
+          color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -6084,9 +6064,11 @@ class _RevenueCategoryPieChart extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(
+          color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -6329,9 +6311,11 @@ class _NetProfitHeroSparklinePainter extends CustomPainter {
 
 class _GroupedBarChartPainter extends CustomPainter {
   final List<({String month, double revenue, double expense})> data;
+  final bool isDark;
 
   _GroupedBarChartPainter({
     required this.data,
+    this.isDark = false,
   });
 
   @override
@@ -6380,7 +6364,7 @@ class _GroupedBarChartPainter extends CustomPainter {
 
     // Draw horizontal grid lines and Y-axis labels
     final gridPaint = Paint()
-      ..color = const Color(0xffEEEEEE)
+      ..color = isDark ? const Color(0xff2A2A2A) : const Color(0xffEEEEEE)
       ..strokeWidth = 1.0;
 
     for (int i = 0; i < ticks.length; i++) {
@@ -6512,3 +6496,22 @@ class _GroupedBarChartPainter extends CustomPainter {
   }
 }
 
+class _ReportsKeepAliveTab extends StatefulWidget {
+  final Widget child;
+  const _ReportsKeepAliveTab({required this.child});
+
+  @override
+  State<_ReportsKeepAliveTab> createState() => _ReportsKeepAliveTabState();
+}
+
+class _ReportsKeepAliveTabState extends State<_ReportsKeepAliveTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
+  }
+}

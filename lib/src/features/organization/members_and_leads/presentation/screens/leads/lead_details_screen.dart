@@ -44,7 +44,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
           return Scaffold(
             appBar: AppBar(
               leading: const PopButton().center,
-              titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
+              titleTextStyle: AppStyles.text16Px.poppins.w500.copyWith(color: context.colors.textPrimary),
               title: const Text('Trainer Details'),
               actions: [
                 if (data?.mobileNumber?.isNotEmpty ?? false)
@@ -60,7 +60,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                   ),
               ],
             ),
-            backgroundColor: AppColors.grey,
+            backgroundColor: context.isDarkMode ? context.colors.background : AppColors.grey,
             body: state.leadDetails.fold(
               _buildShimmerLoading,
               (either) => either.fold(
@@ -108,10 +108,10 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                             AppStyles.text14Px.poppins.w500,
                                       ),
                                     ),
-                                    const Icon(
+                                    Icon(
                                       Icons.arrow_forward_ios,
                                       size: 14,
-                                      color: AppColors.dark,
+                                      color: context.colors.textPrimary,
                                     ).pOnly(left: 8),
                                   ],
                                 ),
@@ -135,7 +135,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                     TextSpan(
                                       text: data.mobileNumber ?? 'N/A',
                                       style:
-                                          AppStyles.text13Px.poppins.w500.dark,
+                                          AppStyles.text13Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                                     ),
                                   ],
                                 ),
@@ -156,7 +156,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                     TextSpan(
                                       text: data.email ?? 'N/A',
                                       style:
-                                          AppStyles.text13Px.poppins.w500.dark,
+                                          AppStyles.text13Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                                     ),
                                   ],
                                 ),
@@ -197,13 +197,13 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.grey,
+                                      color: context.isDarkMode ? context.colors.fieldFill : AppColors.grey,
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Text(
                                       data.gender ?? 'N/A',
                                       style:
-                                          AppStyles.text14Px.poppins.w400.dark,
+                                          AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                                     ),
                                   ),
                                   Container(
@@ -212,13 +212,13 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.grey,
+                                      color: context.isDarkMode ? context.colors.fieldFill : AppColors.grey,
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Text(
                                       data.bloodGroup ?? 'N/A',
                                       style:
-                                          AppStyles.text14Px.poppins.w400.dark,
+                                          AppStyles.text14Px.poppins.w400.copyWith(color: context.colors.textPrimary),
                                     ),
                                   ),
                                 ],
@@ -282,12 +282,12 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                                 .text14Px
                                                 .poppins
                                                 .w500
-                                                .dark,
+                                                .copyWith(color: context.colors.textPrimary),
                                       ),
-                                      const Icon(
+                                      Icon(
                                         Icons.arrow_forward_ios,
                                         size: 12,
-                                        color: AppColors.dark,
+                                        color: context.colors.textPrimary,
                                       ).pOnly(left: 8),
                                     ],
                                   ).pxy(y: 12),
@@ -319,7 +319,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                                         .text14Px
                                                         .poppins
                                                         .w400
-                                                        .dark,
+                                                        .copyWith(color: context.colors.textPrimary),
                                               ),
                                             ),
                                           )
@@ -345,7 +345,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.light,
+        color: context.isDarkMode ? context.colors.card : AppColors.light,
         borderRadius: BorderRadius.circular(16),
       ),
       child: child,

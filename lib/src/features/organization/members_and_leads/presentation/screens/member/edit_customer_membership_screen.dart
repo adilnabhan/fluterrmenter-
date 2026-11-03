@@ -393,7 +393,7 @@ class _EditCustomerMembershipScreenState
   Widget _buildFieldCard({required Widget child}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.isDarkMode ? context.colors.card : Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -413,7 +413,7 @@ class _EditCustomerMembershipScreenState
   }) {
     return InputDecoration(
       filled: true,
-      fillColor: Colors.white,
+      fillColor: context.isDarkMode ? context.colors.card : Colors.white,
       hintText: hintText,
       hintStyle: AppStyles.text14Px.poppins.w400.textGrey,
       prefixIcon: prefixIcon,
@@ -501,10 +501,10 @@ class _EditCustomerMembershipScreenState
     return Scaffold(
       appBar: AppBar(
         leading: const PopButton().center,
-        titleTextStyle: AppStyles.text16Px.poppins.w500.dark,
+        titleTextStyle: AppStyles.text16Px.poppins.w500.copyWith(color: context.colors.textPrimary),
         title: const Text('Edit Membership'),
       ),
-      backgroundColor: AppColors.grey,
+      backgroundColor: context.isDarkMode ? context.colors.background : AppColors.grey,
       body: _isLoadingPackages
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -624,7 +624,7 @@ class _EditCustomerMembershipScreenState
                 children: [
                   Text(
                     widget.memberName,
-                    style: AppStyles.text16Px.poppins.w600.dark,
+                    style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                   ),
                   if (widget.memberPhone != null &&
                       widget.memberPhone!.isNotEmpty)
@@ -667,7 +667,7 @@ class _EditCustomerMembershipScreenState
                 const SizedBox(width: 8),
                 Text(
                   'Current Membership',
-                  style: AppStyles.text14Px.poppins.w600.dark,
+                  style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
                 ),
                 const Spacer(),
                 Container(
@@ -692,7 +692,7 @@ class _EditCustomerMembershipScreenState
             const SizedBox(height: 12),
             Text(
               widget.currentMembership.membershipName ?? 'Unknown Plan',
-              style: AppStyles.text14Px.poppins.w500.dark,
+              style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
             ),
             const SizedBox(height: 4),
             Text(
@@ -711,7 +711,7 @@ class _EditCustomerMembershipScreenState
       children: [
         Text(
           'Membership Plan',
-          style: AppStyles.text14Px.poppins.w600.dark,
+          style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
         ).pOnly(bottom: 8),
         _buildFieldCard(
           child: InkWell(
@@ -740,7 +740,7 @@ class _EditCustomerMembershipScreenState
                       children: [
                         Text(
                           _selectedPlan?.name ?? 'Select a plan',
-                          style: AppStyles.text14Px.poppins.w500.dark,
+                          style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                         ),
                         if (_selectedPlan != null)
                           Text(
@@ -765,7 +765,7 @@ class _EditCustomerMembershipScreenState
           Container(
             margin: const EdgeInsets.only(top: 8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.isDarkMode ? context.colors.card : Colors.white,
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
@@ -805,7 +805,7 @@ class _EditCustomerMembershipScreenState
                               children: [
                                 Text(
                                   plan.name ?? 'Unknown',
-                                  style: AppStyles.text14Px.poppins.w500.dark,
+                                  style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                                 ),
                                 Text(
                                   '₹${plan.offerPrice ?? plan.actualPrice ?? '0'} • ${plan.durationDays ?? 0} days',
@@ -839,7 +839,7 @@ class _EditCustomerMembershipScreenState
       children: [
         Text(
           label,
-          style: AppStyles.text14Px.poppins.w600.dark,
+          style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
         ).pOnly(bottom: 8),
         _buildFieldCard(
           child: InkWell(
@@ -858,7 +858,7 @@ class _EditCustomerMembershipScreenState
                   Expanded(
                     child: Text(
                       date.format('dd MMM yyyy'),
-                      style: AppStyles.text14Px.poppins.w500.dark,
+                      style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                     ),
                   ),
                 ],
@@ -1117,7 +1117,7 @@ class _EditCustomerMembershipScreenState
               ),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.isDarkMode ? context.colors.card : Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: style.borderColor),
                 boxShadow: [
@@ -1343,7 +1343,7 @@ class _EditCustomerMembershipScreenState
           children: [
             Text(
               'Balance Due Date',
-              style: AppStyles.text14Px.poppins.w600.dark,
+              style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
             ),
             const SizedBox(width: 6),
             Text(
@@ -1371,7 +1371,7 @@ class _EditCustomerMembershipScreenState
                       _dueDate != null
                           ? _dueDate!.format('dd MMM yyyy')
                           : 'Select Due Date',
-                      style: AppStyles.text14Px.poppins.w500.dark,
+                      style: AppStyles.text14Px.poppins.w500.copyWith(color: context.colors.textPrimary),
                     ),
                   ),
                 ],

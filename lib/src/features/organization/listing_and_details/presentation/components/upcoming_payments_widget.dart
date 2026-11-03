@@ -102,13 +102,17 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
     if (_isLoading) {
       return Container(
         margin: widget.margin,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? context.colors.card : Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? context.colors.border : const Color(0xffEEEEEE),
+          ),
         ),
         child: const Center(child: CircularProgressIndicator()),
       );
@@ -154,12 +158,14 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
       margin: widget.margin,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? context.colors.card : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(
+          color: isDark ? context.colors.border : const Color(0xffEEEEEE),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -351,7 +357,10 @@ class _UpcomingPaymentsWidgetState extends State<UpcomingPaymentsWidget> {
 
           if (itemsForDisplay.isNotEmpty) ...[
             const SizedBox(height: 14),
-            const Divider(height: 1, color: Color(0xffEEEEEE)),
+            Divider(
+              height: 1,
+              color: isDark ? context.colors.border : const Color(0xffEEEEEE),
+            ),
             const SizedBox(height: 10),
             Text(
               _selectedDate != null

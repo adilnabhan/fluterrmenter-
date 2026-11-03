@@ -1,3 +1,4 @@
+import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/members_and_leads/domain/models/payment_history/payment_history_model.dart';
 
@@ -110,11 +111,12 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
   Widget _buildFilterIconButton() {
     final hasActiveFilter =
         _selectedPaymentMode != null || _selectedDate != null;
+    final isDark = context.isDarkMode;
 
     return Material(
       color: hasActiveFilter
           ? AppColors.primary.withValues(alpha: 0.08)
-          : Colors.white,
+          : (isDark ? context.colors.fieldFill : Colors.white),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: _openFilterSheet,
@@ -127,7 +129,7 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
             border: Border.all(
               color: hasActiveFilter
                   ? AppColors.primary
-                  : Colors.grey.shade200,
+                  : (isDark ? context.colors.border : Colors.grey.shade200),
               width: hasActiveFilter ? 1.5 : 1.0,
             ),
           ),
@@ -137,7 +139,9 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
               Icon(
                 Icons.tune_rounded,
                 size: 22,
-                color: hasActiveFilter ? AppColors.primary : Colors.grey,
+                color: hasActiveFilter
+                    ? AppColors.primary
+                    : (isDark ? context.colors.textSecondary : Colors.grey),
               ),
               if (hasActiveFilter)
                 Positioned(
@@ -203,25 +207,24 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? context.colors.card : Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? context.colors.card : Colors.white,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
         automaticallyImplyLeading: false,
         titleSpacing: widget.showBackButton ? null : 16,
         leading: widget.showBackButton ? const PopButton().center : null,
         title: Text(
           'Payments',
-          style: AppStyles.text18Px.poppins.w600.copyWith(color: Colors.black),
+          style: AppStyles.text18Px.poppins.w600.copyWith(
+            color: context.colors.textPrimary,
+          ),
         ),
-        // actions: [
-        //   IconButton(
-        //     onPressed: () {},
-        //     icon: const Icon(Icons.settings_outlined, color: Colors.black),
-        //   ),
-        // ],
       ),
       body: Column(
         children: [
@@ -251,9 +254,9 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
                     },
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.clear,
-                              color: Colors.grey,
+                              color: isDark ? context.colors.textSecondary : Colors.grey,
                               size: 20,
                             ),
                             onPressed: () {
@@ -290,7 +293,7 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
                   (data) {
                     return Expanded(
                       child: ColoredBox(
-                        color: const Color(0xfff9f9f9),
+                        color: isDark ? context.colors.card : const Color(0xfff9f9f9),
                         child: data.allPayments.results.isEmpty
                             ? RefreshIndicator(
                                 onRefresh: () => _fetch(isPagination: false),
@@ -391,21 +394,21 @@ class _AllPaymentsTab extends StatelessWidget {
               Text(
                 countText,
                 style: AppStyles.text14Px.poppins.copyWith(
-                  color: Colors.grey,
+                  color: context.colors.textSecondary,
                 ),
               ),
               RichText(
                 text: TextSpan(
                   text: 'Total: ',
                   style: AppStyles.text14Px.poppins.copyWith(
-                    color: Colors.black,
+                    color: context.colors.textPrimary,
                   ),
                   children: [
                     TextSpan(
                       text:
                           '₹${_formatAmount(allPayment?.totalAmount, allPayment?.totalPaidToday ?? 0)}',
                       style: AppStyles.text16Px.poppins.w700.copyWith(
-                        color: Colors.green,
+                        color: const Color(0xFF22C55E),
                       ),
                     ),
                   ],
@@ -519,15 +522,20 @@ Widget paymentCard({
   return Builder(
     builder: (builderContext) {
       final actualContext = context ?? builderContext;
+      final isDark = actualContext.isDarkMode;
+
       return Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200, width: 0.8),
+          border: Border.all(
+            color: isDark ? actualContext.colors.border : Colors.grey.shade200,
+            width: 0.8,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
               offset: const Offset(0, 2),
               blurRadius: 6,
             ),
@@ -588,7 +596,7 @@ Widget paymentCard({
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppStyles.text15Px.poppins.w600.copyWith(
-                            color: Colors.black,
+                            color: actualContext.colors.textPrimary,
                           ),
                         ),
                       ),
@@ -600,13 +608,17 @@ Widget paymentCard({
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xffE8F5E9),
+                          color: isDark
+                              ? const Color(0xFF1B5E20).withValues(alpha: 0.3)
+                              : const Color(0xffE8F5E9),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Text(
                           '₹${data?.amount ?? 0}',
                           style: AppStyles.text14Px.poppins.w500.copyWith(
-                            color: const Color(0xff2E7D32),
+                            color: isDark
+                                ? const Color(0xFF81C784)
+                                : const Color(0xff2E7D32),
                           ),
                         ),
                       ),
@@ -625,10 +637,14 @@ Widget paymentCard({
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF3F4F6),
+                              color: isDark
+                                  ? actualContext.colors.fieldFill
+                                  : const Color(0xFFF3F4F6),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: const Color(0xFFE5E7EB),
+                                color: isDark
+                                    ? actualContext.colors.border
+                                    : const Color(0xFFE5E7EB),
                                 width: 0.8,
                               ),
                             ),
@@ -638,7 +654,9 @@ Widget paymentCard({
                               overflow: TextOverflow.ellipsis,
                               style: AppStyles.text13Px.poppins.w500.copyWith(
                                 fontSize: 12.5,
-                                color: const Color(0xFF374151),
+                                color: isDark
+                                    ? actualContext.colors.textSecondary
+                                    : const Color(0xFF374151),
                               ),
                             ),
                           ),
@@ -724,14 +742,23 @@ Widget paymentCard({
                     vertical: 2.5,
                   ),
                   decoration: BoxDecoration(
-                    color: modeStyle.bg,
+                    color: isDark
+                        ? modeStyle.text.withValues(alpha: 0.18)
+                        : modeStyle.bg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: modeStyle.border, width: 0.8),
+                    border: Border.all(
+                      color: isDark
+                          ? modeStyle.text.withValues(alpha: 0.4)
+                          : modeStyle.border,
+                      width: 0.8,
+                    ),
                   ),
                   child: Text(
                     paymentMethodText.toUpperCase(),
                     style: AppStyles.text10Px.poppins.w600.copyWith(
-                      color: modeStyle.text,
+                      color: isDark
+                          ? modeStyle.text.withValues(alpha: 0.9)
+                          : modeStyle.text,
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -742,7 +769,7 @@ Widget paymentCard({
               Text(
                 formatPaymentDate(data?.paymentDate.toString() ?? ''),
                 style: AppStyles.text12Px.poppins.copyWith(
-                  color: Colors.grey.shade500,
+                  color: actualContext.colors.textSecondary,
                 ),
               ),
                     ],
@@ -895,9 +922,9 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: backgroundColor ?? Colors.white,
+          color: backgroundColor ?? (context.isDarkMode ? context.colors.fieldFill : Colors.white),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor ?? Colors.grey.shade300),
+          border: Border.all(color: borderColor ?? (context.isDarkMode ? context.colors.border : Colors.grey.shade300)),
         ),
         child: Row(
           children: [
@@ -981,15 +1008,17 @@ class _PaymentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: isDark ? Border.all(color: context.colors.border) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
             offset: const Offset(0, 6),
             blurRadius: 16,
             spreadRadius: 2,
@@ -1007,7 +1036,7 @@ class _PaymentCard extends StatelessWidget {
                 backgroundImage: const NetworkImage(
                   'https://i.pravatar.cc/150?img=32',
                 ),
-                backgroundColor: Colors.grey.shade200,
+                backgroundColor: isDark ? context.colors.fieldFill : Colors.grey.shade200,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1020,13 +1049,13 @@ class _PaymentCard extends StatelessWidget {
                         Text(
                           'Jisham',
                           style: AppStyles.text16Px.poppins.w600.copyWith(
-                            color: Colors.black,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         Text(
                           '07:30 AM, Today',
                           style: AppStyles.text12Px.poppins.copyWith(
-                            color: Colors.grey,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ],
@@ -1034,7 +1063,7 @@ class _PaymentCard extends StatelessWidget {
                     Text(
                       '1 Month Plan',
                       style: AppStyles.text14Px.poppins.copyWith(
-                        color: Colors.grey,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -1050,7 +1079,7 @@ class _PaymentCard extends StatelessWidget {
                 Text(
                   'Membership + 1 Month Plan',
                   style: AppStyles.text14Px.poppins.w500.copyWith(
-                    color: Colors.black,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 Text(
@@ -1068,13 +1097,13 @@ class _PaymentCard extends StatelessWidget {
                 Text(
                   'Platform fee (4%)',
                   style: AppStyles.text14Px.poppins.copyWith(
-                    color: Colors.grey,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 Text(
                   '-₹60',
                   style: AppStyles.text14Px.poppins.w600.copyWith(
-                    color: Colors.grey,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -1089,7 +1118,7 @@ class _PaymentCard extends StatelessWidget {
                 Text(
                   'Total :',
                   style: AppStyles.text14Px.poppins.copyWith(
-                    color: Colors.grey,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 Text(
@@ -1102,7 +1131,7 @@ class _PaymentCard extends StatelessWidget {
             ),
             Text(
               'The amount will be credited to your account within 3 working days.',
-              style: AppStyles.text12Px.poppins.copyWith(color: Colors.grey),
+              style: AppStyles.text12Px.poppins.copyWith(color: context.colors.textSecondary),
             ),
           ] else ...[
             Row(
@@ -1111,7 +1140,7 @@ class _PaymentCard extends StatelessWidget {
                 Text(
                   'Membership + 1 Month Plan',
                   style: AppStyles.text14Px.poppins.w500.copyWith(
-                    color: Colors.black,
+                    color: context.colors.textPrimary,
                   ),
                 ),
 
@@ -1121,13 +1150,13 @@ class _PaymentCard extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xffE8F5E9),
+                    color: isDark ? const Color(0xff1B3320) : const Color(0xffE8F5E9),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '₹1,000',
                     style: AppStyles.text16Px.poppins.w700.copyWith(
-                      color: const Color(0xff2E7D32),
+                      color: isDark ? const Color(0xff4ADE80) : const Color(0xff2E7D32),
                     ),
                   ),
                 ),
@@ -1142,13 +1171,13 @@ class _PaymentCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xffE3F2FD),
+                    color: isDark ? const Color(0xff1E293B) : const Color(0xffE3F2FD),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
                     'Cash',
                     style: AppStyles.text12Px.poppins.w600.copyWith(
-                      color: const Color(0xff1565C0),
+                      color: isDark ? const Color(0xff60A5FA) : const Color(0xff1565C0),
                     ),
                   ),
                 ),
@@ -1157,7 +1186,7 @@ class _PaymentCard extends StatelessWidget {
                   Text(
                     'statusPendingText sdgts drgdrsf ',
                     style: AppStyles.text12Px.poppins.w400.copyWith(
-                      color: Colors.grey,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
