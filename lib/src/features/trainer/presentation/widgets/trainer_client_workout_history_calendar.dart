@@ -430,7 +430,7 @@ class _TrainerClientWorkoutHistoryCalendarState
     final percentInt = (percent * 100).round();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.symmetric(horizontal: widget.showTitle ? 10 : 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -465,7 +465,7 @@ class _TrainerClientWorkoutHistoryCalendarState
       key: _calendarCardKey,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.light,
+        color: context.isDarkMode ? context.colors.card : AppColors.light,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -494,7 +494,12 @@ class _TrainerClientWorkoutHistoryCalendarState
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Divider(color: Colors.grey.shade200, thickness: 1),
+            child: Divider(
+              color: context.isDarkMode
+                  ? context.colors.border
+                  : Colors.grey.shade200,
+              thickness: 1,
+            ),
           ),
           _buildProgress(
             percent,
@@ -631,11 +636,15 @@ class _TrainerClientWorkoutHistoryCalendarState
             animation: true,
             circularStrokeCap: CircularStrokeCap.round,
             progressColor: AppColors.primary,
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: context.isDarkMode
+                ? context.colors.border
+                : Colors.grey.shade200,
             center: Text(
               '$percentInt%\nTotal Done',
               textAlign: TextAlign.center,
-              style: AppStyles.text12Px.poppins.w700,
+              style: AppStyles.text12Px.poppins.w700.copyWith(
+                color: context.colors.textPrimary,
+              ),
             ),
           ),
           const SizedBox(width: 10),

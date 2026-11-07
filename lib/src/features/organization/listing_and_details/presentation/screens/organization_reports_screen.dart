@@ -2382,104 +2382,216 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSectionTitle('Client Overview'),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildReportCard(
-                    title: 'Active Clients',
-                    value: totalClients,
-                    icon: Icons.people_outline,
-                    color: const Color(0xff486CC2),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReportsCustomerListScreen(
-                            orgId: widget.orgId,
-                            filterType: 'all',
-                            filterValue: '',
-                            filterLabel: 'All Active Clients',
-                            startDate: _startDate,
-                            endDate: _endDate,
-                          ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 750;
+                final activeCard = _buildReportCard(
+                  title: 'Active Clients',
+                  value: totalClients,
+                  icon: Icons.people_outline,
+                  color: const Color(0xff486CC2),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReportsCustomerListScreen(
+                          orgId: widget.orgId,
+                          filterType: 'all',
+                          filterValue: '',
+                          filterLabel: 'All Active Clients',
+                          startDate: _startDate,
+                          endDate: _endDate,
                         ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildReportCard(
-                    title: 'Completed Sessions',
-                    value: completedSessions,
-                    icon: Icons.check_circle_outline,
-                    color: const Color(0xff527F50),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildReportCard(
-                    title: 'Retention Rate',
-                    value: retentionRate,
-                    icon: Icons.trending_up_outlined,
-                    color: const Color(0xffE67E22),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(child: SizedBox.shrink()),
-              ],
+                      ),
+                    );
+                  },
+                );
+
+                final sessionsCard = _buildReportCard(
+                  title: 'Completed Sessions',
+                  value: completedSessions,
+                  icon: Icons.check_circle_outline,
+                  color: const Color(0xff527F50),
+                );
+
+                final retentionCard = _buildReportCard(
+                  title: 'Retention Rate',
+                  value: retentionRate,
+                  icon: Icons.trending_up_outlined,
+                  color: const Color(0xffE67E22),
+                );
+
+                if (isWide) {
+                  return Row(
+                    children: [
+                      Expanded(child: activeCard),
+                      const SizedBox(width: 14),
+                      Expanded(child: sessionsCard),
+                      const SizedBox(width: 14),
+                      Expanded(child: retentionCard),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: activeCard),
+                        const SizedBox(width: 12),
+                        Expanded(child: sessionsCard),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: retentionCard),
+                        const SizedBox(width: 12),
+                        const Expanded(child: SizedBox.shrink()),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 24),
             _buildSectionTitle('Client Demographics'),
             _buildDemographics(genderDistribution, ageDistribution, widget.orgId, _startDate, _endDate),
             const SizedBox(height: 24),
-            if (professionDistribution is List && professionDistribution.isNotEmpty) ...[
-              _buildSectionTitle('Profession Distribution'),
-              _buildDistributionListCard(
-                items: professionDistribution,
-                titleKey: 'profession',
-                filterType: 'profession',
-                barColor: const Color(0xff3498DB),
-                icon: Icons.work_outline_rounded,
-              ),
-              const SizedBox(height: 24),
-            ],
-            if (sleepHoursDistribution is List && sleepHoursDistribution.isNotEmpty) ...[
-              _buildSectionTitle('Sleep Hours Distribution'),
-              _buildDistributionListCard(
-                items: sleepHoursDistribution,
-                titleKey: 'range',
-                filterType: 'sleep_hours',
-                barColor: const Color(0xff9B59B6),
-                icon: Icons.bedtime_outlined,
-              ),
-              const SizedBox(height: 24),
-            ],
-            if (workingHoursDistribution is List && workingHoursDistribution.isNotEmpty) ...[
-              _buildSectionTitle('Working Hours Distribution'),
-              _buildDistributionListCard(
-                items: workingHoursDistribution,
-                titleKey: 'range',
-                filterType: 'working_hours',
-                barColor: const Color(0xffE67E22),
-                icon: Icons.access_time_rounded,
-              ),
-              const SizedBox(height: 24),
-            ],
-            ClientWorkoutCalendarWidget(orgId: widget.orgId),
-            const SizedBox(height: 24),
-            _buildSectionTitle('Client Goals & Target Distribution'),
-            _buildGoalDistribution(goalDistribution),
-            const SizedBox(height: 24),
-            if (peakWorkoutHours.isNotEmpty) ...[
-              _buildSectionTitle('Peak Workout Hours'),
-              _buildPeakHours(peakWorkoutHours),
-              const SizedBox(height: 24),
-            ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 850;
+
+                Widget wrapSection(String title, Widget child) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildSectionTitle(title),
+                      child,
+                    ],
+                  );
+                }
+
+                final hasProfession = professionDistribution is List && professionDistribution.isNotEmpty;
+                final hasSleep = sleepHoursDistribution is List && sleepHoursDistribution.isNotEmpty;
+                final hasWorkingHours = workingHoursDistribution is List && workingHoursDistribution.isNotEmpty;
+                final hasPeakHours = peakWorkoutHours.isNotEmpty;
+
+                Widget professionWidget = hasProfession
+                    ? wrapSection(
+                        'Profession Distribution',
+                        _buildDistributionListCard(
+                          items: professionDistribution,
+                          titleKey: 'profession',
+                          filterType: 'profession',
+                          barColor: const Color(0xff3498DB),
+                          icon: Icons.work_outline_rounded,
+                        ),
+                      )
+                    : const SizedBox.shrink();
+
+                Widget sleepWidget = hasSleep
+                    ? wrapSection(
+                        'Sleep Hours Distribution',
+                        _buildDistributionListCard(
+                          items: sleepHoursDistribution,
+                          titleKey: 'range',
+                          filterType: 'sleep_hours',
+                          barColor: const Color(0xff9B59B6),
+                          icon: Icons.bedtime_outlined,
+                        ),
+                      )
+                    : const SizedBox.shrink();
+
+                Widget workingHoursWidget = hasWorkingHours
+                    ? wrapSection(
+                        'Working Hours Distribution',
+                        _buildDistributionListCard(
+                          items: workingHoursDistribution,
+                          titleKey: 'range',
+                          filterType: 'working_hours',
+                          barColor: const Color(0xffE67E22),
+                          icon: Icons.access_time_rounded,
+                        ),
+                      )
+                    : const SizedBox.shrink();
+
+                Widget goalsWidget = wrapSection(
+                  'Client Goals & Target Distribution',
+                  _buildGoalDistribution(goalDistribution),
+                );
+
+                Widget calendarWidget = wrapSection(
+                  'Client Workout Calendar',
+                  ClientWorkoutCalendarWidget(orgId: widget.orgId),
+                );
+
+                Widget peakHoursWidget = hasPeakHours
+                    ? wrapSection(
+                        'Peak Workout Hours',
+                        _buildPeakHours(peakWorkoutHours),
+                      )
+                    : const SizedBox.shrink();
+
+                if (isWide) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Row 1: Profession & Sleep Hours
+                      if (hasProfession || hasSleep) ...[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (hasProfession) Expanded(child: professionWidget),
+                            if (hasProfession && hasSleep) const SizedBox(width: 16),
+                            if (hasSleep) Expanded(child: sleepWidget),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      // Row 2: Working Hours & Client Goals
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (hasWorkingHours) ...[
+                            Expanded(child: workingHoursWidget),
+                            const SizedBox(width: 16),
+                          ],
+                          Expanded(child: goalsWidget),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      // Row 3: Client Workout Calendar & Peak Workout Hours
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: calendarWidget),
+                          if (hasPeakHours) ...[
+                            const SizedBox(width: 16),
+                            Expanded(child: peakHoursWidget),
+                          ],
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                // Mobile fallback (single column)
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (hasProfession) ...[professionWidget, const SizedBox(height: 24)],
+                    if (hasSleep) ...[sleepWidget, const SizedBox(height: 24)],
+                    if (hasWorkingHours) ...[workingHoursWidget, const SizedBox(height: 24)],
+                    calendarWidget,
+                    const SizedBox(height: 24),
+                    goalsWidget,
+                    if (hasPeakHours) ...[const SizedBox(height: 24), peakHoursWidget],
+                  ],
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -4781,57 +4893,73 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: _cardBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _cardBorder),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Colors.black.withValues(alpha: context.isDarkMode ? 0.2 : 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
                 ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: AppStyles.text20Px.poppins.w600.copyWith(color: color),
-              ),
-              Text(
-                title,
-                style: AppStyles.text12Px.poppins.w400.copyWith(
-                  color: AppColors.textGrey,
+                if (onTap != null)
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: context.isDarkMode
+                        ? context.colors.textSecondary
+                        : const Color(0xFF9CA3AF),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: AppStyles.text22Px.poppins.w700.copyWith(
+                    color: color,
+                    height: 1.2,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  style: AppStyles.text13Px.poppins.w500.copyWith(
+                    color: context.isDarkMode
+                        ? context.colors.textSecondary
+                        : AppColors.textGrey,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildPlanRevenueBreakdown(List<dynamic> plans) {
     return Container(
@@ -4851,14 +4979,10 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
     DateTime? startDate,
     DateTime? endDate,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _cardBorder),
-      ),
-      child: Column(
+    final isDesktop = MediaQuery.of(context).size.width >= 850;
+
+    Widget buildGenderSection() {
+      return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -4872,10 +4996,15 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             startDate: startDate,
             endDate: endDate,
           ),
+        ],
+      );
+    }
 
-          const Divider(height: 32, color: Color(0xffEEEEEE)),
-
-          Text('Age Distribution', style: AppStyles.text14Px.poppins.w300.dark),
+    Widget buildAgeSection() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Age Distribution', style: AppStyles.text14Px.poppins.w600.dark),
           const SizedBox(height: 12),
           ...ageDist.entries.map((e) {
             final key = e.key.toString();
@@ -4921,7 +5050,9 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
                     Expanded(
                       child: LinearProgressIndicator(
                         value: parsedPct,
-                        backgroundColor: const Color(0xffF0F0F0),
+                        backgroundColor: context.isDarkMode
+                            ? context.colors.fieldFill
+                            : const Color(0xffF0F0F0),
                         color: const Color(0xffF39C12),
                         minHeight: 8,
                         borderRadius: BorderRadius.circular(4),
@@ -4942,7 +5073,41 @@ class _OrganizationReportsScreenState extends State<OrganizationReportsScreen> {
             );
           }),
         ],
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _cardBorder),
       ),
+      child: isDesktop
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 5, child: buildGenderSection()),
+                const SizedBox(width: 24),
+                Container(
+                  width: 1,
+                  height: 200,
+                  color: context.isDarkMode
+                      ? context.colors.border
+                      : const Color(0xffEEEEEE),
+                ),
+                const SizedBox(width: 24),
+                Expanded(flex: 6, child: buildAgeSection()),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildGenderSection(),
+                const Divider(height: 32, color: Color(0xffEEEEEE)),
+                buildAgeSection(),
+              ],
+            ),
     );
   }
 

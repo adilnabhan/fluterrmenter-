@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/domain/model/trainer_attendance_model.dart';
+import 'package:mentor_mobile_app/src/features/organization/presentation/desktop/desktop_content_constraint.dart';
 
 class TrainerAttendanceScreen extends StatefulWidget {
   final int orgId;
@@ -638,38 +639,80 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                         style: AppStyles.text14Px.poppins.w400.copyWith(color: AppColors.textGrey),
                       ),
                     )
-                  : ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        // Attendance Overview Pie Chart
-                        _buildTrainerAttendancePieChart(_reportData!.summary),
-                        const SizedBox(height: 16),
-
-                        // Summary Grid
-                        GridView.count(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          childAspectRatio: 1.1,
+                  : SingleChildScrollView(
+                      child: DesktopContentConstraint(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildSummaryCard('Trainers', _reportData!.summary.totalTrainers.toString(), const Color(0xff9C51BF)),
-                            _buildSummaryCard('Full Day', _reportData!.summary.fullDay.toString(), const Color(0xff27AE60)),
-                            _buildSummaryCard('Half Day', _reportData!.summary.halfDay.toString(), const Color(0xffF39C12)),
-                            _buildSummaryCard('Leave', _reportData!.summary.leave.toString(), const Color(0xffC0392B)),
-                            _buildSummaryCard('Holiday', _reportData!.summary.holiday.toString(), const Color(0xff2980B9)),
-                            _buildSummaryCard('Not Marked', _reportData!.summary.notMarked.toString(), const Color(0xff7F8C8D)),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        // Detailed List
-                        Text(
-                          'Trainer Performance Reports',
-                          style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
-                        ),
-                        const SizedBox(height: 12),
-                        ..._reportData!.trainers.map((trainer) {
+                            // Attendance Overview Pie Chart
+                            _buildTrainerAttendancePieChart(_reportData!.summary),
+                            const SizedBox(height: 16),
+
+                            // Summary Grid
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final isDesktop = constraints.maxWidth >= 750;
+                                final cols = isDesktop ? 6 : 3;
+                                final itemHeight = isDesktop ? 80.0 : 72.0;
+
+                                final summaryCards = [
+                                  _buildSummaryCard(
+                                    'Trainers',
+                                    _reportData!.summary.totalTrainers.toString(),
+                                    const Color(0xff9C51BF),
+                                  ),
+                                  _buildSummaryCard(
+                                    'Full Day',
+                                    _reportData!.summary.fullDay.toString(),
+                                    const Color(0xff27AE60),
+                                  ),
+                                  _buildSummaryCard(
+                                    'Half Day',
+                                    _reportData!.summary.halfDay.toString(),
+                                    const Color(0xffF39C12),
+                                  ),
+                                  _buildSummaryCard(
+                                    'Leave',
+                                    _reportData!.summary.leave.toString(),
+                                    const Color(0xffC0392B),
+                                  ),
+                                  _buildSummaryCard(
+                                    'Holiday',
+                                    _reportData!.summary.holiday.toString(),
+                                    const Color(0xff2980B9),
+                                  ),
+                                  _buildSummaryCard(
+                                    'Not Marked',
+                                    _reportData!.summary.notMarked.toString(),
+                                    const Color(0xff7F8C8D),
+                                  ),
+                                ];
+
+                                return GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: cols,
+                                    crossAxisSpacing: 10,
+                                    mainAxisSpacing: 10,
+                                    mainAxisExtent: itemHeight,
+                                  ),
+                                  itemCount: summaryCards.length,
+                                  itemBuilder: (context, index) =>
+                                      summaryCards[index],
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                            // Detailed List
+                            Text(
+                              'Trainer Performance Reports',
+                              style: AppStyles.text14Px.poppins.w600.copyWith(color: context.colors.textPrimary),
+                            ),
+                            const SizedBox(height: 12),
+                            ..._reportData!.trainers.map((trainer) {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(16),
@@ -765,6 +808,8 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
                         }),
                       ],
                     ),
+                  ),
+                ),
         ),
       ],
     );
@@ -772,24 +817,44 @@ class _TrainerAttendanceScreenState extends State<TrainerAttendanceScreen> with 
 
   Widget _buildSummaryCard(String title, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         color: context.isDarkMode ? context.colors.card : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.isDarkMode ? context.colors.border : const Color(0xffEEEEEE)),
+        border: Border.all(
+          color: context.isDarkMode
+              ? context.colors.border
+              : const Color(0xffEEEEEE),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: context.isDarkMode ? 0.2 : 0.02,
+            ),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            value,
-            style: AppStyles.text18Px.poppins.w800.copyWith(color: color),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: AppStyles.text18Px.poppins.w800.copyWith(color: color),
+            ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             title,
-            style: AppStyles.text10Px.poppins.w500.copyWith(color: AppColors.textGrey),
+            style: AppStyles.text10Px.poppins.w500.copyWith(
+              color: context.isDarkMode
+                  ? context.colors.textSecondary
+                  : AppColors.textGrey,
+            ),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

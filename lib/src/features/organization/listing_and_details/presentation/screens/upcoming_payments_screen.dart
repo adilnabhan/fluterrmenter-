@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/core/network/dio_client.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/add_edit_upcoming_payment_sheet.dart';
+import 'package:mentor_mobile_app/src/features/organization/presentation/desktop/desktop_content_constraint.dart';
 
 class UpcomingPaymentsScreen extends StatefulWidget {
   const UpcomingPaymentsScreen({
@@ -288,8 +289,11 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor:
+          isDark ? context.colors.background : const Color(0xFFF7F8FA),
       appBar: AppBar(
         title: Text(
           'Upcoming Payments & Bills',
@@ -298,8 +302,8 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
           ),
         ),
         elevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: isDark ? context.colors.card : Colors.white,
+        surfaceTintColor: isDark ? context.colors.card : Colors.white,
         iconTheme: IconThemeData(color: context.colors.textPrimary),
         actions: [
           // View Switcher Toggle
@@ -315,7 +319,9 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                   : Icons.calendar_month_rounded,
               color: const Color(0xff27AE60),
             ),
-            tooltip: _isCalendarView ? 'Switch to List View' : 'Switch to Calendar View',
+            tooltip: _isCalendarView
+                ? 'Switch to List View'
+                : 'Switch to Calendar View',
           ),
         ],
       ),
@@ -336,30 +342,78 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),
                 ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Summary Header Metrics
-                    _buildSummaryMetricsHeader(),
-                    const SizedBox(height: 16),
+                child: DesktopContentConstraint(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Summary Header Metrics
+                      _buildSummaryMetricsHeader(),
+                      const SizedBox(height: 16),
 
-                    if (_isCalendarView) ...[
-                      // Calendar View Widget
-                      _buildCalendarWidget(),
-                      const SizedBox(height: 16),
-                      _buildSectionHeader('Payments for ${DateFormat('dd MMM yyyy').format(_selectedDate)}'),
-                      const SizedBox(height: 8),
-                      _buildFilteredPaymentsList(dateFilter: _selectedDate),
-                    ] else ...[
-                      // List View: Status Filter Tabs & Category Chips
-                      _buildStatusFilterTabs(),
-                      const SizedBox(height: 12),
-                      _buildCategoryFilterChips(),
-                      const SizedBox(height: 16),
-                      _buildFilteredPaymentsList(),
+                      if (_isCalendarView) ...[
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isDesktop = constraints.maxWidth >= 850;
+                            if (isDesktop) {
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: 360,
+                                    child: _buildCalendarWidget(),
+                                  ),
+                                  const SizedBox(width: 24),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        _buildSectionHeader(
+                                          'Payments for ${DateFormat('dd MMM yyyy').format(_selectedDate)}',
+                                        ),
+                                        const SizedBox(height: 12),
+                                        _buildFilteredPaymentsList(
+                                          dateFilter: _selectedDate,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Center(
+                                  child: ConstrainedBox(
+                                    constraints:
+                                        const BoxConstraints(maxWidth: 380),
+                                    child: _buildCalendarWidget(),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                _buildSectionHeader(
+                                  'Payments for ${DateFormat('dd MMM yyyy').format(_selectedDate)}',
+                                ),
+                                const SizedBox(height: 8),
+                                _buildFilteredPaymentsList(
+                                  dateFilter: _selectedDate,
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ] else ...[
+                        // List View: Status Filter Tabs & Category Chips
+                        _buildStatusFilterTabs(),
+                        const SizedBox(height: 12),
+                        _buildCategoryFilterChips(),
+                        const SizedBox(height: 16),
+                        _buildFilteredPaymentsList(),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -434,15 +488,19 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
     required Color color,
     required IconData icon,
   }) {
+    final isDark = context.isDarkMode;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? context.colors.card : Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(
+          color: isDark ? context.colors.border : const Color(0xffEEEEEE),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -491,6 +549,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
   }
 
   Widget _buildStatusFilterTabs() {
+    final isDark = context.isDarkMode;
     final tabs = [
       {'key': 'all', 'label': 'All Bills'},
       {'key': 'pending', 'label': 'Pending'},
@@ -501,7 +560,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: context.colors.fieldFill,
+        color: isDark ? context.colors.card : context.colors.fieldFill,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: context.colors.border),
       ),
@@ -518,7 +577,9 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white : Colors.transparent,
+                  color: isSelected
+                      ? (isDark ? context.colors.fieldFill : Colors.white)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: isSelected
                       ? [
@@ -548,6 +609,8 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
   }
 
   Widget _buildCategoryFilterChips() {
+    final isDark = context.isDarkMode;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -559,7 +622,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
               label: Text(cat),
               selected: isSelected,
               selectedColor: const Color(0xff27AE60).withValues(alpha: 0.15),
-              backgroundColor: Colors.white,
+              backgroundColor: isDark ? context.colors.card : Colors.white,
               labelStyle: AppStyles.text12Px.poppins.w500.copyWith(
                 color: isSelected
                     ? const Color(0xff27AE60)
@@ -568,7 +631,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
               side: BorderSide(
                 color: isSelected
                     ? const Color(0xff27AE60)
-                    : const Color(0xffEEEEEE),
+                    : (isDark ? context.colors.border : const Color(0xffEEEEEE)),
               ),
               onSelected: (selected) {
                 if (selected) {
@@ -585,6 +648,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
   }
 
   Widget _buildCalendarWidget() {
+    final isDark = context.isDarkMode;
     final daysInMonth = DateUtils.getDaysInMonth(
       _focusedMonth.year,
       _focusedMonth.month,
@@ -605,13 +669,23 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? context.colors.card : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(
+          color: isDark ? context.colors.border : const Color(0xffEEEEEE),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Month Navigation
           Row(
@@ -619,14 +693,16 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
             children: [
               Text(
                 DateFormat('MMMM yyyy').format(_focusedMonth),
-                style: AppStyles.text16Px.poppins.w600.copyWith(
+                style: AppStyles.text15Px.poppins.w600.copyWith(
                   color: context.colors.textPrimary,
                 ),
               ),
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left),
+                    icon: const Icon(Icons.chevron_left, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                     onPressed: () {
                       setState(() {
                         _focusedMonth = DateTime(
@@ -637,7 +713,9 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.chevron_right),
+                    icon: const Icon(Icons.chevron_right, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                     onPressed: () {
                       setState(() {
                         _focusedMonth = DateTime(
@@ -651,21 +729,25 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // Weekday Labels
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) {
-              return Text(
-                day,
-                style: AppStyles.text12Px.poppins.w600.copyWith(
-                  color: context.colors.textSecondary,
+              return SizedBox(
+                width: 32,
+                child: Text(
+                  day,
+                  textAlign: TextAlign.center,
+                  style: AppStyles.text10Px.poppins.w600.copyWith(
+                    color: context.colors.textSecondary,
+                  ),
                 ),
               );
             }).toList(),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // Days Grid
           GridView.builder(
@@ -674,7 +756,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
             itemCount: daysInMonth + firstDayOfWeek,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              childAspectRatio: 1.3,
+              childAspectRatio: 1.15,
               mainAxisSpacing: 3,
               crossAxisSpacing: 3,
             ),
@@ -744,18 +826,18 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                           children: [
                             if (hasOverdue)
                               Container(
-                                width: 6,
-                                height: 6,
+                                width: 5,
+                                height: 5,
                                 margin: const EdgeInsets.symmetric(horizontal: 1.5),
                                 decoration: BoxDecoration(
                                   color: isSelected ? Colors.white : const Color(0xffE74C3C),
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                            if (hasPending)
+                            if (hasPending && !hasOverdue)
                               Container(
-                                width: 6,
-                                height: 6,
+                                width: 5,
+                                height: 5,
                                 margin: const EdgeInsets.symmetric(horizontal: 1.5),
                                 decoration: BoxDecoration(
                                   color: isSelected ? Colors.white : const Color(0xffF39C12),
@@ -764,8 +846,8 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                               ),
                             if (hasPaid && !hasOverdue && !hasPending)
                               Container(
-                                width: 6,
-                                height: 6,
+                                width: 5,
+                                height: 5,
                                 margin: const EdgeInsets.symmetric(horizontal: 1.5),
                                 decoration: BoxDecoration(
                                   color: isSelected ? Colors.white : const Color(0xff27AE60),
@@ -796,6 +878,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
   }
 
   Widget _buildFilteredPaymentsList({DateTime? dateFilter}) {
+    final isDark = context.isDarkMode;
     var filtered = _paymentsList;
     if (dateFilter != null) {
       filtered = filtered.where((item) {
@@ -824,9 +907,11 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? context.colors.card : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xffEEEEEE)),
+          border: Border.all(
+            color: isDark ? context.colors.border : const Color(0xffEEEEEE),
+          ),
         ),
         child: Column(
           children: [
@@ -872,16 +957,16 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? context.colors.card : Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isOverdue
                   ? const Color(0xffE74C3C).withValues(alpha: 0.3)
-                  : const Color(0xffEEEEEE),
+                  : (isDark ? context.colors.border : const Color(0xffEEEEEE)),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),

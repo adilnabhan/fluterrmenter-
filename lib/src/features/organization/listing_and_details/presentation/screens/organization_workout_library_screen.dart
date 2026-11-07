@@ -143,12 +143,6 @@ class _OrganizationWorkoutLibraryScreenState
           style: AppStyles.text16Px.poppins.w600.copyWith(color: Colors.black),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SafeArea(
         child: Stack(

@@ -229,7 +229,7 @@ class _PaymentHistoryListState extends State<PaymentHistoryList> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Row(
               children: [
                 Expanded(

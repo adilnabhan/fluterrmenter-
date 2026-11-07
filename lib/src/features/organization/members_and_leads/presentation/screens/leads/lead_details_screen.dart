@@ -97,7 +97,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
                                   children: [
                                     ProfileImage(
                                       isEdit: false,
-                                      radius: 80.w,
+                                      radius: 64,
                                       url: '${data.profilePicture ?? ''}',
                                     ),
                                     const SizedBox(width: 16),
@@ -373,7 +373,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen> {
           // Profile header shimmer
           Row(
             children: [
-              KShimmer(height: 80.w, width: 80.w, radius: 80.w),
+              const KShimmer(height: 64, width: 64, radius: 32),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

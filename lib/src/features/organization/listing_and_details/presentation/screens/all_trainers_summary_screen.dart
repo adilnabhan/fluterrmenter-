@@ -320,7 +320,7 @@ class _AllTrainersSummaryScreenState extends State<AllTrainersSummaryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Avatar, Name, 3-dots, Arrow
+          // Header: Avatar, Name
           Row(
             children: [
               CircleAvatar(
@@ -341,24 +341,6 @@ class _AllTrainersSummaryScreenState extends State<AllTrainersSummaryScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FA),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.more_vert,
-                  size: 18,
-                  color: AppColors.textGrey,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: AppColors.textGrey,
               ),
             ],
           ),

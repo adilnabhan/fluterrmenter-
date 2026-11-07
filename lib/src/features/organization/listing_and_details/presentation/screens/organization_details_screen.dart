@@ -1,6 +1,7 @@
 import 'package:mentor_mobile_app/core/themes/app_theme_colors.dart';
 import 'package:mentor_mobile_app/imports_bindings.dart';
 import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/components/sheets/logout_sheet.dart';
+import 'package:mentor_mobile_app/src/features/organization/listing_and_details/presentation/screens/gym_details_screen.dart';
 import 'package:mentor_mobile_app/src/features/settings/presentation/screens/settings_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
@@ -466,19 +467,21 @@ class _OrganizationDetailsScreenState extends State<OrganizationDetailsScreen>
                     ),
                     const SizedBox(width: 8),
                     InkWell(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => SettingsScreen(
-                              orgId: orgDetails.id,
-                              name: orgDetails.name,
-                              email: orgDetails.email,
-                              logoUrl: orgDetails.logo,
-                              orgDetailsCubit: _cubit,
+                            builder: (context) => BlocProvider<
+                              OrganizationListingAndDetailsCubit
+                            >.value(
+                              value: _cubit,
+                              child: GymDetailsScreen(
+                                orgDetails: orgDetails,
+                              ),
                             ),
                           ),
                         );
+                        _fetch(isRefresh: true);
                       },
                       child: Container(
                         padding: const EdgeInsets.all(6),

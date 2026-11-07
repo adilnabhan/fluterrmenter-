@@ -26,6 +26,7 @@ class _ActiveMembersListingScreenState
     extends State<_ActiveMembersListingScreen> {
   late final MembersAndLeadsCubit _cubit;
   late final ScrollController _scrollController;
+  final TextEditingController _searchController = TextEditingController();
   ListingSort? _sort;
 
   @override
@@ -40,6 +41,13 @@ class _ActiveMembersListingScreenState
       }
     });
     _fetch();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetch({bool isPaginating = false, String? searchQuery}) =>
@@ -66,15 +74,6 @@ class _ActiveMembersListingScreenState
           color: context.colors.textPrimary,
         ),
         title: const Text('Members'),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.settings_outlined,
-              color: context.colors.textPrimary,
-            ),
-          ),
-        ],
       ),
       body: Center(
         child: ConstrainedBox(
@@ -82,10 +81,12 @@ class _ActiveMembersListingScreenState
           child: Column(
             children: [
               TextField(
+                controller: _searchController,
                 style: TextStyle(
                   color: context.colors.textPrimary,
                 ),
                 onChanged: (q) {
+                  setState(() {});
                   EasyDebounce.debounce(
                     'active_members_search_query',
                     const Duration(milliseconds: 300),
@@ -111,6 +112,24 @@ class _ActiveMembersListingScreenState
                       ),
                     ).center,
                   ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(
+                            Icons.close_rounded,
+                            size: 18,
+                            color: isDark
+                                ? context.colors.textSecondary
+                                : AppColors.textGrey,
+                          ),
+                          splashRadius: 18,
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {});
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            _fetch(searchQuery: '');
+                          },
+                        )
+                      : null,
                   border: OutlineInputBorder(
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                     borderSide: BorderSide(
@@ -527,11 +546,5 @@ class _ActiveMembersListingScreenState
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 }

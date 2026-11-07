@@ -17,6 +17,7 @@ class WorkoutGroupDetailsScreen extends StatefulWidget {
     this.source,
     this.groupType,
     this.assignToCustomerId,
+    this.orgId,
     super.key,
   });
 
@@ -25,6 +26,7 @@ class WorkoutGroupDetailsScreen extends StatefulWidget {
   final String? source;
   final String? groupType;
   final int? assignToCustomerId;
+  final int? orgId;
 
   @override
   State<WorkoutGroupDetailsScreen> createState() =>
@@ -746,6 +748,12 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                       !isTrainer ||
                                       !isOrgPlan;
 
+                                  final isOrganizationScreen =
+                                      !isTrainer || widget.orgId != null;
+                                  final showAssignButton =
+                                      !isOrganizationScreen &&
+                                      widget.assignToCustomerId == null;
+
                                   final int? dayNum =
                                       widget.groupType == 'multi_day'
                                           ? (index + 1)
@@ -757,6 +765,7 @@ class _WorkoutGroupDetailsScreenState extends State<WorkoutGroupDetailsScreen> {
                                     createdOn: createdOn,
                                     canEditOrDelete: canEditOrDelete,
                                     dayNumber: dayNum,
+                                    showAssignButton: showAssignButton,
                                     onTap: () async {
                                       final int childPlanId =
                                           (plan['id'] as int?) ?? 0;
@@ -1873,6 +1882,7 @@ class _PlanCard extends StatelessWidget {
     required this.onDelete,
     this.canEditOrDelete = true,
     this.dayNumber,
+    this.showAssignButton = true,
   });
 
   final String title;
@@ -1884,6 +1894,7 @@ class _PlanCard extends StatelessWidget {
   final VoidCallback onDelete;
   final bool canEditOrDelete;
   final int? dayNumber;
+  final bool showAssignButton;
 
   @override
   Widget build(BuildContext context) {
@@ -2042,7 +2053,7 @@ class _PlanCard extends StatelessWidget {
                           color: AppColors.textGrey,
                         ),
                       ),
-                      if (dayNumber == null)
+                      if (dayNumber == null && showAssignButton)
                         InkWell(
                           onTap: onAssignTap,
                           borderRadius: BorderRadius.circular(20),

@@ -16,7 +16,7 @@ class DesktopReportsView extends StatelessWidget {
     return Container(
       color: context.isDarkMode ? context.colors.background : const Color(0xFFF8F9FA),
       child: DesktopContentConstraint(
-        maxWidth: 1320,
+        maxWidth: 1600,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Container(
           decoration: BoxDecoration(

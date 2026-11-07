@@ -29,6 +29,7 @@ class __MembersAndLeadsListingScreenState
     extends State<_MembersAndLeadsListingScreen> {
   late final ScrollController _scrollController;
   late final MembersAndLeadsCubit _cubit;
+  final TextEditingController _searchController = TextEditingController();
   List<({String label, String value})>? _selectedFilters;
   ({String label, String value})? _selectedSort;
   String? _currentSearchQuery;
@@ -171,6 +172,7 @@ class __MembersAndLeadsListingScreenState
 
   @override
   void dispose() {
+    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -255,10 +257,12 @@ class __MembersAndLeadsListingScreenState
                 children: [
                   Expanded(
                     child: TextField(
+                      controller: _searchController,
                       style: TextStyle(
                         color: context.colors.textPrimary,
                       ),
                       onChanged: (q) {
+                        setState(() {});
                         if (q.isEmpty) {
                           FocusManager.instance.primaryFocus?.unfocus();
                         }
@@ -291,6 +295,24 @@ class __MembersAndLeadsListingScreenState
                             ),
                           ).center,
                         ),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  size: 18,
+                                  color: context.isDarkMode
+                                      ? context.colors.textSecondary
+                                      : AppColors.textGrey,
+                                ),
+                                splashRadius: 18,
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {});
+                                  FocusManager.instance.primaryFocus?.unfocus();
+                                  _fetchMembers(searchQuery: '');
+                                },
+                              )
+                            : null,
                         border: OutlineInputBorder(
                           borderRadius: const BorderRadius.all(Radius.circular(8)),
                           borderSide: BorderSide(

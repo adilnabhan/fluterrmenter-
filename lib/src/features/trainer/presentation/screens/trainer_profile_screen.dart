@@ -799,10 +799,20 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
+
     if (widget.isViewOnly && _isLoading) {
       return Scaffold(
         backgroundColor: context.colors.background,
-        body: _buildProfileShimmer(context),
+        body: isDesktop
+            ? Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1080),
+                  child: _buildProfileShimmer(context),
+                ),
+              )
+            : _buildProfileShimmer(context),
       );
     }
 
@@ -818,146 +828,161 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             .where((img) => img.isNotEmpty)
             .toList();
 
+    final content = SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        children: [
+          // Hero image + overlapping profile card
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Hero image carousel or empty state
+              ClipRRect(
+                borderRadius: isDesktop
+                    ? const BorderRadius.vertical(bottom: Radius.circular(24))
+                    : BorderRadius.zero,
+                child: SizedBox(
+                  height: isDesktop ? 340 : 320,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (heroCarousel.isNotEmpty) ...[
+                        _HeroPortfolioCarousel(
+                          images: heroCarousel,
+                          onTapImage:
+                              (index) =>
+                                  _openFullScreen(context, index, user),
+                        ),
+                      ] else ...[
+                        _buildCoverBackdrop(user),
+                      ],
+                      // Top bar (Settings)
+                      if (!widget.isViewOnly)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: SafeArea(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              child: CircleAvatar(
+                                backgroundColor: context.colors.card
+                                    .withOpacity(0.9),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.settings,
+                                    color: context.colors.icon,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                const TrainerProfileSettingsScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          child: SafeArea(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: CircleAvatar(
+                                backgroundColor: context.colors.card
+                                    .withOpacity(0.9),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.arrow_back_ios_new,
+                                    color: context.colors.icon,
+                                  ),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              // Profile card overlapping the image
+              Positioned(
+                bottom: -60,
+                left: 16,
+                right: 16,
+                child: _buildProfileCard(user),
+              ),
+            ],
+          ),
+          const SizedBox(height: 76),
+          // Rest of the content
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                _buildTagsAndDescriptionCard(user),
+                const SizedBox(height: 16),
+                _buildTransformationCard(),
+                const SizedBox(height: 16),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => TrainerCertificatesScreen(
+                              trainerId: widget.trainerId,
+                              isViewOnly: widget.isViewOnly,
+                              initialCertificates:
+                                  widget.isViewOnly
+                                      ? null
+                                      : user?.trainer?.certificates,
+                            ),
+                      ),
+                    );
+                  },
+                  child: _buildCertificatesButton(),
+                ),
+                const SizedBox(height: 16),
+                _buildReviewsSection(
+                  _reviews,
+                  _reviewsCount,
+                  _averageRating,
+                  _isLoadingReviews,
+                ),
+
+                const SizedBox(height: 100),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
     return Scaffold(
       backgroundColor: context.colors.background,
       body: RefreshIndicator(
         onRefresh: _handleRefresh,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            children: [
-              // Hero image + overlapping profile card
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Hero image carousel or empty state
-                  SizedBox(
-                    height: 320,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        if (heroCarousel.isNotEmpty) ...[
-                          _HeroPortfolioCarousel(
-                            images: heroCarousel,
-                            onTapImage:
-                                (index) =>
-                                    _openFullScreen(context, index, user),
-                          ),
-                        ] else ...[
-                          _buildCoverBackdrop(user),
-                        ],
-                        // Top bar (Settings)
-                        if (!widget.isViewOnly)
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: SafeArea(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                child: CircleAvatar(
-                                  backgroundColor: context.colors.card
-                                      .withOpacity(0.9),
-                                  child: IconButton(
-                                    icon: Icon(
-                                      Icons.settings,
-                                      color: context.colors.icon,
-                                      size: 20,
-                                    ),
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  const TrainerProfileSettingsScreen(),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        else
-                          Positioned(
-                            top: 0,
-                            left: 0,
-                            child: SafeArea(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: CircleAvatar(
-                                  backgroundColor: context.colors.card
-                                      .withOpacity(0.9),
-                                  child: IconButton(
-                                    icon: Icon(
-                                      Icons.arrow_back_ios_new,
-                                      color: context.colors.icon,
-                                    ),
-                                    onPressed: () => Navigator.pop(context),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  // Profile card overlapping the image
-                  Positioned(
-                    bottom: -60,
-                    left: 16,
-                    right: 16,
-                    child: _buildProfileCard(user),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 76),
-              // Rest of the content
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    _buildTagsAndDescriptionCard(user),
-                    const SizedBox(height: 16),
-                    _buildTransformationCard(),
-                    const SizedBox(height: 16),
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => TrainerCertificatesScreen(
-                                  trainerId: widget.trainerId,
-                                  isViewOnly: widget.isViewOnly,
-                                  initialCertificates:
-                                      widget.isViewOnly
-                                          ? null
-                                          : user?.trainer?.certificates,
-                                ),
-                          ),
-                        );
-                      },
-                      child: _buildCertificatesButton(),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildReviewsSection(
-                      _reviews,
-                      _reviewsCount,
-                      _averageRating,
-                      _isLoadingReviews,
-                    ),
-
-                    const SizedBox(height: 100),
-                  ],
+        child: isDesktop
+            ? Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1080),
+                  child: content,
                 ),
-              ),
-            ],
-          ),
-        ),
+              )
+            : content,
       ),
     );
   }
@@ -1046,6 +1071,8 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
   }
 
   Widget _buildProfileCard(dynamic user) {
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1063,69 +1090,76 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Dialogs.showEnlargedProfilePhoto(
-                    context,
-                    user?.profilePicture?.toString(),
-                    name: '\ '.trim(),
-                  );
-                },
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child:
-                        (user?.profilePicture?.toString().isNotEmpty == true &&
-                                user!.profilePicture.toString() != 'null')
-                            ? ImageNetwork(
-                              user!.profilePicture!.toString(),
-                              fit: BoxFit.cover,
-                              errorWidget: _buildProfileAvatarInitial(user),
-                            )
-                            : _buildProfileAvatarInitial(user),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          isDesktop
+              ? Row(
                   children: [
-                    Text(
-                      '${user?.firstName ?? "Praveen"} ${user?.lastName ?? "K"}',
-                      style: AppStyles.text18Px.poppins.w600,
-                    ),
-                    Text(
-                      'Trainer',
-                      style: AppStyles.text12Px.poppins.w500.copyWith(
-                        color: AppColors.textGrey,
+                    GestureDetector(
+                      onTap: () {
+                        Dialogs.showEnlargedProfilePhoto(
+                          context,
+                          user?.profilePicture?.toString(),
+                          name: '${user?.firstName ?? ""} ${user?.lastName ?? ""}'.trim(),
+                        );
+                      },
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child:
+                              (user?.profilePicture?.toString().isNotEmpty == true &&
+                                      user!.profilePicture.toString() != 'null')
+                                  ? ImageNetwork(
+                                    user!.profilePicture!.toString(),
+                                    fit: BoxFit.cover,
+                                    errorWidget: _buildProfileAvatarInitial(user),
+                                  )
+                                  : _buildProfileAvatarInitial(user),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${user?.firstName ?? "Praveen"} ${user?.lastName ?? "K"}',
+                            style: AppStyles.text20Px.poppins.w600,
+                          ),
+                          Text(
+                            'Trainer',
+                            style: AppStyles.text14Px.poppins.w500.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 24),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         _buildStatItem(
                           '${user?.trainer?.clientsCount ?? 0}',
                           'Clients',
                         ),
+                        const SizedBox(width: 40),
                         _buildStatItem(
                           '${user?.trainer?.verifiedWorkoutsCount ?? 0}',
                           'Verified\nWorkouts',
                         ),
+                        const SizedBox(width: 40),
                         _buildStatItem(
                           _averageRating.toStringAsFixed(1),
                           'Rating',
@@ -1133,11 +1167,84 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
                         ),
                       ],
                     ),
+                    if (!widget.isViewOnly) const SizedBox(width: 40),
+                  ],
+                )
+              : Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Dialogs.showEnlargedProfilePhoto(
+                          context,
+                          user?.profilePicture?.toString(),
+                          name: '\ '.trim(),
+                        );
+                      },
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child:
+                              (user?.profilePicture?.toString().isNotEmpty == true &&
+                                      user!.profilePicture.toString() != 'null')
+                                  ? ImageNetwork(
+                                    user!.profilePicture!.toString(),
+                                    fit: BoxFit.cover,
+                                    errorWidget: _buildProfileAvatarInitial(user),
+                                  )
+                                  : _buildProfileAvatarInitial(user),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${user?.firstName ?? "Praveen"} ${user?.lastName ?? "K"}',
+                            style: AppStyles.text18Px.poppins.w600,
+                          ),
+                          Text(
+                            'Trainer',
+                            style: AppStyles.text12Px.poppins.w500.copyWith(
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildStatItem(
+                                '${user?.trainer?.clientsCount ?? 0}',
+                                'Clients',
+                              ),
+                              _buildStatItem(
+                                '${user?.trainer?.verifiedWorkoutsCount ?? 0}',
+                                'Verified\nWorkouts',
+                              ),
+                              _buildStatItem(
+                                _averageRating.toStringAsFixed(1),
+                                'Rating',
+                                isRating: true,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
-          ),
           if (!widget.isViewOnly)
             Positioned(
               top: 0,
@@ -1470,6 +1577,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
   }
 
   Widget _buildTransformationCard() {
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
     if (widget.isViewOnly && _transformations.isEmpty)
       return const SizedBox.shrink();
 
@@ -1490,19 +1598,19 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
         const SizedBox(height: 12),
         if (_isLoadingTransformations)
           Row(
-            children: const [
+            children: [
               Expanded(
                 child: KShimmer(
                   width: double.infinity,
-                  height: 160,
+                  height: isDesktop ? 260 : 160,
                   radius: 16,
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: KShimmer(
                   width: double.infinity,
-                  height: 160,
+                  height: isDesktop ? 260 : 160,
                   radius: 16,
                 ),
               ),
@@ -1512,7 +1620,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
           const SizedBox.shrink()
         else
           SizedBox(
-            height: 200,
+            height: isDesktop ? 260 : 200,
             child: PageView.builder(
               controller: _transformationPageController,
               itemCount: itemCount,
@@ -2217,6 +2325,7 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
   }
 
   Widget _buildProfileShimmer(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       child: Column(
@@ -2226,9 +2335,9 @@ class _TrainerMainProfileScreenState extends State<TrainerMainProfileScreen> {
             child: Stack(
               children: [
                 KShimmer(
-                  width: MediaQuery.of(context).size.width,
+                  width: isDesktop ? 1080 : MediaQuery.of(context).size.width,
                   height: 220,
-                  radius: 0,
+                  radius: isDesktop ? 20 : 0,
                 ),
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 8,

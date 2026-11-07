@@ -27,6 +27,7 @@ class __UpcomingRenewalsListingScreenState
     extends State<_UpcomingRenewalsListingScreen> {
   late final MembersAndLeadsCubit _cubit;
   late final ScrollController _scrollController;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -40,6 +41,13 @@ class __UpcomingRenewalsListingScreenState
       }
     });
     _fetch();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetch({bool isPaginating = false, String? searchQuery}) =>
@@ -71,10 +79,12 @@ class __UpcomingRenewalsListingScreenState
           child: Column(
             children: [
               TextField(
+                controller: _searchController,
                 style: TextStyle(
                   color: context.colors.textPrimary,
                 ),
                 onChanged: (q) {
+                  setState(() {});
                   EasyDebounce.debounce(
                     'upcoming_renewals_search_query',
                     const Duration(milliseconds: 300),
@@ -100,6 +110,24 @@ class __UpcomingRenewalsListingScreenState
                       ),
                     ).center,
                   ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(
+                            Icons.close_rounded,
+                            size: 18,
+                            color: isDark
+                                ? context.colors.textSecondary
+                                : AppColors.textGrey,
+                          ),
+                          splashRadius: 18,
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {});
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            _fetch(searchQuery: '');
+                          },
+                        )
+                      : null,
                   border: OutlineInputBorder(
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                     borderSide: BorderSide(
@@ -457,11 +485,5 @@ class __UpcomingRenewalsListingScreenState
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 }

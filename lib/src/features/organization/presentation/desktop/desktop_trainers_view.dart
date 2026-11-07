@@ -24,6 +24,7 @@ class DesktopTrainersView extends StatefulWidget {
 }
 
 class _DesktopTrainersViewState extends State<DesktopTrainersView> {
+  final TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> _trainers = [];
   bool _isLoading = false;
   String _searchQuery = '';
@@ -32,6 +33,12 @@ class _DesktopTrainersViewState extends State<DesktopTrainersView> {
   void initState() {
     super.initState();
     _fetchTrainers();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchTrainers() async {
@@ -163,6 +170,7 @@ class _DesktopTrainersViewState extends State<DesktopTrainersView> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _searchController,
                     onChanged: (val) => setState(() => _searchQuery = val),
                     decoration: InputDecoration(
                       hintText: 'Search trainers by name or specialization...',
@@ -170,6 +178,15 @@ class _DesktopTrainersViewState extends State<DesktopTrainersView> {
                         color: context.colors.textSecondary,
                       ),
                       prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.close_rounded, size: 18),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                              },
+                            )
+                          : null,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: context.colors.border),

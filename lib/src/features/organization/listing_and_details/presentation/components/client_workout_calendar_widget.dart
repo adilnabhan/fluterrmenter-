@@ -77,16 +77,24 @@ class _ClientWorkoutCalendarWidgetState extends State<ClientWorkoutCalendarWidge
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    return Container(
+    final isDesktop = MediaQuery.of(context).size.width >= 750;
+    final isDark = context.isDarkMode;
+
+    Widget calendarCard = Container(
+      constraints: isDesktop ? const BoxConstraints(maxWidth: 580) : null,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? context.colors.card : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffEEEEEE)),
+        border: Border.all(
+          color: isDark ? context.colors.border : const Color(0xffEEEEEE),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -128,11 +136,19 @@ class _ClientWorkoutCalendarWidgetState extends State<ClientWorkoutCalendarWidge
           else ...[
             if (_monthData != null) _buildSummaryRow(_monthData!.summary),
             const SizedBox(height: 16),
-            _buildCalendarGrid(),
+            _buildCalendarGrid(isDesktop: isDesktop, isDark: isDark),
           ],
         ],
       ),
     );
+
+    if (isDesktop) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: calendarCard,
+      );
+    }
+    return calendarCard;
   }
 
   Widget _buildSummaryRow(WorkoutCalendarSummary summary) {
@@ -176,19 +192,22 @@ class _ClientWorkoutCalendarWidgetState extends State<ClientWorkoutCalendarWidge
   }
 
   Widget _buildSummaryCard(String title, String value, Color color) {
+    final isDark = context.isDarkMode;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+        color: color.withValues(alpha: isDark ? 0.15 : 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withValues(alpha: isDark ? 0.3 : 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: AppStyles.text10Px.poppins.w500.copyWith(color: AppColors.textGrey),
+            style: AppStyles.text10Px.poppins.w500.copyWith(
+              color: isDark ? context.colors.textSecondary : AppColors.textGrey,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -202,7 +221,7 @@ class _ClientWorkoutCalendarWidgetState extends State<ClientWorkoutCalendarWidge
     );
   }
 
-  Widget _buildCalendarGrid() {
+  Widget _buildCalendarGrid({required bool isDesktop, required bool isDark}) {
     final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
     final firstWeekday = DateTime(_currentMonth.year, _currentMonth.month, 1).weekday; // 1 = Mon, 7 = Sun
 
@@ -218,16 +237,16 @@ class _ClientWorkoutCalendarWidgetState extends State<ClientWorkoutCalendarWidge
 
     return Column(
       children: [
-        // Weekday header
+        // Weekday header aligned with 7 columns
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: weekdays
-              .map((w) => SizedBox(
-                    width: 36,
+              .map((w) => Expanded(
                     child: Text(
                       w,
                       textAlign: TextAlign.center,
-                      style: AppStyles.text12Px.poppins.w500.copyWith(color: const Color(0xff8E8E93)),
+                      style: AppStyles.text12Px.poppins.w500.copyWith(
+                        color: isDark ? context.colors.textSecondary : const Color(0xff8E8E93),
+                      ),
                     ),
                   ))
               .toList(),
@@ -238,11 +257,12 @@ class _ClientWorkoutCalendarWidgetState extends State<ClientWorkoutCalendarWidge
           shrinkWrap: true,
           padding: EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 7,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
-            childAspectRatio: 0.95,
+            mainAxisExtent: isDesktop ? 46.0 : null,
+            childAspectRatio: isDesktop ? 1.0 : 0.95,
           ),
           itemCount: (daysInMonth + firstWeekday - 1),
           itemBuilder: (context, index) {
@@ -260,20 +280,20 @@ class _ClientWorkoutCalendarWidgetState extends State<ClientWorkoutCalendarWidge
 
             final hasData = clientsCount > 0;
             final bgColor = hasData
-                ? const Color(0xffF0F4FF)
+                ? (isDark ? const Color(0xff1E3A8A).withValues(alpha: 0.35) : const Color(0xffF0F4FF))
                 : isFuture
-                    ? const Color(0xffF9FAFB)
-                    : const Color(0xffF2F2F7);
+                    ? (isDark ? context.colors.fieldFill.withValues(alpha: 0.4) : const Color(0xffF9FAFB))
+                    : (isDark ? context.colors.fieldFill : const Color(0xffF2F2F7));
 
             final borderColor = hasData
-                ? const Color(0xffDBEAFE)
-                : Colors.transparent;
+                ? (isDark ? const Color(0xff3B82F6) : const Color(0xffDBEAFE))
+                : (isDark ? context.colors.border.withValues(alpha: 0.3) : Colors.transparent);
 
             final dayTextColor = hasData
-                ? const Color(0xff1D4ED8)
+                ? (isDark ? const Color(0xff60A5FA) : const Color(0xff1D4ED8))
                 : isFuture
-                    ? Colors.grey.shade400
-                    : const Color(0xff3A3A3C);
+                    ? (isDark ? Colors.grey.shade600 : Colors.grey.shade400)
+                    : (isDark ? context.colors.textPrimary : const Color(0xff3A3A3C));
 
             return InkWell(
               onTap: isFuture || dayData == null || clientsCount == 0

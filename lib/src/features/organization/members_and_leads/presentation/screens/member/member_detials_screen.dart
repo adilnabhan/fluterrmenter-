@@ -135,48 +135,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                   notFound: (e) => ErrorUi.notFound(onTap: _fetch),
                   orElse: () => ErrorUi.server(onTap: _fetch),
                 ),
-                (data) {
-                  return KRefreshIndicator(
-                    onRefresh: _fetch,
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        _buildProfileDetails(data),
-                        _buildMembershipDetails(data),
-                        if (data.memberships?.isNotEmpty == true) ...[
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_month,
-                                    color: AppColors.primary,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Workout Journey',
-                                    style: AppStyles.text16Px.poppins.w600.copyWith(color: context.colors.textPrimary),
-                                  ),
-                                ],
-                              ).pOnly(bottom: 16),
-                              TrainerClientWorkoutHistoryCalendar(
-                                customerId: widget.memberId,
-                                startDate: data.memberships!.first.startDate,
-                                workoutHistory: _workoutHistory,
-                                showTitle: false,
-                              ),
-                              const SizedBox(height: 24),
-                            ],
-                          ),
-                        ],
-                        _buildContactDetails(data),
-                        _buildPersonalDetails(data),
-                      ],
-                    ),
-                  );
-                },
+                (data) => _buildBody(data),
               ),
             ),
           );
@@ -185,6 +144,114 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
     ),
   );
 }
+
+  Widget _buildBody(MemberDetailsModel data) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 900;
+    final hasWorkoutJourney = data.memberships?.isNotEmpty == true;
+
+    if (isDesktop && hasWorkoutJourney) {
+      return KRefreshIndicator(
+        onRefresh: _fetch,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1240),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left Column: Identity, Commercials & Contact
+                  Expanded(
+                    flex: 6,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildProfileDetails(data),
+                        _buildMembershipDetails(data),
+                        _buildContactDetails(data),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  // Right Column: Workout Journey & Personal Info
+                  Expanded(
+                    flex: 5,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildWorkoutJourney(data),
+                        _buildPersonalDetails(data),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return KRefreshIndicator(
+      onRefresh: _fetch,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: screenWidth >= 650 ? 750 : double.infinity,
+          ),
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth >= 650 ? 24 : 16,
+              vertical: screenWidth >= 650 ? 20 : 16,
+            ),
+            children: [
+              _buildProfileDetails(data),
+              _buildMembershipDetails(data),
+              _buildWorkoutJourney(data),
+              _buildContactDetails(data),
+              _buildPersonalDetails(data),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkoutJourney(MemberDetailsModel data) {
+    if (data.memberships?.isEmpty ?? true) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.calendar_month,
+              color: AppColors.primary,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Workout Journey',
+              style: AppStyles.text16Px.poppins.w600.copyWith(
+                color: context.colors.textPrimary,
+              ),
+            ),
+          ],
+        ).pOnly(bottom: 16),
+        TrainerClientWorkoutHistoryCalendar(
+          customerId: widget.memberId,
+          startDate: data.memberships!.first.startDate,
+          workoutHistory: _workoutHistory,
+          showTitle: false,
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
 
   Widget _buildProfileDetails(MemberDetailsModel data) {
     return Column(
@@ -215,7 +282,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                   isEdit: false,
                   canViewFullImage: true,
                   name: '${data.firstName ?? ''} ${data.lastName ?? ''}'.trim(),
-                  radius: 80.w,
+                  radius: 64,
                   url: data.profilePicture ?? '',
                 ),
                 const SizedBox(width: 16),
@@ -1172,8 +1239,9 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
+              Wrap(
                 spacing: 8,
+                runSpacing: 8,
                 children: [
                   if (data.isActiveMember ?? false)
                     Container(
@@ -1366,16 +1434,69 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
   }
 
   Widget _buildShimmerLoading() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 900;
+
+    if (isDesktop) {
+      return Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1240),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 6,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildProfileDetailsShimmer(),
+                      _buildMembershipDetailsShimmer(),
+                      _buildContactDetailsShimmer(),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  flex: 5,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPersonalDetailsShimmer(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: _fetch,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildProfileDetailsShimmer(),
-          _buildMembershipDetailsShimmer(),
-          _buildContactDetailsShimmer(),
-          _buildPersonalDetailsShimmer(),
-        ],
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: screenWidth >= 650 ? 750 : double.infinity,
+          ),
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth >= 650 ? 24 : 16,
+              vertical: screenWidth >= 650 ? 20 : 16,
+            ),
+            children: [
+              _buildProfileDetailsShimmer(),
+              _buildMembershipDetailsShimmer(),
+              _buildContactDetailsShimmer(),
+              _buildPersonalDetailsShimmer(),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1388,7 +1509,7 @@ class _MemberDetialsScreenState extends State<MemberDetialsScreen> {
         _card(
           child: Row(
             children: [
-              KShimmer(height: 80.w, width: 80.w, radius: 80.w),
+              const KShimmer(height: 64, width: 64, radius: 32),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

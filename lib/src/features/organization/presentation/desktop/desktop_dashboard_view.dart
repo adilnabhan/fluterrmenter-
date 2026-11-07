@@ -206,21 +206,6 @@ class _DesktopDashboardViewState extends State<DesktopDashboardView> {
                   runSpacing: 10,
                   children: [
                     _ActionPillButton(
-                      label: 'Mark Trainer Attendance',
-                      icon: Icons.assignment_ind_rounded,
-                      color: const Color(0xFF2563EB),
-                      onTap: () {
-                        if (orgId != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (_) => TrainerAttendanceScreen(orgId: orgId),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    _ActionPillButton(
                       label: 'Mark Client Attendance',
                       icon: Icons.qr_code_scanner_rounded,
                       color: const Color(0xFF16A34A),
@@ -233,6 +218,21 @@ class _DesktopDashboardViewState extends State<DesktopDashboardView> {
                           ),
                           ),
                         );
+                      },
+                    ),
+                    _ActionPillButton(
+                      label: 'Mark Trainer Attendance',
+                      icon: Icons.assignment_ind_rounded,
+                      color: const Color(0xFF2563EB),
+                      onTap: () {
+                        if (orgId != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (_) => TrainerAttendanceScreen(orgId: orgId),
+                            ),
+                          );
+                        }
                       },
                     ),
                   ],
@@ -291,7 +291,7 @@ class _DesktopDashboardViewState extends State<DesktopDashboardView> {
           // ── Upcoming Payments Calendar ──
           if (orgId != null) ...[
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+              constraints: const BoxConstraints(maxWidth: 420),
               child: UpcomingPaymentsWidget(orgId: orgId),
             ),
             const SizedBox(height: 32),
