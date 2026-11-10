@@ -103,6 +103,9 @@ final class ApiUris {
   static String resumeCustomerMembership(int id) =>
       '${_v1}fitnesscenter/customer-memberships/$id/resume/';
   static final paymentHistory = '${_v1}fitnesscenter/customer-payments/';
+  static final pendingBalanceCustomers = '${_v1}mentors/clients/pending-balance/';
+  static String pendingBalanceCustomersByOrg(int organizationId) =>
+      '${_v1}mentors/clients/pending-balance/?organization_id=$organizationId';
   static final reports = '${_v1}fitnesscenter/reports/';
   static final reportsCustomers = '${_v1}fitnesscenter/reports/customers/';
   static final clientWorkoutCalendar = '${_v1}fitnesscenter/reports/client-workout-calendar/';
