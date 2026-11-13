@@ -15,6 +15,8 @@ import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trai
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_clients_trained_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_client_detail_screen.dart';
 import 'package:mentor_mobile_app/src/features/trainer/presentation/widgets/birthday_wishes_dialog.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_plus_subscription_screen.dart';
+import 'package:mentor_mobile_app/src/features/trainer/presentation/screens/trainer_plus_dashboard_view.dart';
 
 class TrainerDashboardScreen extends StatefulWidget {
   const TrainerDashboardScreen({super.key});
@@ -25,6 +27,7 @@ class TrainerDashboardScreen extends StatefulWidget {
 
 class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   Map<String, dynamic> _dashboardData = {};
+  bool _isPlusMode = false;
   int _workoutGroupsCount = 0;
   int _pendingVerificationsCount = 0;
   int _todaysAssignedWorkoutsCount = 0;
@@ -311,6 +314,17 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     final displayName =
         trainerName.isNotEmpty ? trainerName : 'Trainer Profile';
 
+    if (_isPlusMode) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: TrainerPlusDashboardView(
+            onSwitchToStandard: () => setState(() => _isPlusMode = false),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: context.colors.background,
       body:
@@ -330,30 +344,87 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Plus Switcher Pill
+                                InkWell(
+                                  onTap: () async {
+                                    final isPrem = _dashboardData['is_premium'] == true ||
+                                        _dashboardData['trainer']?['is_premium'] == true ||
+                                        _dashboardData['can_use_client_groups'] == true;
+                                    if (isPrem) {
+                                      setState(() => _isPlusMode = true);
+                                    } else {
+                                      final subscribed = await Navigator.of(context).push<bool>(
+                                        MaterialPageRoute(
+                                          builder: (ctx) => const TrainerPlusSubscriptionScreen(),
+                                        ),
+                                      );
+                                      if (subscribed == true) {
+                                        setState(() => _isPlusMode = true);
+                                        _fetchDashboardData();
+                                      }
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFC4161C),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFFC4161C).withValues(alpha: 0.2),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Plus',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        SizedBox(width: 4),
+                                        Icon(Icons.arrow_forward_ios, size: 10, color: Colors.white),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                                side: const BorderSide(
-                                  color: Color(0xffDDDDDD),
+                                const SizedBox(width: 8),
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    side: const BorderSide(
+                                      color: Color(0xffDDDDDD),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    const AccountSwitcherSheet().show(context);
+                                  },
+                                  label: Icon(
+                                    Icons.keyboard_arrow_down_sharp,
+                                    color: context.colors.icon,
+                                    size: 20,
+                                  ),
+                                  icon: Text(
+                                    displayName,
+                                    style: AppStyles.text14Px.poppins.w600.copyWith(
+                                      color: context.colors.textPrimary,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              onPressed: () {
-                                const AccountSwitcherSheet().show(context);
-                              },
-                              label: Icon(
-                                Icons.keyboard_arrow_down_sharp,
-                                color: context.colors.icon,
-                                size: 20,
-                              ),
-                              icon: Text(
-                                displayName,
-                                style: AppStyles.text14Px.poppins.w600.copyWith(
-                                  color: context.colors.textPrimary,
-                                ),
-                              ),
+                              ],
                             ),
                             Row(
                               children: [
