@@ -17,13 +17,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     if (Firebase.apps.isEmpty) {
-      try {
-        await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        );
-      } catch (_) {
-        await Firebase.initializeApp();
-      }
+      await Firebase.initializeApp();
     }
   } catch (_) {}
   // Background notifications with `notification` payload are automatically 
@@ -45,20 +39,14 @@ class NotificationServices {
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
-    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+    if (kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isLinux))) {
       _isInitialized = true;
       return;
     }
     WidgetsFlutterBinding.ensureInitialized();
     try {
       if (Firebase.apps.isEmpty) {
-        try {
-          await Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform,
-          );
-        } catch (_) {
-          await Firebase.initializeApp();
-        }
+        await Firebase.initializeApp();
       }
     } catch (e) {
       if (kDebugMode) {
