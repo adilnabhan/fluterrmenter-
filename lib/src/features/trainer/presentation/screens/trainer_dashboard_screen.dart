@@ -371,6 +371,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                       }
                                     }
                                   },
+                                  onLongPress: () {
+                                    setState(() => _isPlusMode = true);
+                                  },
                                   borderRadius: BorderRadius.circular(16),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

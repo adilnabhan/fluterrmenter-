@@ -298,9 +298,22 @@ class _TrainerPlusDashboardViewState extends State<TrainerPlusDashboardView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Plus Badge Button (tappable to open subscription or settings)
+              // Plus Badge Button (tappable to switch back or open subscription)
               InkWell(
                 onTap: () {
+                  if (widget.onSwitchToStandard != null) {
+                    widget.onSwitchToStandard!();
+                  } else {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (ctx) => TrainerPlusSubscriptionScreen(
+                          onSubscriptionSuccess: _fetchPlusDashboardData,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                onLongPress: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (ctx) => TrainerPlusSubscriptionScreen(
@@ -536,9 +549,17 @@ class _TrainerPlusDashboardViewState extends State<TrainerPlusDashboardView> {
                   textColor: const Color(0xFF1E1E1E),
                   hasBorder: true,
                   onTap: () {
+                    final user = context.read<AppCubit>().state.currentUser;
+                    final orgId = user?.organizationId ??
+                        user?.trainer?.organizationId ??
+                        user?.mentor?.org?.id ??
+                        0;
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (ctx) => const ClientAttendanceScreen(),
+                        builder: (ctx) => ClientAttendanceScreen(
+                          orgId: orgId,
+                          isTrainer: true,
+                        ),
                       ),
                     );
                   },

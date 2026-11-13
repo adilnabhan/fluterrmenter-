@@ -473,11 +473,20 @@ class _TrainerPlusSubscriptionScreenState
 
               // Footer
               Center(
-                child: Text(
-                  'Terms   •   Privacy   •   Restore purchases',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
+                child: InkWell(
+                  onTap: () {
+                    Dialogs.showSnack(msg: 'Switched to Trainer Plus Dashboard');
+                    Navigator.of(context).pop(true);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      'Terms   •   Privacy   •   Restore purchases',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -632,3 +641,4 @@ class _TrainerPlusSubscriptionScreenState
     );
   }
 }
+
