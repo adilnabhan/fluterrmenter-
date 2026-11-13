@@ -234,9 +234,13 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           response.data is Map) {
         final dataMap = Map<String, dynamic>.from(response.data as Map);
         final stats = dataMap['stats'] as Map<String, dynamic>? ?? {};
+        final bool isPrem = dataMap['is_premium'] == true ||
+            dataMap['trainer']?['is_premium'] == true ||
+            dataMap['can_use_client_groups'] == true;
 
         setState(() {
           _dashboardData = dataMap;
+          _isPlusMode = isPrem;
           _clientsTrainedCount =
               int.tryParse(
                 (stats['clients_trained_count'] ??
