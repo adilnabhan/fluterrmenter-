@@ -46,6 +46,7 @@ class _TrainerPlusSubscriptionScreenState
         '${ApiUris.baseUrl}/api/v1/trainer/premium/create-order/',
         data: {
           'plan': _selectedPlan,
+          'amount': 19,
         },
         options: Options(headers: {'X-Platform': platformSource}).token,
       );
@@ -65,7 +66,7 @@ class _TrainerPlusSubscriptionScreenState
 
         final orderId = data['order_id']?.toString();
         final amountPaise = data['amount_paise'] ??
-            ((data['amount'] as num? ?? 4788) * 100).toInt();
+            ((data['amount'] as num? ?? 19) * 100).toInt();
         final keyId = data['key_id']?.toString() ??
             dotenv.get('RAZORPAY_API_KEY', fallback: 'rzp_live_Rqet3gBlPqmWUn');
         final trainerName = data['trainer_name']?.toString() ?? 'Trainer';
