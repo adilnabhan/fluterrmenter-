@@ -420,7 +420,7 @@ class _TrainerPlusDashboardViewState extends State<TrainerPlusDashboardView> {
 
           // Horizontal Group Chips Row
           SizedBox(
-            height: 44,
+            height: 52,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
